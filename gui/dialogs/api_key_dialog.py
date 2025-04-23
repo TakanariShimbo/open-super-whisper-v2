@@ -10,8 +10,8 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt
 
-from whisper_core.transcriber import WhisperTranscriber
-from whisper_gui.resources.labels import AppLabels
+from core.transcriber import WhisperTranscriber
+from gui.resources.labels import AppLabels
 
 
 class APIKeyDialog(QDialog):

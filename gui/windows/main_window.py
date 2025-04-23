@@ -20,18 +20,18 @@ from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QSettings, QUrl, QSize
 from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 
-from whisper_core.recorder import AudioRecorder
-from whisper_core.transcriber import WhisperTranscriber
+from core.recorder import AudioRecorder
+from core.transcriber import WhisperTranscriber
 
-from whisper_core.hotkeys import HotkeyManager
-from whisper_gui.resources.config import AppConfig
-from whisper_gui.resources.labels import AppLabels
-from whisper_gui.dialogs.api_key_dialog import APIKeyDialog
-from whisper_gui.dialogs.hotkey_dialog import HotkeyDialog
-from whisper_gui.dialogs.instruction_sets_dialog import InstructionSetsDialog, GUIInstructionSetManager
-from whisper_gui.dialogs.simple_message_dialog import SimpleMessageDialog
-from whisper_gui.components.widgets.status_indicator import StatusIndicatorWindow
-from whisper_gui.utils.resource_helper import getResourcePath
+from core.hotkeys import HotkeyManager
+from gui.resources.config import AppConfig
+from gui.resources.labels import AppLabels
+from gui.dialogs.api_key_dialog import APIKeyDialog
+from gui.dialogs.hotkey_dialog import HotkeyDialog
+from gui.dialogs.instruction_sets_dialog import InstructionSetsDialog, GUIInstructionSetManager
+from gui.dialogs.simple_message_dialog import SimpleMessageDialog
+from gui.components.widgets.status_indicator import StatusIndicatorWindow
+from gui.utils.resource_helper import getResourcePath
 
 
 class MainWindow(QMainWindow):

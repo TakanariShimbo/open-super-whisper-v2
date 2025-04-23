@@ -12,11 +12,11 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QSettings
 from PyQt6.QtGui import QIcon
 
-from whisper_gui.resources.labels import AppLabels
-from whisper_gui.dialogs.simple_message_dialog import SimpleMessageDialog
+from gui.resources.labels import AppLabels
+from gui.dialogs.simple_message_dialog import SimpleMessageDialog
 
 # Import core instruction sets
-from whisper_core.instructions import InstructionSetManager, InstructionSet
+from core.instructions import InstructionSetManager, InstructionSet
 
 
 class GUIInstructionSetManager:
@@ -258,7 +258,7 @@ class InstructionSetsDialog(QDialog):
         self.save_button = QPushButton("Save")
         self.save_button.clicked.connect(self.on_save_changes)
         right_layout.addWidget(self.save_button)
-        
+
         # Add widgets to splitter
         splitter.addWidget(left_widget)
         splitter.addWidget(right_widget)

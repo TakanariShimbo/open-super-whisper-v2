@@ -4,10 +4,10 @@ Whisper Core Module
 This module provides core functionality for audio recording and transcription.
 """
 
-from whisper_core.transcriber import WhisperTranscriber
-from whisper_core.recorder import AudioRecorder
-from whisper_core.instructions import InstructionSet, InstructionSetManager
-from whisper_core.hotkeys import HotkeyManager
+from core.transcriber import WhisperTranscriber
+from core.recorder import AudioRecorder
+from core.instructions import InstructionSet, InstructionSetManager
+from core.hotkeys import HotkeyManager
 
 __all__ = [
     'WhisperTranscriber',

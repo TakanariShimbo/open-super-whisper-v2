@@ -1,95 +1,95 @@
 # Open Super Whisper
 
-A PyQt6-based GUI application for audio transcription using OpenAI's Whisper API. This application allows for recording audio, sending it to Whisper for transcription, and displaying the results.
+A PyQt6-based GUI application for audio transcription using OpenAI's Whisper API. This application allows users to record audio, send it to Whisper for transcription, and view the results.
 
 ## Features
 
-- Complete PyQt6-based GUI implementation 
-- Global hotkey support for starting/stopping recording
-- Custom vocabulary and instruction sets management
+- Fully implemented PyQt6-based GUI
+- Global hotkey support for starting and stopping recordings
+- Management of custom vocabularies and instruction sets
 - System tray integration
-- Multiple language and model support
+- Support for multiple languages and model configurations
 - Clipboard integration
 - Status indicator window
 - Settings management
 
 ## Project Structure
 
-新しいディレクトリ構成:
-
 ```
 .
-├── main.py                      # アプリケーションのエントリーポイント
-├── README.md                    # プロジェクトの説明ドキュメント
-├── pyproject.toml               # プロジェクト設定と依存関係
-├── assets/                      # アセット（アイコン、音声ファイルなど）
-│   ├── complete_sound.wav       # 転写完了時のサウンド
-│   ├── icon.ico                 # アプリケーションアイコン (Windows)
-│   ├── icon.png                 # アプリケーションアイコン (クロスプラットフォーム)
-│   ├── start_sound.wav          # 録音開始時のサウンド
-│   └── stop_sound.wav           # 録音停止時のサウンド
-├── whisper_core/                # コア機能（GUI非依存）
+├── main.py                      # Application entry point
+├── README.md                    # Project description
+├── pyproject.toml               # Project configuration and dependencies
+├── assets/                      # Assets (icons, audio files, etc.)
+│   ├── complete_sound.wav       # Sound played when transcription completes
+│   ├── icon.ico                 # Application icon (Windows)
+│   ├── icon.png                 # Application icon (cross-platform)
+│   ├── start_sound.wav          # Sound played when recording starts
+│   └── stop_sound.wav           # Sound played when recording stops
+├── core/                # Core functionality (GUI-independent, fully implemented)
 │   ├── __init__.py
-│   ├── transcriber.py           # 音声転写インターフェース
-│   ├── recorder.py              # 音声録音インターフェース
-│   └── instructions.py          # カスタム語彙とインストラクション
-└── whisper_gui/                 # GUI関連の機能（QtとGUI依存）
+│   ├── transcriber.py           # Audio transcription interface
+│   ├── recorder.py              # Audio recording interface
+│   ├── instructions.py          # Custom vocabularies and instruction sets
+│   └── hotkeys.py               # Global hotkey management
+└── gui/                 # GUI-related functionality (Qt-dependent)
     ├── __init__.py
-    ├── main.py                  # GUIのエントリーポイント
-    ├── hotkeys.py               # グローバルホットキー管理
-    ├── components/              # 再利用可能なUIコンポーネント
+    ├── main.py                  # GUI entry point
+    ├── components/              # Reusable UI components
     │   ├── __init__.py
-    │   └── widgets/             # カスタムウィジェット
+    │   └── widgets/             # Custom widgets
     │       ├── __init__.py
     │       └── status_indicator.py
-    ├── dialogs/                 # ダイアログウィンドウ
+    ├── dialogs/                 # Dialog windows
     │   ├── __init__.py
     │   ├── api_key_dialog.py
     │   ├── hotkey_dialog.py
     │   ├── instruction_sets_dialog.py
     │   └── simple_message_dialog.py
-    ├── resources/               # アプリケーションリソース
+    ├── resources/               # Application resources
     │   ├── __init__.py
-    │   ├── config.py            # 設定
-    │   └── labels.py            # UIテキストラベル
-    ├── utils/                   # ユーティリティ関数
+    │   ├── config.py            # Configuration settings
+    │   └── labels.py            # UI text labels
+    ├── utils/                   # Utility functions
     │   ├── __init__.py
-    │   └── resource_helper.py   # リソースパス解決
-    └── windows/                 # メインアプリケーションウィンドウ
+    │   └── resource_helper.py   # Resource path resolution
+    └── windows/                 # Main application windows
         ├── __init__.py
-        └── main_window.py       # メインアプリケーションウィンドウ
+        └── main_window.py       # Main application window
 ```
 
-### 特徴:
+## Key Highlights
 
-1. **明確な責任分離**:
-   - `whisper_core`: GUIに依存しないコア機能
-   - `whisper_gui`: Qt/GUIに依存するコード
+1. Clear Separation of Responsibilities
+   - `core`: Core functionality independent of the GUI
+   - `gui`: Qt-based GUI code that depends on core modules
 
-2. **モジュール化**:
-   - 各機能が論理的に整理されたディレクトリに配置
-   - 共通機能の重複を削減
+2. Modular Design
+   - Logical organization of features into dedicated directories
+   - Reduced duplication of shared functionality
 
 ## How to Run
 
-To run the application:
+To start the application, run:
 
 ```bash
 python main.py
 ```
 
-### パッケージ化
+## Packaging
+
+To package the application into a standalone executable:
 
 ```bash
 pyinstaller --onefile --windowed --icon=assets/icon.ico --name=open-super-whisper main.py
 ```
 
-### コア機能とGUI機能
+## Core and GUI Modules
 
-コアモジュール（`whisper_core`）は、GUIに依存せず、他のプロジェクトからも再利用可能です。
+The core module (`core`) is fully implemented and independent of the GUI, providing transcription, recording, instruction set, and hotkey management features that can be reused in other projects.
 
-GUIモジュール（`whisper_gui`）は、コアモジュールを使用してユーザーインターフェースを提供します。
+The GUI module (`gui`) leverages the core module to provide a user interface.
 
-## ライセンス
+## License
 
-MITライセンスの下で公開されています。詳細はLICENSEファイルを参照してください。
+This project is licensed under the MIT License. See the LICENSE file for more details.

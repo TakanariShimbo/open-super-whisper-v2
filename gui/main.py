@@ -10,9 +10,9 @@ import sys
 from PyQt6.QtWidgets import QApplication, QMessageBox, QSystemTrayIcon, QStyle
 from PyQt6.QtGui import QIcon
 
-from whisper_gui.resources.config import AppConfig
-from whisper_gui.resources.labels import AppLabels
-from whisper_gui.utils.resource_helper import getResourcePath
+from gui.resources.config import AppConfig
+from gui.resources.labels import AppLabels
+from gui.utils.resource_helper import getResourcePath
 
 
 def main():
@@ -51,7 +51,7 @@ def main():
     app.setQuitOnLastWindowClosed(False)
     
     # Import MainWindow here to avoid circular imports
-    from whisper_gui.windows import MainWindow
+    from gui.windows import MainWindow
     
     # Create and show main window
     window = MainWindow()

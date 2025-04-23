@@ -1,0 +1,266 @@
+"""
+Whisper Transcription Interface
+
+This module provides a complete implementation for the OpenAI Whisper API to transcribe audio.
+"""
+
+import os
+import json
+from pathlib import Path
+import openai
+from typing import List, Dict, Any, Optional, Union
+
+
+class WhisperTranscriber:
+    """
+    Implementation of OpenAI Whisper API transcription.
+    
+    This class provides methods to transcribe audio files using the
+    OpenAI Whisper API, with support for custom vocabulary, system instructions,
+    and language selection.
+    """
+    
+    # Available models
+    AVAILABLE_MODELS = [
+        {
+            "id": "whisper-1",
+            "name": "Whisper-1",
+            "description": "Original open-source Whisper model"
+        },
+        {
+            "id": "gpt-4o-transcribe",
+            "name": "GPT-4o Transcribe",
+            "description": "High-performance transcription model"
+        },
+        {
+            "id": "gpt-4o-mini-transcribe",
+            "name": "GPT-4o Mini Transcribe",
+            "description": "Lightweight and fast transcription model"
+        }
+    ]
+    
+    def __init__(self, api_key: str = None, model: str = "whisper-1"):
+        """
+        Initialize the WhisperTranscriber.
+        
+        Parameters
+        ----------
+        api_key : str, optional
+            OpenAI API key, by default None. If None, tries to get from environment.
+        model : str, optional
+            Whisper model to use, by default "whisper-1".
+            
+        Raises
+        ------
+        ValueError
+            If no API key is provided and none is found in environment variables.
+        """
+        # Get API key from parameter or environment variable
+        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+        
+        if not self.api_key:
+            raise ValueError("API key is required. Provide it directly or set OPENAI_API_KEY environment variable.")
+        
+        # Initialize OpenAI client
+        self.client = openai.OpenAI(api_key=self.api_key)
+        
+        # Set model and initialize custom vocabulary and instructions
+        self.model = model
+        self.custom_vocabulary: List[str] = []
+        self.system_instructions: List[str] = []
+    
+    @classmethod
+    def get_available_models(cls) -> List[Dict[str, str]]:
+        """
+        Get a list of available Whisper models.
+        
+        Returns
+        -------
+        List[Dict[str, str]]
+            List of dictionaries with model information (id, name, description).
+        """
+        return cls.AVAILABLE_MODELS
+    
+    def set_model(self, model: str) -> None:
+        """
+        Set the Whisper model to use.
+        
+        Parameters
+        ----------
+        model : str
+            Model ID to use for transcription.
+        """
+        self.model = model
+    
+    def add_custom_vocabulary(self, vocabulary: Union[str, List[str]]) -> None:
+        """
+        Add custom vocabulary to improve transcription accuracy.
+        
+        Parameters
+        ----------
+        vocabulary : Union[str, List[str]]
+            Custom vocabulary word/phrase or list of words/phrases.
+        """
+        if isinstance(vocabulary, str):
+            vocabulary = [vocabulary]
+        self.custom_vocabulary.extend(vocabulary)
+    
+    def clear_custom_vocabulary(self) -> None:
+        """Clear all custom vocabulary."""
+        self.custom_vocabulary = []
+    
+    def get_custom_vocabulary(self) -> List[str]:
+        """
+        Get the current custom vocabulary list.
+        
+        Returns
+        -------
+        List[str]
+            List of custom vocabulary items.
+        """
+        return self.custom_vocabulary
+    
+    def add_system_instruction(self, instructions: Union[str, List[str]]) -> None:
+        """
+        Add system instructions to control transcription behavior.
+        
+        Parameters
+        ----------
+        instructions : Union[str, List[str]]
+            Instruction or list of instruction strings.
+        """
+        if isinstance(instructions, str):
+            instructions = [instructions]
+        self.system_instructions.extend(instructions)
+    
+    def clear_system_instructions(self) -> None:
+        """Clear all system instructions."""
+        self.system_instructions = []
+    
+    def get_system_instructions(self) -> List[str]:
+        """
+        Get the current list of system instructions.
+        
+        Returns
+        -------
+        List[str]
+            List of instruction strings.
+        """
+        return self.system_instructions
+    
+    def _build_prompt(self) -> Optional[str]:
+        """
+        Build a prompt with vocabulary and instructions.
+        
+        Returns
+        -------
+        Optional[str]
+            Combined prompt string, or None if no vocabulary or instructions exist.
+        """
+        prompt_parts = []
+        
+        # Add custom vocabulary
+        if self.custom_vocabulary:
+            prompt_parts.append("Vocabulary: " + ", ".join(self.custom_vocabulary))
+        
+        # Add system instructions
+        if self.system_instructions:
+            prompt_parts.append("Instructions: " + ". ".join(self.system_instructions))
+        
+        # Return None if no parts, otherwise join with space
+        return None if not prompt_parts else " ".join(prompt_parts)
+    
+    def transcribe(self, audio_file: str, language: Optional[str] = None, 
+                  response_format: str = "text") -> Union[str, Dict]:
+        """
+        Transcribe an audio file using OpenAI's Whisper API.
+        
+        Parameters
+        ----------
+        audio_file : str
+            Path to the audio file to transcribe.
+        language : Optional[str], optional
+            Language code (e.g., "en", "ja"), or None for auto-detection.
+        response_format : str, optional
+            Response format: "text", "json", "verbose_json", or "vtt".
+            
+        Returns
+        -------
+        Union[str, Dict]
+            Transcribed text or dictionary depending on response_format.
+            
+        Raises
+        ------
+        Exception
+            If transcription fails.
+        """
+        try:
+            # Check if file exists
+            audio_path = Path(audio_file)
+            if not audio_path.exists():
+                raise FileNotFoundError(f"Audio file not found: {audio_file}")
+            
+            # Build API call parameters
+            params = {
+                "model": self.model,
+                "response_format": response_format,
+            }
+            
+            # Add language if specified
+            if language:
+                params["language"] = language
+                
+            # Add custom prompt if available
+            prompt = self._build_prompt()
+            if prompt:
+                params["prompt"] = prompt
+            
+            # Make API call
+            with open(audio_path, "rb") as audio:
+                response = self.client.audio.transcriptions.create(
+                    file=audio,
+                    **params
+                )
+                
+            # Process response based on format
+            if response_format == "json" or response_format == "verbose_json":
+                return json.loads(str(response))
+            else:
+                return str(response)
+        
+        except Exception as e:
+            error_msg = f"Error occurred during transcription: {str(e)}"
+            print(error_msg)
+            return f"Error: {str(e)}"
+    
+    def get_api_key(self) -> str:
+        """
+        Get the current API key.
+        
+        Returns
+        -------
+        str
+            The current API key.
+        """
+        return self.api_key
+    
+    def set_api_key(self, api_key: str) -> None:
+        """
+        Set a new API key.
+        
+        Parameters
+        ----------
+        api_key : str
+            New API key to use.
+            
+        Raises
+        ------
+        ValueError
+            If API key is empty.
+        """
+        if not api_key:
+            raise ValueError("API key cannot be empty")
+        
+        self.api_key = api_key
+        # Update the client with the new API key
+        self.client = openai.OpenAI(api_key=self.api_key)
