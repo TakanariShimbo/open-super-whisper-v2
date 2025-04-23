@@ -1,0 +1,49 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+venv/
+env/
+.env/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Qt specific
+*.qm
+*.moc
+moc_*.cpp
+qrc_*.cpp
+ui_*.h
+*.qmlc
+*.jsc
+
+# PyInstaller
+*.spec
+*.manifest
+*.toc
+
+# Application specific
+*.log
+.qt_for_python/
+
+# User settings
+*.ini
+
+# Temporary files
+*.tmp
+temp/
+tmp/
+
+# OS specific
+.DS_Store
+Thumbs.db
