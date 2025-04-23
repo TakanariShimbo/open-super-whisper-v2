@@ -75,39 +75,12 @@ A PyQt6-based GUI application for audio transcription using OpenAI's Whisper API
 To run the application:
 
 ```bash
-# With Python directly
 python main.py
-
-# Or, after installation
-pip install .
-open-super-whisper
-```
-
-## 開発
-
-### 開発環境のセットアップ
-
-```bash
-# 仮想環境の作成
-python -m venv venv
-source venv/bin/activate  # Linuxの場合
-venv\Scripts\activate     # Windowsの場合
-
-# 依存関係のインストール（開発モード）
-pip install -e ".[dev]"
-```
-
-### テスト
-
-```bash
-# テストの実行
-pytest
 ```
 
 ### パッケージ化
 
 ```bash
-# PyInstallerを使用してスタンドアロン実行ファイルを作成
 pyinstaller --onefile --windowed --icon=assets/icon.ico --name=open-super-whisper main.py
 ```
 
