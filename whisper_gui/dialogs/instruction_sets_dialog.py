@@ -197,9 +197,13 @@ class InstructionSetsDialog(QDialog):
         self.delete_button = QPushButton("Delete")
         self.delete_button.clicked.connect(self.on_delete_set)
         
+        self.activate_button = QPushButton("Activate")
+        self.activate_button.clicked.connect(self.on_activate_set)
+        
         buttons_layout.addWidget(self.add_button)
         buttons_layout.addWidget(self.rename_button)
         buttons_layout.addWidget(self.delete_button)
+        buttons_layout.addWidget(self.activate_button)
         left_layout.addLayout(buttons_layout)
         
         # Right side - Editor
@@ -249,8 +253,9 @@ class InstructionSetsDialog(QDialog):
         
         right_layout.addWidget(self.tab_widget)
         
-        # Save changes button
-        self.save_button = QPushButton("Save Changes")
+        
+        # Save changes button - style consistent with other buttons
+        self.save_button = QPushButton("Save")
         self.save_button.clicked.connect(self.on_save_changes)
         right_layout.addWidget(self.save_button)
         
@@ -263,11 +268,6 @@ class InstructionSetsDialog(QDialog):
         
         # Add splitter to layout
         layout.addWidget(splitter)
-        
-        # Add activate button
-        self.activate_button = QPushButton("Activate Selected Set")
-        self.activate_button.clicked.connect(self.on_activate_set)
-        layout.addWidget(self.activate_button)
         
         # Add button box
         button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
