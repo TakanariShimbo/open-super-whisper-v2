@@ -1,7 +1,7 @@
 """
 Hotkey Manager Interface
 
-This module provides an interface for registering and managing global hotkeys.
+This module provides a platform-independent interface for registering and managing global hotkeys.
 """
 
 from typing import Callable
@@ -13,7 +13,7 @@ class HotkeyManager:
     
     This class provides methods to register and unregister global hotkeys
     that can be triggered even when the application is not in focus.
-    The actual hotkey implementation will be added later.
+    The actual hotkey implementation is platform-specific and will be added later.
     """
     
     def __init__(self):

@@ -1,5 +1,5 @@
 """
-Whisper API Transcription Interface
+Whisper Transcription Interface
 
 This module provides an interface for the OpenAI Whisper API to transcribe audio.
 """

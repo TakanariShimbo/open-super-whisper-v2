@@ -3,11 +3,11 @@ Instruction Set Management
 
 This module provides classes for managing custom vocabulary and
 system instructions used in the transcription process.
+This is the core, non-GUI dependent implementation.
 """
 
-from dataclasses import dataclass
-from typing import List, Optional, Dict
-from PyQt6.QtCore import QSettings
+from dataclasses import dataclass, field
+from typing import List, Optional, Dict, Any
 
 
 @dataclass
@@ -19,8 +19,8 @@ class InstructionSet:
     that can be applied to a transcription request.
     """
     name: str
-    vocabulary: List[str]
-    instructions: List[str]
+    vocabulary: List[str] = field(default_factory=list)
+    instructions: List[str] = field(default_factory=list)
 
 
 class InstructionSetManager:
@@ -29,18 +29,13 @@ class InstructionSetManager:
     
     This class provides methods to create, edit, and manage multiple
     instruction sets, and to select which set is currently active.
+    This is a pure Python implementation without GUI dependencies.
     """
     
-    def __init__(self, settings: QSettings):
+    def __init__(self):
         """
         Initialize the InstructionSetManager.
-        
-        Parameters
-        ----------
-        settings : QSettings
-            QSettings object to store and retrieve sets.
         """
-        self.settings = settings
         self.sets: Dict[str, InstructionSet] = {}
         self.active_set_name: Optional[str] = None
     
@@ -247,69 +242,56 @@ class InstructionSetManager:
             return []
         return self.active_set.instructions
     
-    def save_to_settings(self) -> None:
+    def load_from_dict(self, data: Dict[str, Any]) -> None:
         """
-        Save all instruction sets to settings.
+        Load instruction sets from a dictionary.
         
-        This method serializes all sets to the QSettings object
-        provided in the constructor.
-        """
-        # Save sets count for iteration
-        prefix = "InstructionSets"
-        self.settings.beginGroup(prefix)
-        
-        # Remove any existing sets first
-        self.settings.remove("")
-        
-        # Save sets count
-        self.settings.setValue("Count", len(self.sets))
-        
-        # Save active set
-        self.settings.setValue("ActiveSet", self.active_set_name or "")
-        
-        # Save each set
-        i = 0
-        for name, instruction_set in self.sets.items():
-            self.settings.setValue(f"Set{i}/Name", name)
-            self.settings.setValue(f"Set{i}/Vocabulary", instruction_set.vocabulary)
-            self.settings.setValue(f"Set{i}/Instructions", instruction_set.instructions)
-            i += 1
-        
-        self.settings.endGroup()
-        self.settings.sync()
-    
-    def load_from_settings(self) -> None:
-        """
-        Load instruction sets from settings.
-        
-        This method deserializes sets from the QSettings object
-        provided in the constructor.
+        Parameters
+        ----------
+        data : Dict[str, Any]
+            Dictionary containing serialized instruction sets.
         """
         # Clear existing sets
         self.sets.clear()
         
-        # Load sets from settings
-        prefix = "InstructionSets"
-        self.settings.beginGroup(prefix)
+        # Load active set name
+        self.active_set_name = data.get("active_set", "")
         
-        # Get sets count
-        count = self.settings.value("Count", 0, int)
+        # Load sets
+        sets_data = data.get("sets", [])
+        for set_data in sets_data:
+            name = set_data.get("name", "")
+            if name:
+                self.sets[name] = InstructionSet(
+                    name=name,
+                    vocabulary=set_data.get("vocabulary", []),
+                    instructions=set_data.get("instructions", [])
+                )
         
-        # Get active set
-        self.active_set_name = self.settings.value("ActiveSet", "")
-        
-        # Load each set
-        for i in range(count):
-            name = self.settings.value(f"Set{i}/Name", "")
-            vocabulary = self.settings.value(f"Set{i}/Vocabulary", [], list)
-            instructions = self.settings.value(f"Set{i}/Instructions", [], list)
-            
-            self.sets[name] = InstructionSet(name=name, vocabulary=vocabulary, instructions=instructions)
-        
-        self.settings.endGroup()
-        
-        # If no sets were loaded, create a default set
+        # If no sets were loaded and active_set_name is empty, create a default set
         if not self.sets:
             default_name = "Default"
             self.create_set(default_name)
             self.active_set_name = default_name
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert instruction sets to a dictionary for serialization.
+        
+        Returns
+        -------
+        Dict[str, Any]
+            Dictionary containing serialized instruction sets.
+        """
+        sets_data = []
+        for name, instruction_set in self.sets.items():
+            sets_data.append({
+                "name": name,
+                "vocabulary": instruction_set.vocabulary,
+                "instructions": instruction_set.instructions
+            })
+        
+        return {
+            "active_set": self.active_set_name or "",
+            "sets": sets_data
+        }

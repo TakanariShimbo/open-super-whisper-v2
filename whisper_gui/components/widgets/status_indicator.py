@@ -1,0 +1,136 @@
+"""
+Status Indicator Window
+
+This module provides a floating window that displays the current status of recording.
+"""
+
+from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QFrame
+from PyQt6.QtCore import Qt, QPoint
+from PyQt6.QtGui import QPalette, QColor
+
+
+class StatusIndicatorWindow(QWidget):
+    """
+    Floating indicator window for recording status.
+    
+    This window shows the current status of recording, transcription,
+    and provides visual feedback to the user.
+    """
+    
+    # Status constants
+    MODE_RECORDING = 1
+    MODE_TRANSCRIBING = 2
+    MODE_TRANSCRIBED = 3
+    
+    def __init__(self, parent=None):
+        """
+        Initialize the StatusIndicatorWindow.
+        
+        Parameters
+        ----------
+        parent : QWidget, optional
+            Parent widget, by default None
+        """
+        super().__init__(parent, Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
+        
+        # Set window properties
+        self.setMinimumSize(120, 60)
+        self.setMaximumSize(200, 100)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        
+        # Set initial mode
+        self._current_mode = self.MODE_RECORDING
+        
+        # Init UI
+        self._init_ui()
+        
+        # Position window in bottom right corner of screen
+        self._update_position()
+    
+    def _init_ui(self):
+        """Initialize user interface."""
+        # Main layout
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(10, 10, 10, 10)
+        
+        # Create frame for background
+        frame = QFrame()
+        frame.setFrameShape(QFrame.Shape.Box)
+        frame.setLineWidth(1)
+        frame.setMidLineWidth(0)
+        
+        # Set background color
+        palette = frame.palette()
+        palette.setColor(QPalette.ColorRole.Window, QColor(30, 30, 30, 220))
+        frame.setAutoFillBackground(True)
+        frame.setPalette(palette)
+        
+        # Frame layout
+        frame_layout = QVBoxLayout(frame)
+        
+        # Status text
+        self.status_label = QLabel("Recording")
+        self.status_label.setStyleSheet("color: white; font-weight: bold;")
+        self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        # Timer text
+        self.timer_label = QLabel("00:00")
+        self.timer_label.setStyleSheet("color: white;")
+        self.timer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        # Add to layout
+        frame_layout.addWidget(self.status_label)
+        frame_layout.addWidget(self.timer_label)
+        
+        # Add frame to main layout
+        main_layout.addWidget(frame)
+        
+        # Update indicator based on initial mode
+        self._update_indicator()
+    
+    def _update_position(self):
+        """Update window position to bottom right corner of screen."""
+        desktop = self.screen().availableGeometry()
+        self.move(desktop.width() - self.width() - 20, desktop.height() - self.height() - 60)
+    
+    def _update_indicator(self):
+        """Update the indicator visuals based on current mode."""
+        if self._current_mode == self.MODE_RECORDING:
+            self.status_label.setText("Recording")
+            self.status_label.setStyleSheet("color: #ff5f5f; font-weight: bold;")
+        elif self._current_mode == self.MODE_TRANSCRIBING:
+            self.status_label.setText("Transcribing")
+            self.status_label.setStyleSheet("color: #5f9fff; font-weight: bold;")
+            self.timer_label.setText("")
+        elif self._current_mode == self.MODE_TRANSCRIBED:
+            self.status_label.setText("Completed")
+            self.status_label.setStyleSheet("color: #5fff5f; font-weight: bold;")
+            self.timer_label.setText("")
+    
+    def set_mode(self, mode):
+        """
+        Set the current mode of the indicator.
+        
+        Parameters
+        ----------
+        mode : int
+            Mode constant (MODE_RECORDING, MODE_TRANSCRIBING, MODE_TRANSCRIBED)
+        """
+        self._current_mode = mode
+        self._update_indicator()
+    
+    def update_timer(self, time_str):
+        """
+        Update the timer display.
+        
+        Parameters
+        ----------
+        time_str : str
+            Time string to display (e.g. "00:15")
+        """
+        self.timer_label.setText(time_str)
+    
+    def showEvent(self, event):
+        """Handle show event by updating position."""
+        super().showEvent(event)
+        self._update_position()

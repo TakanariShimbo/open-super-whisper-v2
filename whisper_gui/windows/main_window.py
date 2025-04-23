@@ -20,18 +20,18 @@ from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QSettings, QUrl, QSize
 from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 
-from src.core.audio_recorder import AudioRecorder
-from src.core.whisper_api import WhisperTranscriber
-from src.core.hotkeys import HotkeyManager
-from src.core.instruction_sets import InstructionSetManager
-from src.gui.resources.config import AppConfig
-from src.gui.resources.labels import AppLabels
-from src.gui.components.dialogs.api_key_dialog import APIKeyDialog
-from src.gui.components.dialogs.hotkey_dialog import HotkeyDialog
-from src.gui.components.dialogs.instruction_sets_dialog import InstructionSetsDialog
-from src.gui.components.dialogs.simple_message_dialog import SimpleMessageDialog
-from src.gui.components.widgets.status_indicator import StatusIndicatorWindow
-from src.gui.utils.resource_helper import getResourcePath
+from whisper_core.recorder import AudioRecorder
+from whisper_core.transcriber import WhisperTranscriber
+
+from whisper_core.hotkeys import HotkeyManager
+from whisper_gui.resources.config import AppConfig
+from whisper_gui.resources.labels import AppLabels
+from whisper_gui.dialogs.api_key_dialog import APIKeyDialog
+from whisper_gui.dialogs.hotkey_dialog import HotkeyDialog
+from whisper_gui.dialogs.instruction_sets_dialog import InstructionSetsDialog, GUIInstructionSetManager
+from whisper_gui.dialogs.simple_message_dialog import SimpleMessageDialog
+from whisper_gui.components.widgets.status_indicator import StatusIndicatorWindow
+from whisper_gui.utils.resource_helper import getResourcePath
 
 
 class MainWindow(QMainWindow):
@@ -64,8 +64,7 @@ class MainWindow(QMainWindow):
         self.hotkey_manager = HotkeyManager()
         
         # Initialize instruction set manager
-        self.instruction_set_manager = InstructionSetManager(self.settings)
-        self.instruction_set_manager.load_from_settings()
+        self.instruction_set_manager = GUIInstructionSetManager(self.settings)
         
         # Initialize core components
         self.audio_recorder = None
