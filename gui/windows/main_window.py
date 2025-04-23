@@ -93,13 +93,22 @@ class MainWindow(QMainWindow):
         try:
             self.whisper_transcriber = WhisperTranscriber(api_key=self.api_key)
             
-            # Set vocabulary and instructions from active set
+            # Set vocabulary, instructions, language, and model from active set
             if self.instruction_set_manager.active_set:
+                active_set = self.instruction_set_manager.active_set
+                
+                # Apply vocabulary
                 self.whisper_transcriber.clear_custom_vocabulary()
                 self.whisper_transcriber.add_custom_vocabulary(self.instruction_set_manager.get_active_vocabulary())
                 
+                # Apply instructions
                 self.whisper_transcriber.clear_system_instructions()
                 self.whisper_transcriber.add_system_instruction(self.instruction_set_manager.get_active_instructions())
+                
+                # Set model in transcriber if specified
+                model = self.instruction_set_manager.get_active_model()
+                if model:
+                    self.whisper_transcriber.set_model(model)
         except ValueError:
             self.whisper_transcriber = None
         
@@ -165,48 +174,6 @@ class MainWindow(QMainWindow):
         # Control form
         control_form = QWidget()
         form_layout = QFormLayout(control_form)
-        
-        # Language selection
-        self.language_combo = QComboBox()
-        
-        # Add language options
-        self.language_combo.addItem(AppLabels.AUTO_DETECT, "")
-        self.language_combo.addItem(AppLabels.LANGUAGE_ENGLISH, "en")
-        self.language_combo.addItem(AppLabels.LANGUAGE_SPANISH, "es")
-        self.language_combo.addItem(AppLabels.LANGUAGE_FRENCH, "fr")
-        self.language_combo.addItem(AppLabels.LANGUAGE_GERMAN, "de")
-        self.language_combo.addItem(AppLabels.LANGUAGE_ITALIAN, "it")
-        self.language_combo.addItem(AppLabels.LANGUAGE_PORTUGUESE, "pt")
-        self.language_combo.addItem(AppLabels.LANGUAGE_JAPANESE, "ja")
-        self.language_combo.addItem(AppLabels.LANGUAGE_KOREAN, "ko")
-        self.language_combo.addItem(AppLabels.LANGUAGE_CHINESE, "zh")
-        self.language_combo.addItem(AppLabels.LANGUAGE_RUSSIAN, "ru")
-        
-        # Model selection
-        self.model_combo = QComboBox()
-        
-        # Add model options
-        for model in WhisperTranscriber.get_available_models():
-            self.model_combo.addItem(model["name"], model["id"])
-            # Add tooltip
-            self.model_combo.setItemData(
-                self.model_combo.count() - 1, 
-                model["description"], 
-                Qt.ItemDataRole.ToolTipRole
-            )
-        
-        # Set last selected model
-        last_model = self.settings.value("model", AppConfig.DEFAULT_MODEL)
-        index = self.model_combo.findData(last_model)
-        if index >= 0:
-            self.model_combo.setCurrentIndex(index)
-            
-        # Add fields to form
-        language_label = QLabel(AppLabels.LANGUAGE_LABEL)
-        model_label = QLabel(AppLabels.MODEL_LABEL)
-        
-        form_layout.addRow(language_label, self.language_combo)
-        form_layout.addRow(model_label, self.model_combo)
         
         # Add to layout
         control_layout.addWidget(self.record_button, 0, 0, 2, 1)
@@ -490,8 +457,8 @@ class MainWindow(QMainWindow):
             self.status_indicator_window.set_mode(StatusIndicatorWindow.MODE_TRANSCRIBING)
             self.status_indicator_window.show()
         
-        # Get selected language
-        selected_language = self.language_combo.currentData()
+        # Get language from active instruction set
+        selected_language = self.instruction_set_manager.get_active_language()
         
         # Run transcription in background thread
         if audio_file:
@@ -566,17 +533,8 @@ class MainWindow(QMainWindow):
     
     def setup_connections(self):
         """Set up additional connections."""
-        # Model selection change event
-        self.model_combo.currentIndexChanged.connect(self.on_model_changed)
-    
-    def on_model_changed(self, index):
-        """Handle model change."""
-        model_id = self.model_combo.currentData()
-        if model_id and self.whisper_transcriber:
-            self.whisper_transcriber.set_model(model_id)
-            self.settings.setValue("model", model_id)
-            model_name = self.model_combo.currentText()
-            self.status_bar.showMessage(AppLabels.STATUS_MODEL_CHANGED.format(model_name), 2000)
+        # No model change event needed as it's now handled via instruction sets
+        pass
 
     def setup_global_hotkey(self):
         """
@@ -663,6 +621,10 @@ class MainWindow(QMainWindow):
                 # Update instructions
                 self.whisper_transcriber.clear_system_instructions()
                 self.whisper_transcriber.add_system_instruction(active_set.instructions)
+                
+                # Set model from instruction set if specified
+                if active_set.model:
+                    self.whisper_transcriber.set_model(active_set.model)
                 
                 # Show status message
                 self.status_bar.showMessage(

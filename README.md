@@ -6,7 +6,11 @@ A PyQt6-based GUI application for audio transcription using OpenAI's Whisper API
 
 - Fully implemented PyQt6-based GUI
 - Global hotkey support for starting and stopping recordings
-- Management of custom vocabularies and instruction sets
+- Advanced instruction set management:
+  - Custom vocabulary lists for improved transcription accuracy
+  - System instructions for controlling transcription behavior
+  - Unified language and model settings in each instruction set
+  - Simple switching between configuration profiles
 - System tray integration
 - Support for multiple languages and model configurations
 - Clipboard integration
@@ -31,7 +35,11 @@ A PyQt6-based GUI application for audio transcription using OpenAI's Whisper API
 │   ├── transcriber.py           # Audio transcription module
 │   ├── recorder.py              # Audio recording module
 │   ├── instructions.py          # Custom vocabularies and instruction sets
-│   └── hotkeys.py               # Global hotkey management
+│   ├── hotkeys.py               # Global hotkey management
+│   └── models/                  # Data models for languages and whisper models
+│       ├── __init__.py
+│       ├── language.py          # Language data models and manager
+│       └── whisper.py           # Whisper model data models and manager
 └── gui/                 # GUI-related functionality (Qt-dependent)
     ├── __init__.py
     ├── main.py                  # GUI entry point

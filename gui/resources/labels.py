@@ -21,11 +21,15 @@ class AppLabels:
     API_KEY_SETTINGS = "API Key Settings"
     HOTKEY_SETTINGS = "Hotkey Settings"
     INSTRUCTION_SETS_BUTTON = "Instruction Sets"
+    CHANGE_INSTRUCTION_SET = "Change Instruction Set"
     COPY_TO_CLIPBOARD = "Copy to Clipboard"
     AUTO_COPY_BUTTON = "Auto-Copy"
     SOUND_BUTTON = "Enable Sounds"
     INDICATOR_BUTTON = "Show Indicator"
     EXIT_APP = "Exit"
+    
+    # Instruction Set Display
+    NO_INSTRUCTION_SET_ACTIVE = "No Instruction Set Active"
     
     # Language options
     LANGUAGE_LABEL = "Language:"

@@ -10,6 +10,9 @@ from pathlib import Path
 import openai
 from typing import List, Dict, Any, Optional, Union
 
+# Import model data from core.models
+from core.models.whisper import WhisperModelManager
+
 
 class WhisperTranscriber:
     """
@@ -20,24 +23,8 @@ class WhisperTranscriber:
     and language selection.
     """
     
-    # Available models
-    AVAILABLE_MODELS = [
-        {
-            "id": "whisper-1",
-            "name": "Whisper-1",
-            "description": "Original open-source Whisper model"
-        },
-        {
-            "id": "gpt-4o-transcribe",
-            "name": "GPT-4o Transcribe",
-            "description": "High-performance transcription model"
-        },
-        {
-            "id": "gpt-4o-mini-transcribe",
-            "name": "GPT-4o Mini Transcribe",
-            "description": "Lightweight and fast transcription model"
-        }
-    ]
+    # Use model manager for available models
+    AVAILABLE_MODELS = WhisperModelManager.to_api_format()
     
     def __init__(self, api_key: str = None, model: str = "whisper-1"):
         """

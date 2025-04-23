@@ -7,7 +7,8 @@ This module provides a dialog for managing instruction sets and custom vocabular
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QTextEdit,
     QPushButton, QDialogButtonBox, QListWidget, QSplitter,
-    QLineEdit, QInputDialog, QMessageBox, QTabWidget, QWidget
+    QLineEdit, QInputDialog, QMessageBox, QTabWidget, QWidget,
+    QFormLayout, QComboBox
 )
 from PyQt6.QtCore import Qt, QSettings
 from PyQt6.QtGui import QIcon
@@ -17,6 +18,10 @@ from gui.dialogs.simple_message_dialog import SimpleMessageDialog
 
 # Import core instruction sets
 from core.instructions import InstructionSetManager, InstructionSet
+
+# Import language and model data
+from core.models.language import LanguageManager
+from core.models.whisper import WhisperModelManager
 
 
 class GUIInstructionSetManager:
@@ -49,15 +54,15 @@ class GUIInstructionSetManager:
         """Get all instruction sets."""
         return self.core_manager.get_all_sets()
     
-    def create_set(self, name, vocabulary=None, instructions=None):
+    def create_set(self, name, vocabulary=None, instructions=None, language=None, model=None):
         """Create a new instruction set."""
-        result = self.core_manager.create_set(name, vocabulary, instructions)
+        result = self.core_manager.create_set(name, vocabulary, instructions, language, model)
         self.save_to_settings()
         return result
     
-    def update_set(self, name, vocabulary=None, instructions=None):
+    def update_set(self, name, vocabulary=None, instructions=None, language=None, model=None):
         """Update an existing instruction set."""
-        result = self.core_manager.update_set(name, vocabulary, instructions)
+        result = self.core_manager.update_set(name, vocabulary, instructions, language, model)
         self.save_to_settings()
         return result
     
@@ -86,6 +91,14 @@ class GUIInstructionSetManager:
     def get_active_instructions(self):
         """Get instructions from the active set."""
         return self.core_manager.get_active_instructions()
+    
+    def get_active_language(self):
+        """Get language setting from the active set."""
+        return self.core_manager.get_active_language()
+    
+    def get_active_model(self):
+        """Get model setting from the active set."""
+        return self.core_manager.get_active_model()
     
     def save_to_settings(self):
         """Save all instruction sets to settings."""
@@ -210,7 +223,7 @@ class InstructionSetsDialog(QDialog):
         right_widget = QWidget()
         right_layout = QVBoxLayout(right_widget)
         
-        # Tab widget for vocabulary and instructions
+        # Tab widget for vocabulary, instructions, and settings
         self.tab_widget = QTabWidget()
         
         # Vocabulary tab
@@ -247,9 +260,63 @@ class InstructionSetsDialog(QDialog):
         self.instructions_edit = QTextEdit()
         instr_layout.addWidget(self.instructions_edit)
         
+        # Settings tab for language and model
+        settings_tab = QWidget()
+        settings_layout = QVBoxLayout(settings_tab)
+        
+        settings_help = QLabel(
+            "Configure language and model settings for this instruction set. "
+            "These settings will be used when this instruction set is active."
+        )
+        settings_help.setWordWrap(True)
+        settings_layout.addWidget(settings_help)
+        
+        # Language selection
+        language_form = QWidget()
+        language_layout = QFormLayout(language_form)
+        
+        language_label = QLabel("Language:")
+        self.language_combo = QComboBox()
+        
+        # Add language options from LanguageManager
+        languages = LanguageManager.get_languages()
+        for language in languages:
+            self.language_combo.addItem(language.name, language.code)
+            # Add tooltip with native name if available
+            if language.native_name and language.native_name != language.name:
+                self.language_combo.setItemData(
+                    self.language_combo.count() - 1,
+                    f"{language.name} ({language.native_name})",
+                    Qt.ItemDataRole.ToolTipRole
+                )
+        
+        language_layout.addRow(language_label, self.language_combo)
+        
+        # Model selection
+        model_label = QLabel("Transcription Model:")
+        self.model_combo = QComboBox()
+        
+        # Add model options from WhisperModelManager
+        models = WhisperModelManager.get_models()
+        for model in models:
+            self.model_combo.addItem(model.name, model.id)
+            # Add tooltip
+            self.model_combo.setItemData(
+                self.model_combo.count() - 1,
+                model.description,
+                Qt.ItemDataRole.ToolTipRole
+            )
+        
+        language_layout.addRow(model_label, self.model_combo)
+        settings_layout.addWidget(language_form)
+        
+        # Add spacer
+        settings_layout.addStretch(1)
+        
         # Add tabs
         self.tab_widget.addTab(vocab_tab, "Vocabulary")
         self.tab_widget.addTab(instr_tab, "Instructions")
+        self.tab_widget.addTab(settings_tab, "Language & Model")
         
         right_layout.addWidget(self.tab_widget)
         
@@ -319,6 +386,23 @@ class InstructionSetsDialog(QDialog):
                 # Update editors
                 self.vocabulary_edit.setPlainText("\n".join(instruction_set.vocabulary))
                 self.instructions_edit.setPlainText("\n".join(instruction_set.instructions))
+                
+                # Update language selection
+                language_index = 0  # Default to auto-detect
+                if instruction_set.language:
+                    for i in range(self.language_combo.count()):
+                        if self.language_combo.itemData(i) == instruction_set.language:
+                            language_index = i
+                            break
+                self.language_combo.setCurrentIndex(language_index)
+                
+                # Update model selection
+                model_index = 0  # Default to first model
+                for i in range(self.model_combo.count()):
+                    if self.model_combo.itemData(i) == instruction_set.model:
+                        model_index = i
+                        break
+                self.model_combo.setCurrentIndex(model_index)
                 break
     
     def on_add_set(self):
@@ -428,8 +512,12 @@ class InstructionSetsDialog(QDialog):
         vocabulary = [v for v in vocabulary if v]
         instructions = [i for i in instructions if i]
         
+        # Get language and model settings
+        language = self.language_combo.currentData()
+        model = self.model_combo.currentData()
+        
         # Update set
-        self.manager.update_set(name, vocabulary, instructions)
+        self.manager.update_set(name, vocabulary, instructions, language, model)
         
         # Show confirmation
         SimpleMessageDialog.show_message(
