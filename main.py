@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Qt Whisper Remake - Main Entry Point
+Open Super Whisper - Main Entry Point
 
 This is the main entry point for the application.
 """

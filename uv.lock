@@ -387,7 +387,7 @@ wheels = [
 ]
 
 [[package]]
-name = "qt-whisper-remake"
+name = "open-super-whisper"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
