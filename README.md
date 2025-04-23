@@ -28,8 +28,8 @@ A PyQt6-based GUI application for audio transcription using OpenAI's Whisper API
 │   └── stop_sound.wav           # Sound played when recording stops
 ├── core/                # Core functionality (GUI-independent, fully implemented)
 │   ├── __init__.py
-│   ├── transcriber.py           # Audio transcription interface
-│   ├── recorder.py              # Audio recording interface
+│   ├── transcriber.py           # Audio transcription module
+│   ├── recorder.py              # Audio recording module
 │   ├── instructions.py          # Custom vocabularies and instruction sets
 │   └── hotkeys.py               # Global hotkey management
 └── gui/                 # GUI-related functionality (Qt-dependent)
