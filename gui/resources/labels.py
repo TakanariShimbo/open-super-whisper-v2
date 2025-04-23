@@ -27,13 +27,6 @@ class AppLabels:
     INDICATOR_BUTTON = "Show Indicator"
     EXIT_APP = "Exit"
     
-    # Language options
-    LANGUAGE_LABEL = "Language:"
-    AUTO_DETECT = "Auto-detect"
-    
-    # Model options
-    MODEL_LABEL = "Model:"
-    
     # Transcription UI
     TRANSCRIPTION_TITLE = "Transcription"
     TRANSCRIPTION_PLACEHOLDER = "Transcription will appear here..."
