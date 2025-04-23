@@ -47,10 +47,73 @@ class AppLabels:
     STATUS_INDICATOR_HIDDEN = "Status indicator disabled"
     STATUS_INSTRUCTION_SET_ACTIVE = "Instruction set '{}' activated"
     
+    # UI Elements
+    UI_RECORDING_INDICATOR = "●"
+    STATUS_TIMER_INITIAL = "00:00"
+    
     # Dialog titles
     DIALOG_API_KEY_TITLE = "API Key Settings"
     DIALOG_HOTKEY_TITLE = "Global Hotkey Settings"
     DIALOG_INSTRUCTION_SETS_TITLE = "Instruction Sets"
+    
+    # Instruction Sets Dialog
+    INSTRUCTION_SETS_LIST_LABEL = "Instruction Sets:"
+    INSTRUCTION_SET_ADD_BUTTON = "New"
+    INSTRUCTION_SET_RENAME_BUTTON = "Rename"
+    INSTRUCTION_SET_DELETE_BUTTON = "Delete"
+    INSTRUCTION_SET_ACTIVATE_BUTTON = "Activate"
+    INSTRUCTION_SET_SAVE_BUTTON = "Save"
+    
+    ## Vocabulary Tab
+    VOCABULARY_LABEL = "Custom Vocabulary:"
+    VOCABULARY_HELP = "Enter words or phrases to improve transcription accuracy. One item per line."
+    VOCABULARY_TAB_NAME = "Vocabulary"
+    
+    ## Instructions Tab
+    INSTRUCTIONS_LABEL = "System Instructions:"
+    INSTRUCTIONS_HELP = "Enter system instructions to control transcription behavior. One instruction per line."
+    INSTRUCTIONS_TAB_NAME = "Instructions"
+    
+    ## Settings Tab
+    SETTINGS_HELP = "Configure language and model settings for this instruction set. These settings will be used when this instruction set is active."
+    LANGUAGE_AND_MODEL_TAB_NAME = "Language & Model"
+    LANGUAGE_LABEL = "Language:"
+    MODEL_LABEL = "Transcription Model:"
+    
+    ## Instruction Set Dialogs
+    NEW_INSTRUCTION_SET_TITLE = "New Instruction Set"
+    NEW_INSTRUCTION_SET_PROMPT = "Enter a name for the new instruction set:"
+    RENAME_INSTRUCTION_SET_TITLE = "Rename Instruction Set"
+    RENAME_INSTRUCTION_SET_PROMPT = "Enter a new name for the instruction set:"
+    NAME_EXISTS_TITLE = "Name Exists"
+    NAME_EXISTS_MESSAGE = "An instruction set with the name '{}' already exists."
+    CONFIRM_DELETION_TITLE = "Confirm Deletion"
+    CONFIRM_DELETION_MESSAGE = "Are you sure you want to delete the instruction set '{}'?"
+    CHANGES_SAVED_TITLE = "Changes Saved"
+    CHANGES_SAVED_MESSAGE = "Changes to instruction set '{}' have been saved."
+    SET_ACTIVATED_TITLE = "Set Activated"
+    SET_ACTIVATED_MESSAGE = "Instruction set '{}' has been activated."
+    
+    # API Key Dialog
+    API_KEY_DESCRIPTION = "Enter your OpenAI API key to use transcription services. The key will be stored locally on your device."
+    API_KEY_LABEL = "API Key:"
+    API_KEY_PLACEHOLDER = "Enter your OpenAI API key..."
+    API_KEY_SHOW_BUTTON = "Show"
+    API_KEY_HIDE_BUTTON = "Hide"
+    API_KEY_VALIDATE_BUTTON = "Validate Key"
+    API_KEY_VALIDATION_ERROR_TITLE = "Validation Error"
+    API_KEY_EMPTY_ERROR = "API key cannot be empty."
+    API_KEY_VALID_TITLE = "API Key Valid"
+    API_KEY_VALID_MESSAGE = "The API key is valid and has been verified."
+    API_KEY_VALIDATION_ERROR_MESSAGE = "Failed to validate API key: {}"
+    
+    # Hotkey Dialog
+    HOTKEY_DESCRIPTION = "Set a global hotkey combination for starting and stopping recording. Press the desired key combination in the input field below."
+    HOTKEY_LABEL = "Hotkey:"
+    HOTKEY_PLACEHOLDER = "Click here and press hotkey combination..."
+    HOTKEY_CLEAR_BUTTON = "Clear"
+    HOTKEY_EXAMPLES = "Examples: ctrl+shift+r, alt+w, ctrl+alt+s"
+    HOTKEY_VALIDATION_ERROR = "Please set a hotkey combination."
     
     # Error messages
     ERROR_TITLE = "Error"
@@ -66,7 +129,7 @@ class AppLabels:
     
     # Hotkey info
     HOTKEY_INFO_TITLE = "Hotkey Configuration"
-    HOTKEY_INFO_MESSAGE = "You can start/stop recording by pressing {}.\nThis works even when the app is minimized or in the background."
+    HOTKEY_INFO_MESSAGE = "You can start/stop recording by pressing {}.\\nThis works even when the app is minimized or in the background."
     
     # Tray menu
     TRAY_SHOW = "Show Application"

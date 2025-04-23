@@ -54,23 +54,20 @@ class HotkeyDialog(QDialog):
         form_layout = QGridLayout()
         
         # Add description
-        description = QLabel(
-            "Set a global hotkey combination for starting and stopping recording. "
-            "Press the desired key combination in the input field below."
-        )
+        description = QLabel(AppLabels.HOTKEY_DESCRIPTION)
         description.setWordWrap(True)
         
         # Create hotkey input
-        hotkey_label = QLabel("Hotkey:")
+        hotkey_label = QLabel(AppLabels.HOTKEY_LABEL)
         self.hotkey_input = QLineEdit(self.hotkey)
-        self.hotkey_input.setPlaceholderText("Click here and press hotkey combination...")
+        self.hotkey_input.setPlaceholderText(AppLabels.HOTKEY_PLACEHOLDER)
         self.hotkey_input.setReadOnly(True)
         
         # Make the input field receive key events
         self.hotkey_input.installEventFilter(self)
         
         # Reset button
-        reset_button = QPushButton("Clear")
+        reset_button = QPushButton(AppLabels.HOTKEY_CLEAR_BUTTON)
         reset_button.clicked.connect(self.reset_hotkey)
         
         # Add to grid layout
@@ -80,7 +77,7 @@ class HotkeyDialog(QDialog):
         form_layout.addWidget(reset_button, 1, 2)
         
         # Add hotkey examples
-        examples_label = QLabel("Examples: ctrl+shift+r, alt+w, ctrl+alt+s")
+        examples_label = QLabel(AppLabels.HOTKEY_EXAMPLES)
         examples_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         form_layout.addWidget(examples_label, 2, 0, 1, 3)
         
@@ -185,8 +182,8 @@ class HotkeyDialog(QDialog):
         if not self.hotkey:
             QMessageBox.warning(
                 self,
-                "Validation Error",
-                "Please set a hotkey combination."
+                AppLabels.API_KEY_VALIDATION_ERROR_TITLE,
+                AppLabels.HOTKEY_VALIDATION_ERROR
             )
             return
         

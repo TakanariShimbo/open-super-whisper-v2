@@ -205,9 +205,9 @@ class MainWindow(QMainWindow):
         self.status_bar.showMessage(AppLabels.STATUS_READY)
         
         # Recording indicator
-        self.recording_indicator = QLabel("●")
+        self.recording_indicator = QLabel(AppLabels.UI_RECORDING_INDICATOR)
         
-        self.recording_timer_label = QLabel("00:00")
+        self.recording_timer_label = QLabel(AppLabels.STATUS_TIMER_INITIAL)
         
         self.status_bar.addPermanentWidget(self.recording_indicator)
         self.status_bar.addPermanentWidget(self.recording_timer_label)
@@ -417,7 +417,7 @@ class MainWindow(QMainWindow):
             self.status_bar.showMessage(AppLabels.STATUS_READY)
             
             # Reset timer
-            self.recording_timer_label.setText("00:00")
+            self.recording_timer_label.setText(AppLabels.STATUS_TIMER_INITIAL)
     
     def update_recording_time(self):
         """

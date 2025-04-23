@@ -8,6 +8,8 @@ from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QFrame
 from PyQt6.QtCore import Qt, QPoint
 from PyQt6.QtGui import QPalette, QColor
 
+from gui.resources.labels import AppLabels
+
 
 class StatusIndicatorWindow(QWidget):
     """
@@ -69,12 +71,12 @@ class StatusIndicatorWindow(QWidget):
         frame_layout = QVBoxLayout(frame)
         
         # Status text
-        self.status_label = QLabel("Recording")
+        self.status_label = QLabel(AppLabels.STATUS_RECORDING)
         self.status_label.setStyleSheet("color: white; font-weight: bold;")
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         # Timer text
-        self.timer_label = QLabel("00:00")
+        self.timer_label = QLabel(AppLabels.STATUS_TIMER_INITIAL)
         self.timer_label.setStyleSheet("color: white;")
         self.timer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
@@ -96,14 +98,14 @@ class StatusIndicatorWindow(QWidget):
     def _update_indicator(self):
         """Update the indicator visuals based on current mode."""
         if self._current_mode == self.MODE_RECORDING:
-            self.status_label.setText("Recording")
+            self.status_label.setText(AppLabels.STATUS_RECORDING)
             self.status_label.setStyleSheet("color: #ff5f5f; font-weight: bold;")
         elif self._current_mode == self.MODE_TRANSCRIBING:
-            self.status_label.setText("Transcribing")
+            self.status_label.setText(AppLabels.STATUS_TRANSCRIBING)
             self.status_label.setStyleSheet("color: #5f9fff; font-weight: bold;")
             self.timer_label.setText("")
         elif self._current_mode == self.MODE_TRANSCRIBED:
-            self.status_label.setText("Completed")
+            self.status_label.setText(AppLabels.STATUS_TRANSCRIPTION_COMPLETE)
             self.status_label.setStyleSheet("color: #5fff5f; font-weight: bold;")
             self.timer_label.setText("")
     

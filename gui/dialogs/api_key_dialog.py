@@ -53,22 +53,19 @@ class APIKeyDialog(QDialog):
         form_layout = QGridLayout()
         
         # Add description
-        description = QLabel(
-            "Enter your OpenAI API key to use transcription services. "
-            "The key will be stored locally on your device."
-        )
+        description = QLabel(AppLabels.API_KEY_DESCRIPTION)
         description.setWordWrap(True)
         
         # Create API key input
-        key_label = QLabel("API Key:")
+        key_label = QLabel(AppLabels.API_KEY_LABEL)
         self.key_input = QLineEdit(self.api_key)
-        self.key_input.setPlaceholderText("Enter your OpenAI API key...")
+        self.key_input.setPlaceholderText(AppLabels.API_KEY_PLACEHOLDER)
         
         # Set echo mode to password (hidden text)
         self.key_input.setEchoMode(QLineEdit.EchoMode.Password)
         
         # Toggle visibility button
-        self.toggle_visibility_button = QPushButton("Show")
+        self.toggle_visibility_button = QPushButton(AppLabels.API_KEY_SHOW_BUTTON)
         self.toggle_visibility_button.setCheckable(True)
         self.toggle_visibility_button.clicked.connect(self.toggle_key_visibility)
         
@@ -79,7 +76,7 @@ class APIKeyDialog(QDialog):
         form_layout.addWidget(self.toggle_visibility_button, 1, 2)
         
         # Add validate button
-        validate_button = QPushButton("Validate Key")
+        validate_button = QPushButton(AppLabels.API_KEY_VALIDATE_BUTTON)
         validate_button.clicked.connect(self.validate_api_key)
         
         form_layout.addWidget(validate_button, 2, 0, 1, 3, Qt.AlignmentFlag.AlignCenter)
@@ -106,10 +103,10 @@ class APIKeyDialog(QDialog):
         """
         if checked:
             self.key_input.setEchoMode(QLineEdit.EchoMode.Normal)
-            self.toggle_visibility_button.setText("Hide")
+            self.toggle_visibility_button.setText(AppLabels.API_KEY_HIDE_BUTTON)
         else:
             self.key_input.setEchoMode(QLineEdit.EchoMode.Password)
-            self.toggle_visibility_button.setText("Show")
+            self.toggle_visibility_button.setText(AppLabels.API_KEY_SHOW_BUTTON)
     
     def validate_api_key(self):
         """
@@ -123,8 +120,8 @@ class APIKeyDialog(QDialog):
         if not key:
             QMessageBox.warning(
                 self,
-                "Validation Error",
-                "API key cannot be empty."
+                AppLabels.API_KEY_VALIDATION_ERROR_TITLE,
+                AppLabels.API_KEY_EMPTY_ERROR
             )
             return
         
@@ -135,15 +132,15 @@ class APIKeyDialog(QDialog):
             # If successful, show confirmation
             QMessageBox.information(
                 self,
-                "API Key Valid",
-                "The API key is valid and has been verified."
+                AppLabels.API_KEY_VALID_TITLE,
+                AppLabels.API_KEY_VALID_MESSAGE
             )
         except Exception as e:
             # If failed, show error
             QMessageBox.critical(
                 self,
-                "Validation Error",
-                f"Failed to validate API key: {str(e)}"
+                AppLabels.API_KEY_VALIDATION_ERROR_TITLE,
+                AppLabels.API_KEY_VALIDATION_ERROR_MESSAGE.format(str(e))
             )
     
     def get_api_key(self):
@@ -165,8 +162,8 @@ class APIKeyDialog(QDialog):
         if not key:
             QMessageBox.warning(
                 self,
-                "Validation Error",
-                "API key cannot be empty."
+                AppLabels.API_KEY_VALIDATION_ERROR_TITLE,
+                AppLabels.API_KEY_EMPTY_ERROR
             )
             return
         
