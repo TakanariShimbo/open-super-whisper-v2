@@ -327,26 +327,26 @@ class InstructionSetsDialog(QDialog):
         # Add spacer
         settings_layout.addStretch(1)
         
-        # LLM tab for LLM settings
+        # LLM Instructions tab
         llm_tab = QWidget()
         llm_layout = QVBoxLayout(llm_tab)
         
-        llm_label = QLabel("LLM Processing Settings")
+        llm_label = QLabel(AppLabels.INSTRUCTION_SETS_LLM_TAB_NAME)
         llm_layout.addWidget(llm_label)
         
-        llm_help = QLabel("Configure Large Language Model processing settings for post-transcription analysis.")
+        llm_help = QLabel(AppLabels.INSTRUCTION_SETS_LLM_HELP)
         llm_help.setWordWrap(True)
         llm_layout.addWidget(llm_help)
         
         # LLM enable/disable
-        self.llm_enabled_checkbox = QCheckBox("Enable LLM Processing")
+        self.llm_enabled_checkbox = QCheckBox(AppLabels.INSTRUCTION_SETS_LLM_ENABLED_LABEL)
         llm_layout.addWidget(self.llm_enabled_checkbox)
         
         # LLM model selection
         llm_form = QWidget()
         llm_form_layout = QFormLayout(llm_form)
         
-        llm_model_label = QLabel("LLM Model:")
+        llm_model_label = QLabel(AppLabels.INSTRUCTION_SETS_LLM_MODEL_LABEL)
         self.llm_model_combo = QComboBox()
         
         # Add model options from LLMModelManager
@@ -364,21 +364,21 @@ class InstructionSetsDialog(QDialog):
         llm_layout.addWidget(llm_form)
         
         # LLM instructions
-        llm_instr_label = QLabel("LLM System Instructions:")
+        llm_instr_label = QLabel(AppLabels.INSTRUCTION_SETS_LLM_INSTRUCTIONS_LABEL)
         llm_layout.addWidget(llm_instr_label)
         
-        llm_instr_help = QLabel("Enter instructions for the LLM to guide how it processes the transcription. One instruction per line.")
+        llm_instr_help = QLabel(AppLabels.INSTRUCTION_SETS_LLM_INSTRUCTIONS_HELP)
         llm_instr_help.setWordWrap(True)
         llm_layout.addWidget(llm_instr_help)
         
         self.llm_instructions_edit = QTextEdit()
         llm_layout.addWidget(self.llm_instructions_edit)
         
-        # Add tabs to the tab widget
-        self.tab_widget.addTab(vocab_tab, "Vocabulary")
-        self.tab_widget.addTab(instr_tab, "Transcription Instructions")
-        self.tab_widget.addTab(settings_tab, "Language & Model")
-        self.tab_widget.addTab(llm_tab, "LLM Settings")
+        # Add tabs to the tab widget in specified order
+        self.tab_widget.addTab(vocab_tab, AppLabels.INSTRUCTION_SETS_VOCABULARY_TAB_NAME)
+        self.tab_widget.addTab(instr_tab, AppLabels.INSTRUCTION_SETS_INSTRUCTIONS_TAB_NAME)
+        self.tab_widget.addTab(llm_tab, AppLabels.INSTRUCTION_SETS_LLM_TAB_NAME)
+        self.tab_widget.addTab(settings_tab, AppLabels.INSTRUCTION_SETS_LANGUAGE_AND_MODEL_TAB_NAME)
         
         right_layout.addWidget(self.tab_widget)
         

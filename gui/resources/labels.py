@@ -29,10 +29,21 @@ class AppLabels:
     MAIN_WIN_HOTKEY_SETTINGS = "Hotkey Settings"
     MAIN_WIN_INSTRUCTION_SETS_BUTTON = "Instruction Sets"
     MAIN_WIN_COPY_TO_CLIPBOARD = "Copy to Clipboard"
+    MAIN_WIN_COPY_TRANSCRIPTION = "Copy Transcription"
+    MAIN_WIN_COPY_LLM = "Copy LLM Analysis"
+    MAIN_WIN_COPY_ALL = "Copy All"
     MAIN_WIN_AUTO_COPY_BUTTON = "Auto-Copy"
     MAIN_WIN_SOUND_BUTTON = "Enable Sounds"
     MAIN_WIN_INDICATOR_BUTTON = "Show Indicator"
     MAIN_WIN_EXIT_APP = "Exit"
+    
+    # LLM Related
+    MAIN_WIN_LLM_ENABLED = "Enable LLM Processing"
+    MAIN_WIN_LLM_TAB_TITLE = "LLM Analysis"
+    MAIN_WIN_LLM_PLACEHOLDER = "LLM analysis will appear here when enabled..."
+    MAIN_WIN_TRANSCRIPTION_TAB_TITLE = "Transcription"
+    MAIN_WIN_TRANSCRIPTION_OUTPUT_LABEL = "Transcription Output"
+    MAIN_WIN_LLM_OUTPUT_LABEL = "LLM Analysis Output"
     
     MAIN_WIN_TRANSCRIPTION_TITLE = "Transcription"
     MAIN_WIN_TRANSCRIPTION_PLACEHOLDER = "Transcription will appear here..."
@@ -53,10 +64,15 @@ class AppLabels:
     STATUS_TRANSCRIBING = "Transcribing..."
     STATUS_COMPLETE = "Complete!"
     STATUS_COPIED = "Copied to clipboard"
+    STATUS_TRANSCRIPTION_COPIED = "Transcription copied to clipboard"
+    STATUS_LLM_COPIED = "LLM analysis copied to clipboard"
+    STATUS_ALL_COPIED = "All content copied to clipboard"
     STATUS_API_KEY_SAVED = "API key saved"
     STATUS_HOTKEY_SET = "Hotkey set to '{}'"
     STATUS_AUTO_COPY_ENABLED = "Auto-copy enabled"
     STATUS_AUTO_COPY_DISABLED = "Auto-copy disabled"
+    STATUS_LLM_ENABLED = "LLM processing enabled"
+    STATUS_LLM_DISABLED = "LLM processing disabled"
     STATUS_SOUND_ENABLED = "Notification sounds enabled"
     STATUS_SOUND_DISABLED = "Notification sounds disabled"
     STATUS_INDICATOR_SHOWN = "Status indicator enabled"
@@ -90,12 +106,20 @@ class AppLabels:
     INSTRUCTION_SETS_VOCABULARY_HELP = "Enter words or phrases to improve transcription accuracy. One item per line."
     INSTRUCTION_SETS_VOCABULARY_LABEL = "Custom Vocabulary:"
     
-    ## Instructions Tab
-    INSTRUCTION_SETS_INSTRUCTIONS_TAB_NAME = "Instructions"
+    ## Transcription Instructions Tab
+    INSTRUCTION_SETS_INSTRUCTIONS_TAB_NAME = "Transcription Instructions"
     INSTRUCTION_SETS_INSTRUCTIONS_HELP = "Enter system instructions to control transcription behavior. One instruction per line."
     INSTRUCTION_SETS_INSTRUCTIONS_LABEL = "System Instructions:"
     
-    ## Settings Tab
+    ## LLM Instructions Tab
+    INSTRUCTION_SETS_LLM_TAB_NAME = "LLM Instructions"
+    INSTRUCTION_SETS_LLM_HELP = "Configure Large Language Model processing settings for post-transcription analysis."
+    INSTRUCTION_SETS_LLM_ENABLED_LABEL = "Enable LLM Processing"
+    INSTRUCTION_SETS_LLM_MODEL_LABEL = "LLM Model:"
+    INSTRUCTION_SETS_LLM_INSTRUCTIONS_LABEL = "LLM System Instructions:"
+    INSTRUCTION_SETS_LLM_INSTRUCTIONS_HELP = "Enter instructions for the LLM to guide how it processes the transcription. One instruction per line."
+    
+    ## Language & Model Tab
     INSTRUCTION_SETS_LANGUAGE_AND_MODEL_TAB_NAME = "Language & Model"
     INSTRUCTION_SETS_SETTINGS_HELP = "Configure language and model settings for this instruction set. These settings will be used when this instruction set is active."
     INSTRUCTION_SETS_LANGUAGE_LABEL = "Language:"

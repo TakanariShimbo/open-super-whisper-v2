@@ -192,7 +192,7 @@ class MainWindow(QMainWindow):
         self.record_button.clicked.connect(self.toggle_recording)
         
         # LLM Processing control
-        self.llm_enabled_checkbox = QCheckBox("Enable LLM Processing")
+        self.llm_enabled_checkbox = QCheckBox(AppLabels.MAIN_WIN_LLM_ENABLED)
         self.llm_enabled_checkbox.setChecked(
             self.unified_processor.is_llm_enabled() if self.unified_processor else False
         )
@@ -220,11 +220,11 @@ class MainWindow(QMainWindow):
         transcription_layout = QVBoxLayout(transcription_tab)
         
         # Transcription output
-        transcription_label = QLabel("Transcription Output")
+        transcription_label = QLabel(AppLabels.MAIN_WIN_TRANSCRIPTION_OUTPUT_LABEL)
         transcription_layout.addWidget(transcription_label)
         
         self.transcription_text = QTextEdit()
-        self.transcription_text.setPlaceholderText("Transcribed text will appear here...")
+        self.transcription_text.setPlaceholderText(AppLabels.MAIN_WIN_TRANSCRIPTION_PLACEHOLDER)
         self.transcription_text.setReadOnly(False)  # Editable
         self.transcription_text.setMinimumHeight(250)
         
@@ -235,7 +235,7 @@ class MainWindow(QMainWindow):
         llm_layout = QVBoxLayout(llm_tab)
         
         # LLM output
-        llm_label = QLabel("LLM Analysis Output")
+        llm_label = QLabel(AppLabels.MAIN_WIN_LLM_OUTPUT_LABEL)
         llm_layout.addWidget(llm_label)
         
         self.llm_text = QTextEdit()
@@ -246,8 +246,8 @@ class MainWindow(QMainWindow):
         llm_layout.addWidget(self.llm_text)
         
         # Add tabs
-        self.tab_widget.addTab(transcription_tab, "Transcription")
-        self.tab_widget.addTab(llm_tab, "LLM Analysis")
+        self.tab_widget.addTab(transcription_tab, AppLabels.MAIN_WIN_TRANSCRIPTION_TAB_TITLE)
+        self.tab_widget.addTab(llm_tab, AppLabels.MAIN_WIN_LLM_TAB_TITLE)
         
         main_layout.addWidget(self.tab_widget, 1)
         
@@ -306,17 +306,17 @@ class MainWindow(QMainWindow):
         self.toolbar.addSeparator()
         
         # Copy to clipboard actions
-        copy_menu = QMenu("Copy to Clipboard", self)
+        copy_menu = QMenu(AppLabels.MAIN_WIN_COPY_TO_CLIPBOARD, self)
         
-        copy_transcription_action = QAction("Copy Transcription", self)
+        copy_transcription_action = QAction(AppLabels.MAIN_WIN_COPY_TRANSCRIPTION, self)
         copy_transcription_action.triggered.connect(self.copy_transcription_to_clipboard)
         copy_menu.addAction(copy_transcription_action)
         
-        copy_llm_action = QAction("Copy LLM Analysis", self)
+        copy_llm_action = QAction(AppLabels.MAIN_WIN_COPY_LLM, self)
         copy_llm_action.triggered.connect(self.copy_llm_to_clipboard)
         copy_menu.addAction(copy_llm_action)
         
-        copy_all_action = QAction("Copy All", self)
+        copy_all_action = QAction(AppLabels.MAIN_WIN_COPY_ALL, self)
         copy_all_action.triggered.connect(self.copy_all_to_clipboard)
         copy_menu.addAction(copy_all_action)
         
@@ -402,9 +402,9 @@ class MainWindow(QMainWindow):
             
             # Update status bar
             if enabled:
-                self.status_bar.showMessage("LLM processing enabled", 2000)
+                self.status_bar.showMessage(AppLabels.STATUS_LLM_ENABLED, 2000)
             else:
-                self.status_bar.showMessage("LLM processing disabled", 2000)
+                self.status_bar.showMessage(AppLabels.STATUS_LLM_DISABLED, 2000)
     
     def toggle_recording(self):
         """
@@ -623,7 +623,12 @@ class MainWindow(QMainWindow):
         
         # Auto-copy if enabled
         if self.auto_copy:
-            self.copy_all_to_clipboard()
+            if self.unified_processor.is_llm_enabled() and result.llm_processed and result.llm_response:
+                # Copy LLM output if LLM is enabled and result is available
+                self.copy_llm_to_clipboard()
+            else:
+                # Otherwise copy transcription
+                self.copy_transcription_to_clipboard()
             
         # Play complete sound
         if self.enable_sound:
@@ -633,13 +638,13 @@ class MainWindow(QMainWindow):
         """Copy transcription text to clipboard."""
         text = self.transcription_text.toPlainText()
         QApplication.clipboard().setText(text)
-        self.status_bar.showMessage("Transcription copied to clipboard", 2000)
+        self.status_bar.showMessage(AppLabels.STATUS_TRANSCRIPTION_COPIED, 2000)
     
     def copy_llm_to_clipboard(self):
         """Copy LLM analysis text to clipboard."""
         text = self.llm_text.toPlainText()
         QApplication.clipboard().setText(text)
-        self.status_bar.showMessage("LLM analysis copied to clipboard", 2000)
+        self.status_bar.showMessage(AppLabels.STATUS_LLM_COPIED, 2000)
     
     def copy_all_to_clipboard(self):
         """
@@ -657,7 +662,7 @@ class MainWindow(QMainWindow):
             combined = transcription
         
         QApplication.clipboard().setText(combined)
-        self.status_bar.showMessage("All content copied to clipboard", 2000)
+        self.status_bar.showMessage(AppLabels.STATUS_ALL_COPIED, 2000)
     
     def setup_connections(self):
         """Set up additional connections."""
