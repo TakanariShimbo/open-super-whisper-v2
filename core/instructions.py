@@ -13,17 +13,22 @@ from typing import List, Optional, Dict, Any
 @dataclass
 class InstructionSet:
     """
-    A set of custom vocabulary, instructions, language, and model for transcription.
+    A set of custom vocabulary, instructions, language, model, and LLM settings for transcription.
     
     This class represents a named collection of settings that can be applied
     to a transcription request, including custom vocabulary, system instructions,
-    preferred language, and transcription model.
+    preferred language, transcription model, and LLM processing options.
     """
     name: str
     vocabulary: List[str] = field(default_factory=list)
     instructions: List[str] = field(default_factory=list)
     language: Optional[str] = None  # Language code (e.g., "en", "ja"), None for auto-detection
     model: str = "whisper-1"  # Default model ID
+    
+    # LLM settings
+    llm_enabled: bool = False
+    llm_model: str = "gpt-3.5-turbo"
+    llm_instructions: List[str] = field(default_factory=list)
 
 
 class InstructionSetManager:
@@ -57,7 +62,9 @@ class InstructionSetManager:
         return self.sets[self.active_set_name]
     
     def create_set(self, name: str, vocabulary: List[str] = None, instructions: List[str] = None, 
-                language: Optional[str] = None, model: str = "whisper-1") -> bool:
+                language: Optional[str] = None, model: str = "whisper-1",
+                llm_enabled: bool = False, llm_model: str = "gpt-3.5-turbo", 
+                llm_instructions: List[str] = None) -> bool:
         """
         Create a new instruction set.
         
@@ -73,6 +80,12 @@ class InstructionSetManager:
             Language code (e.g., "en", "ja"), or None for auto-detection, by default None.
         model : str, optional
             Whisper model ID to use, by default "whisper-1".
+        llm_enabled : bool, optional
+            Whether LLM processing is enabled, by default False.
+        llm_model : str, optional
+            LLM model ID to use, by default "gpt-3.5-turbo".
+        llm_instructions : List[str], optional
+            List of LLM system instructions, by default None.
             
         Returns
         -------
@@ -87,7 +100,10 @@ class InstructionSetManager:
             vocabulary=vocabulary or [],
             instructions=instructions or [],
             language=language,
-            model=model
+            model=model,
+            llm_enabled=llm_enabled,
+            llm_model=llm_model,
+            llm_instructions=llm_instructions or []
         )
         
         # If this is the first set, make it active
@@ -97,7 +113,9 @@ class InstructionSetManager:
         return True
     
     def update_set(self, name: str, vocabulary: List[str] = None, instructions: List[str] = None,
-                 language: Optional[str] = None, model: Optional[str] = None) -> bool:
+                 language: Optional[str] = None, model: Optional[str] = None,
+                 llm_enabled: Optional[bool] = None, llm_model: Optional[str] = None,
+                 llm_instructions: List[str] = None) -> bool:
         """
         Update an existing instruction set.
         
@@ -113,6 +131,12 @@ class InstructionSetManager:
             Language code (e.g., "en", "ja"), by default None (unchanged).
         model : str, optional
             Whisper model ID to use, by default None (unchanged).
+        llm_enabled : bool, optional
+            Whether LLM processing is enabled, by default None (unchanged).
+        llm_model : str, optional
+            LLM model ID to use, by default None (unchanged).
+        llm_instructions : List[str], optional
+            List of LLM system instructions, by default None (unchanged).
             
         Returns
         -------
@@ -133,6 +157,15 @@ class InstructionSetManager:
             
         if model is not None:
             self.sets[name].model = model
+            
+        if llm_enabled is not None:
+            self.sets[name].llm_enabled = llm_enabled
+            
+        if llm_model is not None:
+            self.sets[name].llm_model = llm_model
+            
+        if llm_instructions is not None:
+            self.sets[name].llm_instructions = llm_instructions
         
         return True
     
@@ -214,7 +247,10 @@ class InstructionSetManager:
             vocabulary=instruction_set.vocabulary,
             instructions=instruction_set.instructions,
             language=instruction_set.language,
-            model=instruction_set.model
+            model=instruction_set.model,
+            llm_enabled=instruction_set.llm_enabled,
+            llm_model=instruction_set.llm_model,
+            llm_instructions=instruction_set.llm_instructions
         )
         
         # Update active set name if needed
@@ -293,6 +329,48 @@ class InstructionSetManager:
             return "whisper-1"
         return self.active_set.model
     
+    def get_active_llm_enabled(self) -> bool:
+        """
+        Get LLM enabled setting from the active set.
+        
+        Returns
+        -------
+        bool
+            Whether LLM processing is enabled in the active set,
+            or False if no active set.
+        """
+        if not self.active_set:
+            return False
+        return self.active_set.llm_enabled
+    
+    def get_active_llm_model(self) -> str:
+        """
+        Get LLM model setting from the active set.
+        
+        Returns
+        -------
+        str
+            LLM model ID from the active set,
+            or "gpt-3.5-turbo" if no active set.
+        """
+        if not self.active_set:
+            return "gpt-3.5-turbo"
+        return self.active_set.llm_model
+    
+    def get_active_llm_instructions(self) -> List[str]:
+        """
+        Get LLM instructions from the active set.
+        
+        Returns
+        -------
+        List[str]
+            List of LLM instructions from the active set,
+            or an empty list if no active set.
+        """
+        if not self.active_set:
+            return []
+        return self.active_set.llm_instructions
+    
     def load_from_dict(self, data: Dict[str, Any]) -> None:
         """
         Load instruction sets from a dictionary.
@@ -318,7 +396,10 @@ class InstructionSetManager:
                     vocabulary=set_data.get("vocabulary", []),
                     instructions=set_data.get("instructions", []),
                     language=set_data.get("language", None),
-                    model=set_data.get("model", "whisper-1")
+                    model=set_data.get("model", "whisper-1"),
+                    llm_enabled=set_data.get("llm_enabled", False),
+                    llm_model=set_data.get("llm_model", "gpt-3.5-turbo"),
+                    llm_instructions=set_data.get("llm_instructions", [])
                 )
         
         # If no sets were loaded and active_set_name is empty, create a default set
@@ -343,7 +424,10 @@ class InstructionSetManager:
                 "vocabulary": instruction_set.vocabulary,
                 "instructions": instruction_set.instructions,
                 "language": instruction_set.language,
-                "model": instruction_set.model
+                "model": instruction_set.model,
+                "llm_enabled": instruction_set.llm_enabled,
+                "llm_model": instruction_set.llm_model,
+                "llm_instructions": instruction_set.llm_instructions
             })
         
         return {
