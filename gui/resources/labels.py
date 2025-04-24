@@ -41,6 +41,7 @@ class AppLabels:
     MAIN_WIN_LLM_ENABLED = "Enable LLM Processing"
     MAIN_WIN_LLM_TAB_TITLE = "LLM Analysis"
     MAIN_WIN_LLM_PLACEHOLDER = "LLM analysis will appear here when enabled..."
+    MAIN_WIN_PROCESSING_ERROR = "Processing error"
     MAIN_WIN_TRANSCRIPTION_TAB_TITLE = "Transcription"
     MAIN_WIN_TRANSCRIPTION_OUTPUT_LABEL = "Transcription Output"
     MAIN_WIN_LLM_OUTPUT_LABEL = "LLM Analysis Output"

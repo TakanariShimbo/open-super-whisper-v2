@@ -39,7 +39,8 @@ class MainWindow(QMainWindow):
     Main application window.
     
     This class provides the main user interface and integrates the audio
-    recording, transcription, and LLM processing functionality.
+    recording, transcription, and LLM (Large Language Model) processing functionality.
+    It manages the core application flow and user interactions.
     """
     
     # Custom signals
@@ -154,10 +155,11 @@ class MainWindow(QMainWindow):
     
     def init_ui(self):
         """
-        Initialize the user interface.
+        Initialize the user interface components.
         
         This method sets up the window size, title, style, layout,
-        and places widgets.
+        and places all UI widgets including the toolbar, control panel,
+        tab widget for transcription and LLM output, and status bar.
         """
         self.setWindowTitle(AppLabels.APP_TITLE)
         self.setMinimumSize(700, 600)
@@ -201,7 +203,6 @@ class MainWindow(QMainWindow):
         # Control form
         control_form = QWidget()
         form_layout = QFormLayout(control_form)
-        form_layout.addRow("", self.llm_enabled_checkbox)
         
         # Add to layout
         control_layout.addWidget(self.record_button, 0, 0, 2, 1)
@@ -239,7 +240,7 @@ class MainWindow(QMainWindow):
         llm_layout.addWidget(llm_label)
         
         self.llm_text = QTextEdit()
-        self.llm_text.setPlaceholderText("LLM analysis will appear here when enabled...")
+        self.llm_text.setPlaceholderText(AppLabels.MAIN_WIN_LLM_PLACEHOLDER)
         self.llm_text.setReadOnly(False)  # Editable
         self.llm_text.setMinimumHeight(250)
         
@@ -589,7 +590,7 @@ class MainWindow(QMainWindow):
             # Signal the error result
             self.processing_complete.emit(error_result)
             # Show error in status bar
-            QTimer.singleShot(0, lambda: self.status_bar.showMessage("Processing error", 5000))
+            QTimer.singleShot(0, lambda: self.status_bar.showMessage(AppLabels.MAIN_WIN_PROCESSING_ERROR, 5000))
     
     def on_processing_complete(self, result):
         """

@@ -15,6 +15,7 @@ from PyQt6.QtCore import Qt, QSettings
 from PyQt6.QtGui import QIcon
 
 from gui.resources.labels import AppLabels
+from gui.resources.config import AppConfig
 from gui.dialogs.simple_message_dialog import SimpleMessageDialog
 
 # Import core instruction sets
@@ -172,7 +173,9 @@ class InstructionSetsDialog(QDialog):
     
     This dialog allows users to create, edit, delete, and select
     instruction sets with custom vocabulary, system instructions,
-    and LLM settings.
+    language/model selection, and LLM (Large Language Model) settings.
+    It provides a comprehensive interface for customizing how transcription
+    and analysis are performed.
     """
     
     def __init__(self, parent=None, manager=None):
@@ -334,7 +337,7 @@ class InstructionSetsDialog(QDialog):
         
         # LLM enable/disable
         self.llm_enabled_checkbox = QCheckBox(AppLabels.INSTRUCTION_SETS_LLM_TOGGLE_LABEL)
-        llm_settings_layout.addRow("", self.llm_enabled_checkbox)
+        llm_settings_layout.addRow(AppConfig.LLM_SETTINGS_LABEL, self.llm_enabled_checkbox)
         
         # LLM model selection
         llm_model_label = QLabel(AppLabels.INSTRUCTION_SETS_LLM_MODEL_LABEL)
