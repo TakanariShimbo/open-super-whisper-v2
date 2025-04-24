@@ -324,28 +324,19 @@ class InstructionSetsDialog(QDialog):
         language_layout.addRow(model_label, self.model_combo)
         settings_layout.addWidget(language_form)
         
-        # Add spacer
-        settings_layout.addStretch(1)
+        # Add separator for LLM settings
+        llm_settings_label = QLabel(AppLabels.INSTRUCTION_SETS_LLM_MODEL_SECTION_LABEL)
+        settings_layout.addWidget(llm_settings_label)
         
-        # LLM Instructions tab
-        llm_tab = QWidget()
-        llm_layout = QVBoxLayout(llm_tab)
-        
-        llm_label = QLabel(AppLabels.INSTRUCTION_SETS_LLM_TAB_NAME)
-        llm_layout.addWidget(llm_label)
-        
-        llm_help = QLabel(AppLabels.INSTRUCTION_SETS_LLM_HELP)
-        llm_help.setWordWrap(True)
-        llm_layout.addWidget(llm_help)
+        # LLM settings form
+        llm_settings_form = QWidget()
+        llm_settings_layout = QFormLayout(llm_settings_form)
         
         # LLM enable/disable
-        self.llm_enabled_checkbox = QCheckBox(AppLabels.INSTRUCTION_SETS_LLM_ENABLED_LABEL)
-        llm_layout.addWidget(self.llm_enabled_checkbox)
+        self.llm_enabled_checkbox = QCheckBox(AppLabels.INSTRUCTION_SETS_LLM_TOGGLE_LABEL)
+        llm_settings_layout.addRow("", self.llm_enabled_checkbox)
         
         # LLM model selection
-        llm_form = QWidget()
-        llm_form_layout = QFormLayout(llm_form)
-        
         llm_model_label = QLabel(AppLabels.INSTRUCTION_SETS_LLM_MODEL_LABEL)
         self.llm_model_combo = QComboBox()
         
@@ -360,17 +351,24 @@ class InstructionSetsDialog(QDialog):
                 Qt.ItemDataRole.ToolTipRole
             )
         
-        llm_form_layout.addRow(llm_model_label, self.llm_model_combo)
-        llm_layout.addWidget(llm_form)
+        llm_settings_layout.addRow(llm_model_label, self.llm_model_combo)
+        settings_layout.addWidget(llm_settings_form)
         
-        # LLM instructions
-        llm_instr_label = QLabel(AppLabels.INSTRUCTION_SETS_LLM_INSTRUCTIONS_LABEL)
-        llm_layout.addWidget(llm_instr_label)
+        # Add spacer
+        settings_layout.addStretch(1)
         
-        llm_instr_help = QLabel(AppLabels.INSTRUCTION_SETS_LLM_INSTRUCTIONS_HELP)
-        llm_instr_help.setWordWrap(True)
-        llm_layout.addWidget(llm_instr_help)
+        # LLM Instructions tab
+        llm_tab = QWidget()
+        llm_layout = QVBoxLayout(llm_tab)
         
+        llm_label = QLabel(AppLabels.INSTRUCTION_SETS_LLM_TAB_NAME)
+        llm_layout.addWidget(llm_label)
+        
+        llm_help = QLabel(AppLabels.INSTRUCTION_SETS_LLM_HELP)
+        llm_help.setWordWrap(True)
+        llm_layout.addWidget(llm_help)
+        
+        # LLM instructions        
         self.llm_instructions_edit = QTextEdit()
         llm_layout.addWidget(self.llm_instructions_edit)
         

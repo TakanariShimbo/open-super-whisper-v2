@@ -113,17 +113,16 @@ class AppLabels:
     
     ## LLM Instructions Tab
     INSTRUCTION_SETS_LLM_TAB_NAME = "LLM Instructions"
-    INSTRUCTION_SETS_LLM_HELP = "Configure Large Language Model processing settings for post-transcription analysis."
-    INSTRUCTION_SETS_LLM_ENABLED_LABEL = "Enable LLM Processing"
-    INSTRUCTION_SETS_LLM_MODEL_LABEL = "LLM Model:"
-    INSTRUCTION_SETS_LLM_INSTRUCTIONS_LABEL = "LLM System Instructions:"
-    INSTRUCTION_SETS_LLM_INSTRUCTIONS_HELP = "Enter instructions for the LLM to guide how it processes the transcription. One instruction per line."
+    INSTRUCTION_SETS_LLM_HELP = "Enter system instructions for the Large Language Model to guide how it processes the transcription."
     
     ## Language & Model Tab
     INSTRUCTION_SETS_LANGUAGE_AND_MODEL_TAB_NAME = "Language & Model"
     INSTRUCTION_SETS_SETTINGS_HELP = "Configure language and model settings for this instruction set. These settings will be used when this instruction set is active."
     INSTRUCTION_SETS_LANGUAGE_LABEL = "Language:"
-    INSTRUCTION_SETS_MODEL_LABEL = "Transcription Model:"    
+    INSTRUCTION_SETS_MODEL_LABEL = "Transcription Model:"
+    INSTRUCTION_SETS_LLM_MODEL_SECTION_LABEL = "LLM Settings:"
+    INSTRUCTION_SETS_LLM_TOGGLE_LABEL = "Enable LLM Processing"
+    INSTRUCTION_SETS_LLM_MODEL_LABEL = "LLM Model:"
 
     ## Instruction Set Dialogs
     INSTRUCTION_SETS_NEW_INSTRUCTION_SET_TITLE = "New Instruction Set"
