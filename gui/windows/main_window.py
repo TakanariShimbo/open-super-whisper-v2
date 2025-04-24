@@ -142,7 +142,7 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(600, 500)
         
         # Set application icon
-        icon_path = getResourcePath("assets/icon.ico")
+        icon_path = getResourcePath("assets/icon.png")
         
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
@@ -765,7 +765,7 @@ class MainWindow(QMainWindow):
         recording, and exit the application.
         """
         # Get icon file path
-        icon_path = getResourcePath("assets/icon.ico")
+        icon_path = getResourcePath("assets/icon.png")
         
         if os.path.exists(icon_path):
             self.tray_icon = QSystemTrayIcon(QIcon(icon_path), self)

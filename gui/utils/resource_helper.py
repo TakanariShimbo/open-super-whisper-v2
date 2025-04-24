@@ -30,6 +30,6 @@ def getResourcePath(relative_path: str) -> str:
         base_path = sys._MEIPASS  # type: ignore
     except Exception:
         # If not running as a bundled executable, use the script's directory
-        base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+        base_path = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
     
-    return os.path.join(base_path, relative_path)
+    return os.path.normpath(os.path.join(base_path, relative_path))

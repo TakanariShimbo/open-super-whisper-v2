@@ -30,7 +30,7 @@ def main():
     app = QApplication(sys.argv)
     
     # Set application icon
-    icon_path = getResourcePath("assets/icon.ico")
+    icon_path = getResourcePath("assets/icon.png")
     
     if os.path.exists(icon_path):
         app.setWindowIcon(QIcon(icon_path))
