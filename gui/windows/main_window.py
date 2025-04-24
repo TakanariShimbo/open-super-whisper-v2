@@ -12,7 +12,7 @@ import time
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QPushButton, QTextEdit, QLabel, QComboBox,
-    QMessageBox, QGridLayout, QFormLayout,
+    QGridLayout, QFormLayout,
     QSystemTrayIcon, QMenu, QStyle, QStatusBar, QToolBar, QDialog
 )
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QSettings, QUrl, QSize

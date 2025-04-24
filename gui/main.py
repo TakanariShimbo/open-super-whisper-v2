@@ -7,12 +7,13 @@ This module provides the main entry point for starting the GUI application.
 import os
 import sys
 
-from PyQt6.QtWidgets import QApplication, QMessageBox, QSystemTrayIcon, QStyle
+from PyQt6.QtWidgets import QApplication, QSystemTrayIcon, QStyle
 from PyQt6.QtGui import QIcon
 
 from gui.resources.config import AppConfig
 from gui.resources.labels import AppLabels
 from gui.utils.resource_helper import getResourcePath
+from gui.dialogs.simple_message_dialog import SimpleMessageDialog
 
 
 def main():
@@ -44,7 +45,7 @@ def main():
     
     # Check if system tray is supported
     if not QSystemTrayIcon.isSystemTrayAvailable():
-        QMessageBox.critical(None, AppLabels.ERROR_TITLE, AppLabels.MAIN_ERROR_SYSTEM_TRAY)
+        SimpleMessageDialog.show_message(None, AppLabels.ERROR_TITLE, AppLabels.MAIN_ERROR_SYSTEM_TRAY, SimpleMessageDialog.ERROR)
         sys.exit(1)
     
     # Prevent application from exiting when last window is closed
@@ -60,10 +61,11 @@ def main():
     settings = window.settings
     if not settings.contains("first_run_done"):
         hotkey = settings.value("hotkey", AppConfig.DEFAULT_HOTKEY)
-        QMessageBox.information(
+        SimpleMessageDialog.show_message(
             window, 
             AppLabels.MAIN_HOTKEY_INFO_TITLE, 
-            AppLabels.MAIN_HOTKEY_INFO_MESSAGE.format(hotkey)
+            AppLabels.MAIN_HOTKEY_INFO_MESSAGE.format(hotkey),
+            SimpleMessageDialog.INFO
         )
         settings.setValue("first_run_done", True)
     

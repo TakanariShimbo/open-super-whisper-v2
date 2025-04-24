@@ -6,12 +6,13 @@ This module provides a dialog for setting the global hotkey.
 
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
-    QPushButton, QDialogButtonBox, QGridLayout, QMessageBox
+    QPushButton, QDialogButtonBox, QGridLayout
 )
 from PyQt6.QtCore import Qt, QEvent
 from PyQt6.QtGui import QKeyEvent, QKeySequence
 
 from gui.resources.labels import AppLabels
+from gui.dialogs.simple_message_dialog import SimpleMessageDialog
 
 
 class HotkeyDialog(QDialog):
@@ -180,10 +181,11 @@ class HotkeyDialog(QDialog):
         """Handle dialog acceptance with validation."""
         # Validate hotkey before accepting
         if not self.hotkey:
-            QMessageBox.warning(
+            SimpleMessageDialog.show_message(
                 self,
                 AppLabels.API_KEY_VALIDATION_ERROR_TITLE,
-                AppLabels.HOTKEY_VALIDATION_ERROR
+                AppLabels.HOTKEY_VALIDATION_ERROR,
+                SimpleMessageDialog.WARNING
             )
             return
         

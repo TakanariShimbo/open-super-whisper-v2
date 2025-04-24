@@ -6,12 +6,13 @@ This module provides a dialog for setting and validating the OpenAI API key.
 
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
-    QPushButton, QDialogButtonBox, QGridLayout, QMessageBox
+    QPushButton, QDialogButtonBox, QGridLayout
 )
 from PyQt6.QtCore import Qt
 
 from core.transcriber import WhisperTranscriber
 from gui.resources.labels import AppLabels
+from gui.dialogs.simple_message_dialog import SimpleMessageDialog
 
 
 class APIKeyDialog(QDialog):
@@ -118,10 +119,11 @@ class APIKeyDialog(QDialog):
         key = self.key_input.text().strip()
         
         if not key:
-            QMessageBox.warning(
+            SimpleMessageDialog.show_message(
                 self,
                 AppLabels.API_KEY_VALIDATION_ERROR_TITLE,
-                AppLabels.API_KEY_EMPTY_ERROR
+                AppLabels.API_KEY_EMPTY_ERROR,
+                SimpleMessageDialog.WARNING
             )
             return
         
@@ -130,17 +132,19 @@ class APIKeyDialog(QDialog):
             transcriber = WhisperTranscriber(api_key=key)
             
             # If successful, show confirmation
-            QMessageBox.information(
+            SimpleMessageDialog.show_message(
                 self,
                 AppLabels.API_KEY_VALID_TITLE,
-                AppLabels.API_KEY_VALID_MESSAGE
+                AppLabels.API_KEY_VALID_MESSAGE,
+                SimpleMessageDialog.INFO
             )
         except Exception as e:
             # If failed, show error
-            QMessageBox.critical(
+            SimpleMessageDialog.show_message(
                 self,
                 AppLabels.API_KEY_VALIDATION_ERROR_TITLE,
-                AppLabels.API_KEY_VALIDATION_ERROR_MESSAGE.format(str(e))
+                AppLabels.API_KEY_VALIDATION_ERROR_MESSAGE.format(str(e)),
+                SimpleMessageDialog.ERROR
             )
     
     def get_api_key(self):
@@ -160,10 +164,11 @@ class APIKeyDialog(QDialog):
         key = self.get_api_key()
         
         if not key:
-            QMessageBox.warning(
+            SimpleMessageDialog.show_message(
                 self,
                 AppLabels.API_KEY_VALIDATION_ERROR_TITLE,
-                AppLabels.API_KEY_EMPTY_ERROR
+                AppLabels.API_KEY_EMPTY_ERROR,
+                SimpleMessageDialog.WARNING
             )
             return
         

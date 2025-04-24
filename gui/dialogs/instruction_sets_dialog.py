@@ -7,7 +7,7 @@ This module provides a dialog for managing instruction sets and custom vocabular
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QTextEdit,
     QPushButton, QDialogButtonBox, QListWidget, QSplitter,
-    QLineEdit, QInputDialog, QMessageBox, QTabWidget, QWidget,
+    QLineEdit, QInputDialog, QTabWidget, QWidget,
     QFormLayout, QComboBox
 )
 from PyQt6.QtCore import Qt, QSettings
