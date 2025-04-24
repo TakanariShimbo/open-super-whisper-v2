@@ -44,7 +44,7 @@ def main():
     
     # Check if system tray is supported
     if not QSystemTrayIcon.isSystemTrayAvailable():
-        QMessageBox.critical(None, AppLabels.ERROR_TITLE, AppLabels.ERROR_SYSTEM_TRAY)
+        QMessageBox.critical(None, AppLabels.ERROR_TITLE, AppLabels.MAIN_ERROR_SYSTEM_TRAY)
         sys.exit(1)
     
     # Prevent application from exiting when last window is closed
@@ -62,8 +62,8 @@ def main():
         hotkey = settings.value("hotkey", AppConfig.DEFAULT_HOTKEY)
         QMessageBox.information(
             window, 
-            AppLabels.HOTKEY_INFO_TITLE, 
-            AppLabels.HOTKEY_INFO_MESSAGE.format(hotkey)
+            AppLabels.MAIN_HOTKEY_INFO_TITLE, 
+            AppLabels.MAIN_HOTKEY_INFO_MESSAGE.format(hotkey)
         )
         settings.setValue("first_run_done", True)
     

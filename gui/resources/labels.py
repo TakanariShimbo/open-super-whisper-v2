@@ -15,6 +15,14 @@ class AppLabels:
     # Application metadata
     APP_TITLE = "Open Super Whisper"
     
+    # Error messages
+    ERROR_TITLE = "Error"
+
+    # Main
+    MAIN_ERROR_SYSTEM_TRAY = "System tray is not supported on this system"
+    MAIN_HOTKEY_INFO_TITLE = "Hotkey Configuration"
+    MAIN_HOTKEY_INFO_MESSAGE = "You can start/stop recording by pressing {}.\\nThis works even when the app is minimized or in the background."
+    
     # Main Window
     MAIN_WIN_RECORD_START_BUTTON = "Start Recording"
     MAIN_WIN_RECORD_STOP_BUTTON = "Stop Recording"
@@ -28,7 +36,13 @@ class AppLabels:
     MAIN_WIN_EXIT_APP = "Exit"
     MAIN_WIN_TRANSCRIPTION_TITLE = "Transcription"
     MAIN_WIN_TRANSCRIPTION_PLACEHOLDER = "Transcription will appear here..."
-    
+    MAIN_WIN_ERROR_API_KEY_MISSING = "API Key is missing or invalid"
+    MAIN_WIN_ERROR_API_KEY_REQUIRED = "API Key is required to use this feature"
+    MAIN_WIN_ERROR_TRANSCRIPTION = "Transcription error: {}"
+    MAIN_WIN_ERROR_HOTKEY = "Failed to register hotkey: {}"
+    MAIN_WIN_INFO_TITLE = "Information"
+    MAIN_WIN_INFO_TRAY_MINIMIZED = "Application is still running in the system tray"
+
     # Status messages
     STATUS_READY = "Ready"
     STATUS_RECORDING = "Recording..."
@@ -55,37 +69,37 @@ class AppLabels:
     # Instruction Sets Dialog
     INSTRUCTION_SETS_TITLE = "Instruction Sets Settings"
     INSTRUCTION_SETS_LIST_LABEL = "Instruction Sets:"
-    INSTRUCTION_SET_ADD_BUTTON = "New"
-    INSTRUCTION_SET_RENAME_BUTTON = "Rename"
-    INSTRUCTION_SET_DELETE_BUTTON = "Delete"
-    INSTRUCTION_SET_ACTIVATE_BUTTON = "Activate"
-    INSTRUCTION_SET_SAVE_BUTTON = "Save"
+    INSTRUCTION_SETS_ADD_BUTTON = "New"
+    INSTRUCTION_SETS_RENAME_BUTTON = "Rename"
+    INSTRUCTION_SETS_DELETE_BUTTON = "Delete"
+    INSTRUCTION_SETS_ACTIVATE_BUTTON = "Activate"
+    INSTRUCTION_SETS_SAVE_BUTTON = "Save"
     ## Vocabulary Tab
-    VOCABULARY_LABEL = "Custom Vocabulary:"
-    VOCABULARY_HELP = "Enter words or phrases to improve transcription accuracy. One item per line."
-    VOCABULARY_TAB_NAME = "Vocabulary"
+    INSTRUCTION_SETS_VOCABULARY_LABEL = "Custom Vocabulary:"
+    INSTRUCTION_SETS_VOCABULARY_HELP = "Enter words or phrases to improve transcription accuracy. One item per line."
+    INSTRUCTION_SETS_VOCABULARY_TAB_NAME = "Vocabulary"
     ## Instructions Tab
-    INSTRUCTIONS_LABEL = "System Instructions:"
-    INSTRUCTIONS_HELP = "Enter system instructions to control transcription behavior. One instruction per line."
-    INSTRUCTIONS_TAB_NAME = "Instructions"
+    INSTRUCTION_SETS_INSTRUCTIONS_LABEL = "System Instructions:"
+    INSTRUCTION_SETS_INSTRUCTIONS_HELP = "Enter system instructions to control transcription behavior. One instruction per line."
+    INSTRUCTION_SETS_INSTRUCTIONS_TAB_NAME = "Instructions"
     ## Settings Tab
-    SETTINGS_HELP = "Configure language and model settings for this instruction set. These settings will be used when this instruction set is active."
-    LANGUAGE_AND_MODEL_TAB_NAME = "Language & Model"
-    LANGUAGE_LABEL = "Language:"
-    MODEL_LABEL = "Transcription Model:"
+    INSTRUCTION_SETS_LANGUAGE_LABEL = "Language:"
+    INSTRUCTION_SETS_MODEL_LABEL = "Transcription Model:"
+    INSTRUCTION_SETS_SETTINGS_HELP = "Configure language and model settings for this instruction set. These settings will be used when this instruction set is active."
+    INSTRUCTION_SETS_LANGUAGE_AND_MODEL_TAB_NAME = "Language & Model"
     ## Instruction Set Dialogs
-    NEW_INSTRUCTION_SET_TITLE = "New Instruction Set"
-    NEW_INSTRUCTION_SET_PROMPT = "Enter a name for the new instruction set:"
-    RENAME_INSTRUCTION_SET_TITLE = "Rename Instruction Set"
-    RENAME_INSTRUCTION_SET_PROMPT = "Enter a new name for the instruction set:"
-    NAME_EXISTS_TITLE = "Name Exists"
-    NAME_EXISTS_MESSAGE = "An instruction set with the name '{}' already exists."
-    CONFIRM_DELETION_TITLE = "Confirm Deletion"
-    CONFIRM_DELETION_MESSAGE = "Are you sure you want to delete the instruction set '{}'?"
-    CHANGES_SAVED_TITLE = "Changes Saved"
-    CHANGES_SAVED_MESSAGE = "Changes to instruction set '{}' have been saved."
-    SET_ACTIVATED_TITLE = "Set Activated"
-    SET_ACTIVATED_MESSAGE = "Instruction set '{}' has been activated."
+    INSTRUCTION_SETS_NEW_INSTRUCTION_SET_TITLE = "New Instruction Set"
+    INSTRUCTION_SETS_NEW_INSTRUCTION_SET_PROMPT = "Enter a name for the new instruction set:"
+    INSTRUCTION_SETS_RENAME_INSTRUCTION_SET_TITLE = "Rename Instruction Set"
+    INSTRUCTION_SETS_RENAME_INSTRUCTION_SET_PROMPT = "Enter a new name for the instruction set:"
+    INSTRUCTION_SETS_NAME_EXISTS_TITLE = "Name Exists"
+    INSTRUCTION_SETS_NAME_EXISTS_MESSAGE = "An instruction set with the name '{}' already exists."
+    INSTRUCTION_SETS_CONFIRM_DELETION_TITLE = "Confirm Deletion"
+    INSTRUCTION_SETS_CONFIRM_DELETION_MESSAGE = "Are you sure you want to delete the instruction set '{}'?"
+    INSTRUCTION_SETS_CHANGES_SAVED_TITLE = "Changes Saved"
+    INSTRUCTION_SETS_CHANGES_SAVED_MESSAGE = "Changes to instruction set '{}' have been saved."
+    INSTRUCTION_SETS_SET_ACTIVATED_TITLE = "Set Activated"
+    INSTRUCTION_SETS_SET_ACTIVATED_MESSAGE = "Instruction set '{}' has been activated."
     
     # API Key Dialog
     API_KEY_TITLE = "API Key Settings"
@@ -109,20 +123,4 @@ class AppLabels:
     HOTKEY_CLEAR_BUTTON = "Clear"
     HOTKEY_EXAMPLES = "Examples: ctrl+shift+r, alt+w, ctrl+alt+s"
     HOTKEY_VALIDATION_ERROR = "Please set a hotkey combination."
-    
-    # Error messages
-    ERROR_TITLE = "Error"
-    ERROR_API_KEY_MISSING = "API Key is missing or invalid"
-    ERROR_API_KEY_REQUIRED = "API Key is required to use this feature"
-    ERROR_TRANSCRIPTION = "Transcription error: {}"
-    ERROR_SYSTEM_TRAY = "System tray is not supported on this system"
-    ERROR_HOTKEY = "Failed to register hotkey: {}"
-    
-    # Info messages
-    INFO_TITLE = "Information"
-    INFO_TRAY_MINIMIZED = "Application is still running in the system tray"
-    
-    # Hotkey info
-    HOTKEY_INFO_TITLE = "Hotkey Configuration"
-    HOTKEY_INFO_MESSAGE = "You can start/stop recording by pressing {}.\\nThis works even when the app is minimized or in the background."
     

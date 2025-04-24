@@ -201,16 +201,16 @@ class InstructionSetsDialog(QDialog):
         # Buttons for managing sets
         buttons_layout = QHBoxLayout()
         
-        self.add_button = QPushButton(AppLabels.INSTRUCTION_SET_ADD_BUTTON)
+        self.add_button = QPushButton(AppLabels.INSTRUCTION_SETS_ADD_BUTTON)
         self.add_button.clicked.connect(self.on_add_set)
         
-        self.rename_button = QPushButton(AppLabels.INSTRUCTION_SET_RENAME_BUTTON)
+        self.rename_button = QPushButton(AppLabels.INSTRUCTION_SETS_RENAME_BUTTON)
         self.rename_button.clicked.connect(self.on_rename_set)
         
-        self.delete_button = QPushButton(AppLabels.INSTRUCTION_SET_DELETE_BUTTON)
+        self.delete_button = QPushButton(AppLabels.INSTRUCTION_SETS_DELETE_BUTTON)
         self.delete_button.clicked.connect(self.on_delete_set)
         
-        self.activate_button = QPushButton(AppLabels.INSTRUCTION_SET_ACTIVATE_BUTTON)
+        self.activate_button = QPushButton(AppLabels.INSTRUCTION_SETS_ACTIVATE_BUTTON)
         self.activate_button.clicked.connect(self.on_activate_set)
         
         buttons_layout.addWidget(self.add_button)
@@ -230,10 +230,10 @@ class InstructionSetsDialog(QDialog):
         vocab_tab = QWidget()
         vocab_layout = QVBoxLayout(vocab_tab)
         
-        vocab_label = QLabel(AppLabels.VOCABULARY_LABEL)
+        vocab_label = QLabel(AppLabels.INSTRUCTION_SETS_VOCABULARY_LABEL)
         vocab_layout.addWidget(vocab_label)
         
-        vocab_help = QLabel(AppLabels.VOCABULARY_HELP)
+        vocab_help = QLabel(AppLabels.INSTRUCTION_SETS_VOCABULARY_HELP)
         vocab_help.setWordWrap(True)
         vocab_layout.addWidget(vocab_help)
         
@@ -244,10 +244,10 @@ class InstructionSetsDialog(QDialog):
         instr_tab = QWidget()
         instr_layout = QVBoxLayout(instr_tab)
         
-        instr_label = QLabel(AppLabels.INSTRUCTIONS_LABEL)
+        instr_label = QLabel(AppLabels.INSTRUCTION_SETS_INSTRUCTIONS_LABEL)
         instr_layout.addWidget(instr_label)
         
-        instr_help = QLabel(AppLabels.INSTRUCTIONS_HELP)
+        instr_help = QLabel(AppLabels.INSTRUCTION_SETS_INSTRUCTIONS_HELP)
         instr_help.setWordWrap(True)
         instr_layout.addWidget(instr_help)
         
@@ -258,7 +258,7 @@ class InstructionSetsDialog(QDialog):
         settings_tab = QWidget()
         settings_layout = QVBoxLayout(settings_tab)
         
-        settings_help = QLabel(AppLabels.SETTINGS_HELP)
+        settings_help = QLabel(AppLabels.INSTRUCTION_SETS_SETTINGS_HELP)
         settings_help.setWordWrap(True)
         settings_layout.addWidget(settings_help)
         
@@ -266,7 +266,7 @@ class InstructionSetsDialog(QDialog):
         language_form = QWidget()
         language_layout = QFormLayout(language_form)
         
-        language_label = QLabel(AppLabels.LANGUAGE_LABEL)
+        language_label = QLabel(AppLabels.INSTRUCTION_SETS_LANGUAGE_LABEL)
         self.language_combo = QComboBox()
         
         # Add language options from LanguageManager
@@ -284,7 +284,7 @@ class InstructionSetsDialog(QDialog):
         language_layout.addRow(language_label, self.language_combo)
         
         # Model selection
-        model_label = QLabel(AppLabels.MODEL_LABEL)
+        model_label = QLabel(AppLabels.INSTRUCTION_SETS_MODEL_LABEL)
         self.model_combo = QComboBox()
         
         # Add model options from WhisperModelManager
@@ -305,15 +305,15 @@ class InstructionSetsDialog(QDialog):
         settings_layout.addStretch(1)
         
         # Add tabs
-        self.tab_widget.addTab(vocab_tab, AppLabels.VOCABULARY_TAB_NAME)
-        self.tab_widget.addTab(instr_tab, AppLabels.INSTRUCTIONS_TAB_NAME)
-        self.tab_widget.addTab(settings_tab, AppLabels.LANGUAGE_AND_MODEL_TAB_NAME)
+        self.tab_widget.addTab(vocab_tab, AppLabels.INSTRUCTION_SETS_VOCABULARY_TAB_NAME)
+        self.tab_widget.addTab(instr_tab, AppLabels.INSTRUCTION_SETS_INSTRUCTIONS_TAB_NAME)
+        self.tab_widget.addTab(settings_tab, AppLabels.INSTRUCTION_SETS_LANGUAGE_AND_MODEL_TAB_NAME)
         
         right_layout.addWidget(self.tab_widget)
         
         
         # Save changes button - style consistent with other buttons
-        self.save_button = QPushButton(AppLabels.INSTRUCTION_SET_SAVE_BUTTON)
+        self.save_button = QPushButton(AppLabels.INSTRUCTION_SETS_SAVE_BUTTON)
         self.save_button.clicked.connect(self.on_save_changes)
         right_layout.addWidget(self.save_button)
 
@@ -400,8 +400,8 @@ class InstructionSetsDialog(QDialog):
         """Handle adding a new instruction set."""
         name, ok = QInputDialog.getText(
             self,
-            AppLabels.NEW_INSTRUCTION_SET_TITLE,
-            AppLabels.NEW_INSTRUCTION_SET_PROMPT
+            AppLabels.INSTRUCTION_SETS_NEW_INSTRUCTION_SET_TITLE,
+            AppLabels.INSTRUCTION_SETS_NEW_INSTRUCTION_SET_PROMPT
         )
         
         if ok and name:
@@ -410,8 +410,8 @@ class InstructionSetsDialog(QDialog):
                 if self.sets_list.item(i).text() == name:
                     SimpleMessageDialog.show_message(
                         self,
-                        AppLabels.NAME_EXISTS_TITLE,
-                        AppLabels.NAME_EXISTS_MESSAGE.format(name),
+                        AppLabels.INSTRUCTION_SETS_NAME_EXISTS_TITLE,
+                        AppLabels.INSTRUCTION_SETS_NAME_EXISTS_MESSAGE.format(name),
                         SimpleMessageDialog.WARNING
                     )
                     return
@@ -437,8 +437,8 @@ class InstructionSetsDialog(QDialog):
         
         new_name, ok = QInputDialog.getText(
             self,
-            AppLabels.RENAME_INSTRUCTION_SET_TITLE,
-            AppLabels.RENAME_INSTRUCTION_SET_PROMPT,
+            AppLabels.INSTRUCTION_SETS_RENAME_INSTRUCTION_SET_TITLE,
+            AppLabels.INSTRUCTION_SETS_RENAME_INSTRUCTION_SET_PROMPT,
             QLineEdit.EchoMode.Normal,
             old_name
         )
@@ -449,8 +449,8 @@ class InstructionSetsDialog(QDialog):
                 if i != row and self.sets_list.item(i).text() == new_name:
                     SimpleMessageDialog.show_message(
                         self,
-                        AppLabels.NAME_EXISTS_TITLE,
-                        AppLabels.NAME_EXISTS_MESSAGE.format(new_name),
+                        AppLabels.INSTRUCTION_SETS_NAME_EXISTS_TITLE,
+                        AppLabels.INSTRUCTION_SETS_NAME_EXISTS_MESSAGE.format(new_name),
                         SimpleMessageDialog.WARNING
                     )
                     return
@@ -471,8 +471,8 @@ class InstructionSetsDialog(QDialog):
         # Confirm deletion
         confirm = SimpleMessageDialog.show_confirmation(
             self,
-            AppLabels.CONFIRM_DELETION_TITLE,
-            AppLabels.CONFIRM_DELETION_MESSAGE.format(name),
+            AppLabels.INSTRUCTION_SETS_CONFIRM_DELETION_TITLE,
+            AppLabels.INSTRUCTION_SETS_CONFIRM_DELETION_MESSAGE.format(name),
             False
         )
         
@@ -513,8 +513,8 @@ class InstructionSetsDialog(QDialog):
         # Show confirmation
         SimpleMessageDialog.show_message(
             self,
-            AppLabels.CHANGES_SAVED_TITLE,
-            AppLabels.CHANGES_SAVED_MESSAGE.format(name),
+            AppLabels.INSTRUCTION_SETS_CHANGES_SAVED_TITLE,
+            AppLabels.INSTRUCTION_SETS_CHANGES_SAVED_MESSAGE.format(name),
             SimpleMessageDialog.INFO
         )
     
@@ -532,8 +532,8 @@ class InstructionSetsDialog(QDialog):
         # Show confirmation
         SimpleMessageDialog.show_message(
             self,
-            AppLabels.SET_ACTIVATED_TITLE,
-            AppLabels.SET_ACTIVATED_MESSAGE.format(name),
+            AppLabels.INSTRUCTION_SETS_SET_ACTIVATED_TITLE,
+            AppLabels.INSTRUCTION_SETS_SET_ACTIVATED_MESSAGE.format(name),
             SimpleMessageDialog.INFO
         )
     
