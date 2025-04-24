@@ -51,7 +51,7 @@ class AppLabels:
     STATUS_READY = "Ready"
     STATUS_RECORDING = "Recording..."
     STATUS_TRANSCRIBING = "Transcribing..."
-    STATUS_TRANSCRIPTION_COMPLETE = "Transcription complete"
+    STATUS_COMPLETE = "Complete!"
     STATUS_COPIED = "Copied to clipboard"
     STATUS_API_KEY_SAVED = "API key saved"
     STATUS_HOTKEY_SET = "Hotkey set to '{}'"
@@ -65,6 +65,12 @@ class AppLabels:
     STATUS_RECORDING_INDICATOR = "●"
     STATUS_TIMER_INITIAL = "00:00"
     
+    # Indicator
+    INDICATOR_TIMER_INITIAL = "00:00"
+    INDICATOR_RECORDING = "Recording..."
+    INDICATOR_TRANSCRIBING = "Transcribing..."
+    INDICATOR_COMPLETE = "Complete!"
+
     # Tray menu
     TRAY_SHOW = "Show Application"
     TRAY_RECORD = "Start/Stop Recording"

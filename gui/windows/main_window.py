@@ -513,7 +513,7 @@ class MainWindow(QMainWindow):
         
         # Show transcription text
         self.transcription_text.setText(text)
-        self.status_bar.showMessage(AppLabels.STATUS_TRANSCRIPTION_COMPLETE)
+        self.status_bar.showMessage(AppLabels.STATUS_COMPLETE)
         
         # Auto-copy if enabled
         if self.auto_copy:
