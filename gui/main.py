@@ -45,7 +45,7 @@ def main():
     
     # Check if system tray is supported
     if not QSystemTrayIcon.isSystemTrayAvailable():
-        SimpleMessageDialog.show_message(None, AppLabels.ERROR_TITLE, AppLabels.MAIN_ERROR_SYSTEM_TRAY, SimpleMessageDialog.ERROR)
+        SimpleMessageDialog.show_message(None, AppLabels.MAIN_SYSTEM_TRAY_ERROR_TITLE , AppLabels.MAIN_SYSTEM_TRAY_ERROR_MESSAGE, SimpleMessageDialog.ERROR)
         sys.exit(1)
     
     # Prevent application from exiting when last window is closed

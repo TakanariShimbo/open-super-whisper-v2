@@ -15,11 +15,10 @@ class AppLabels:
     # Application metadata
     APP_TITLE = "Open Super Whisper"
     
-    # Error messages
-    ERROR_TITLE = "Error"
-
     # Main
-    MAIN_ERROR_SYSTEM_TRAY = "System tray is not supported on this system"
+    MAIN_SYSTEM_TRAY_ERROR_TITLE  = "System Tray Error"
+    MAIN_SYSTEM_TRAY_ERROR_MESSAGE = "System tray is not supported on this system"
+    
     MAIN_HOTKEY_INFO_TITLE = "Hotkey Configuration"
     MAIN_HOTKEY_INFO_MESSAGE = "You can start/stop recording by pressing {}.\\nThis works even when the app is minimized or in the background."
     
@@ -34,14 +33,19 @@ class AppLabels:
     MAIN_WIN_SOUND_BUTTON = "Enable Sounds"
     MAIN_WIN_INDICATOR_BUTTON = "Show Indicator"
     MAIN_WIN_EXIT_APP = "Exit"
+    
     MAIN_WIN_TRANSCRIPTION_TITLE = "Transcription"
     MAIN_WIN_TRANSCRIPTION_PLACEHOLDER = "Transcription will appear here..."
-    MAIN_WIN_ERROR_API_KEY_MISSING = "API Key is missing or invalid"
-    MAIN_WIN_ERROR_API_KEY_REQUIRED = "API Key is required to use this feature"
-    MAIN_WIN_ERROR_TRANSCRIPTION = "Transcription error: {}"
-    MAIN_WIN_ERROR_HOTKEY = "Failed to register hotkey: {}"
-    MAIN_WIN_INFO_TITLE = "Information"
-    MAIN_WIN_INFO_TRAY_MINIMIZED = "Application is still running in the system tray"
+
+    MAIN_WIN_API_KEY_ERROR_TITLE = "API Key Error"
+    MAIN_WIN_API_KEY_ERROR_MISSING = "API Key is missing or invalid"
+    MAIN_WIN_API_KEY_ERROR_REQUIRED = "API Key is required to use this feature"
+    
+    MAIN_WIN_TRANSCRIPTION_ERROR_TITLE = "Transcription Error"
+    MAIN_WIN_TRANSCRIPTION_ERROR = "Transcription error: {}"
+
+    MAIN_WIN_INFO_TRAY_TITLE = "Tray Information"
+    MAIN_WIN_INFO_TRAY_MESSAGE = "Application is still running in the system tray"
 
     # Status messages
     STATUS_READY = "Ready"
@@ -74,30 +78,39 @@ class AppLabels:
     INSTRUCTION_SETS_DELETE_BUTTON = "Delete"
     INSTRUCTION_SETS_ACTIVATE_BUTTON = "Activate"
     INSTRUCTION_SETS_SAVE_BUTTON = "Save"
+    
     ## Vocabulary Tab
-    INSTRUCTION_SETS_VOCABULARY_LABEL = "Custom Vocabulary:"
-    INSTRUCTION_SETS_VOCABULARY_HELP = "Enter words or phrases to improve transcription accuracy. One item per line."
     INSTRUCTION_SETS_VOCABULARY_TAB_NAME = "Vocabulary"
+    INSTRUCTION_SETS_VOCABULARY_HELP = "Enter words or phrases to improve transcription accuracy. One item per line."
+    INSTRUCTION_SETS_VOCABULARY_LABEL = "Custom Vocabulary:"
+    
     ## Instructions Tab
-    INSTRUCTION_SETS_INSTRUCTIONS_LABEL = "System Instructions:"
-    INSTRUCTION_SETS_INSTRUCTIONS_HELP = "Enter system instructions to control transcription behavior. One instruction per line."
     INSTRUCTION_SETS_INSTRUCTIONS_TAB_NAME = "Instructions"
+    INSTRUCTION_SETS_INSTRUCTIONS_HELP = "Enter system instructions to control transcription behavior. One instruction per line."
+    INSTRUCTION_SETS_INSTRUCTIONS_LABEL = "System Instructions:"
+    
     ## Settings Tab
-    INSTRUCTION_SETS_LANGUAGE_LABEL = "Language:"
-    INSTRUCTION_SETS_MODEL_LABEL = "Transcription Model:"
-    INSTRUCTION_SETS_SETTINGS_HELP = "Configure language and model settings for this instruction set. These settings will be used when this instruction set is active."
     INSTRUCTION_SETS_LANGUAGE_AND_MODEL_TAB_NAME = "Language & Model"
+    INSTRUCTION_SETS_SETTINGS_HELP = "Configure language and model settings for this instruction set. These settings will be used when this instruction set is active."
+    INSTRUCTION_SETS_LANGUAGE_LABEL = "Language:"
+    INSTRUCTION_SETS_MODEL_LABEL = "Transcription Model:"    
+
     ## Instruction Set Dialogs
     INSTRUCTION_SETS_NEW_INSTRUCTION_SET_TITLE = "New Instruction Set"
     INSTRUCTION_SETS_NEW_INSTRUCTION_SET_PROMPT = "Enter a name for the new instruction set:"
+
     INSTRUCTION_SETS_RENAME_INSTRUCTION_SET_TITLE = "Rename Instruction Set"
     INSTRUCTION_SETS_RENAME_INSTRUCTION_SET_PROMPT = "Enter a new name for the instruction set:"
+
     INSTRUCTION_SETS_NAME_EXISTS_TITLE = "Name Exists"
     INSTRUCTION_SETS_NAME_EXISTS_MESSAGE = "An instruction set with the name '{}' already exists."
+
     INSTRUCTION_SETS_CONFIRM_DELETION_TITLE = "Confirm Deletion"
     INSTRUCTION_SETS_CONFIRM_DELETION_MESSAGE = "Are you sure you want to delete the instruction set '{}'?"
+
     INSTRUCTION_SETS_CHANGES_SAVED_TITLE = "Changes Saved"
     INSTRUCTION_SETS_CHANGES_SAVED_MESSAGE = "Changes to instruction set '{}' have been saved."
+
     INSTRUCTION_SETS_SET_ACTIVATED_TITLE = "Set Activated"
     INSTRUCTION_SETS_SET_ACTIVATED_MESSAGE = "Instruction set '{}' has been activated."
     
@@ -109,10 +122,14 @@ class AppLabels:
     API_KEY_SHOW_BUTTON = "Show"
     API_KEY_HIDE_BUTTON = "Hide"
     API_KEY_VALIDATE_BUTTON = "Validate Key"
-    API_KEY_VALIDATION_ERROR_TITLE = "Validation Error"
-    API_KEY_EMPTY_ERROR = "API key cannot be empty."
+
+    API_KEY_EMPTY_ERROR_TITLE = "API Key Empty"
+    API_KEY_EMPTY_ERROR_MESSAGE = "API key cannot be empty."
+    
     API_KEY_VALID_TITLE = "API Key Valid"
     API_KEY_VALID_MESSAGE = "The API key is valid and has been verified."
+    
+    API_KEY_VALIDATION_ERROR_TITLE = "Validation Error"
     API_KEY_VALIDATION_ERROR_MESSAGE = "Failed to validate API key: {}"
     
     # Hotkey Dialog
@@ -122,5 +139,8 @@ class AppLabels:
     HOTKEY_PLACEHOLDER = "Click here and press hotkey combination..."
     HOTKEY_CLEAR_BUTTON = "Clear"
     HOTKEY_EXAMPLES = "Examples: ctrl+shift+r, alt+w, ctrl+alt+s"
-    HOTKEY_VALIDATION_ERROR = "Please set a hotkey combination."
+
+    HOTKEY_VALIDATION_ERROR_TITLE = "Hotkey Error"
+    HOTKEY_VALIDATION_ERROR_MESSAGE = "Please set a valid hotkey combination."
+   
     

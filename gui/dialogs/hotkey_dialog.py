@@ -183,8 +183,8 @@ class HotkeyDialog(QDialog):
         if not self.hotkey:
             SimpleMessageDialog.show_message(
                 self,
-                AppLabels.API_KEY_VALIDATION_ERROR_TITLE,
-                AppLabels.HOTKEY_VALIDATION_ERROR,
+                AppLabels.HOTKEY_VALIDATION_ERROR_TITLE,
+                AppLabels.HOTKEY_VALIDATION_ERROR_MESSAGE,
                 SimpleMessageDialog.WARNING
             )
             return

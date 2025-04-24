@@ -313,7 +313,7 @@ class MainWindow(QMainWindow):
                 self.status_bar.showMessage(AppLabels.STATUS_API_KEY_SAVED, 3000)
             except ValueError as e:
                 self.whisper_transcriber = None
-                SimpleMessageDialog.show_message(self, AppLabels.ERROR_TITLE, AppLabels.MAIN_WIN_ERROR_API_KEY_MISSING, SimpleMessageDialog.WARNING)
+                SimpleMessageDialog.show_message(self, AppLabels.MAIN_WIN_API_KEY_ERROR_TITLE, AppLabels.MAIN_WIN_API_KEY_ERROR_MISSING, SimpleMessageDialog.WARNING)
     
     def toggle_recording(self):
         """
@@ -344,7 +344,7 @@ class MainWindow(QMainWindow):
         displays the timer during recording and shows the indicator window.
         """
         if not self.whisper_transcriber:
-            SimpleMessageDialog.show_message(self, AppLabels.ERROR_TITLE, AppLabels.MAIN_WIN_ERROR_API_KEY_REQUIRED, SimpleMessageDialog.WARNING)
+            SimpleMessageDialog.show_message(self, AppLabels.MAIN_WIN_API_KEY_ERROR_TITLE, AppLabels.MAIN_WIN_API_KEY_ERROR_REQUIRED, SimpleMessageDialog.WARNING)
             return
             
         self.record_button.setText(AppLabels.MAIN_WIN_RECORD_STOP_BUTTON)
@@ -491,7 +491,11 @@ class MainWindow(QMainWindow):
             
         except Exception as e:
             # Handle errors
-            self.transcription_complete.emit(AppLabels.MAIN_WIN_ERROR_TRANSCRIPTION.format(str(e)))
+            error_msg = AppLabels.MAIN_WIN_TRANSCRIPTION_ERROR.format(str(e))
+            # テキスト領域にエラーを表示
+            self.transcription_complete.emit(error_msg)
+            # ステータスバーにもエラーを表示
+            QTimer.singleShot(0, lambda: self.status_bar.showMessage(AppLabels.MAIN_WIN_TRANSCRIPTION_ERROR_TITLE, 5000))
     
     def on_transcription_complete(self, text):
         """
@@ -560,7 +564,7 @@ class MainWindow(QMainWindow):
             error_msg = f"Hotkey setup error: {e}"
             print(error_msg)
             # Show error message to user
-            self.status_bar.showMessage(AppLabels.MAIN_WIN_ERROR_HOTKEY.format(str(e)), 5000)
+            self.status_bar.showMessage(AppLabels.HOTKEY_VALIDATION_ERROR_TITLE + ": " + str(e), 5000)
             # Continue with application even if hotkey fails
             return False
     
@@ -597,8 +601,8 @@ class MainWindow(QMainWindow):
         if not self.whisper_transcriber:
             SimpleMessageDialog.show_message(
                 self,
-                AppLabels.ERROR_TITLE,
-                AppLabels.MAIN_WIN_ERROR_API_KEY_REQUIRED,
+                AppLabels.MAIN_WIN_API_KEY_ERROR_TITLE,
+                AppLabels.MAIN_WIN_API_KEY_ERROR_REQUIRED,
                 SimpleMessageDialog.WARNING
             )
             return
@@ -843,7 +847,7 @@ class MainWindow(QMainWindow):
             event.accept()
         # Normal close = minimize to tray
         elif self.tray_icon.isVisible():
-            SimpleMessageDialog.show_message(self, AppLabels.MAIN_WIN_INFO_TITLE, AppLabels.MAIN_WIN_INFO_TRAY_MINIMIZED, SimpleMessageDialog.INFO)
+            SimpleMessageDialog.show_message(self, AppLabels.MAIN_WIN_INFO_TRAY_TITLE, AppLabels.MAIN_WIN_INFO_TRAY_MESSAGE, SimpleMessageDialog.INFO)
             self.hide()
             event.ignore()
         else:

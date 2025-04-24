@@ -121,8 +121,8 @@ class APIKeyDialog(QDialog):
         if not key:
             SimpleMessageDialog.show_message(
                 self,
-                AppLabels.API_KEY_VALIDATION_ERROR_TITLE,
-                AppLabels.API_KEY_EMPTY_ERROR,
+                AppLabels.API_KEY_EMPTY_ERROR_TITLE,
+                AppLabels.API_KEY_EMPTY_ERROR_MESSAGE,
                 SimpleMessageDialog.WARNING
             )
             return
@@ -166,8 +166,8 @@ class APIKeyDialog(QDialog):
         if not key:
             SimpleMessageDialog.show_message(
                 self,
-                AppLabels.API_KEY_VALIDATION_ERROR_TITLE,
-                AppLabels.API_KEY_EMPTY_ERROR,
+                AppLabels.API_KEY_EMPTY_ERROR_TITLE,
+                AppLabels.API_KEY_EMPTY_ERROR_MESSAGE,
                 SimpleMessageDialog.WARNING
             )
             return
