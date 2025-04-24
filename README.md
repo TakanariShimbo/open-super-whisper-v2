@@ -26,6 +26,7 @@ A PyQt6-based GUI application for audio transcription using OpenAI's Whisper API
 ├── pyproject.toml               # Project configuration and dependencies
 ├── assets/                      # Assets (icons, audio files, etc.)
 │   ├── complete_sound.wav       # Sound played when transcription completes
+│   ├── icon.icns                # Application icon (macOS)
 │   ├── icon.ico                 # Application icon (Windows)
 │   ├── icon.png                 # Application icon (cross-platform)
 │   ├── start_sound.wav          # Sound played when recording starts
