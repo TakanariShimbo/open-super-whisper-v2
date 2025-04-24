@@ -89,8 +89,24 @@ python main.py
 To package the application into a standalone executable:
 
 ```bash
-pyinstaller --onefile --windowed --icon=assets/icon.ico --name=open-super-whisper main.py
+# Windows (PowerShell)
+python -m PyInstaller --onefile --windowed --icon assets/icon.ico --name "OpenSuperWhisper" --add-data "assets;assets" main.py
+
+# For macOS
+python -m PyInstaller --onefile --windowed --icon assets/icon.icns --name "OpenSuperWhisper" --add-data "assets:assets" main.py
+
+# For Linux
+python -m PyInstaller --onefile --windowed --icon assets/icon.png --name "OpenSuperWhisper" --add-data "assets:assets" main.py
 ```
+
+The Windows command does the following:
+- `--onefile`: Creates a single executable file
+- `--windowed`: Prevents a console window from appearing
+- `--icon assets/icon.ico`: Sets the application icon
+- `--name "OpenSuperWhisper"`: Specifies the output filename
+- `--add-data "assets;assets"`: Includes the entire assets directory in the executable
+
+Once the build is complete, you'll find `OpenSuperWhisper.exe` in the `dist` folder on Windows, `OpenSuperWhisper.app` in the `dist` folder on macOS, or `OpenSuperWhisper` in the `dist` folder on Linux.
 
 ## Core and GUI Modules
 
