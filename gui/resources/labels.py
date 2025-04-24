@@ -20,7 +20,7 @@ class AppLabels:
     MAIN_SYSTEM_TRAY_ERROR_MESSAGE = "System tray is not supported on this system"
     
     MAIN_HOTKEY_INFO_TITLE = "Hotkey Configuration"
-    MAIN_HOTKEY_INFO_MESSAGE = "You can start/stop recording by pressing {}.\\nThis works even when the app is minimized or in the background."
+    MAIN_HOTKEY_INFO_MESSAGE = "You can start/stop recording by pressing {}. This works even when the app is minimized or in the background."
     
     # Main Window
     MAIN_WIN_RECORD_START_BUTTON = "Start Recording"
