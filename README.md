@@ -89,7 +89,7 @@ python main.py
 To package the application into a standalone executable:
 
 ```bash
-# Windows (PowerShell)
+# Windows
 python -m PyInstaller --onefile --windowed --icon assets/icon.ico --name "OpenSuperWhisper" --add-data "assets;assets" main.py
 
 # For macOS
