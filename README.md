@@ -1,6 +1,6 @@
 # Open Super Whisper
 
-A PyQt6-based GUI application for audio transcription using OpenAI's Whisper API. This application allows users to record audio, send it to Whisper for transcription, and view the results.
+A PyQt6-based GUI application for audio transcription and LLM analysis using OpenAI's Whisper API and LLM models. This application allows users to record audio, send it to Whisper for transcription, process the transcription with LLMs, and view the results.
 
 ## Features
 
@@ -9,6 +9,7 @@ A PyQt6-based GUI application for audio transcription using OpenAI's Whisper API
 - Advanced instruction set management:
   - Custom vocabulary lists for improved transcription accuracy
   - System instructions for controlling transcription behavior
+  - LLM processing settings with model selection and custom instructions
   - Unified language and model settings in each instruction set
   - Simple switching between configuration profiles
 - System tray integration
@@ -16,6 +17,7 @@ A PyQt6-based GUI application for audio transcription using OpenAI's Whisper API
 - Clipboard integration
 - Status indicator window
 - Settings management
+- LLM Analysis - Process transcriptions with Large Language Models
 
 ## Project Structure
 
@@ -35,12 +37,15 @@ A PyQt6-based GUI application for audio transcription using OpenAI's Whisper API
 │   ├── __init__.py
 │   ├── transcriber.py           # Audio transcription module
 │   ├── recorder.py              # Audio recording module
+│   ├── llm.py                   # Large Language Model processing
+│   ├── processor.py             # Unified processing (transcription + LLM)
 │   ├── instructions.py          # Custom vocabularies and instruction sets
 │   ├── hotkeys.py               # Global hotkey management
-│   └── models/                  # Data models for languages and whisper models
+│   └── models/                  # Data models for languages and models
 │       ├── __init__.py
 │       ├── language.py          # Language data models and manager
-│       └── whisper.py           # Whisper model data models and manager
+│       ├── whisper.py           # Whisper model data models and manager
+│       └── llm.py               # LLM model data models and manager
 └── gui/                 # GUI-related functionality (Qt-dependent)
     ├── __init__.py
     ├── main.py                  # GUI entry point
@@ -111,9 +116,35 @@ Once the build is complete, you'll find `OpenSuperWhisper.exe` in the `dist` fol
 
 ## Core and GUI Modules
 
-The core module (`core`) is fully implemented and independent of the GUI, providing transcription, recording, instruction set, and hotkey management features that can be reused in other projects.
+The core module (`core`) is fully implemented and independent of the GUI, providing transcription, LLM processing, recording, instruction set, and hotkey management features that can be reused in other projects.
 
 The GUI module (`gui`) leverages the core module to provide a user interface.
+
+## Using LLM Features
+
+To use the LLM features:
+
+1. Enable LLM processing using the checkbox in the main window
+2. Configure LLM settings in the instruction sets dialog:
+   - Select which LLM model to use
+   - Add custom system instructions to guide the LLM processing
+   - Enable/disable LLM processing per instruction set
+3. After recording and transcription, the LLM will process the transcribed text
+4. View the results in the LLM Analysis tab
+5. Use the Copy dropdown menu to copy transcription, LLM analysis, or both
+
+## Tag System
+
+The application uses a comprehensive tag system to manage different settings:
+
+- **Transcription Settings**: Language, model selection
+- **LLM Settings**: Model selection, enable/disable LLM processing
+- **Word Tags**: Custom vocabulary words/phrases for improved transcription accuracy
+- **System Prompts**:
+  - Transcription system prompts: Control how the audio is transcribed
+  - LLM system prompts: Control how the LLM analyzes the transcribed text
+
+All these settings can be managed per instruction set, allowing you to create specialized configurations for different use cases.
 
 ## License
 

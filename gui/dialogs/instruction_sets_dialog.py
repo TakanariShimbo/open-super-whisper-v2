@@ -1,14 +1,15 @@
 """
 Instruction Sets Dialog
 
-This module provides a dialog for managing instruction sets and custom vocabulary.
+This module provides a dialog for managing instruction sets, custom vocabulary, system instructions,
+and LLM settings.
 """
 
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QTextEdit,
     QPushButton, QDialogButtonBox, QListWidget, QSplitter,
     QLineEdit, QInputDialog, QTabWidget, QWidget,
-    QFormLayout, QComboBox
+    QFormLayout, QComboBox, QCheckBox
 )
 from PyQt6.QtCore import Qt, QSettings
 from PyQt6.QtGui import QIcon
@@ -22,6 +23,7 @@ from core.instructions import InstructionSetManager, InstructionSet
 # Import language and model data
 from core.models.language import LanguageManager
 from core.models.whisper import WhisperModelManager
+from core.models.llm import LLMModelManager
 
 
 class GUIInstructionSetManager:
@@ -54,15 +56,23 @@ class GUIInstructionSetManager:
         """Get all instruction sets."""
         return self.core_manager.get_all_sets()
     
-    def create_set(self, name, vocabulary=None, instructions=None, language=None, model=None):
+    def create_set(self, name, vocabulary=None, instructions=None, language=None, model=None,
+                  llm_enabled=False, llm_model=None, llm_instructions=None):
         """Create a new instruction set."""
-        result = self.core_manager.create_set(name, vocabulary, instructions, language, model)
+        result = self.core_manager.create_set(
+            name, vocabulary, instructions, language, model,
+            llm_enabled, llm_model, llm_instructions
+        )
         self.save_to_settings()
         return result
     
-    def update_set(self, name, vocabulary=None, instructions=None, language=None, model=None):
+    def update_set(self, name, vocabulary=None, instructions=None, language=None, model=None,
+                  llm_enabled=None, llm_model=None, llm_instructions=None):
         """Update an existing instruction set."""
-        result = self.core_manager.update_set(name, vocabulary, instructions, language, model)
+        result = self.core_manager.update_set(
+            name, vocabulary, instructions, language, model,
+            llm_enabled, llm_model, llm_instructions
+        )
         self.save_to_settings()
         return result
     
@@ -99,6 +109,18 @@ class GUIInstructionSetManager:
     def get_active_model(self):
         """Get model setting from the active set."""
         return self.core_manager.get_active_model()
+    
+    def get_active_llm_enabled(self):
+        """Get LLM enabled setting from the active set."""
+        return self.core_manager.get_active_llm_enabled()
+    
+    def get_active_llm_model(self):
+        """Get LLM model setting from the active set."""
+        return self.core_manager.get_active_llm_model()
+    
+    def get_active_llm_instructions(self):
+        """Get LLM instructions from the active set."""
+        return self.core_manager.get_active_llm_instructions()
     
     def save_to_settings(self):
         """Save all instruction sets to settings."""
@@ -149,7 +171,8 @@ class InstructionSetsDialog(QDialog):
     Dialog for managing instruction sets.
     
     This dialog allows users to create, edit, delete, and select
-    instruction sets with custom vocabulary and system instructions.
+    instruction sets with custom vocabulary, system instructions,
+    and LLM settings.
     """
     
     def __init__(self, parent=None, manager=None):
@@ -304,13 +327,60 @@ class InstructionSetsDialog(QDialog):
         # Add spacer
         settings_layout.addStretch(1)
         
-        # Add tabs
-        self.tab_widget.addTab(vocab_tab, AppLabels.INSTRUCTION_SETS_VOCABULARY_TAB_NAME)
-        self.tab_widget.addTab(instr_tab, AppLabels.INSTRUCTION_SETS_INSTRUCTIONS_TAB_NAME)
-        self.tab_widget.addTab(settings_tab, AppLabels.INSTRUCTION_SETS_LANGUAGE_AND_MODEL_TAB_NAME)
+        # LLM tab for LLM settings
+        llm_tab = QWidget()
+        llm_layout = QVBoxLayout(llm_tab)
+        
+        llm_label = QLabel("LLM Processing Settings")
+        llm_layout.addWidget(llm_label)
+        
+        llm_help = QLabel("Configure Large Language Model processing settings for post-transcription analysis.")
+        llm_help.setWordWrap(True)
+        llm_layout.addWidget(llm_help)
+        
+        # LLM enable/disable
+        self.llm_enabled_checkbox = QCheckBox("Enable LLM Processing")
+        llm_layout.addWidget(self.llm_enabled_checkbox)
+        
+        # LLM model selection
+        llm_form = QWidget()
+        llm_form_layout = QFormLayout(llm_form)
+        
+        llm_model_label = QLabel("LLM Model:")
+        self.llm_model_combo = QComboBox()
+        
+        # Add model options from LLMModelManager
+        llm_models = LLMModelManager.get_models()
+        for model in llm_models:
+            self.llm_model_combo.addItem(model.name, model.id)
+            # Add tooltip
+            self.llm_model_combo.setItemData(
+                self.llm_model_combo.count() - 1,
+                model.description,
+                Qt.ItemDataRole.ToolTipRole
+            )
+        
+        llm_form_layout.addRow(llm_model_label, self.llm_model_combo)
+        llm_layout.addWidget(llm_form)
+        
+        # LLM instructions
+        llm_instr_label = QLabel("LLM System Instructions:")
+        llm_layout.addWidget(llm_instr_label)
+        
+        llm_instr_help = QLabel("Enter instructions for the LLM to guide how it processes the transcription. One instruction per line.")
+        llm_instr_help.setWordWrap(True)
+        llm_layout.addWidget(llm_instr_help)
+        
+        self.llm_instructions_edit = QTextEdit()
+        llm_layout.addWidget(self.llm_instructions_edit)
+        
+        # Add tabs to the tab widget
+        self.tab_widget.addTab(vocab_tab, "Vocabulary")
+        self.tab_widget.addTab(instr_tab, "Transcription Instructions")
+        self.tab_widget.addTab(settings_tab, "Language & Model")
+        self.tab_widget.addTab(llm_tab, "LLM Settings")
         
         right_layout.addWidget(self.tab_widget)
-        
         
         # Save changes button - style consistent with other buttons
         self.save_button = QPushButton(AppLabels.INSTRUCTION_SETS_SAVE_BUTTON)
@@ -366,6 +436,8 @@ class InstructionSetsDialog(QDialog):
             # Clear editors
             self.vocabulary_edit.clear()
             self.instructions_edit.clear()
+            self.llm_instructions_edit.clear()
+            self.llm_enabled_checkbox.setChecked(False)
             return
         
         # Get selected set
@@ -394,6 +466,20 @@ class InstructionSetsDialog(QDialog):
                         model_index = i
                         break
                 self.model_combo.setCurrentIndex(model_index)
+                
+                # Update LLM settings
+                self.llm_enabled_checkbox.setChecked(instruction_set.llm_enabled)
+                
+                # Update LLM model selection
+                llm_model_index = 0  # Default to first model
+                for i in range(self.llm_model_combo.count()):
+                    if self.llm_model_combo.itemData(i) == instruction_set.llm_model:
+                        llm_model_index = i
+                        break
+                self.llm_model_combo.setCurrentIndex(llm_model_index)
+                
+                # Update LLM instructions
+                self.llm_instructions_edit.setPlainText("\n".join(instruction_set.llm_instructions))
                 break
     
     def on_add_set(self):
@@ -507,8 +593,19 @@ class InstructionSetsDialog(QDialog):
         language = self.language_combo.currentData()
         model = self.model_combo.currentData()
         
+        # Get LLM settings
+        llm_enabled = self.llm_enabled_checkbox.isChecked()
+        llm_model = self.llm_model_combo.currentData()
+        llm_instructions = self.llm_instructions_edit.toPlainText().strip().split("\n")
+        
+        # Filter empty LLM instructions
+        llm_instructions = [i for i in llm_instructions if i]
+        
         # Update set
-        self.manager.update_set(name, vocabulary, instructions, language, model)
+        self.manager.update_set(
+            name, vocabulary, instructions, language, model,
+            llm_enabled, llm_model, llm_instructions
+        )
         
         # Show confirmation
         SimpleMessageDialog.show_message(
