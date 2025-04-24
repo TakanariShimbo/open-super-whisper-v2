@@ -165,7 +165,7 @@ class MainWindow(QMainWindow):
         control_layout = QGridLayout()
         
         # Recording control
-        self.record_button = QPushButton(AppLabels.RECORD_START_BUTTON)
+        self.record_button = QPushButton(AppLabels.MAIN_WIN_RECORD_START_BUTTON)
         self.record_button.setMinimumHeight(50)
         self.record_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.record_button.clicked.connect(self.toggle_recording)
@@ -188,12 +188,12 @@ class MainWindow(QMainWindow):
         transcription_layout = QVBoxLayout(transcription_panel)
         
         # Title label
-        title_label = QLabel(AppLabels.TRANSCRIPTION_TITLE)
+        title_label = QLabel(AppLabels.MAIN_WIN_TRANSCRIPTION_TITLE)
         transcription_layout.addWidget(title_label)
         
         # Transcription output
         self.transcription_text = QTextEdit()
-        self.transcription_text.setPlaceholderText(AppLabels.TRANSCRIPTION_PLACEHOLDER)
+        self.transcription_text.setPlaceholderText(AppLabels.MAIN_WIN_TRANSCRIPTION_PLACEHOLDER)
         self.transcription_text.setReadOnly(False)  # Editable
         self.transcription_text.setMinimumHeight(250)
         
@@ -205,7 +205,7 @@ class MainWindow(QMainWindow):
         self.status_bar.showMessage(AppLabels.STATUS_READY)
         
         # Recording indicator
-        self.recording_indicator = QLabel(AppLabels.UI_RECORDING_INDICATOR)
+        self.recording_indicator = QLabel(AppLabels.STATUS_RECORDING_INDICATOR)
         
         self.recording_timer_label = QLabel(AppLabels.STATUS_TIMER_INITIAL)
         
@@ -234,35 +234,35 @@ class MainWindow(QMainWindow):
         self.toolbar.setIconSize(QSize(24, 24))
         
         # API key settings
-        api_action = QAction(AppLabels.API_KEY_SETTINGS, self)
+        api_action = QAction(AppLabels.MAIN_WIN_API_KEY_SETTINGS, self)
         api_action.triggered.connect(self.show_api_key_dialog)
         self.toolbar.addAction(api_action)
         
         self.toolbar.addSeparator()
         
         # Hotkey settings
-        hotkey_action = QAction(AppLabels.HOTKEY_SETTINGS, self)
+        hotkey_action = QAction(AppLabels.MAIN_WIN_HOTKEY_SETTINGS, self)
         hotkey_action.triggered.connect(self.show_hotkey_dialog)
         self.toolbar.addAction(hotkey_action)
         
         self.toolbar.addSeparator()
         
         # Instruction sets management
-        instruction_sets_action = QAction(AppLabels.INSTRUCTION_SETS_BUTTON, self)
+        instruction_sets_action = QAction(AppLabels.MAIN_WIN_INSTRUCTION_SETS_BUTTON, self)
         instruction_sets_action.triggered.connect(self.show_instruction_sets_dialog)
         self.toolbar.addAction(instruction_sets_action)
         
         self.toolbar.addSeparator()
         
         # Copy to clipboard
-        copy_action = QAction(AppLabels.COPY_TO_CLIPBOARD, self)
+        copy_action = QAction(AppLabels.MAIN_WIN_COPY_TO_CLIPBOARD, self)
         copy_action.triggered.connect(self.copy_to_clipboard)
         self.toolbar.addAction(copy_action)
         
         self.toolbar.addSeparator()
         
         # Auto copy setting
-        self.auto_copy_action = QAction(AppLabels.AUTO_COPY_BUTTON, self)
+        self.auto_copy_action = QAction(AppLabels.MAIN_WIN_AUTO_COPY_BUTTON, self)
         self.auto_copy_action.setCheckable(True)
         self.auto_copy_action.setChecked(self.auto_copy)
         self.auto_copy_action.triggered.connect(self.toggle_auto_copy)
@@ -271,7 +271,7 @@ class MainWindow(QMainWindow):
         self.toolbar.addSeparator()
         
         # Sound setting
-        self.sound_action = QAction(AppLabels.SOUND_BUTTON, self)
+        self.sound_action = QAction(AppLabels.MAIN_WIN_SOUND_BUTTON, self)
         self.sound_action.setCheckable(True)
         self.sound_action.setChecked(self.enable_sound)
         self.sound_action.triggered.connect(self.toggle_sound_option)
@@ -280,7 +280,7 @@ class MainWindow(QMainWindow):
         self.toolbar.addSeparator()
         
         # Indicator display setting
-        self.indicator_action = QAction(AppLabels.INDICATOR_BUTTON, self)
+        self.indicator_action = QAction(AppLabels.MAIN_WIN_INDICATOR_BUTTON, self)
         self.indicator_action.setCheckable(True)
         self.indicator_action.setChecked(self.show_indicator)
         self.indicator_action.triggered.connect(self.toggle_indicator_option)
@@ -289,7 +289,7 @@ class MainWindow(QMainWindow):
         self.toolbar.addSeparator()
         
         # Exit application
-        exit_action = QAction(AppLabels.EXIT_APP, self)
+        exit_action = QAction(AppLabels.MAIN_WIN_EXIT_APP, self)
         exit_action.triggered.connect(self.quit_application)
         self.toolbar.addAction(exit_action)
         
@@ -347,7 +347,7 @@ class MainWindow(QMainWindow):
             SimpleMessageDialog.show_message(self, AppLabels.ERROR_TITLE, AppLabels.ERROR_API_KEY_REQUIRED, SimpleMessageDialog.WARNING)
             return
             
-        self.record_button.setText(AppLabels.RECORD_STOP_BUTTON)
+        self.record_button.setText(AppLabels.MAIN_WIN_RECORD_STOP_BUTTON)
         self.audio_recorder.start_recording()
         self.recording_status_changed.emit(True)
         
@@ -374,7 +374,7 @@ class MainWindow(QMainWindow):
         This method stops the recording, saves the temporary file,
         and starts the transcription process. It also updates the UI state.
         """
-        self.record_button.setText(AppLabels.RECORD_START_BUTTON)
+        self.record_button.setText(AppLabels.MAIN_WIN_RECORD_START_BUTTON)
         audio_file = self.audio_recorder.stop_recording()
         self.recording_status_changed.emit(False)
         
@@ -404,7 +404,7 @@ class MainWindow(QMainWindow):
         
         if is_recording:
             # Recording active
-            self.record_button.setText(AppLabels.RECORD_STOP_BUTTON)
+            self.record_button.setText(AppLabels.MAIN_WIN_RECORD_STOP_BUTTON)
             self.status_bar.showMessage(AppLabels.STATUS_RECORDING)
             
             if self.show_indicator:
@@ -413,7 +413,7 @@ class MainWindow(QMainWindow):
                 self.status_indicator_window.show()
         else:
             # Recording stopped
-            self.record_button.setText(AppLabels.RECORD_START_BUTTON)
+            self.record_button.setText(AppLabels.MAIN_WIN_RECORD_START_BUTTON)
             self.status_bar.showMessage(AppLabels.STATUS_READY)
             
             # Reset timer

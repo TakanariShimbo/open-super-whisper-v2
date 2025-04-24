@@ -44,7 +44,7 @@ class HotkeyDialog(QDialog):
     def init_ui(self):
         """Initialize the user interface."""
         # Set dialog properties
-        self.setWindowTitle(AppLabels.DIALOG_HOTKEY_TITLE)
+        self.setWindowTitle(AppLabels.HOTKEY_TITLE)
         self.setMinimumWidth(400)
         
         # Create layout

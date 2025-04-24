@@ -15,21 +15,19 @@ class AppLabels:
     # Application metadata
     APP_TITLE = "Open Super Whisper"
     
-    # Button labels
-    RECORD_START_BUTTON = "Start Recording"
-    RECORD_STOP_BUTTON = "Stop Recording"
-    API_KEY_SETTINGS = "API Key Settings"
-    HOTKEY_SETTINGS = "Hotkey Settings"
-    INSTRUCTION_SETS_BUTTON = "Instruction Sets"
-    COPY_TO_CLIPBOARD = "Copy to Clipboard"
-    AUTO_COPY_BUTTON = "Auto-Copy"
-    SOUND_BUTTON = "Enable Sounds"
-    INDICATOR_BUTTON = "Show Indicator"
-    EXIT_APP = "Exit"
-    
-    # Transcription UI
-    TRANSCRIPTION_TITLE = "Transcription"
-    TRANSCRIPTION_PLACEHOLDER = "Transcription will appear here..."
+    # Main Window
+    MAIN_WIN_RECORD_START_BUTTON = "Start Recording"
+    MAIN_WIN_RECORD_STOP_BUTTON = "Stop Recording"
+    MAIN_WIN_API_KEY_SETTINGS = "API Key Settings"
+    MAIN_WIN_HOTKEY_SETTINGS = "Hotkey Settings"
+    MAIN_WIN_INSTRUCTION_SETS_BUTTON = "Instruction Sets"
+    MAIN_WIN_COPY_TO_CLIPBOARD = "Copy to Clipboard"
+    MAIN_WIN_AUTO_COPY_BUTTON = "Auto-Copy"
+    MAIN_WIN_SOUND_BUTTON = "Enable Sounds"
+    MAIN_WIN_INDICATOR_BUTTON = "Show Indicator"
+    MAIN_WIN_EXIT_APP = "Exit"
+    MAIN_WIN_TRANSCRIPTION_TITLE = "Transcription"
+    MAIN_WIN_TRANSCRIPTION_PLACEHOLDER = "Transcription will appear here..."
     
     # Status messages
     STATUS_READY = "Ready"
@@ -46,40 +44,35 @@ class AppLabels:
     STATUS_INDICATOR_SHOWN = "Status indicator enabled"
     STATUS_INDICATOR_HIDDEN = "Status indicator disabled"
     STATUS_INSTRUCTION_SET_ACTIVE = "Instruction set '{}' activated"
-    
-    # UI Elements
-    UI_RECORDING_INDICATOR = "●"
+    STATUS_RECORDING_INDICATOR = "●"
     STATUS_TIMER_INITIAL = "00:00"
     
-    # Dialog titles
-    DIALOG_API_KEY_TITLE = "API Key Settings"
-    DIALOG_HOTKEY_TITLE = "Global Hotkey Settings"
-    DIALOG_INSTRUCTION_SETS_TITLE = "Instruction Sets"
-    
+    # Tray menu
+    TRAY_SHOW = "Show Application"
+    TRAY_RECORD = "Start/Stop Recording"
+    TRAY_EXIT = "Exit"
+
     # Instruction Sets Dialog
+    INSTRUCTION_SETS_TITLE = "Instruction Sets Settings"
     INSTRUCTION_SETS_LIST_LABEL = "Instruction Sets:"
     INSTRUCTION_SET_ADD_BUTTON = "New"
     INSTRUCTION_SET_RENAME_BUTTON = "Rename"
     INSTRUCTION_SET_DELETE_BUTTON = "Delete"
     INSTRUCTION_SET_ACTIVATE_BUTTON = "Activate"
     INSTRUCTION_SET_SAVE_BUTTON = "Save"
-    
     ## Vocabulary Tab
     VOCABULARY_LABEL = "Custom Vocabulary:"
     VOCABULARY_HELP = "Enter words or phrases to improve transcription accuracy. One item per line."
     VOCABULARY_TAB_NAME = "Vocabulary"
-    
     ## Instructions Tab
     INSTRUCTIONS_LABEL = "System Instructions:"
     INSTRUCTIONS_HELP = "Enter system instructions to control transcription behavior. One instruction per line."
     INSTRUCTIONS_TAB_NAME = "Instructions"
-    
     ## Settings Tab
     SETTINGS_HELP = "Configure language and model settings for this instruction set. These settings will be used when this instruction set is active."
     LANGUAGE_AND_MODEL_TAB_NAME = "Language & Model"
     LANGUAGE_LABEL = "Language:"
     MODEL_LABEL = "Transcription Model:"
-    
     ## Instruction Set Dialogs
     NEW_INSTRUCTION_SET_TITLE = "New Instruction Set"
     NEW_INSTRUCTION_SET_PROMPT = "Enter a name for the new instruction set:"
@@ -95,6 +88,7 @@ class AppLabels:
     SET_ACTIVATED_MESSAGE = "Instruction set '{}' has been activated."
     
     # API Key Dialog
+    API_KEY_TITLE = "API Key Settings"
     API_KEY_DESCRIPTION = "Enter your OpenAI API key to use transcription services. The key will be stored locally on your device."
     API_KEY_LABEL = "API Key:"
     API_KEY_PLACEHOLDER = "Enter your OpenAI API key..."
@@ -108,6 +102,7 @@ class AppLabels:
     API_KEY_VALIDATION_ERROR_MESSAGE = "Failed to validate API key: {}"
     
     # Hotkey Dialog
+    HOTKEY_TITLE = "Global Hotkey Settings"
     HOTKEY_DESCRIPTION = "Set a global hotkey combination for starting and stopping recording. Press the desired key combination in the input field below."
     HOTKEY_LABEL = "Hotkey:"
     HOTKEY_PLACEHOLDER = "Click here and press hotkey combination..."
@@ -131,7 +126,3 @@ class AppLabels:
     HOTKEY_INFO_TITLE = "Hotkey Configuration"
     HOTKEY_INFO_MESSAGE = "You can start/stop recording by pressing {}.\\nThis works even when the app is minimized or in the background."
     
-    # Tray menu
-    TRAY_SHOW = "Show Application"
-    TRAY_RECORD = "Start/Stop Recording"
-    TRAY_EXIT = "Exit"

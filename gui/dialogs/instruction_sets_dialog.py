@@ -176,7 +176,7 @@ class InstructionSetsDialog(QDialog):
     def init_ui(self):
         """Initialize the user interface."""
         # Set dialog properties
-        self.setWindowTitle(AppLabels.DIALOG_INSTRUCTION_SETS_TITLE)
+        self.setWindowTitle(AppLabels.INSTRUCTION_SETS_TITLE)
         self.setMinimumSize(700, 500)
         
         # Create main layout

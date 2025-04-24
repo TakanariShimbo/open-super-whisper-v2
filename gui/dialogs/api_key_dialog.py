@@ -43,7 +43,7 @@ class APIKeyDialog(QDialog):
     def init_ui(self):
         """Initialize the user interface."""
         # Set dialog properties
-        self.setWindowTitle(AppLabels.DIALOG_API_KEY_TITLE)
+        self.setWindowTitle(AppLabels.API_KEY_TITLE)
         self.setMinimumWidth(400)
         
         # Create layout
