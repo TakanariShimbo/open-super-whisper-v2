@@ -289,8 +289,8 @@ class InstructionSetsDialog(QDialog):
         settings_layout.addWidget(settings_help)
         
         # Language selection
-        language_form = QWidget()
-        language_layout = QFormLayout(language_form)
+        main_form = QWidget()
+        main_layout = QFormLayout(main_form)
         
         language_label = QLabel(AppLabels.INSTRUCTION_SETS_LANGUAGE_LABEL)
         self.language_combo = QComboBox()
@@ -307,7 +307,7 @@ class InstructionSetsDialog(QDialog):
                     Qt.ItemDataRole.ToolTipRole
                 )
         
-        language_layout.addRow(language_label, self.language_combo)
+        main_layout.addRow(language_label, self.language_combo)
         
         # Model selection
         model_label = QLabel(AppLabels.INSTRUCTION_SETS_MODEL_LABEL)
@@ -324,20 +324,12 @@ class InstructionSetsDialog(QDialog):
                 Qt.ItemDataRole.ToolTipRole
             )
         
-        language_layout.addRow(model_label, self.model_combo)
-        settings_layout.addWidget(language_form)
-        
-        # Add separator for LLM settings
-        llm_settings_label = QLabel(AppLabels.INSTRUCTION_SETS_LLM_MODEL_SECTION_LABEL)
-        settings_layout.addWidget(llm_settings_label)
-        
-        # LLM settings form
-        llm_settings_form = QWidget()
-        llm_settings_layout = QFormLayout(llm_settings_form)
-        
+        main_layout.addRow(model_label, self.model_combo)
+                      
         # LLM enable/disable
-        self.llm_enabled_checkbox = QCheckBox(AppLabels.INSTRUCTION_SETS_LLM_TOGGLE_LABEL)
-        llm_settings_layout.addRow(AppConfig.LLM_SETTINGS_LABEL, self.llm_enabled_checkbox)
+        llm_enabled_label = QLabel(AppLabels.INSTRUCTION_SETS_LLM_TOGGLE_LABEL)
+        self.llm_enabled_checkbox = QCheckBox()
+        main_layout.addRow(llm_enabled_label, self.llm_enabled_checkbox)
         
         # LLM model selection
         llm_model_label = QLabel(AppLabels.INSTRUCTION_SETS_LLM_MODEL_LABEL)
@@ -354,8 +346,8 @@ class InstructionSetsDialog(QDialog):
                 Qt.ItemDataRole.ToolTipRole
             )
         
-        llm_settings_layout.addRow(llm_model_label, self.llm_model_combo)
-        settings_layout.addWidget(llm_settings_form)
+        main_layout.addRow(llm_model_label, self.llm_model_combo)
+        settings_layout.addWidget(main_form)
         
         # Add spacer
         settings_layout.addStretch(1)
@@ -379,7 +371,7 @@ class InstructionSetsDialog(QDialog):
         self.tab_widget.addTab(vocab_tab, AppLabels.INSTRUCTION_SETS_VOCABULARY_TAB_NAME)
         self.tab_widget.addTab(instr_tab, AppLabels.INSTRUCTION_SETS_INSTRUCTIONS_TAB_NAME)
         self.tab_widget.addTab(llm_tab, AppLabels.INSTRUCTION_SETS_LLM_TAB_NAME)
-        self.tab_widget.addTab(settings_tab, AppLabels.INSTRUCTION_SETS_LANGUAGE_AND_MODEL_TAB_NAME)
+        self.tab_widget.addTab(settings_tab, AppLabels.INSTRUCTION_SETS_SETTINGS_TAB_NAME)
         
         right_layout.addWidget(self.tab_widget)
         
