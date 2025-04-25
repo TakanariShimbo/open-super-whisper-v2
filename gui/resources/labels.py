@@ -62,7 +62,7 @@ class AppLabels:
     # Status messages
     STATUS_READY = "Ready"
     STATUS_RECORDING = "Recording..."
-    STATUS_TRANSCRIBING = "Transcribing..."
+    STATUS_TRANSCRIBING = "Processing..."
     STATUS_COMPLETE = "Complete!"
     STATUS_COPIED = "Copied to clipboard"
     STATUS_TRANSCRIPTION_COPIED = "Transcription copied to clipboard"
@@ -85,7 +85,7 @@ class AppLabels:
     # Indicator
     INDICATOR_TIMER_INITIAL = "00:00"
     INDICATOR_RECORDING = "Recording..."
-    INDICATOR_TRANSCRIBING = "Transcribing..."
+    INDICATOR_PROCESSING = "Processing..."
     INDICATOR_COMPLETE = "Complete!"
 
     # Tray menu

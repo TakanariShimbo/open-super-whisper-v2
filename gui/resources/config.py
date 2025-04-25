@@ -30,3 +30,4 @@ class AppConfig:
     
     # UI settings
     LLM_SETTINGS_LABEL = ""  # Empty string for the QFormLayout label of LLM settings
+    DEFAULT_INDICATOR_DISPLAY_TIME = 3000  # 3 seconds

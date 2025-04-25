@@ -21,8 +21,8 @@ class StatusIndicatorWindow(QWidget):
     
     # Status constants
     MODE_RECORDING = 1
-    MODE_TRANSCRIBING = 2
-    MODE_TRANSCRIBED = 3
+    MODE_PROCESSING = 2
+    MODE_COMPLETE = 3
     
     def __init__(self, parent=None):
         """
@@ -100,11 +100,11 @@ class StatusIndicatorWindow(QWidget):
         if self._current_mode == self.MODE_RECORDING:
             self.status_label.setText(AppLabels.INDICATOR_RECORDING)
             self.status_label.setStyleSheet("color: #ff5f5f; font-weight: bold;")
-        elif self._current_mode == self.MODE_TRANSCRIBING:
-            self.status_label.setText(AppLabels.INDICATOR_TRANSCRIBING)
-            self.status_label.setStyleSheet("color: #5f9fff; font-weight: bold;")
+        elif self._current_mode == self.MODE_PROCESSING:
+            self.status_label.setText(AppLabels.INDICATOR_PROCESSING)
+            self.status_label.setStyleSheet("color: #999999; font-weight: bold;")
             self.timer_label.setText("")
-        elif self._current_mode == self.MODE_TRANSCRIBED:
+        elif self._current_mode == self.MODE_COMPLETE:
             self.status_label.setText(AppLabels.INDICATOR_COMPLETE)
             self.status_label.setStyleSheet("color: #5fff5f; font-weight: bold;")
             self.timer_label.setText("")
@@ -116,7 +116,7 @@ class StatusIndicatorWindow(QWidget):
         Parameters
         ----------
         mode : int
-            Mode constant (MODE_RECORDING, MODE_TRANSCRIBING, MODE_TRANSCRIBED)
+            Mode constant (MODE_RECORDING, MODE_PROCESSING, MODE_COMPLETE)
         """
         self._current_mode = mode
         self._update_indicator()

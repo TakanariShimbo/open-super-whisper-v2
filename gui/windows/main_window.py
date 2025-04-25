@@ -546,7 +546,7 @@ class MainWindow(QMainWindow):
         if self.show_indicator:
             # Reset window first
             self.status_indicator_window.hide()
-            self.status_indicator_window.set_mode(StatusIndicatorWindow.MODE_TRANSCRIBING)
+            self.status_indicator_window.set_mode(StatusIndicatorWindow.MODE_PROCESSING)
             self.status_indicator_window.show()
         
         # Get language from active instruction set
@@ -604,7 +604,10 @@ class MainWindow(QMainWindow):
         # Update UI
         if self.show_indicator:
             # Show processing complete indicator
-            self.status_indicator_window.set_mode(StatusIndicatorWindow.MODE_TRANSCRIBED)
+            self.status_indicator_window.set_mode(StatusIndicatorWindow.MODE_COMPLETE)
+            
+            # Set timer to hide indicator after configured time
+            QTimer.singleShot(AppConfig.DEFAULT_INDICATOR_DISPLAY_TIME, lambda: self.status_indicator_window.hide())
         
         # Show transcription text
         self.transcription_text.setText(result.transcription)
