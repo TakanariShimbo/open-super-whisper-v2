@@ -263,6 +263,29 @@ class HotkeyManager:
         # Join all parts with '+' to create the final hotkey string
         return '+'.join(processed_parts)
     
+    def has_hotkey_conflict(self, hotkey_str: str) -> bool:
+        """
+        Check if a hotkey string conflicts with any registered hotkeys.
+        
+        Parameters
+        ----------
+        hotkey_str : str
+            Hotkey string to check.
+            
+        Returns
+        -------
+        bool
+            True if there is a conflict, False otherwise.
+        """
+        # Parse hotkey string
+        hotkey_combination = self.parse_hotkey_string(hotkey_str)
+        
+        # Check if valid and already registered
+        if not hotkey_combination:
+            return False
+            
+        return hotkey_combination in self._hotkeys
+    
     @staticmethod
     def is_valid_hotkey(hotkey_str: str) -> bool:
         """

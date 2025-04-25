@@ -102,6 +102,14 @@ class AppLabels:
     INSTRUCTION_SETS_ACTIVATE_BUTTON = "Activate"
     INSTRUCTION_SETS_SAVE_BUTTON = "Save"
     
+    # Instruction set hotkey labels
+    INSTRUCTION_SETS_HOTKEY_LABEL = "Hotkey:"
+    INSTRUCTION_SETS_HOTKEY_PLACEHOLDER = "No hotkey set"
+    INSTRUCTION_SETS_SET_HOTKEY_BUTTON = "Set Hotkey"
+    INSTRUCTION_SETS_HOTKEY_CONFLICT_TITLE = "Hotkey Conflict"
+    INSTRUCTION_SETS_HOTKEY_CONFLICT_MESSAGE = "This hotkey is already assigned to '{}'."
+    STATUS_INSTRUCTION_SET_ACTIVATED_BY_HOTKEY = "Instruction set '{}' activated by hotkey"
+    
     ## Vocabulary Tab
     INSTRUCTION_SETS_VOCABULARY_TAB_NAME = "Vocabulary"
     INSTRUCTION_SETS_VOCABULARY_HELP = "Enter words or phrases to improve transcription accuracy. One item per line."

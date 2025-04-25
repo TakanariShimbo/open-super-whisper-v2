@@ -17,6 +17,7 @@ from PyQt6.QtGui import QIcon
 from gui.resources.labels import AppLabels
 from gui.resources.config import AppConfig
 from gui.dialogs.simple_message_dialog import SimpleMessageDialog
+from gui.dialogs.hotkey_dialog import HotkeyDialog
 
 # Import core instruction sets
 from core.instructions import InstructionSetManager, InstructionSet
@@ -58,21 +59,21 @@ class GUIInstructionSetManager:
         return self.core_manager.get_all_sets()
     
     def create_set(self, name, vocabulary=None, instructions=None, language=None, model=None,
-                  llm_enabled=False, llm_model=None, llm_instructions=None):
+                  llm_enabled=False, llm_model=None, llm_instructions=None, hotkey=""):
         """Create a new instruction set."""
         result = self.core_manager.create_set(
             name, vocabulary, instructions, language, model,
-            llm_enabled, llm_model, llm_instructions
+            llm_enabled, llm_model, llm_instructions, hotkey
         )
         self.save_to_settings()
         return result
     
     def update_set(self, name, vocabulary=None, instructions=None, language=None, model=None,
-                  llm_enabled=None, llm_model=None, llm_instructions=None):
+                  llm_enabled=None, llm_model=None, llm_instructions=None, hotkey=None):
         """Update an existing instruction set."""
         result = self.core_manager.update_set(
             name, vocabulary, instructions, language, model,
-            llm_enabled, llm_model, llm_instructions
+            llm_enabled, llm_model, llm_instructions, hotkey
         )
         self.save_to_settings()
         return result
@@ -94,6 +95,16 @@ class GUIInstructionSetManager:
         result = self.core_manager.rename_set(old_name, new_name)
         self.save_to_settings()
         return result
+    
+    def update_set_hotkey(self, name, hotkey):
+        """Update the hotkey for an instruction set."""
+        result = self.core_manager.update_set_hotkey(name, hotkey)
+        self.save_to_settings()
+        return result
+    
+    def get_set_by_hotkey(self, hotkey):
+        """Get an instruction set by its hotkey."""
+        return self.core_manager.get_set_by_hotkey(hotkey)
     
     def get_active_vocabulary(self):
         """Get vocabulary from the active set."""
@@ -347,6 +358,22 @@ class InstructionSetsDialog(QDialog):
             )
         
         main_layout.addRow(llm_model_label, self.llm_model_combo)
+        
+        # Add hotkey selection
+        hotkey_label = QLabel(AppLabels.INSTRUCTION_SETS_HOTKEY_LABEL)
+        self.hotkey_input = QLineEdit()
+        self.hotkey_input.setReadOnly(True)
+        self.hotkey_input.setPlaceholderText(AppLabels.INSTRUCTION_SETS_HOTKEY_PLACEHOLDER)
+        
+        hotkey_button = QPushButton(AppLabels.INSTRUCTION_SETS_SET_HOTKEY_BUTTON)
+        hotkey_button.clicked.connect(self.show_hotkey_dialog)
+        
+        hotkey_layout = QHBoxLayout()
+        hotkey_layout.addWidget(self.hotkey_input)
+        hotkey_layout.addWidget(hotkey_button)
+        
+        main_layout.addRow(hotkey_label, hotkey_layout)
+        
         settings_layout.addWidget(main_form)
         
         # Add spacer
@@ -431,6 +458,7 @@ class InstructionSetsDialog(QDialog):
             self.instructions_edit.clear()
             self.llm_instructions_edit.clear()
             self.llm_enabled_checkbox.setChecked(False)
+            self.hotkey_input.clear()
             return
         
         # Get selected set
@@ -473,6 +501,9 @@ class InstructionSetsDialog(QDialog):
                 
                 # Update LLM instructions
                 self.llm_instructions_edit.setPlainText("\n".join(instruction_set.llm_instructions))
+                
+                # Update hotkey field
+                self.hotkey_input.setText(instruction_set.hotkey)
                 break
     
     def on_add_set(self):
@@ -566,6 +597,40 @@ class InstructionSetsDialog(QDialog):
                     next_row = min(row, self.sets_list.count() - 1)
                     self.sets_list.setCurrentRow(next_row)
     
+    def show_hotkey_dialog(self):
+        """Show dialog to set hotkey for the selected instruction set."""
+        row = self.sets_list.currentRow()
+        if row < 0:
+            return
+        
+        set_name = self.sets_list.item(row).text()
+        
+        # Find current hotkey
+        current_hotkey = ""
+        for instruction_set in self.manager.get_all_sets():
+            if instruction_set.name == set_name:
+                current_hotkey = instruction_set.hotkey
+                break
+        
+        dialog = HotkeyDialog(self, current_hotkey)
+        if dialog.exec():
+            new_hotkey = dialog.get_hotkey()
+            if new_hotkey:
+                # Check for conflicts with other instruction sets
+                for instruction_set in self.manager.get_all_sets():
+                    if instruction_set.name != set_name and instruction_set.hotkey == new_hotkey:
+                        SimpleMessageDialog.show_message(
+                            self,
+                            AppLabels.INSTRUCTION_SETS_HOTKEY_CONFLICT_TITLE,
+                            AppLabels.INSTRUCTION_SETS_HOTKEY_CONFLICT_MESSAGE.format(instruction_set.name),
+                            SimpleMessageDialog.WARNING
+                        )
+                        return
+                
+                # Update hotkey
+                self.manager.update_set_hotkey(set_name, new_hotkey)
+                self.hotkey_input.setText(new_hotkey)
+    
     def on_save_changes(self):
         """Handle saving changes to the current instruction set."""
         row = self.sets_list.currentRow()
@@ -591,13 +656,16 @@ class InstructionSetsDialog(QDialog):
         llm_model = self.llm_model_combo.currentData()
         llm_instructions = self.llm_instructions_edit.toPlainText().strip().split("\n")
         
+        # Get hotkey
+        hotkey = self.hotkey_input.text()
+        
         # Filter empty LLM instructions
         llm_instructions = [i for i in llm_instructions if i]
         
         # Update set
         self.manager.update_set(
             name, vocabulary, instructions, language, model,
-            llm_enabled, llm_model, llm_instructions
+            llm_enabled, llm_model, llm_instructions, hotkey
         )
         
         # Show confirmation

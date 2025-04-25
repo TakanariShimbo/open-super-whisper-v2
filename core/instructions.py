@@ -18,6 +18,9 @@ class InstructionSet:
     This class represents a named collection of settings that can be applied
     to a transcription request, including custom vocabulary, system instructions,
     preferred language, transcription model, and LLM processing options.
+    
+    The class also includes a hotkey setting that allows users to quickly switch
+    between instruction sets using keyboard shortcuts.
     """
     name: str
     vocabulary: List[str] = field(default_factory=list)
@@ -29,6 +32,9 @@ class InstructionSet:
     llm_enabled: bool = False
     llm_model: str = "gpt-3.5-turbo"
     llm_instructions: List[str] = field(default_factory=list)
+    
+    # Hotkey setting
+    hotkey: str = ""  # Hotkey string (e.g., "ctrl+shift+1", "alt+f1")
 
 
 class InstructionSetManager:
@@ -64,7 +70,7 @@ class InstructionSetManager:
     def create_set(self, name: str, vocabulary: List[str] = None, instructions: List[str] = None, 
                 language: Optional[str] = None, model: str = "whisper-1",
                 llm_enabled: bool = False, llm_model: str = "gpt-3.5-turbo", 
-                llm_instructions: List[str] = None) -> bool:
+                llm_instructions: List[str] = None, hotkey: str = "") -> bool:
         """
         Create a new instruction set.
         
@@ -86,6 +92,8 @@ class InstructionSetManager:
             LLM model ID to use, by default "gpt-3.5-turbo".
         llm_instructions : List[str], optional
             List of LLM system instructions, by default None.
+        hotkey : str, optional
+            Hotkey string for quick activation, by default empty string.
             
         Returns
         -------
@@ -103,7 +111,8 @@ class InstructionSetManager:
             model=model,
             llm_enabled=llm_enabled,
             llm_model=llm_model,
-            llm_instructions=llm_instructions or []
+            llm_instructions=llm_instructions or [],
+            hotkey=hotkey
         )
         
         # If this is the first set, make it active
@@ -115,7 +124,7 @@ class InstructionSetManager:
     def update_set(self, name: str, vocabulary: List[str] = None, instructions: List[str] = None,
                  language: Optional[str] = None, model: Optional[str] = None,
                  llm_enabled: Optional[bool] = None, llm_model: Optional[str] = None,
-                 llm_instructions: List[str] = None) -> bool:
+                 llm_instructions: List[str] = None, hotkey: Optional[str] = None) -> bool:
         """
         Update an existing instruction set.
         
@@ -137,6 +146,8 @@ class InstructionSetManager:
             LLM model ID to use, by default None (unchanged).
         llm_instructions : List[str], optional
             List of LLM system instructions, by default None (unchanged).
+        hotkey : str, optional
+            Hotkey string for quick activation, by default None (unchanged).
             
         Returns
         -------
@@ -166,6 +177,9 @@ class InstructionSetManager:
             
         if llm_instructions is not None:
             self.sets[name].llm_instructions = llm_instructions
+            
+        if hotkey is not None:
+            self.sets[name].hotkey = hotkey
         
         return True
     
@@ -250,7 +264,8 @@ class InstructionSetManager:
             model=instruction_set.model,
             llm_enabled=instruction_set.llm_enabled,
             llm_model=instruction_set.llm_model,
-            llm_instructions=instruction_set.llm_instructions
+            llm_instructions=instruction_set.llm_instructions,
+            hotkey=instruction_set.hotkey
         )
         
         # Update active set name if needed
@@ -371,6 +386,47 @@ class InstructionSetManager:
             return []
         return self.active_set.llm_instructions
     
+    def update_set_hotkey(self, name: str, hotkey: str) -> bool:
+        """
+        Update the hotkey for an instruction set.
+        
+        Parameters
+        ----------
+        name : str
+            Name of the instruction set.
+        hotkey : str
+            Hotkey string.
+            
+        Returns
+        -------
+        bool
+            True if set was updated, False if name doesn't exist.
+        """
+        if name not in self.sets:
+            return False
+        
+        self.sets[name].hotkey = hotkey
+        return True
+    
+    def get_set_by_hotkey(self, hotkey: str) -> Optional[InstructionSet]:
+        """
+        Get an instruction set by its hotkey.
+        
+        Parameters
+        ----------
+        hotkey : str
+            Hotkey string.
+            
+        Returns
+        -------
+        Optional[InstructionSet]
+            The instruction set with the given hotkey, or None if not found.
+        """
+        for instruction_set in self.sets.values():
+            if instruction_set.hotkey == hotkey:
+                return instruction_set
+        return None
+    
     def load_from_dict(self, data: Dict[str, Any]) -> None:
         """
         Load instruction sets from a dictionary.
@@ -399,7 +455,8 @@ class InstructionSetManager:
                     model=set_data.get("model", "whisper-1"),
                     llm_enabled=set_data.get("llm_enabled", False),
                     llm_model=set_data.get("llm_model", "gpt-3.5-turbo"),
-                    llm_instructions=set_data.get("llm_instructions", [])
+                    llm_instructions=set_data.get("llm_instructions", []),
+                    hotkey=set_data.get("hotkey", "")
                 )
         
         # If no sets were loaded and active_set_name is empty, create a default set
@@ -427,7 +484,8 @@ class InstructionSetManager:
                 "model": instruction_set.model,
                 "llm_enabled": instruction_set.llm_enabled,
                 "llm_model": instruction_set.llm_model,
-                "llm_instructions": instruction_set.llm_instructions
+                "llm_instructions": instruction_set.llm_instructions,
+                "hotkey": instruction_set.hotkey
             })
         
         return {

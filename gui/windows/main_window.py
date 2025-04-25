@@ -687,10 +687,18 @@ class MainWindow(QMainWindow):
         continue functioning.
         """
         try:
+            # Clear any existing hotkeys first to avoid conflicts
+            self.hotkey_manager.clear_all_hotkeys()
+            
+            # Register the main recording toggle hotkey
             result = self.hotkey_manager.register_hotkey(self.hotkey, self.toggle_recording)
             
             if result:
                 print(f"Hotkey '{self.hotkey}' has been set successfully")
+                
+                # Register instruction set hotkeys
+                self.register_instruction_set_hotkeys()
+                
                 return True
             else:
                 raise ValueError(f"Failed to register hotkey: {self.hotkey}")
@@ -701,6 +709,52 @@ class MainWindow(QMainWindow):
             self.status_bar.showMessage(AppLabels.HOTKEY_VALIDATION_ERROR_TITLE + ": " + str(e), 5000)
             # Continue with application even if hotkey fails
             return False
+    
+    def register_instruction_set_hotkeys(self):
+        """Register hotkeys for all instruction sets."""
+        # Register hotkeys for all instruction sets with defined hotkeys
+        for instruction_set in self.instruction_set_manager.get_all_sets():
+            if instruction_set.hotkey:
+                # Check for conflict with main hotkey
+                if instruction_set.hotkey == self.hotkey:
+                    print(f"Warning: Instruction set '{instruction_set.name}' hotkey '{instruction_set.hotkey}' conflicts with main recording hotkey")
+                    continue
+                
+                # Create a lambda with the instruction set - use default argument to capture current value
+                callback = lambda set_name=instruction_set.name: self.handle_instruction_set_hotkey(set_name)
+                
+                # Register the hotkey
+                if self.hotkey_manager.register_hotkey(instruction_set.hotkey, callback):
+                    print(f"Instruction set hotkey '{instruction_set.hotkey}' registered for '{instruction_set.name}'")
+                else:
+                    print(f"Failed to register hotkey '{instruction_set.hotkey}' for instruction set '{instruction_set.name}'")
+    
+    def activate_instruction_set_by_name(self, name: str):
+        """
+        Activate an instruction set by name.
+        
+        Parameters
+        ----------
+        name : str
+            Name of the instruction set to activate.
+        """
+        if self.instruction_set_manager.set_active(name):
+            self.apply_instruction_set_settings()
+            self.status_bar.showMessage(
+                AppLabels.STATUS_INSTRUCTION_SET_ACTIVATED_BY_HOTKEY.format(name),
+                3000
+            )
+    
+    def handle_instruction_set_hotkey(self, set_name: str):
+        """
+        Handle instruction set hotkey press.
+        
+        Parameters
+        ----------
+        set_name : str
+            The name of the instruction set to activate.
+        """
+        self.activate_instruction_set_by_name(set_name)
     
     def show_hotkey_dialog(self):
         """
@@ -753,6 +807,9 @@ class MainWindow(QMainWindow):
             
             # Update UI to reflect LLM enabled state
             self.llm_enabled_checkbox.setChecked(self.unified_processor.is_llm_enabled())
+            
+            # Re-register hotkeys
+            self.setup_global_hotkey()
             
             # Show status message
             if self.instruction_set_manager.active_set:
