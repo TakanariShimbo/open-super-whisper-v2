@@ -4,7 +4,7 @@ Hotkey Manager Implementation
 This module provides a platform-independent implementation for registering and managing global hotkeys.
 """
 
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict, Optional, Set
 from pynput import keyboard
 
 
@@ -24,6 +24,8 @@ class HotkeyManager:
         self._listener_active = False
         self._hotkeys = {}  # Dictionary to store hotkey strings and their callbacks
         self._listener = None
+        self._recording_mode = False  # Flag to indicate if recording is in progress
+        self._recording_hotkey = None  # Store the recording hotkey for filtering
     
     def register_hotkey(self, hotkey_str: str, callback: Callable) -> bool:
         """
@@ -98,6 +100,34 @@ class HotkeyManager:
             print(f"Failed to unregister hotkey: {e}")
             return False
     
+    def set_recording_mode(self, enabled: bool, recording_hotkey: Optional[str] = None) -> None:
+        """
+        Set recording mode to filter hotkey events.
+        
+        When recording mode is enabled, only the specified recording hotkey will trigger a callback.
+        All other hotkeys will be ignored. If recording_hotkey is None, the first registered hotkey
+        will be used.
+        
+        Parameters
+        ----------
+        enabled : bool
+            Whether to enable recording mode.
+        recording_hotkey : Optional[str]
+            The hotkey string used for recording. This hotkey will still work
+            even when recording mode is enabled.
+        """
+        self._recording_mode = enabled
+        
+        if enabled and recording_hotkey:
+            # Parse and store the recording hotkey for filtering
+            self._recording_hotkey = self.parse_hotkey_string(recording_hotkey)
+            print(f"Recording mode enabled. Only hotkey '{recording_hotkey}' will be active.")
+        else:
+            # Reset recording hotkey when disabled
+            self._recording_hotkey = None
+            if not enabled:
+                print("Recording mode disabled. All hotkeys are active.")
+    
     def start_listener(self) -> bool:
         """
         Start the hotkey listener.
@@ -112,12 +142,32 @@ class HotkeyManager:
             if not self._hotkeys:
                 return False
             
-            # Create and start a listener with our hotkeys
-            self._listener = keyboard.GlobalHotKeys(self._hotkeys)
+            # Create and start a listener with our hotkeys and event filtering
+            if self._recording_mode and self._recording_hotkey:
+                # In recording mode, we need to create a custom listener that filters events
+                filtered_hotkeys = {}
+                
+                # Only include the recording hotkey
+                for hotkey, callback in self._hotkeys.items():
+                    if hotkey == self._recording_hotkey:
+                        filtered_hotkeys[hotkey] = callback
+                
+                # Use filtered hotkeys if we're in recording mode
+                if filtered_hotkeys:
+                    self._listener = keyboard.GlobalHotKeys(filtered_hotkeys)
+                    print(f"Started hotkey listener in recording mode with 1 active hotkey")
+                else:
+                    # If recording hotkey not found, use all hotkeys but print warning
+                    self._listener = keyboard.GlobalHotKeys(self._hotkeys)
+                    print(f"Warning: Recording hotkey not found in registered hotkeys. All hotkeys will be active.")
+            else:
+                # Normal mode, use all hotkeys
+                self._listener = keyboard.GlobalHotKeys(self._hotkeys)
+                print(f"Started hotkey listener with {len(self._hotkeys)} hotkeys")
+            
             self._listener.start()
             self._listener_active = True
             
-            print(f"Started hotkey listener with {len(self._hotkeys)} hotkeys")
             return True
             
         except Exception as e:

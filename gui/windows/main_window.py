@@ -67,6 +67,9 @@ class MainWindow(QMainWindow):
         # Initialize instruction set manager
         self.instruction_set_manager = GUIInstructionSetManager(self.settings)
         
+        # For storing instruction set hotkeys during recording
+        self.instruction_set_hotkeys = []
+        
         # Initialize core components
         self.audio_recorder = None
         self.unified_processor = None
@@ -434,6 +437,8 @@ class MainWindow(QMainWindow):
         
         This method starts recording and updates the UI state. It also
         displays the timer during recording and shows the indicator window.
+        When recording starts, all instruction set hotkeys are temporarily
+        disabled so only the main recording hotkey works.
         """
         if not self.unified_processor:
             SimpleMessageDialog.show_message(self, AppLabels.MAIN_WIN_API_KEY_ERROR_TITLE, AppLabels.MAIN_WIN_API_KEY_ERROR_REQUIRED, SimpleMessageDialog.WARNING)
@@ -454,6 +459,12 @@ class MainWindow(QMainWindow):
             self.status_indicator_window.set_mode(StatusIndicatorWindow.MODE_RECORDING)
             self.status_indicator_window.show()
         
+        # Enable recording mode to only allow the main hotkey to function
+        self.hotkey_manager.set_recording_mode(True, self.hotkey)
+        
+        # Disable instruction set hotkeys during recording (for backward compatibility)
+        self.disable_instruction_set_hotkeys()
+        
         self.status_bar.showMessage(AppLabels.STATUS_RECORDING)
         
         # Play start sound
@@ -465,7 +476,8 @@ class MainWindow(QMainWindow):
         
         This method stops the recording, saves the temporary file,
         and starts the processing (transcription + optional LLM).
-        It also updates the UI state.
+        It also updates the UI state. When recording stops, all
+        previously disabled instruction set hotkeys are re-enabled.
         """
         self.record_button.setText(AppLabels.MAIN_WIN_RECORD_START_BUTTON)
         audio_file = self.audio_recorder.stop_recording()
@@ -473,6 +485,12 @@ class MainWindow(QMainWindow):
         
         # Stop recording timer
         self.recording_timer.stop()
+        
+        # Disable recording mode to allow all hotkeys again
+        self.hotkey_manager.set_recording_mode(False)
+        
+        # Re-enable instruction set hotkeys (for backward compatibility)
+        self.restore_instruction_set_hotkeys()
         
         if audio_file:
             self.status_bar.showMessage(AppLabels.STATUS_TRANSCRIBING)
@@ -755,6 +773,55 @@ class MainWindow(QMainWindow):
             The name of the instruction set to activate.
         """
         self.activate_instruction_set_by_name(set_name)
+    
+    def disable_instruction_set_hotkeys(self):
+        """
+        Temporarily disable all instruction set hotkeys during recording.
+        
+        This method saves the current instruction set hotkeys and then
+        unregisters them to ensure only the main recording hotkey works
+        during recording.
+        """
+        # Clear the saved hotkeys list
+        self.instruction_set_hotkeys = []
+        
+        # Save and unregister instruction set hotkeys
+        for instruction_set in self.instruction_set_manager.get_all_sets():
+            if instruction_set.hotkey and instruction_set.hotkey != self.hotkey:
+                # Save hotkey info for later restoration
+                self.instruction_set_hotkeys.append({
+                    'name': instruction_set.name,
+                    'hotkey': instruction_set.hotkey
+                })
+                
+                # Unregister the hotkey
+                self.hotkey_manager.unregister_hotkey(instruction_set.hotkey)
+                
+        print(f"Disabled {len(self.instruction_set_hotkeys)} instruction set hotkeys during recording")
+    
+    def restore_instruction_set_hotkeys(self):
+        """
+        Restore previously disabled instruction set hotkeys after recording.
+        
+        This method re-registers all instruction set hotkeys that were
+        disabled during recording.
+        """
+        # Re-register saved hotkeys
+        for hotkey_info in self.instruction_set_hotkeys:
+            set_name = hotkey_info['name']
+            hotkey = hotkey_info['hotkey']
+            
+            # Create callback function
+            callback = lambda name=set_name: self.handle_instruction_set_hotkey(name)
+            
+            # Register the hotkey
+            if self.hotkey_manager.register_hotkey(hotkey, callback):
+                print(f"Restored hotkey '{hotkey}' for instruction set '{set_name}'")
+            else:
+                print(f"Failed to restore hotkey '{hotkey}' for instruction set '{set_name}'")
+        
+        # Clear the saved hotkeys list
+        self.instruction_set_hotkeys = []
     
     def show_hotkey_dialog(self):
         """
