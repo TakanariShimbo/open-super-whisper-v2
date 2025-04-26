@@ -189,7 +189,7 @@ class InstructionSetsDialog(QDialog):
     and analysis are performed.
     """
     
-    def __init__(self, parent=None, manager=None):
+    def __init__(self, parent=None, manager=None, hotkey_manager=None):
         """
         Initialize the InstructionSetsDialog.
         
@@ -199,10 +199,13 @@ class InstructionSetsDialog(QDialog):
             Parent widget, by default None
         manager : GUIInstructionSetManager, optional
             Instruction set manager, by default None
+        hotkey_manager : HotkeyManager, optional
+            Hotkey manager for temporarily disabling hotkeys during dialog, by default None
         """
         super().__init__(parent)
         
         self.manager = manager
+        self.hotkey_manager = hotkey_manager
         
         # Set up UI
         self.init_ui()
@@ -612,8 +615,19 @@ class InstructionSetsDialog(QDialog):
                 current_hotkey = instruction_set.hotkey
                 break
         
+        # Temporarily stop the hotkey listener if it's available
+        hotkey_listener_active = False
+        if self.hotkey_manager:
+            hotkey_listener_active = self.hotkey_manager.stop_listener()
+        
         dialog = HotkeyDialog(self, current_hotkey)
-        if dialog.exec():
+        result = dialog.exec()
+        
+        # Restart the hotkey listener if it was active before
+        if self.hotkey_manager and hotkey_listener_active:
+            self.hotkey_manager.restart_listener()
+        
+        if result:
             new_hotkey = dialog.get_hotkey()
             if new_hotkey:
                 # Check for conflicts with other instruction sets

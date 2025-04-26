@@ -795,7 +795,7 @@ class MainWindow(QMainWindow):
             )
             return
             
-        dialog = InstructionSetsDialog(self, self.instruction_set_manager)
+        dialog = InstructionSetsDialog(self, self.instruction_set_manager, self.hotkey_manager)
         
         if dialog.exec() == QDialog.DialogCode.Accepted:
             # Get updated manager
