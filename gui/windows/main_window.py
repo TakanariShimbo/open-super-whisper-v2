@@ -19,7 +19,7 @@ from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QSettings, QUrl, QSize
 from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 
-from core.recorder import AudioRecorder
+from core.recorder import AudioRecorder, NoMicrophoneError, MicrophoneAccessError, MicrophoneError
 from core.processor import UnifiedProcessor, ProcessingResult
 
 from core.hotkeys import HotkeyManager
@@ -510,36 +510,70 @@ class MainWindow(QMainWindow):
         if not self.unified_processor:
             SimpleMessageDialog.show_message(self, AppLabels.MAIN_WIN_API_KEY_ERROR_TITLE, AppLabels.MAIN_WIN_API_KEY_ERROR_REQUIRED, SimpleMessageDialog.WARNING)
             return
+        
+        try:
+            # Try to start recording, which will check for microphone availability
+            self.record_button.setText(AppLabels.MAIN_WIN_RECORD_STOP_BUTTON)
+            self.audio_recorder.start_recording()
             
-        # Use UIUpdater for button text update
-        self.record_button.setText(AppLabels.MAIN_WIN_RECORD_STOP_BUTTON)
-        self.audio_recorder.start_recording()
-        
-        # Use the provided instruction set hotkey
-        active_hotkey = recording_hotkey if recording_hotkey else ""
-        
-        # Signal recording status change through ThreadManager with the active hotkey
-        self.thread_manager.recordingStatusChanged.emit(True, active_hotkey)
-        
-        # Start recording timer using ThreadManager
-        self.thread_manager.start_recording_timer()
-        
-        # Show recording status
-        if self.show_indicator:
-            # Reset window first
-            self.status_indicator_window.hide()
-            # Update indicator using ThreadManager
-            self.thread_manager.update_indicator(StatusIndicatorWindow.MODE_RECORDING)
-            self.status_indicator_window.show()
-        
-        # Enable recording mode via HotkeyBridge to ensure thread safety
-        HotkeyBridge.instance().set_recording_mode(True, active_hotkey)
-        
-        # Update status using ThreadManager
-        self.thread_manager.update_status(AppLabels.STATUS_RECORDING)
-        
-        # Play start sound
-        self.play_start_sound()
+            # Use the provided instruction set hotkey
+            active_hotkey = recording_hotkey if recording_hotkey else ""
+            
+            # Signal recording status change through ThreadManager with the active hotkey
+            self.thread_manager.recordingStatusChanged.emit(True, active_hotkey)
+            
+            # Start recording timer using ThreadManager
+            self.thread_manager.start_recording_timer()
+            
+            # Show recording status
+            if self.show_indicator:
+                # Reset window first
+                self.status_indicator_window.hide()
+                # Update indicator using ThreadManager
+                self.thread_manager.update_indicator(StatusIndicatorWindow.MODE_RECORDING)
+                self.status_indicator_window.show()
+            
+            # Enable recording mode via HotkeyBridge to ensure thread safety
+            HotkeyBridge.instance().set_recording_mode(True, active_hotkey)
+            
+            # Update status using ThreadManager
+            self.thread_manager.update_status(AppLabels.STATUS_RECORDING)
+            
+            # Play start sound
+            self.play_start_sound()
+            
+        except NoMicrophoneError as e:
+            # Handle no microphone error
+            self.record_button.setText(AppLabels.MAIN_WIN_RECORD_START_BUTTON)
+            SimpleMessageDialog.show_message(
+                self, 
+                AppLabels.MAIN_WIN_MIC_ERROR_TITLE, 
+                AppLabels.MAIN_WIN_NO_MIC_ERROR, 
+                SimpleMessageDialog.WARNING
+            )
+            self.thread_manager.update_status(str(e), 3000)
+            
+        except MicrophoneAccessError as e:
+            # Handle microphone access error
+            self.record_button.setText(AppLabels.MAIN_WIN_RECORD_START_BUTTON)
+            SimpleMessageDialog.show_message(
+                self, 
+                AppLabels.MAIN_WIN_MIC_ERROR_TITLE, 
+                AppLabels.MAIN_WIN_MIC_ACCESS_ERROR, 
+                SimpleMessageDialog.WARNING
+            )
+            self.thread_manager.update_status(str(e), 3000)
+            
+        except Exception as e:
+            # Handle other errors
+            self.record_button.setText(AppLabels.MAIN_WIN_RECORD_START_BUTTON)
+            SimpleMessageDialog.show_message(
+                self, 
+                AppLabels.MAIN_WIN_MIC_ERROR_TITLE, 
+                str(e), 
+                SimpleMessageDialog.WARNING
+            )
+            self.thread_manager.update_status(f"Recording error: {str(e)}", 3000)
     
     def stop_recording(self):
         """

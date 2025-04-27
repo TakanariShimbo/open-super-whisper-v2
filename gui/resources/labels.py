@@ -38,6 +38,11 @@ class AppLabels:
     MAIN_WIN_INDICATOR_BUTTON = "Show Indicator"
     MAIN_WIN_EXIT_APP = "Exit"
     
+    # Microphone Error Messages
+    MAIN_WIN_MIC_ERROR_TITLE = "Microphone Error"
+    MAIN_WIN_NO_MIC_ERROR = "No microphone detected. Please connect a microphone and try again."
+    MAIN_WIN_MIC_ACCESS_ERROR = "Could not access microphone. Please check your device permissions."
+    
     # LLM Related
     MAIN_WIN_LLM_ENABLED = "Enable LLM Processing"
     MAIN_WIN_LLM_TAB_TITLE = "LLM Analysis"
