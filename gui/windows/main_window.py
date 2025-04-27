@@ -61,8 +61,7 @@ class MainWindow(QMainWindow):
         self.settings = QSettings(AppConfig.APP_ORGANIZATION, AppConfig.APP_NAME)
         self.api_key = self.settings.value("api_key", AppConfig.DEFAULT_API_KEY)
         
-        # Hotkey and clipboard settings
-        self.hotkey = self.settings.value("hotkey", AppConfig.DEFAULT_HOTKEY)
+        # Clipboard settings
         self.auto_copy = self.settings.value("auto_copy", AppConfig.DEFAULT_AUTO_COPY, type=bool)
         
         # Initialize thread manager for safe thread operations
@@ -262,6 +261,14 @@ class MainWindow(QMainWindow):
         control_form = QWidget()
         form_layout = QFormLayout(control_form)
         
+        # Instruction set selection dropdown
+        instruction_set_label = QLabel(AppLabels.MAIN_WIN_INSTRUCTION_SET_LABEL)
+        self.instruction_set_combo = QComboBox()
+        self.instruction_set_combo.setMinimumWidth(200)
+        self.populate_instruction_set_combo()
+        self.instruction_set_combo.currentIndexChanged.connect(self.on_instruction_set_changed)
+        form_layout.addRow(instruction_set_label, self.instruction_set_combo)
+        
         # Add to layout
         control_layout.addWidget(self.record_button, 0, 0, 2, 1)
         control_layout.addWidget(control_form, 0, 1, 2, 5)
@@ -354,13 +361,6 @@ class MainWindow(QMainWindow):
         api_action = QAction(AppLabels.MAIN_WIN_API_KEY_SETTINGS, self)
         api_action.triggered.connect(self.show_api_key_dialog)
         self.toolbar.addAction(api_action)
-        
-        self.toolbar.addSeparator()
-        
-        # Hotkey settings
-        hotkey_action = QAction(AppLabels.MAIN_WIN_HOTKEY_SETTINGS, self)
-        hotkey_action.triggered.connect(self.show_hotkey_dialog)
-        self.toolbar.addAction(hotkey_action)
         
         self.toolbar.addSeparator()
         
@@ -516,8 +516,8 @@ class MainWindow(QMainWindow):
         self.record_button.setText(AppLabels.MAIN_WIN_RECORD_STOP_BUTTON)
         self.audio_recorder.start_recording()
         
-        # Use the provided hotkey or fall back to main hotkey
-        active_hotkey = recording_hotkey if recording_hotkey else self.hotkey
+        # Use the provided instruction set hotkey
+        active_hotkey = recording_hotkey if recording_hotkey else ""
         
         # Signal recording status change through ThreadManager with the active hotkey
         self.thread_manager.recordingStatusChanged.emit(True, active_hotkey)
@@ -923,37 +923,6 @@ class MainWindow(QMainWindow):
         # This is now a no-op
         pass
     
-    def show_hotkey_dialog(self):
-        """
-        Show the legacy hotkey settings dialog.
-        
-        This method displays a dialog for changing the legacy hotkey setting.
-        This hotkey is no longer used for recording but is kept for compatibility.
-        The current hotkey is temporarily released during dialog display.
-        Hotkeys are automatically disabled/re-enabled by the HotkeyDialog class.
-        """
-        # Create dialog with thread manager for thread-safe operations
-        dialog = HotkeyDialog(self, self.hotkey, self.thread_manager)
-        
-        # Show dialog
-        if dialog.exec():
-            new_hotkey = dialog.get_hotkey()
-            if new_hotkey:
-                self.hotkey = new_hotkey
-                self.settings.setValue("hotkey", self.hotkey)
-                self.setup_global_hotkey()
-                
-                # Show status message using ThreadManager for thread safety
-                self.thread_manager.update_status(
-                    AppLabels.STATUS_HOTKEY_SET.format(self.hotkey), 
-                    5000
-                )
-        else:
-            # Restore original hotkey if dialog was canceled
-            # HotkeyDialog.reject() already handles restoring the original hotkey value
-            # We just need to make sure the hotkey is properly registered
-            self.setup_global_hotkey()
-            
     def show_instruction_sets_dialog(self):
         """
         Show the instruction sets management dialog.
@@ -990,6 +959,9 @@ class MainWindow(QMainWindow):
             
             # Re-register hotkeys
             self.setup_global_hotkey()
+            
+            # Update the instruction set dropdown
+            self.populate_instruction_set_combo()
             
             # Show status message using ThreadManager for thread safety
             if self.instruction_set_manager.active_set:
@@ -1215,3 +1187,60 @@ class MainWindow(QMainWindow):
             event.ignore()
         else:
             event.accept()
+            
+    def populate_instruction_set_combo(self):
+        """
+        Populate the instruction set selection dropdown.
+        
+        This method adds all available instruction sets to the dropdown
+        and selects the active one.
+        """
+        # Temporarily block signals to prevent triggering the change event
+        self.instruction_set_combo.blockSignals(True)
+        
+        # Clear existing items
+        self.instruction_set_combo.clear()
+        
+        # Add all instruction sets
+        for instruction_set in self.instruction_set_manager.get_all_sets():
+            self.instruction_set_combo.addItem(instruction_set.name)
+            
+            # Add tooltip with hotkey if available
+            if instruction_set.hotkey:
+                self.instruction_set_combo.setItemData(
+                    self.instruction_set_combo.count() - 1,
+                    f"Hotkey: {instruction_set.hotkey}",
+                    Qt.ItemDataRole.ToolTipRole
+                )
+        
+        # Select the active set
+        active_set = self.instruction_set_manager.active_set
+        if active_set:
+            index = self.instruction_set_combo.findText(active_set.name)
+            if index >= 0:
+                self.instruction_set_combo.setCurrentIndex(index)
+        
+        # Unblock signals
+        self.instruction_set_combo.blockSignals(False)
+    
+    def on_instruction_set_changed(self, index):
+        """
+        Handle instruction set selection change.
+        
+        Parameters
+        ----------
+        index : int
+            The index of the selected instruction set.
+        """
+        if index < 0:
+            return
+            
+        # Get the selected instruction set name
+        set_name = self.instruction_set_combo.itemText(index)
+        
+        # Activate the instruction set
+        self.activate_instruction_set_by_name(set_name)
+        
+        # Update the UI
+        if self.unified_processor:
+            self.llm_enabled_checkbox.setChecked(self.unified_processor.is_llm_enabled())

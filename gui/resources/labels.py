@@ -28,6 +28,7 @@ class AppLabels:
     MAIN_WIN_API_KEY_SETTINGS = "API Key Settings"
     MAIN_WIN_HOTKEY_SETTINGS = "Legacy Hotkey Settings"
     MAIN_WIN_INSTRUCTION_SETS_BUTTON = "Instruction Sets"
+    MAIN_WIN_INSTRUCTION_SET_LABEL = "Instruction Set:"
     MAIN_WIN_COPY_TO_CLIPBOARD = "Copy to Clipboard"
     MAIN_WIN_COPY_TRANSCRIPTION = "Copy Transcription"
     MAIN_WIN_COPY_LLM = "Copy LLM Analysis"
