@@ -756,6 +756,17 @@ class InstructionSetsDialog(QDialog):
         if row < 0:
             return
         
+        # Check if this is the last set - can't delete the last set
+        if self.sets_list.count() <= 1:
+            SimpleMessageDialog.show_message(
+                self,
+                AppLabels.INSTRUCTION_SETS_LAST_SET_ERROR_TITLE,
+                AppLabels.INSTRUCTION_SETS_LAST_SET_ERROR_MESSAGE,
+                SimpleMessageDialog.WARNING,
+                self.thread_manager
+            )
+            return
+        
         name = self.sets_list.item(row).text()
         
         def show_confirmation_and_delete():
@@ -796,14 +807,34 @@ class InstructionSetsDialog(QDialog):
             The name of the instruction set to delete.
         """
         # Delete set
-        if self.manager.delete_set(name):
+        result = self.manager.delete_set(name)
+        
+        if result:
             # Remove from list
             self.sets_list.takeItem(row)
             
-            # Select next item
+            # Select next item and ensure it's properly updated in the UI
             if self.sets_list.count() > 0:
                 next_row = min(row, self.sets_list.count() - 1)
                 self.sets_list.setCurrentRow(next_row)
+                
+                # Refresh the active set selection in UI
+                active_set = self.manager.active_set
+                if active_set:
+                    for i in range(self.sets_list.count()):
+                        if self.sets_list.item(i).text() == active_set.name:
+                            if i != next_row:  # Only change if it's different
+                                self.sets_list.setCurrentRow(i)
+                            break
+        else:
+            # Show error if deletion failed
+            SimpleMessageDialog.show_message(
+                self,
+                AppLabels.INSTRUCTION_SETS_DELETION_FAILED_TITLE,
+                AppLabels.INSTRUCTION_SETS_DELETION_FAILED_MESSAGE.format(name),
+                SimpleMessageDialog.ERROR,
+                self.thread_manager
+            )
     
     def show_hotkey_dialog(self):
         """

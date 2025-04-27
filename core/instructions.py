@@ -195,8 +195,9 @@ class InstructionSetManager:
         Returns
         -------
         bool
-            True if set was deleted, False if name doesn't exist.
+            True if set was deleted, False if name doesn't exist or if it's the last set.
         """
+        # Check if the set exists
         if name not in self.sets:
             return False
         
@@ -204,15 +205,28 @@ class InstructionSetManager:
         if len(self.sets) <= 1:
             return False
         
-        # If deleting the active set, select another one
+        # If deleting the active set, select another one first
+        # This ensures active_set is always valid after deletion
         if name == self.active_set_name:
+            # Find a different set to make active
+            new_active_set_found = False
             for other_name in self.sets:
                 if other_name != name:
                     self.active_set_name = other_name
+                    new_active_set_found = True
                     break
-        
-        del self.sets[name]
-        return True
+            
+            # Safety check - if we couldn't find a new active set, abort deletion
+            if not new_active_set_found:
+                return False
+                
+        # Now that active_set is handled safely, delete the set
+        try:
+            del self.sets[name]
+            return True
+        except KeyError:
+            # Extra safety in case the key disappeared (this should never happen)
+            return False
     
     def set_active(self, name: str) -> bool:
         """

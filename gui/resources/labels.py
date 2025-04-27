@@ -153,6 +153,12 @@ class AppLabels:
     INSTRUCTION_SETS_SET_ACTIVATED_TITLE = "Set Activated"
     INSTRUCTION_SETS_SET_ACTIVATED_MESSAGE = "Instruction set '{}' has been activated."
     
+    INSTRUCTION_SETS_LAST_SET_ERROR_TITLE = "Cannot Delete Last Set"
+    INSTRUCTION_SETS_LAST_SET_ERROR_MESSAGE = "The last instruction set cannot be deleted. At least one set must remain."
+    
+    INSTRUCTION_SETS_DELETION_FAILED_TITLE = "Deletion Failed"
+    INSTRUCTION_SETS_DELETION_FAILED_MESSAGE = "Could not delete the instruction set '{}'."
+    
     # API Key Dialog
     API_KEY_TITLE = "API Key Settings"
     API_KEY_DESCRIPTION = "Enter your OpenAI API key to use transcription services. The key will be stored locally on your device."
