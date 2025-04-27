@@ -1,7 +1,7 @@
 """
 Hotkey Dialog
 
-This module provides a dialog for setting the global hotkey.
+This module provides a dialog for setting the global hotkey with thread-safe implementation.
 """
 
 from PyQt6.QtWidgets import (
@@ -21,9 +21,14 @@ class HotkeyDialog(QDialog):
     
     This dialog allows users to define a custom hotkey combination
     for starting and stopping recording.
+    
+    Thread Safety:
+    --------------
+    Uses ThreadManager.run_in_main_thread for showing message dialogs when
+    thread_manager is provided. This ensures thread safety for UI operations.
     """
     
-    def __init__(self, parent=None, current_hotkey=""):
+    def __init__(self, parent=None, current_hotkey="", thread_manager=None):
         """
         Initialize the HotkeyDialog.
         
@@ -33,11 +38,14 @@ class HotkeyDialog(QDialog):
             Parent widget, by default None
         current_hotkey : str, optional
             Current hotkey string, by default ""
+        thread_manager : ThreadManager, optional
+            Thread manager for thread-safe operations
         """
         super().__init__(parent)
         
         self.hotkey = current_hotkey
         self.current_keys = set()
+        self.thread_manager = thread_manager
         
         # Set up UI
         self.init_ui()
@@ -181,13 +189,18 @@ class HotkeyDialog(QDialog):
         """Handle dialog acceptance with validation."""
         # Validate hotkey before accepting
         if not self.hotkey:
-            SimpleMessageDialog.show_message(
-                self,
-                AppLabels.HOTKEY_VALIDATION_ERROR_TITLE,
-                AppLabels.HOTKEY_VALIDATION_ERROR_MESSAGE,
-                SimpleMessageDialog.WARNING
-            )
+            self._show_validation_error()
             return
         
         # Accept the dialog
         super().accept()
+    
+    def _show_validation_error(self):
+        """Show error message for empty hotkey."""
+        SimpleMessageDialog.show_message(
+            self,
+            AppLabels.HOTKEY_VALIDATION_ERROR_TITLE,
+            AppLabels.HOTKEY_VALIDATION_ERROR_MESSAGE,
+            SimpleMessageDialog.WARNING,
+            self.thread_manager
+        )
