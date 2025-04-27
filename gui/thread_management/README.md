@@ -125,21 +125,6 @@ def show_error(self, message):
     )
 ```
 
-## Testing Thread Safety
-
-Tests for thread safety are provided in `thread_management/tests/test_dialog_thread_safety.py`.
-
-These tests verify:
-1. Proper ThreadManager usage in dialogs
-2. Thread-safe UI updates
-3. Background processing with callbacks
-
-Run tests with:
-
-```bash
-python -m thread_management.tests.test_dialog_thread_safety
-```
-
 ## Known Limitations
 
 1. QTimer instances must be created on the thread they will run on
