@@ -1,20 +1,24 @@
 """
 Instruction Sets Dialog
 
-This module provides a dialog for managing instruction sets and custom vocabulary.
+This module provides a dialog for managing instruction sets, custom vocabulary, system instructions,
+and LLM settings with thread-safe implementation.
 """
 
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QTextEdit,
     QPushButton, QDialogButtonBox, QListWidget, QSplitter,
     QLineEdit, QInputDialog, QTabWidget, QWidget,
-    QFormLayout, QComboBox
+    QFormLayout, QComboBox, QCheckBox
 )
-from PyQt6.QtCore import Qt, QSettings
+from PyQt6.QtCore import Qt, QSettings, pyqtSlot
 from PyQt6.QtGui import QIcon
 
 from gui.resources.labels import AppLabels
+from gui.resources.config import AppConfig
 from gui.dialogs.simple_message_dialog import SimpleMessageDialog
+from gui.dialogs.hotkey_dialog import HotkeyDialog
+from gui.thread_management.hotkey_bridge import HotkeyBridge
 
 # Import core instruction sets
 from core.instructions import InstructionSetManager, InstructionSet
@@ -22,6 +26,7 @@ from core.instructions import InstructionSetManager, InstructionSet
 # Import language and model data
 from core.models.language import LanguageManager
 from core.models.whisper import WhisperModelManager
+from core.models.llm import LLMModelManager
 
 
 class GUIInstructionSetManager:
@@ -30,9 +35,14 @@ class GUIInstructionSetManager:
     
     This class wraps the core InstructionSetManager to provide GUI-specific
     functionality, such as QSettings integration.
+    
+    Thread Safety:
+    --------------
+    Uses thread_manager when provided to ensure thread-safe operations for
+    heavy I/O operations like saving to QSettings.
     """
     
-    def __init__(self, settings: QSettings):
+    def __init__(self, settings: QSettings, thread_manager=None):
         """
         Initialize the GUI instruction set manager.
         
@@ -40,9 +50,12 @@ class GUIInstructionSetManager:
         ----------
         settings : QSettings
             Settings object to store/retrieve data.
+        thread_manager : ThreadManager, optional
+            Thread manager for thread-safe operations
         """
         self.settings = settings
         self.core_manager = InstructionSetManager()
+        self.thread_manager = thread_manager
         self.load_from_settings()
     
     @property
@@ -54,15 +67,23 @@ class GUIInstructionSetManager:
         """Get all instruction sets."""
         return self.core_manager.get_all_sets()
     
-    def create_set(self, name, vocabulary=None, instructions=None, language=None, model=None):
+    def create_set(self, name, vocabulary=None, instructions=None, language=None, model=None,
+                  llm_enabled=False, llm_model=None, llm_instructions=None, hotkey=""):
         """Create a new instruction set."""
-        result = self.core_manager.create_set(name, vocabulary, instructions, language, model)
+        result = self.core_manager.create_set(
+            name, vocabulary, instructions, language, model,
+            llm_enabled, llm_model, llm_instructions, hotkey
+        )
         self.save_to_settings()
         return result
     
-    def update_set(self, name, vocabulary=None, instructions=None, language=None, model=None):
+    def update_set(self, name, vocabulary=None, instructions=None, language=None, model=None,
+                  llm_enabled=None, llm_model=None, llm_instructions=None, hotkey=None):
         """Update an existing instruction set."""
-        result = self.core_manager.update_set(name, vocabulary, instructions, language, model)
+        result = self.core_manager.update_set(
+            name, vocabulary, instructions, language, model,
+            llm_enabled, llm_model, llm_instructions, hotkey
+        )
         self.save_to_settings()
         return result
     
@@ -84,6 +105,16 @@ class GUIInstructionSetManager:
         self.save_to_settings()
         return result
     
+    def update_set_hotkey(self, name, hotkey):
+        """Update the hotkey for an instruction set."""
+        result = self.core_manager.update_set_hotkey(name, hotkey)
+        self.save_to_settings()
+        return result
+    
+    def get_set_by_hotkey(self, hotkey):
+        """Get an instruction set by its hotkey."""
+        return self.core_manager.get_set_by_hotkey(hotkey)
+    
     def get_active_vocabulary(self):
         """Get vocabulary from the active set."""
         return self.core_manager.get_active_vocabulary()
@@ -100,48 +131,96 @@ class GUIInstructionSetManager:
         """Get model setting from the active set."""
         return self.core_manager.get_active_model()
     
+    def get_active_llm_enabled(self):
+        """Get LLM enabled setting from the active set."""
+        return self.core_manager.get_active_llm_enabled()
+    
+    def get_active_llm_model(self):
+        """Get LLM model setting from the active set."""
+        return self.core_manager.get_active_llm_model()
+    
+    def get_active_llm_instructions(self):
+        """Get LLM instructions from the active set."""
+        return self.core_manager.get_active_llm_instructions()
+    
     def save_to_settings(self):
-        """Save all instruction sets to settings."""
-        data = self.core_manager.to_dict()
+        """
+        Save all instruction sets to settings.
         
-        # Save to QSettings
-        prefix = "InstructionSets"
-        self.settings.beginGroup(prefix)
+        Uses ThreadManager for thread-safe operation if available.
+        """
+        def save_operation():
+            data = self.core_manager.to_dict()
+            
+            # Save to QSettings
+            prefix = "InstructionSets"
+            self.settings.beginGroup(prefix)
+            
+            # Remove any existing sets first
+            self.settings.remove("")
+            
+            # Save active set
+            self.settings.setValue("ActiveSet", data["active_set"])
+            
+            # Save sets
+            self.settings.setValue("Sets", data["sets"])
+            
+            self.settings.endGroup()
+            self.settings.sync()
         
-        # Remove any existing sets first
-        self.settings.remove("")
-        
-        # Save active set
-        self.settings.setValue("ActiveSet", data["active_set"])
-        
-        # Save sets
-        self.settings.setValue("Sets", data["sets"])
-        
-        self.settings.endGroup()
-        self.settings.sync()
+        # Use thread manager if available
+        if self.thread_manager:
+            self.thread_manager.run_in_worker_thread(
+                "save_instruction_sets",
+                save_operation
+            )
+        else:
+            # Synchronous save
+            save_operation()
     
     def load_from_settings(self):
-        """Load instruction sets from settings."""
-        # Get from QSettings
-        prefix = "InstructionSets"
-        self.settings.beginGroup(prefix)
+        """
+        Load instruction sets from settings.
         
-        # Load active set
-        active_set = self.settings.value("ActiveSet", "")
+        Uses ThreadManager for thread-safe operation if available.
+        """
+        def load_operation():
+            # Get from QSettings
+            prefix = "InstructionSets"
+            self.settings.beginGroup(prefix)
+            
+            # Load active set
+            active_set = self.settings.value("ActiveSet", "")
+            
+            # Load sets
+            sets = self.settings.value("Sets", [])
+            
+            self.settings.endGroup()
+            
+            # Convert to dict for core manager
+            data = {
+                "active_set": active_set,
+                "sets": sets
+            }
+            
+            # Load into core manager
+            return data
+            
+        def finish_loading(data):
+            # Load into core manager
+            self.core_manager.load_from_dict(data)
         
-        # Load sets
-        sets = self.settings.value("Sets", [])
-        
-        self.settings.endGroup()
-        
-        # Convert to dict for core manager
-        data = {
-            "active_set": active_set,
-            "sets": sets
-        }
-        
-        # Load into core manager
-        self.core_manager.load_from_dict(data)
+        # Use thread manager if available
+        if self.thread_manager:
+            self.thread_manager.run_in_worker_thread(
+                "load_instruction_sets",
+                load_operation,
+                callback=finish_loading
+            )
+        else:
+            # Synchronous load
+            data = load_operation()
+            finish_loading(data)
 
 
 class InstructionSetsDialog(QDialog):
@@ -149,10 +228,19 @@ class InstructionSetsDialog(QDialog):
     Dialog for managing instruction sets.
     
     This dialog allows users to create, edit, delete, and select
-    instruction sets with custom vocabulary and system instructions.
+    instruction sets with custom vocabulary, system instructions,
+    language/model selection, and LLM (Large Language Model) settings.
+    It provides a comprehensive interface for customizing how transcription
+    and analysis are performed.
+    
+    Thread Safety:
+    --------------
+    Operations that might involve I/O or background processing use ThreadManager
+    when provided to ensure thread-safe execution. UI updates use
+    ThreadManager.run_in_main_thread to ensure they happen on the main/UI thread.
     """
     
-    def __init__(self, parent=None, manager=None):
+    def __init__(self, parent=None, manager=None, hotkey_manager=None, thread_manager=None):
         """
         Initialize the InstructionSetsDialog.
         
@@ -162,10 +250,19 @@ class InstructionSetsDialog(QDialog):
             Parent widget, by default None
         manager : GUIInstructionSetManager, optional
             Instruction set manager, by default None
+        hotkey_manager : HotkeyManager, optional
+            Hotkey manager for temporarily disabling hotkeys during dialog, by default None
+        thread_manager : ThreadManager, optional
+            Thread manager for thread-safe operations
         """
         super().__init__(parent)
         
         self.manager = manager
+        self.hotkey_manager = hotkey_manager
+        self.thread_manager = thread_manager
+        
+        # Flag to track if hotkeys were disabled
+        self.hotkeys_disabled = False
         
         # Set up UI
         self.init_ui()
@@ -263,8 +360,8 @@ class InstructionSetsDialog(QDialog):
         settings_layout.addWidget(settings_help)
         
         # Language selection
-        language_form = QWidget()
-        language_layout = QFormLayout(language_form)
+        main_form = QWidget()
+        main_layout = QFormLayout(main_form)
         
         language_label = QLabel(AppLabels.INSTRUCTION_SETS_LANGUAGE_LABEL)
         self.language_combo = QComboBox()
@@ -281,7 +378,7 @@ class InstructionSetsDialog(QDialog):
                     Qt.ItemDataRole.ToolTipRole
                 )
         
-        language_layout.addRow(language_label, self.language_combo)
+        main_layout.addRow(language_label, self.language_combo)
         
         # Model selection
         model_label = QLabel(AppLabels.INSTRUCTION_SETS_MODEL_LABEL)
@@ -298,19 +395,72 @@ class InstructionSetsDialog(QDialog):
                 Qt.ItemDataRole.ToolTipRole
             )
         
-        language_layout.addRow(model_label, self.model_combo)
-        settings_layout.addWidget(language_form)
+        main_layout.addRow(model_label, self.model_combo)
+                      
+        # LLM enable/disable
+        llm_enabled_label = QLabel(AppLabels.INSTRUCTION_SETS_LLM_TOGGLE_LABEL)
+        self.llm_enabled_checkbox = QCheckBox()
+        main_layout.addRow(llm_enabled_label, self.llm_enabled_checkbox)
+        
+        # LLM model selection
+        llm_model_label = QLabel(AppLabels.INSTRUCTION_SETS_LLM_MODEL_LABEL)
+        self.llm_model_combo = QComboBox()
+        
+        # Add model options from LLMModelManager
+        llm_models = LLMModelManager.get_models()
+        for model in llm_models:
+            self.llm_model_combo.addItem(model.name, model.id)
+            # Add tooltip
+            self.llm_model_combo.setItemData(
+                self.llm_model_combo.count() - 1,
+                model.description,
+                Qt.ItemDataRole.ToolTipRole
+            )
+        
+        main_layout.addRow(llm_model_label, self.llm_model_combo)
+        
+        # Add hotkey selection
+        hotkey_label = QLabel(AppLabels.INSTRUCTION_SETS_HOTKEY_LABEL)
+        self.hotkey_input = QLineEdit()
+        self.hotkey_input.setReadOnly(True)
+        self.hotkey_input.setPlaceholderText(AppLabels.INSTRUCTION_SETS_HOTKEY_PLACEHOLDER)
+        
+        hotkey_button = QPushButton(AppLabels.INSTRUCTION_SETS_SET_HOTKEY_BUTTON)
+        hotkey_button.clicked.connect(self.show_hotkey_dialog)
+        
+        hotkey_layout = QHBoxLayout()
+        hotkey_layout.addWidget(self.hotkey_input)
+        hotkey_layout.addWidget(hotkey_button)
+        
+        main_layout.addRow(hotkey_label, hotkey_layout)
+        
+        settings_layout.addWidget(main_form)
         
         # Add spacer
         settings_layout.addStretch(1)
         
-        # Add tabs
+        # LLM Instructions tab
+        llm_tab = QWidget()
+        llm_layout = QVBoxLayout(llm_tab)
+        
+        llm_label = QLabel(AppLabels.INSTRUCTION_SETS_LLM_TAB_NAME)
+        llm_layout.addWidget(llm_label)
+        
+        llm_help = QLabel(AppLabels.INSTRUCTION_SETS_LLM_HELP)
+        llm_help.setWordWrap(True)
+        llm_layout.addWidget(llm_help)
+        
+        # LLM instructions        
+        self.llm_instructions_edit = QTextEdit()
+        llm_layout.addWidget(self.llm_instructions_edit)
+        
+        # Add tabs to the tab widget in specified order
         self.tab_widget.addTab(vocab_tab, AppLabels.INSTRUCTION_SETS_VOCABULARY_TAB_NAME)
         self.tab_widget.addTab(instr_tab, AppLabels.INSTRUCTION_SETS_INSTRUCTIONS_TAB_NAME)
-        self.tab_widget.addTab(settings_tab, AppLabels.INSTRUCTION_SETS_LANGUAGE_AND_MODEL_TAB_NAME)
+        self.tab_widget.addTab(llm_tab, AppLabels.INSTRUCTION_SETS_LLM_TAB_NAME)
+        self.tab_widget.addTab(settings_tab, AppLabels.INSTRUCTION_SETS_SETTINGS_TAB_NAME)
         
         right_layout.addWidget(self.tab_widget)
-        
         
         # Save changes button - style consistent with other buttons
         self.save_button = QPushButton(AppLabels.INSTRUCTION_SETS_SAVE_BUTTON)
@@ -334,25 +484,39 @@ class InstructionSetsDialog(QDialog):
         layout.addWidget(button_box)
     
     def load_instruction_sets(self):
-        """Load instruction sets into the UI."""
+        """
+        Load instruction sets into the UI.
+        
+        Uses thread_manager to ensure UI updates happen on the main thread
+        if thread_manager is provided.
+        """
         if not self.manager:
             return
+            
+        def update_ui():
+            # Clear list
+            self.sets_list.clear()
+            
+            # Add sets
+            for instruction_set in self.manager.get_all_sets():
+                self.sets_list.addItem(instruction_set.name)
+            
+            # Select active set
+            active_set = self.manager.active_set
+            if active_set:
+                for i in range(self.sets_list.count()):
+                    if self.sets_list.item(i).text() == active_set.name:
+                        self.sets_list.setCurrentRow(i)
+                        break
         
-        # Clear list
-        self.sets_list.clear()
-        
-        # Add sets
-        for instruction_set in self.manager.get_all_sets():
-            self.sets_list.addItem(instruction_set.name)
-        
-        # Select active set
-        active_set = self.manager.active_set
-        if active_set:
-            for i in range(self.sets_list.count()):
-                if self.sets_list.item(i).text() == active_set.name:
-                    self.sets_list.setCurrentRow(i)
-                    break
+        # Use thread manager if available
+        if self.thread_manager:
+            self.thread_manager.run_in_main_thread(update_ui)
+        else:
+            # Synchronous update
+            update_ui()
     
+    @pyqtSlot(int)
     def on_set_selected(self, row):
         """
         Handle selection of an instruction set.
@@ -366,129 +530,349 @@ class InstructionSetsDialog(QDialog):
             # Clear editors
             self.vocabulary_edit.clear()
             self.instructions_edit.clear()
+            self.llm_instructions_edit.clear()
+            self.llm_enabled_checkbox.setChecked(False)
+            self.hotkey_input.clear()
             return
         
         # Get selected set
         set_name = self.sets_list.item(row).text()
         
-        # Find corresponding set
-        for instruction_set in self.manager.get_all_sets():
-            if instruction_set.name == set_name:
-                # Update editors
-                self.vocabulary_edit.setPlainText("\n".join(instruction_set.vocabulary))
-                self.instructions_edit.setPlainText("\n".join(instruction_set.instructions))
-                
-                # Update language selection
-                language_index = 0  # Default to auto-detect
-                if instruction_set.language:
-                    for i in range(self.language_combo.count()):
-                        if self.language_combo.itemData(i) == instruction_set.language:
-                            language_index = i
-                            break
-                self.language_combo.setCurrentIndex(language_index)
-                
-                # Update model selection
-                model_index = 0  # Default to first model
-                for i in range(self.model_combo.count()):
-                    if self.model_combo.itemData(i) == instruction_set.model:
-                        model_index = i
+        # Define UI update function
+        def update_ui_with_set(instruction_set):
+            # Update editors
+            self.vocabulary_edit.setPlainText("\n".join(instruction_set.vocabulary))
+            self.instructions_edit.setPlainText("\n".join(instruction_set.instructions))
+            
+            # Update language selection
+            language_index = 0  # Default to auto-detect
+            if instruction_set.language:
+                for i in range(self.language_combo.count()):
+                    if self.language_combo.itemData(i) == instruction_set.language:
+                        language_index = i
                         break
-                self.model_combo.setCurrentIndex(model_index)
+            self.language_combo.setCurrentIndex(language_index)
+            
+            # Update model selection
+            model_index = 0  # Default to first model
+            for i in range(self.model_combo.count()):
+                if self.model_combo.itemData(i) == instruction_set.model:
+                    model_index = i
+                    break
+            self.model_combo.setCurrentIndex(model_index)
+            
+            # Update LLM settings
+            self.llm_enabled_checkbox.setChecked(instruction_set.llm_enabled)
+            
+            # Update LLM model selection
+            llm_model_index = 0  # Default to first model
+            for i in range(self.llm_model_combo.count()):
+                if self.llm_model_combo.itemData(i) == instruction_set.llm_model:
+                    llm_model_index = i
+                    break
+            self.llm_model_combo.setCurrentIndex(llm_model_index)
+            
+            # Update LLM instructions
+            self.llm_instructions_edit.setPlainText("\n".join(instruction_set.llm_instructions))
+            
+            # Update hotkey field
+            self.hotkey_input.setText(instruction_set.hotkey)
+        
+        # Find corresponding set
+        instruction_set = None
+        for set_item in self.manager.get_all_sets():
+            if set_item.name == set_name:
+                instruction_set = set_item
                 break
+                
+        if instruction_set:
+            # Use thread manager if available for UI update
+            if self.thread_manager:
+                self.thread_manager.run_in_main_thread(lambda: update_ui_with_set(instruction_set))
+            else:
+                # Synchronous update
+                update_ui_with_set(instruction_set)
     
     def on_add_set(self):
-        """Handle adding a new instruction set."""
-        name, ok = QInputDialog.getText(
-            self,
-            AppLabels.INSTRUCTION_SETS_NEW_INSTRUCTION_SET_TITLE,
-            AppLabels.INSTRUCTION_SETS_NEW_INSTRUCTION_SET_PROMPT
-        )
+        """
+        Handle adding a new instruction set.
         
-        if ok and name:
-            # Check if name already exists
-            for i in range(self.sets_list.count()):
-                if self.sets_list.item(i).text() == name:
-                    SimpleMessageDialog.show_message(
-                        self,
-                        AppLabels.INSTRUCTION_SETS_NAME_EXISTS_TITLE,
-                        AppLabels.INSTRUCTION_SETS_NAME_EXISTS_MESSAGE.format(name),
-                        SimpleMessageDialog.WARNING
-                    )
-                    return
+        Uses thread_manager to ensure UI updates and dialog operations happen 
+        on the main thread if thread_manager is provided.
+        """
+        def show_input_dialog():
+            name, ok = QInputDialog.getText(
+                self,
+                AppLabels.INSTRUCTION_SETS_NEW_INSTRUCTION_SET_TITLE,
+                AppLabels.INSTRUCTION_SETS_NEW_INSTRUCTION_SET_PROMPT
+            )
             
-            # Create new set
-            if self.manager.create_set(name):
-                # Add to list
-                self.sets_list.addItem(name)
-                
-                # Select new item
-                for i in range(self.sets_list.count()):
-                    if self.sets_list.item(i).text() == name:
-                        self.sets_list.setCurrentRow(i)
-                        break
+            if ok and name:
+                self._process_new_set_name(name)
+        
+        # Use thread manager if available
+        if self.thread_manager:
+            self.thread_manager.run_in_main_thread(show_input_dialog)
+        else:
+            # Synchronous execution
+            show_input_dialog()
+    
+    def _process_new_set_name(self, name):
+        """
+        Process a new instruction set name.
+        
+        Parameters
+        ----------
+        name : str
+            Name for the new instruction set.
+        """
+        # Check if name already exists
+        for i in range(self.sets_list.count()):
+            if self.sets_list.item(i).text() == name:
+                self._show_name_exists_error(name)
+                return
+        
+        # Create new set
+        if self.manager.create_set(name):
+            # Add to list and select
+            self._update_list_after_add(name)
+            
+    def _update_list_after_add(self, name):
+        """
+        Update the list widget after adding a new instruction set.
+        
+        Parameters
+        ----------
+        name : str
+            Name of the newly added instruction set.
+        """
+        # Add to list
+        self.sets_list.addItem(name)
+        
+        # Select new item
+        for i in range(self.sets_list.count()):
+            if self.sets_list.item(i).text() == name:
+                self.sets_list.setCurrentRow(i)
+                break
+    
+    def _show_name_exists_error(self, name):
+        """
+        Show error message that instruction set name already exists.
+        
+        Parameters
+        ----------
+        name : str
+            The duplicate name.
+        """
+        SimpleMessageDialog.show_message(
+            self,
+            AppLabels.INSTRUCTION_SETS_NAME_EXISTS_TITLE,
+            AppLabels.INSTRUCTION_SETS_NAME_EXISTS_MESSAGE.format(name),
+            SimpleMessageDialog.WARNING,
+            self.thread_manager
+        )
     
     def on_rename_set(self):
-        """Handle renaming an instruction set."""
+        """
+        Handle renaming an instruction set.
+        
+        Uses thread_manager to ensure UI updates and dialog operations happen
+        on the main thread if thread_manager is provided.
+        """
         row = self.sets_list.currentRow()
         if row < 0:
             return
         
         old_name = self.sets_list.item(row).text()
         
-        new_name, ok = QInputDialog.getText(
-            self,
-            AppLabels.INSTRUCTION_SETS_RENAME_INSTRUCTION_SET_TITLE,
-            AppLabels.INSTRUCTION_SETS_RENAME_INSTRUCTION_SET_PROMPT,
-            QLineEdit.EchoMode.Normal,
-            old_name
-        )
-        
-        if ok and new_name and new_name != old_name:
-            # Check if name already exists
-            for i in range(self.sets_list.count()):
-                if i != row and self.sets_list.item(i).text() == new_name:
-                    SimpleMessageDialog.show_message(
-                        self,
-                        AppLabels.INSTRUCTION_SETS_NAME_EXISTS_TITLE,
-                        AppLabels.INSTRUCTION_SETS_NAME_EXISTS_MESSAGE.format(new_name),
-                        SimpleMessageDialog.WARNING
-                    )
-                    return
+        def show_rename_dialog():
+            new_name, ok = QInputDialog.getText(
+                self,
+                AppLabels.INSTRUCTION_SETS_RENAME_INSTRUCTION_SET_TITLE,
+                AppLabels.INSTRUCTION_SETS_RENAME_INSTRUCTION_SET_PROMPT,
+                QLineEdit.EchoMode.Normal,
+                old_name
+            )
             
-            # Rename set
-            if self.manager.rename_set(old_name, new_name):
-                # Update list item
-                self.sets_list.item(row).setText(new_name)
+            if ok and new_name and new_name != old_name:
+                self._process_rename(row, old_name, new_name)
+        
+        # Use thread manager if available
+        if self.thread_manager:
+            self.thread_manager.run_in_main_thread(show_rename_dialog)
+        else:
+            # Synchronous execution
+            show_rename_dialog()
+    
+    def _process_rename(self, row, old_name, new_name):
+        """
+        Process renaming an instruction set.
+        
+        Parameters
+        ----------
+        row : int
+            The row index of the item in the list.
+        old_name : str
+            The original name.
+        new_name : str
+            The new name.
+        """
+        # Check if name already exists
+        for i in range(self.sets_list.count()):
+            if i != row and self.sets_list.item(i).text() == new_name:
+                self._show_name_exists_error(new_name)
+                return
+        
+        # Rename set
+        if self.manager.rename_set(old_name, new_name):
+            # Update list item
+            self.sets_list.item(row).setText(new_name)
     
     def on_delete_set(self):
-        """Handle deleting an instruction set."""
+        """
+        Handle deleting an instruction set.
+        
+        Uses thread_manager to ensure UI updates and dialog operations happen
+        on the main thread if thread_manager is provided.
+        """
         row = self.sets_list.currentRow()
         if row < 0:
             return
         
         name = self.sets_list.item(row).text()
         
-        # Confirm deletion
-        confirm = SimpleMessageDialog.show_confirmation(
-            self,
-            AppLabels.INSTRUCTION_SETS_CONFIRM_DELETION_TITLE,
-            AppLabels.INSTRUCTION_SETS_CONFIRM_DELETION_MESSAGE.format(name),
-            False
-        )
+        def show_confirmation_and_delete():
+            # Confirm deletion
+            if SimpleMessageDialog.show_confirmation(
+                self,
+                AppLabels.INSTRUCTION_SETS_CONFIRM_DELETION_TITLE,
+                AppLabels.INSTRUCTION_SETS_CONFIRM_DELETION_MESSAGE.format(name),
+                False,
+                self.thread_manager
+            ):
+                self._perform_delete(row, name)
         
-        if confirm:
-            # Delete set
-            if self.manager.delete_set(name):
-                # Remove from list
-                self.sets_list.takeItem(row)
-                
-                # Select next item
-                if self.sets_list.count() > 0:
-                    next_row = min(row, self.sets_list.count() - 1)
-                    self.sets_list.setCurrentRow(next_row)
+        # Use thread manager if available
+        if self.thread_manager:
+            self.thread_manager.run_in_main_thread(show_confirmation_and_delete)
+        else:
+            # Synchronous execution
+            confirm = SimpleMessageDialog.show_confirmation(
+                self,
+                AppLabels.INSTRUCTION_SETS_CONFIRM_DELETION_TITLE,
+                AppLabels.INSTRUCTION_SETS_CONFIRM_DELETION_MESSAGE.format(name),
+                False
+            )
+            
+            if confirm:
+                self._perform_delete(row, name)
+    
+    def _perform_delete(self, row, name):
+        """
+        Perform the deletion of an instruction set.
+        
+        Parameters
+        ----------
+        row : int
+            The row index of the item in the list.
+        name : str
+            The name of the instruction set to delete.
+        """
+        # Delete set
+        if self.manager.delete_set(name):
+            # Remove from list
+            self.sets_list.takeItem(row)
+            
+            # Select next item
+            if self.sets_list.count() > 0:
+                next_row = min(row, self.sets_list.count() - 1)
+                self.sets_list.setCurrentRow(next_row)
+    
+    def show_hotkey_dialog(self):
+        """
+        Show dialog to set hotkey for the selected instruction set.
+        
+        Uses thread_manager to ensure UI updates and dialog operations happen
+        on the main thread if thread_manager is provided.
+        
+        Note: Hotkeys are automatically disabled/re-enabled by the HotkeyDialog class.
+        """
+        row = self.sets_list.currentRow()
+        if row < 0:
+            return
+        
+        set_name = self.sets_list.item(row).text()
+        
+        # Find current hotkey
+        current_hotkey = ""
+        for instruction_set in self.manager.get_all_sets():
+            if instruction_set.name == set_name:
+                current_hotkey = instruction_set.hotkey
+                break
+        
+        def show_dialog():
+            # Create dialog with thread manager for thread-safe operations
+            # HotkeyDialog will handle disabling/re-enabling hotkeys automatically
+            dialog = HotkeyDialog(self, current_hotkey, self.thread_manager)
+            result = dialog.exec()
+            
+            if result:
+                new_hotkey = dialog.get_hotkey()
+                if new_hotkey:
+                    self._process_hotkey_change(set_name, new_hotkey)
+        
+        # Use thread manager if available
+        if self.thread_manager:
+            self.thread_manager.run_in_main_thread(show_dialog)
+        else:
+            # Synchronous execution
+            show_dialog()
+    
+    def _process_hotkey_change(self, set_name, new_hotkey):
+        """
+        Process a hotkey change for an instruction set.
+        
+        Parameters
+        ----------
+        set_name : str
+            The name of the instruction set.
+        new_hotkey : str
+            The new hotkey string.
+        """
+        # Check for conflicts with other instruction sets
+        for instruction_set in self.manager.get_all_sets():
+            if instruction_set.name != set_name and instruction_set.hotkey == new_hotkey:
+                self._show_hotkey_conflict_error(instruction_set.name)
+                return
+        
+        # Update hotkey
+        self.manager.update_set_hotkey(set_name, new_hotkey)
+        self.hotkey_input.setText(new_hotkey)
+    
+    def _show_hotkey_conflict_error(self, conflicting_set_name):
+        """
+        Show error message for hotkey conflict.
+        
+        Parameters
+        ----------
+        conflicting_set_name : str
+            The name of the instruction set that already uses the hotkey.
+        """
+        SimpleMessageDialog.show_message(
+            self,
+            AppLabels.INSTRUCTION_SETS_HOTKEY_CONFLICT_TITLE,
+            AppLabels.INSTRUCTION_SETS_HOTKEY_CONFLICT_MESSAGE.format(conflicting_set_name),
+            SimpleMessageDialog.WARNING,
+            self.thread_manager
+        )
     
     def on_save_changes(self):
-        """Handle saving changes to the current instruction set."""
+        """
+        Handle saving changes to the current instruction set.
+        
+        Uses thread_manager to ensure UI updates and I/O operations happen
+        safely if thread_manager is provided.
+        """
         row = self.sets_list.currentRow()
         if row < 0:
             return
@@ -507,34 +891,107 @@ class InstructionSetsDialog(QDialog):
         language = self.language_combo.currentData()
         model = self.model_combo.currentData()
         
-        # Update set
-        self.manager.update_set(name, vocabulary, instructions, language, model)
+        # Get LLM settings
+        llm_enabled = self.llm_enabled_checkbox.isChecked()
+        llm_model = self.llm_model_combo.currentData()
+        llm_instructions = self.llm_instructions_edit.toPlainText().strip().split("\n")
         
-        # Show confirmation
+        # Get hotkey
+        hotkey = self.hotkey_input.text()
+        
+        # Filter empty LLM instructions
+        llm_instructions = [i for i in llm_instructions if i]
+        
+        def save_operation():
+            # Update set
+            return self.manager.update_set(
+                name, vocabulary, instructions, language, model,
+                llm_enabled, llm_model, llm_instructions, hotkey
+            )
+            
+        def on_save_complete(result):
+            # Show confirmation
+            if result:
+                self._show_changes_saved(name)
+            
+        # Use thread manager if available
+        if self.thread_manager:
+            self.thread_manager.run_in_worker_thread(
+                "save_instruction_set",
+                save_operation,
+                callback=on_save_complete
+            )
+        else:
+            # Synchronous save
+            result = save_operation()
+            on_save_complete(result)
+    
+    def _show_changes_saved(self, set_name):
+        """
+        Show confirmation message that changes were saved.
+        
+        Parameters
+        ----------
+        set_name : str
+            The name of the instruction set.
+        """
         SimpleMessageDialog.show_message(
             self,
             AppLabels.INSTRUCTION_SETS_CHANGES_SAVED_TITLE,
-            AppLabels.INSTRUCTION_SETS_CHANGES_SAVED_MESSAGE.format(name),
-            SimpleMessageDialog.INFO
+            AppLabels.INSTRUCTION_SETS_CHANGES_SAVED_MESSAGE.format(set_name),
+            SimpleMessageDialog.INFO,
+            self.thread_manager
         )
     
     def on_activate_set(self):
-        """Handle activating the selected instruction set."""
+        """
+        Handle activating the selected instruction set.
+        
+        Uses thread_manager to ensure UI updates and I/O operations happen
+        safely if thread_manager is provided.
+        """
         row = self.sets_list.currentRow()
         if row < 0:
             return
         
         name = self.sets_list.item(row).text()
         
-        # Activate set
-        self.manager.set_active(name)
+        def activate_operation():
+            # Activate set
+            return self.manager.set_active(name)
+            
+        def on_activate_complete(result):
+            # Show confirmation
+            if result:
+                self._show_set_activated(name)
         
-        # Show confirmation
+        # Use thread manager if available
+        if self.thread_manager:
+            self.thread_manager.run_in_worker_thread(
+                "activate_instruction_set",
+                activate_operation,
+                callback=on_activate_complete
+            )
+        else:
+            # Synchronous activation
+            result = activate_operation()
+            on_activate_complete(result)
+    
+    def _show_set_activated(self, set_name):
+        """
+        Show confirmation message that the instruction set was activated.
+        
+        Parameters
+        ----------
+        set_name : str
+            The name of the instruction set.
+        """
         SimpleMessageDialog.show_message(
             self,
             AppLabels.INSTRUCTION_SETS_SET_ACTIVATED_TITLE,
-            AppLabels.INSTRUCTION_SETS_SET_ACTIVATED_MESSAGE.format(name),
-            SimpleMessageDialog.INFO
+            AppLabels.INSTRUCTION_SETS_SET_ACTIVATED_MESSAGE.format(set_name),
+            SimpleMessageDialog.INFO,
+            self.thread_manager
         )
     
     def get_manager(self):
@@ -547,3 +1004,88 @@ class InstructionSetsDialog(QDialog):
             The instruction set manager.
         """
         return self.manager
+    
+    def showEvent(self, event):
+        """
+        Handle dialog show event.
+        
+        This method is called when the dialog is shown. It disables all hotkeys
+        to prevent them from being triggered while the dialog is open.
+        
+        Parameters
+        ----------
+        event : QShowEvent
+            Show event
+        """
+        # Call parent class method first
+        super().showEvent(event)
+        
+        # Disable all hotkeys by using HotkeyBridge's set_recording_mode
+        # Setting enabled=True with an empty recording_hotkey effectively disables all hotkeys
+        hotkey_bridge = HotkeyBridge.instance()
+        if hotkey_bridge:
+            try:
+                hotkey_bridge.set_recording_mode(True, None)
+                self.hotkeys_disabled = True
+            except Exception as e:
+                print(f"Error disabling hotkeys: {e}")
+    
+    def closeEvent(self, event):
+        """
+        Handle dialog close event.
+        
+        This method is called when the dialog is closed. It re-enables all hotkeys
+        that were disabled when the dialog was shown.
+        
+        Parameters
+        ----------
+        event : QCloseEvent
+            Close event
+        """
+        # Re-enable hotkeys
+        self._restore_hotkeys()
+        
+        # Call parent class method
+        super().closeEvent(event)
+    
+    def accept(self):
+        """
+        Handle dialog acceptance.
+        
+        This method is called when the Close button is clicked. It re-enables
+        all hotkeys that were disabled when the dialog was shown.
+        """
+        # Re-enable hotkeys
+        self._restore_hotkeys()
+        
+        # Call parent class method
+        super().accept()
+    
+    def reject(self):
+        """
+        Handle dialog rejection.
+        
+        This method is called when the dialog is rejected (e.g., by pressing Escape).
+        It re-enables all hotkeys that were disabled when the dialog was shown.
+        """
+        # Re-enable hotkeys
+        self._restore_hotkeys()
+        
+        # Call parent class method
+        super().reject()
+    
+    def _restore_hotkeys(self):
+        """
+        Restore hotkeys that were disabled.
+        
+        This method re-enables all hotkeys that were disabled when the dialog was shown.
+        """
+        if self.hotkeys_disabled:
+            hotkey_bridge = HotkeyBridge.instance()
+            if hotkey_bridge:
+                try:
+                    # Disable recording mode to re-enable all hotkeys
+                    hotkey_bridge.set_recording_mode(False)
+                    self.hotkeys_disabled = False
+                except Exception as e:
+                    print(f"Error re-enabling hotkeys: {e}")

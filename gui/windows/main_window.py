@@ -1,18 +1,18 @@
 """
-Main Window Module
+Main Window Module with LLM Integration
 
-This module provides the main application window and core functionality.
+This module provides the main application window and core functionality
+with integrated LLM processing support.
 """
 
 import os
 import sys
-import threading
 import time
 
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QPushButton, QTextEdit, QLabel, QComboBox,
-    QGridLayout, QFormLayout,
+    QPushButton, QTextEdit, QLabel, QComboBox, QCheckBox,
+    QGridLayout, QFormLayout, QTabWidget, QSplitter,
     QSystemTrayIcon, QMenu, QStyle, QStatusBar, QToolBar, QDialog
 )
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QSettings, QUrl, QSize
@@ -20,7 +20,7 @@ from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 
 from core.recorder import AudioRecorder
-from core.transcriber import WhisperTranscriber
+from core.processor import UnifiedProcessor, ProcessingResult
 
 from core.hotkeys import HotkeyManager
 from gui.resources.config import AppConfig
@@ -32,17 +32,22 @@ from gui.dialogs.simple_message_dialog import SimpleMessageDialog
 from gui.components.widgets.status_indicator import StatusIndicatorWindow
 from gui.utils.resource_helper import getResourcePath
 
+# Thread management imports
+from gui.thread_management.thread_manager import ThreadManager
+from gui.thread_management.ui_updater import UIUpdater
+
 
 class MainWindow(QMainWindow):
     """
     Main application window.
     
     This class provides the main user interface and integrates the audio
-    recording and transcription functionality.
+    recording, transcription, and LLM (Large Language Model) processing functionality.
+    It manages the core application flow and user interactions.
     """
     
     # Custom signals
-    transcription_complete = pyqtSignal(str)
+    processing_complete = pyqtSignal(ProcessingResult)
     recording_status_changed = pyqtSignal(bool)
     
     def __init__(self):
@@ -59,15 +64,21 @@ class MainWindow(QMainWindow):
         self.hotkey = self.settings.value("hotkey", AppConfig.DEFAULT_HOTKEY)
         self.auto_copy = self.settings.value("auto_copy", AppConfig.DEFAULT_AUTO_COPY, type=bool)
         
+        # Initialize thread manager for safe thread operations
+        self.thread_manager = ThreadManager()
+        
         # Initialize hotkey manager
         self.hotkey_manager = HotkeyManager()
         
         # Initialize instruction set manager
         self.instruction_set_manager = GUIInstructionSetManager(self.settings)
         
+        # For storing instruction set hotkeys during recording
+        self.instruction_set_hotkeys = []
+        
         # Initialize core components
         self.audio_recorder = None
-        self.whisper_transcriber = None
+        self.unified_processor = None
         
         # Recording state
         self.is_recording = False
@@ -88,39 +99,33 @@ class MainWindow(QMainWindow):
         self.status_indicator_window = StatusIndicatorWindow()
         self.status_indicator_window.set_mode(StatusIndicatorWindow.MODE_RECORDING)
         
-        # Initialize transcriber if API key is available
+        # Initialize unified processor if API key is available
         try:
-            self.whisper_transcriber = WhisperTranscriber(api_key=self.api_key)
+            self.unified_processor = UnifiedProcessor(api_key=self.api_key)
             
-            # Set vocabulary, instructions, language, and model from active set
+            # Apply settings from active instruction set
             if self.instruction_set_manager.active_set:
-                active_set = self.instruction_set_manager.active_set
+                self.apply_instruction_set_settings()
                 
-                # Apply vocabulary
-                self.whisper_transcriber.clear_custom_vocabulary()
-                self.whisper_transcriber.add_custom_vocabulary(self.instruction_set_manager.get_active_vocabulary())
-                
-                # Apply instructions
-                self.whisper_transcriber.clear_system_instructions()
-                self.whisper_transcriber.add_system_instruction(self.instruction_set_manager.get_active_instructions())
-                
-                # Set model in transcriber if specified
-                model = self.instruction_set_manager.get_active_model()
-                if model:
-                    self.whisper_transcriber.set_model(model)
         except ValueError:
-            self.whisper_transcriber = None
+            self.unified_processor = None
         
         # Set up UI
         self.init_ui()
         
+        # Set up ThreadManager signal connections
+        self._setup_thread_manager_connections()
+        
         # Connect signals
-        self.transcription_complete.connect(self.on_transcription_complete)
-        self.recording_status_changed.connect(self.update_recording_status)
+        self.processing_complete.connect(self.on_processing_complete, Qt.ConnectionType.QueuedConnection)
+        self.recording_status_changed.connect(self.update_recording_status, Qt.ConnectionType.QueuedConnection)
+        
+        # Connect status indicator window to ThreadManager
+        self.status_indicator_window.connect_to_thread_manager(self.thread_manager)
         
         # Check API key
         if not self.api_key:
-            self.show_api_key_dialog()
+            self.thread_manager.run_in_main_thread(self.show_api_key_dialog)
             
         # Set up additional connections
         self.setup_connections()
@@ -130,16 +135,88 @@ class MainWindow(QMainWindow):
         
         # Set up system tray
         self.setup_system_tray()
+        
+    def _setup_thread_manager_connections(self):
+        """
+        Set up connections between ThreadManager signals and MainWindow slots.
+        """
+        # Status update connection
+        self.thread_manager.statusUpdate.connect(
+            lambda msg, timeout: self.status_bar.showMessage(msg, timeout),
+            Qt.ConnectionType.QueuedConnection
+        )
+        
+        # Timer update connection
+        self.thread_manager.timerUpdate.connect(
+            lambda time_str: self.recording_timer_label.setText(time_str),
+            Qt.ConnectionType.QueuedConnection
+        )
+        
+        # Processing complete connection
+        self.thread_manager.processingComplete.connect(
+            self.on_processing_complete,
+            Qt.ConnectionType.QueuedConnection
+        )
+        
+        # Recording status connection
+        self.thread_manager.recordingStatusChanged.connect(
+            self.update_recording_status,
+            Qt.ConnectionType.QueuedConnection
+        )
+        
+        # Indicator update connections
+        self.thread_manager.indicatorUpdate.connect(
+            lambda mode: self.status_indicator_window.set_mode(mode),
+            Qt.ConnectionType.QueuedConnection
+        )
+        
+        self.thread_manager.indicatorTimerUpdate.connect(
+            lambda time_str: self.status_indicator_window.update_timer(time_str),
+            Qt.ConnectionType.QueuedConnection
+        )
+    
+    def apply_instruction_set_settings(self):
+        """Apply settings from the active instruction set to the unified processor."""
+        if not self.unified_processor or not self.instruction_set_manager.active_set:
+            return
+        
+        active_set = self.instruction_set_manager.active_set
+        
+        # Clear existing settings
+        self.unified_processor.clear_custom_vocabulary()
+        self.unified_processor.clear_transcription_instructions()
+        self.unified_processor.clear_llm_instructions()
+        
+        # Apply vocabulary
+        self.unified_processor.add_custom_vocabulary(active_set.vocabulary)
+        
+        # Apply transcription instructions
+        self.unified_processor.add_transcription_instruction(active_set.instructions)
+        
+        # Set whisper model
+        if active_set.model:
+            self.unified_processor.set_whisper_model(active_set.model)
+        
+        # LLM settings
+        self.unified_processor.enable_llm(active_set.llm_enabled)
+        
+        # Set LLM model
+        if active_set.llm_model:
+            self.unified_processor.set_llm_model(active_set.llm_model)
+        
+        # Apply LLM instructions
+        self.unified_processor.add_llm_instruction(active_set.llm_instructions)
     
     def init_ui(self):
         """
-        Initialize the user interface.
+        Initialize the user interface components.
         
         This method sets up the window size, title, style, layout,
-        and places widgets.
+        and places all UI widgets including the toolbar, control panel,
+        tab widget for transcription and LLM output, and status bar.
         """
         self.setWindowTitle(AppLabels.APP_TITLE)
-        self.setMinimumSize(600, 500)
+        self.setMinimumSize(700, 600)
         
         # Set application icon
         icon_path = getResourcePath("assets/icon.png")
@@ -170,6 +247,13 @@ class MainWindow(QMainWindow):
         self.record_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.record_button.clicked.connect(self.toggle_recording)
         
+        # LLM Processing control
+        self.llm_enabled_checkbox = QCheckBox(AppLabels.MAIN_WIN_LLM_ENABLED)
+        self.llm_enabled_checkbox.setChecked(
+            self.unified_processor.is_llm_enabled() if self.unified_processor else False
+        )
+        self.llm_enabled_checkbox.toggled.connect(self.toggle_llm_processing)
+        
         # Control form
         control_form = QWidget()
         form_layout = QFormLayout(control_form)
@@ -183,29 +267,51 @@ class MainWindow(QMainWindow):
         control_panel.setLayout(control_layout)
         main_layout.addWidget(control_panel)
         
-        # Transcription panel
-        transcription_panel = QWidget()
-        transcription_layout = QVBoxLayout(transcription_panel)
+        # Output panel with tabs
+        self.tab_widget = QTabWidget()
         
-        # Title label
-        title_label = QLabel(AppLabels.MAIN_WIN_TRANSCRIPTION_TITLE)
-        transcription_layout.addWidget(title_label)
+        # Transcription tab
+        transcription_tab = QWidget()
+        transcription_layout = QVBoxLayout(transcription_tab)
         
         # Transcription output
+        transcription_label = QLabel(AppLabels.MAIN_WIN_TRANSCRIPTION_OUTPUT_LABEL)
+        transcription_layout.addWidget(transcription_label)
+        
         self.transcription_text = QTextEdit()
         self.transcription_text.setPlaceholderText(AppLabels.MAIN_WIN_TRANSCRIPTION_PLACEHOLDER)
         self.transcription_text.setReadOnly(False)  # Editable
         self.transcription_text.setMinimumHeight(250)
         
         transcription_layout.addWidget(self.transcription_text)
-        main_layout.addWidget(transcription_panel, 1)
+        
+        # LLM output tab
+        llm_tab = QWidget()
+        llm_layout = QVBoxLayout(llm_tab)
+        
+        # LLM output
+        llm_label = QLabel(AppLabels.MAIN_WIN_LLM_OUTPUT_LABEL)
+        llm_layout.addWidget(llm_label)
+        
+        self.llm_text = QTextEdit()
+        self.llm_text.setPlaceholderText(AppLabels.MAIN_WIN_LLM_PLACEHOLDER)
+        self.llm_text.setReadOnly(False)  # Editable
+        self.llm_text.setMinimumHeight(250)
+        
+        llm_layout.addWidget(self.llm_text)
+        
+        # Add tabs
+        self.tab_widget.addTab(transcription_tab, AppLabels.MAIN_WIN_TRANSCRIPTION_TAB_TITLE)
+        self.tab_widget.addTab(llm_tab, AppLabels.MAIN_WIN_LLM_TAB_TITLE)
+        
+        main_layout.addWidget(self.tab_widget, 1)
         
         # Status bar
         self.status_bar = self.statusBar()
         self.status_bar.showMessage(AppLabels.STATUS_READY)
         
         # Recording indicator
-        self.recording_indicator = QLabel(AppLabels.STATUS_RECORDING_INDICATOR)
+        self.recording_indicator = QLabel(AppLabels.STATUS_RECORDING_INDICATOR_STOPPED)
         
         self.recording_timer_label = QLabel(AppLabels.STATUS_TIMER_INITIAL)
         
@@ -220,6 +326,13 @@ class MainWindow(QMainWindow):
         # Complete layout
         central_widget.setLayout(main_layout)
         self.setCentralWidget(central_widget)
+        
+        # Initialize UIUpdater for thread-safe UI updates
+        self.ui_updater = UIUpdater(
+            self.status_bar,
+            self.recording_indicator,
+            self.recording_timer_label
+        )
     
     def create_toolbar(self):
         """
@@ -254,9 +367,23 @@ class MainWindow(QMainWindow):
         
         self.toolbar.addSeparator()
         
-        # Copy to clipboard
+        # Copy to clipboard actions
+        copy_menu = QMenu(AppLabels.MAIN_WIN_COPY_TO_CLIPBOARD, self)
+        
+        copy_transcription_action = QAction(AppLabels.MAIN_WIN_COPY_TRANSCRIPTION, self)
+        copy_transcription_action.triggered.connect(self.copy_transcription_to_clipboard)
+        copy_menu.addAction(copy_transcription_action)
+        
+        copy_llm_action = QAction(AppLabels.MAIN_WIN_COPY_LLM, self)
+        copy_llm_action.triggered.connect(self.copy_llm_to_clipboard)
+        copy_menu.addAction(copy_llm_action)
+        
+        copy_all_action = QAction(AppLabels.MAIN_WIN_COPY_ALL, self)
+        copy_all_action.triggered.connect(self.copy_all_to_clipboard)
+        copy_menu.addAction(copy_all_action)
+        
         copy_action = QAction(AppLabels.MAIN_WIN_COPY_TO_CLIPBOARD, self)
-        copy_action.triggered.connect(self.copy_to_clipboard)
+        copy_action.setMenu(copy_menu)
         self.toolbar.addAction(copy_action)
         
         self.toolbar.addSeparator()
@@ -307,22 +434,49 @@ class MainWindow(QMainWindow):
             self.api_key = dialog.get_api_key()
             self.settings.setValue("api_key", self.api_key)
             
-            # Reinitialize transcriber with new API key
+            # Reinitialize processor with new API key
             try:
-                self.whisper_transcriber = WhisperTranscriber(api_key=self.api_key)
+                self.unified_processor = UnifiedProcessor(api_key=self.api_key)
+                self.apply_instruction_set_settings()
                 self.status_bar.showMessage(AppLabels.STATUS_API_KEY_SAVED, 3000)
             except ValueError as e:
-                self.whisper_transcriber = None
+                self.unified_processor = None
                 SimpleMessageDialog.show_message(self, AppLabels.MAIN_WIN_API_KEY_ERROR_TITLE, AppLabels.MAIN_WIN_API_KEY_ERROR_MISSING, SimpleMessageDialog.WARNING)
+    
+    def toggle_llm_processing(self, enabled):
+        """
+        Toggle LLM processing on/off.
+        
+        Parameters
+        ----------
+        enabled : bool
+            Whether to enable LLM processing.
+        """
+        if self.unified_processor:
+            self.unified_processor.enable_llm(enabled)
+            
+            # Update active instruction set
+            if self.instruction_set_manager.active_set:
+                self.instruction_set_manager.update_set(
+                    self.instruction_set_manager.active_set.name,
+                    llm_enabled=enabled
+                )
+            
+            # Update status bar via UIUpdater for thread safety
+            if enabled:
+                self.ui_updater.update_status(AppLabels.STATUS_LLM_ENABLED, 2000)
+            else:
+                self.ui_updater.update_status(AppLabels.STATUS_LLM_DISABLED, 2000)
     
     def toggle_recording(self):
         """
         Toggle recording start/stop.
         
         This method starts or stops recording based on the current state.
+        Uses ThreadManager to ensure thread-safe execution in the GUI thread.
         """
-        # Use QTimer.singleShot to ensure execution in GUI thread
-        QTimer.singleShot(0, self._toggle_recording_impl)
+        # Use ThreadManager to run in main thread instead of QTimer.singleShot
+        self.thread_manager.run_in_main_thread(self._toggle_recording_impl)
     
     def _toggle_recording_impl(self):
         """
@@ -342,48 +496,75 @@ class MainWindow(QMainWindow):
         
         This method starts recording and updates the UI state. It also
         displays the timer during recording and shows the indicator window.
+        When recording starts, all instruction set hotkeys are temporarily
+        disabled so only the main recording hotkey works.
         """
-        if not self.whisper_transcriber:
+        if not self.unified_processor:
             SimpleMessageDialog.show_message(self, AppLabels.MAIN_WIN_API_KEY_ERROR_TITLE, AppLabels.MAIN_WIN_API_KEY_ERROR_REQUIRED, SimpleMessageDialog.WARNING)
             return
             
+        # Use UIUpdater for button text update
         self.record_button.setText(AppLabels.MAIN_WIN_RECORD_STOP_BUTTON)
         self.audio_recorder.start_recording()
-        self.recording_status_changed.emit(True)
         
-        # Start recording timer
-        self.recording_start_time = time.time()
-        self.recording_timer.start(1000)  # Update every second
+        # Signal recording status change through ThreadManager
+        self.thread_manager.recordingStatusChanged.emit(True)
+        
+        # Start recording timer using ThreadManager
+        self.thread_manager.start_recording_timer()
         
         # Show recording status
         if self.show_indicator:
             # Reset window first
             self.status_indicator_window.hide()
-            self.status_indicator_window.set_mode(StatusIndicatorWindow.MODE_RECORDING)
+            # Update indicator using ThreadManager
+            self.thread_manager.update_indicator(StatusIndicatorWindow.MODE_RECORDING)
             self.status_indicator_window.show()
         
-        self.status_bar.showMessage(AppLabels.STATUS_RECORDING)
+        # Enable recording mode via HotkeyBridge to ensure thread safety
+        from gui.thread_management.hotkey_bridge import HotkeyBridge
+        HotkeyBridge.instance().set_recording_mode(True, self.hotkey)
+        
+        # Disable instruction set hotkeys during recording (for backward compatibility)
+        self.disable_instruction_set_hotkeys()
+        
+        # Update status using ThreadManager
+        self.thread_manager.update_status(AppLabels.STATUS_RECORDING)
         
         # Play start sound
         self.play_start_sound()
     
     def stop_recording(self):
         """
-        Stop recording and start transcription.
+        Stop recording and start processing.
         
         This method stops the recording, saves the temporary file,
-        and starts the transcription process. It also updates the UI state.
+        and starts the processing (transcription + optional LLM).
+        It also updates the UI state. When recording stops, all
+        previously disabled instruction set hotkeys are re-enabled.
         """
+        # Use UIUpdater for button text update
+        self.ui_updater.update_timer_label(AppLabels.STATUS_TIMER_INITIAL)
         self.record_button.setText(AppLabels.MAIN_WIN_RECORD_START_BUTTON)
         audio_file = self.audio_recorder.stop_recording()
-        self.recording_status_changed.emit(False)
         
-        # Stop recording timer
-        self.recording_timer.stop()
+        # Signal recording status change through ThreadManager
+        self.thread_manager.recordingStatusChanged.emit(False)
+        
+        # Stop recording timer using ThreadManager
+        self.thread_manager.stop_recording_timer()
+        
+        # Disable recording mode via HotkeyBridge to ensure thread safety
+        from gui.thread_management.hotkey_bridge import HotkeyBridge
+        HotkeyBridge.instance().set_recording_mode(False)
+        
+        # Re-enable instruction set hotkeys (for backward compatibility)
+        self.restore_instruction_set_hotkeys()
         
         if audio_file:
-            self.status_bar.showMessage(AppLabels.STATUS_TRANSCRIBING)
-            self.start_transcription(audio_file)
+            # Update status using ThreadManager
+            self.thread_manager.update_status(AppLabels.STATUS_TRANSCRIBING)
+            self.start_processing(audio_file)
         else:
             # Hide status indicator if no file was created
             self.status_indicator_window.hide()
@@ -403,140 +584,186 @@ class MainWindow(QMainWindow):
         self.is_recording = is_recording
         
         if is_recording:
-            # Recording active
+            # Recording active - use UIUpdater for thread safety
             self.record_button.setText(AppLabels.MAIN_WIN_RECORD_STOP_BUTTON)
-            self.status_bar.showMessage(AppLabels.STATUS_RECORDING)
+            self.ui_updater.update_status(AppLabels.STATUS_RECORDING)
+            self.ui_updater.update_recording_indicator(AppLabels.STATUS_RECORDING_INDICATOR_RECORDING)
             
             if self.show_indicator:
-                # Show recording indicator
-                self.status_indicator_window.set_mode(StatusIndicatorWindow.MODE_RECORDING)
+                # Show recording indicator via ThreadManager
+                self.thread_manager.update_indicator(StatusIndicatorWindow.MODE_RECORDING)
                 self.status_indicator_window.show()
         else:
-            # Recording stopped
+            # Recording stopped - use UIUpdater for thread safety
             self.record_button.setText(AppLabels.MAIN_WIN_RECORD_START_BUTTON)
-            self.status_bar.showMessage(AppLabels.STATUS_READY)
+            self.ui_updater.update_status(AppLabels.STATUS_READY)
+            self.ui_updater.update_recording_indicator(AppLabels.STATUS_RECORDING_INDICATOR_STOPPED)
             
             # Reset timer
-            self.recording_timer_label.setText(AppLabels.STATUS_TIMER_INITIAL)
+            self.ui_updater.update_timer_label(AppLabels.STATUS_TIMER_INITIAL)
     
     def update_recording_time(self):
         """
         Update the recording time display.
         
-        This method calculates elapsed time and updates the timer display.
-        It also updates the timer in the indicator window.
+        DEPRECATED: This method is now handled by ThreadManager.
+        Kept for backward compatibility only.
         """
-        if self.audio_recorder.is_recording():
-            elapsed = int(time.time() - self.recording_start_time)
-            minutes = elapsed // 60
-            seconds = elapsed % 60
-            time_str = f"{minutes:02d}:{seconds:02d}"
-            self.recording_timer_label.setText(time_str)
-            
-            # Update timer in recording indicator window
-            self.status_indicator_window.update_timer(time_str)
+        # This functionality has been moved to ThreadManager._update_recording_time
+        # which sends signals for both the main UI and indicator window
+        pass
     
-    def start_transcription(self, audio_file=None):
+    def start_processing(self, audio_file=None):
         """
-        Start transcription.
+        Start audio processing (transcription + optional LLM).
         
         Parameters
         ----------
         audio_file : str, optional
-            Path to the audio file to transcribe.
+            Path to the audio file to process.
             
-        This method starts the transcription process and updates the UI state.
+        This method starts the processing chain and updates the UI state.
         """
-        self.status_bar.showMessage(AppLabels.STATUS_TRANSCRIBING)
+        # Update status using ThreadManager
+        self.thread_manager.update_status(AppLabels.STATUS_TRANSCRIBING)
         
         # Show transcribing status
         if self.show_indicator:
             # Reset window first
             self.status_indicator_window.hide()
-            self.status_indicator_window.set_mode(StatusIndicatorWindow.MODE_TRANSCRIBING)
+            # Update indicator using ThreadManager
+            self.thread_manager.update_indicator(StatusIndicatorWindow.MODE_PROCESSING)
             self.status_indicator_window.show()
         
         # Get language from active instruction set
         selected_language = self.instruction_set_manager.get_active_language()
         
-        # Run transcription in background thread
+        # Run processing in worker thread using ThreadManager
         if audio_file:
-            transcription_thread = threading.Thread(
-                target=self.perform_transcription,
-                args=(audio_file, selected_language)
+            self.thread_manager.run_in_worker_thread(
+                "audio_processing",
+                self.perform_processing,
+                audio_file, 
+                selected_language
             )
-            transcription_thread.daemon = True
-            transcription_thread.start()
     
-    def perform_transcription(self, audio_file, language=None):
+    def perform_processing(self, audio_file, language=None):
         """
-        Perform transcription in a background thread.
+        Perform audio processing in a background thread.
         
         Parameters
         ----------
         audio_file : str
-            Path to the audio file to transcribe.
+            Path to the audio file to process.
         language : str, optional
             Language code for transcription.
             
-        This method uses WhisperTranscriber to transcribe the audio
+        This method uses UnifiedProcessor to process the audio
         and signals the result. It also handles errors appropriately.
         """
         try:
-            # Transcribe audio
-            result = self.whisper_transcriber.transcribe(audio_file, language)
+            # Process audio
+            result = self.unified_processor.process(audio_file, language)
             
             # Signal the result
-            self.transcription_complete.emit(result)
+            self.processing_complete.emit(result)
             
         except Exception as e:
             # Handle errors
-            error_msg = AppLabels.MAIN_WIN_TRANSCRIPTION_ERROR.format(str(e))
-            # テキスト領域にエラーを表示
-            self.transcription_complete.emit(error_msg)
-            # ステータスバーにもエラーを表示
-            QTimer.singleShot(0, lambda: self.status_bar.showMessage(AppLabels.MAIN_WIN_TRANSCRIPTION_ERROR_TITLE, 5000))
+            error_msg = f"Error occurred during processing: {str(e)}"
+            print(error_msg)
+            
+            # Create error result
+            error_result = ProcessingResult(transcription=f"Error: {str(e)}")
+            
+            # Signal the error result
+            self.processing_complete.emit(error_result)
+            
+            # Show error in status bar using ThreadManager for thread safety
+            self.thread_manager.update_status(AppLabels.MAIN_WIN_PROCESSING_ERROR, 5000)
     
-    def on_transcription_complete(self, text):
+    def on_processing_complete(self, result):
         """
-        Handle transcription completion.
+        Handle processing completion.
         
         Parameters
         ----------
-        text : str
-            The transcribed text.
+        result : ProcessingResult
+            The processing result containing transcription and optional LLM response.
         """
-        # Update UI
+        # Update UI via ThreadManager for thread safety
         if self.show_indicator:
-            # Show transcription complete indicator
-            self.status_indicator_window.set_mode(StatusIndicatorWindow.MODE_TRANSCRIBED)
+            # Show processing complete indicator via ThreadManager
+            self.thread_manager.update_indicator(StatusIndicatorWindow.MODE_COMPLETE)
+            
+            # Schedule hiding the indicator with ThreadManager instead of QTimer
+            self.thread_manager.run_in_main_thread(
+                lambda: self.status_indicator_window.hide(),
+                delay_ms=AppConfig.DEFAULT_INDICATOR_DISPLAY_TIME
+            )
         
         # Show transcription text
-        self.transcription_text.setText(text)
-        self.status_bar.showMessage(AppLabels.STATUS_COMPLETE)
+        self.transcription_text.setText(result.transcription)
+        
+        # Show LLM response if available
+        if result.llm_processed and result.llm_response:
+            self.llm_text.setText(result.llm_response)
+            # Switch to LLM tab if LLM processing was performed
+            self.tab_widget.setCurrentIndex(1)  # LLM tab
+        else:
+            self.llm_text.clear()
+            # Switch to transcription tab if no LLM processing
+            self.tab_widget.setCurrentIndex(0)  # Transcription tab
+        
+        # Update status via UIUpdater for thread safety
+        self.ui_updater.update_status(AppLabels.STATUS_COMPLETE)
         
         # Auto-copy if enabled
         if self.auto_copy:
-            self.copy_to_clipboard()
+            if self.unified_processor.is_llm_enabled() and result.llm_processed and result.llm_response:
+                # Copy LLM output if LLM is enabled and result is available
+                self.copy_llm_to_clipboard()
+            else:
+                # Otherwise copy transcription
+                self.copy_transcription_to_clipboard()
             
         # Play complete sound
         if self.enable_sound:
             self.play_complete_sound()
     
-    def copy_to_clipboard(self):
-        """
-        Copy transcription result to clipboard.
-        
-        This method copies the current text widget content to the
-        clipboard and notifies the user.
-        """
+    def copy_transcription_to_clipboard(self):
+        """Copy transcription text to clipboard."""
         text = self.transcription_text.toPlainText()
         QApplication.clipboard().setText(text)
-        self.status_bar.showMessage(AppLabels.STATUS_COPIED, 2000)
+        self.ui_updater.update_status(AppLabels.STATUS_TRANSCRIPTION_COPIED, 2000)
+    
+    def copy_llm_to_clipboard(self):
+        """Copy LLM analysis text to clipboard."""
+        text = self.llm_text.toPlainText()
+        QApplication.clipboard().setText(text)
+        self.ui_updater.update_status(AppLabels.STATUS_LLM_COPIED, 2000)
+    
+    def copy_all_to_clipboard(self):
+        """
+        Copy all text (transcription + LLM) to clipboard.
+        
+        This method formats the combined output with headers.
+        """
+        transcription = self.transcription_text.toPlainText()
+        llm_text = self.llm_text.toPlainText()
+        
+        # Format with headers if LLM text exists
+        if llm_text:
+            combined = f"Transcription:\n{transcription}\n\nLLM Analysis:\n{llm_text}"
+        else:
+            combined = transcription
+        
+        QApplication.clipboard().setText(combined)
+        self.ui_updater.update_status(AppLabels.STATUS_ALL_COPIED, 2000)
     
     def setup_connections(self):
         """Set up additional connections."""
-        # No model change event needed as it's now handled via instruction sets
+        # No additional connections needed
         pass
 
     def setup_global_hotkey(self):
@@ -553,20 +780,140 @@ class MainWindow(QMainWindow):
         continue functioning.
         """
         try:
-            result = self.hotkey_manager.register_hotkey(self.hotkey, self.toggle_recording)
+            # Clear any existing hotkeys from HotkeyBridge
+            from gui.thread_management.hotkey_bridge import HotkeyBridge
+            HotkeyBridge.instance().clear_all_hotkeys()
+            
+            # Register the main recording toggle hotkey using ThreadManager
+            result = self.thread_manager.register_hotkey_handler(
+                self.hotkey,
+                "main_recording_toggle",
+                self.toggle_recording
+            )
             
             if result:
                 print(f"Hotkey '{self.hotkey}' has been set successfully")
+                
+                # Register instruction set hotkeys
+                self.register_instruction_set_hotkeys()
+                
                 return True
             else:
                 raise ValueError(f"Failed to register hotkey: {self.hotkey}")
         except Exception as e:
             error_msg = f"Hotkey setup error: {e}"
             print(error_msg)
-            # Show error message to user
-            self.status_bar.showMessage(AppLabels.HOTKEY_VALIDATION_ERROR_TITLE + ": " + str(e), 5000)
+            # Show error message to user using ThreadManager
+            self.thread_manager.update_status(
+                AppLabels.HOTKEY_VALIDATION_ERROR_TITLE + ": " + str(e), 
+                5000
+            )
             # Continue with application even if hotkey fails
             return False
+    
+    def register_instruction_set_hotkeys(self):
+        """Register hotkeys for all instruction sets."""
+        # Register hotkeys for all instruction sets with defined hotkeys
+        for instruction_set in self.instruction_set_manager.get_all_sets():
+            if instruction_set.hotkey:
+                # Check for conflict with main hotkey
+                if instruction_set.hotkey == self.hotkey:
+                    print(f"Warning: Instruction set '{instruction_set.name}' hotkey '{instruction_set.hotkey}' conflicts with main recording hotkey")
+                    continue
+                
+                # Register the hotkey using ThreadManager
+                handler_id = f"instruction_set_{instruction_set.name}"
+                # Create a lambda with the instruction set - use default argument to capture current value
+                callback = lambda set_name=instruction_set.name: self.handle_instruction_set_hotkey(set_name)
+                
+                # Register the hotkey
+                if self.thread_manager.register_hotkey_handler(instruction_set.hotkey, handler_id, callback):
+                    print(f"Instruction set hotkey '{instruction_set.hotkey}' registered for '{instruction_set.name}'")
+                else:
+                    print(f"Failed to register hotkey '{instruction_set.hotkey}' for instruction set '{instruction_set.name}'")
+    
+    def activate_instruction_set_by_name(self, name: str):
+        """
+        Activate an instruction set by name.
+        
+        Parameters
+        ----------
+        name : str
+            Name of the instruction set to activate.
+        """
+        if self.instruction_set_manager.set_active(name):
+            self.apply_instruction_set_settings()
+            self.status_bar.showMessage(
+                AppLabels.STATUS_INSTRUCTION_SET_ACTIVATED_BY_HOTKEY.format(name),
+                3000
+            )
+    
+    def handle_instruction_set_hotkey(self, set_name: str):
+        """
+        Handle instruction set hotkey press.
+        
+        Parameters
+        ----------
+        set_name : str
+            The name of the instruction set to activate.
+        """
+        self.activate_instruction_set_by_name(set_name)
+    
+    def disable_instruction_set_hotkeys(self):
+        """
+        Temporarily disable all instruction set hotkeys during recording.
+        
+        This method saves the current instruction set hotkeys and then
+        unregisters them to ensure only the main recording hotkey works
+        during recording.
+        """
+        # Clear the saved hotkeys list
+        self.instruction_set_hotkeys = []
+        
+        # Get HotkeyBridge instance
+        from gui.thread_management.hotkey_bridge import HotkeyBridge
+        hotkey_bridge = HotkeyBridge.instance()
+        
+        # Save and unregister instruction set hotkeys
+        for instruction_set in self.instruction_set_manager.get_all_sets():
+            if instruction_set.hotkey and instruction_set.hotkey != self.hotkey:
+                # Save hotkey info for later restoration
+                self.instruction_set_hotkeys.append({
+                    'name': instruction_set.name,
+                    'hotkey': instruction_set.hotkey
+                })
+                
+                # Unregister the hotkey using HotkeyBridge
+                hotkey_bridge.unregister_hotkey(instruction_set.hotkey)
+                
+        print(f"Disabled {len(self.instruction_set_hotkeys)} instruction set hotkeys during recording")
+    
+    def restore_instruction_set_hotkeys(self):
+        """
+        Restore previously disabled instruction set hotkeys after recording.
+        
+        This method re-registers all instruction set hotkeys that were
+        disabled during recording.
+        """
+        # Re-register saved hotkeys
+        for hotkey_info in self.instruction_set_hotkeys:
+            set_name = hotkey_info['name']
+            hotkey = hotkey_info['hotkey']
+            
+            # Create handler ID for ThreadManager
+            handler_id = f"instruction_set_{set_name}"
+            
+            # Create callback function
+            callback = lambda name=set_name: self.handle_instruction_set_hotkey(name)
+            
+            # Register the hotkey using ThreadManager
+            if self.thread_manager.register_hotkey_handler(hotkey, handler_id, callback):
+                print(f"Restored hotkey '{hotkey}' for instruction set '{set_name}'")
+            else:
+                print(f"Failed to restore hotkey '{hotkey}' for instruction set '{set_name}'")
+        
+        # Clear the saved hotkeys list
+        self.instruction_set_hotkeys = []
     
     def show_hotkey_dialog(self):
         """
@@ -574,20 +921,28 @@ class MainWindow(QMainWindow):
         
         This method displays a dialog for changing the hotkey setting.
         The current hotkey is temporarily released during dialog display.
+        Hotkeys are automatically disabled/re-enabled by the HotkeyDialog class.
         """
-        # Temporarily stop the listener
-        self.hotkey_manager.stop_listener()
+        # Create dialog with thread manager for thread-safe operations
+        dialog = HotkeyDialog(self, self.hotkey, self.thread_manager)
         
-        dialog = HotkeyDialog(self, self.hotkey)
+        # Show dialog
         if dialog.exec():
             new_hotkey = dialog.get_hotkey()
             if new_hotkey:
                 self.hotkey = new_hotkey
                 self.settings.setValue("hotkey", self.hotkey)
                 self.setup_global_hotkey()
-                self.status_bar.showMessage(AppLabels.STATUS_HOTKEY_SET.format(self.hotkey), 3000)
+                
+                # Show status message using ThreadManager for thread safety
+                self.thread_manager.update_status(
+                    AppLabels.STATUS_HOTKEY_SET.format(self.hotkey), 
+                    3000
+                )
         else:
             # Restore original hotkey if dialog was canceled
+            # HotkeyDialog.reject() already handles restoring the original hotkey value
+            # We just need to make sure the hotkey is properly registered
             self.setup_global_hotkey()
             
     def show_instruction_sets_dialog(self):
@@ -595,43 +950,42 @@ class MainWindow(QMainWindow):
         Show the instruction sets management dialog.
         
         This method displays a dialog for managing instruction sets,
-        including vocabulary and system instructions for transcription.
+        including vocabulary, system instructions, and LLM settings.
         It requires an API key to be set.
+        
+        Note: Hotkeys are automatically disabled/re-enabled by the InstructionSetsDialog class.
         """
-        if not self.whisper_transcriber:
+        if not self.unified_processor:
             SimpleMessageDialog.show_message(
                 self,
                 AppLabels.MAIN_WIN_API_KEY_ERROR_TITLE,
                 AppLabels.MAIN_WIN_API_KEY_ERROR_REQUIRED,
-                SimpleMessageDialog.WARNING
+                SimpleMessageDialog.WARNING,
+                self.thread_manager
             )
             return
             
-        dialog = InstructionSetsDialog(self, self.instruction_set_manager)
+        # Create dialog with thread manager for thread-safe operations
+        dialog = InstructionSetsDialog(self, self.instruction_set_manager, self.hotkey_manager, self.thread_manager)
         
         if dialog.exec() == QDialog.DialogCode.Accepted:
             # Get updated manager
             updated_manager = dialog.get_manager()
             self.instruction_set_manager = updated_manager
             
-            # Update Whisper transcriber with the active set
-            active_set = self.instruction_set_manager.active_set
-            if active_set:
-                # Update vocabulary
-                self.whisper_transcriber.clear_custom_vocabulary()
-                self.whisper_transcriber.add_custom_vocabulary(active_set.vocabulary)
-                
-                # Update instructions
-                self.whisper_transcriber.clear_system_instructions()
-                self.whisper_transcriber.add_system_instruction(active_set.instructions)
-                
-                # Set model from instruction set if specified
-                if active_set.model:
-                    self.whisper_transcriber.set_model(active_set.model)
-                
-                # Show status message
-                self.status_bar.showMessage(
-                    AppLabels.STATUS_INSTRUCTION_SET_ACTIVE.format(active_set.name),
+            # Apply settings from active instruction set
+            self.apply_instruction_set_settings()
+            
+            # Update UI to reflect LLM enabled state
+            self.llm_enabled_checkbox.setChecked(self.unified_processor.is_llm_enabled())
+            
+            # Re-register hotkeys
+            self.setup_global_hotkey()
+            
+            # Show status message using ThreadManager for thread safety
+            if self.instruction_set_manager.active_set:
+                self.thread_manager.update_status(
+                    AppLabels.STATUS_INSTRUCTION_SET_ACTIVE.format(self.instruction_set_manager.active_set.name),
                     3000
                 )
     
@@ -639,15 +993,47 @@ class MainWindow(QMainWindow):
         """
         Toggle auto-copy feature on/off.
         
-        This method toggles whether transcription results are
+        This method toggles whether processing results are
         automatically copied to the clipboard, and saves the setting.
         """
         self.auto_copy = self.auto_copy_action.isChecked()
         self.settings.setValue("auto_copy", self.auto_copy)
         if self.auto_copy:
-            self.status_bar.showMessage(AppLabels.STATUS_AUTO_COPY_ENABLED, 2000)
+            self.ui_updater.update_status(AppLabels.STATUS_AUTO_COPY_ENABLED, 2000)
         else:
-            self.status_bar.showMessage(AppLabels.STATUS_AUTO_COPY_DISABLED, 2000)
+            self.ui_updater.update_status(AppLabels.STATUS_AUTO_COPY_DISABLED, 2000)
+    
+    def toggle_sound_option(self):
+        """
+        Toggle notification sounds on/off.
+        
+        Saves the setting and shows status in the status bar.
+        """
+        self.enable_sound = self.sound_action.isChecked()
+        self.settings.setValue("enable_sound", self.enable_sound)
+        if self.enable_sound:
+            self.ui_updater.update_status(AppLabels.STATUS_SOUND_ENABLED, 2000)
+        else:
+            self.ui_updater.update_status(AppLabels.STATUS_SOUND_DISABLED, 2000)
+
+    def toggle_indicator_option(self):
+        """
+        Toggle indicator display on/off.
+        
+        Saves the setting and shows status in the status bar.
+        Also hides the indicator if turned off.
+        """
+        self.show_indicator = self.indicator_action.isChecked()
+        self.settings.setValue("show_indicator", self.show_indicator)
+        
+        # Hide indicator if disabled
+        if not self.show_indicator:
+            self.status_indicator_window.hide()
+            
+        if self.show_indicator:
+            self.ui_updater.update_status(AppLabels.STATUS_INDICATOR_SHOWN, 2000)
+        else:
+            self.ui_updater.update_status(AppLabels.STATUS_INDICATOR_HIDDEN, 2000)
     
     def quit_application(self):
         """
@@ -716,7 +1102,7 @@ class MainWindow(QMainWindow):
     
     def play_complete_sound(self):
         """
-        Play transcription complete sound.
+        Play processing complete sound.
         
         Only plays if enable_sound is True.
         """
@@ -727,38 +1113,6 @@ class MainWindow(QMainWindow):
         self.complete_player.setSource(QUrl.fromLocalFile(sound_path))
         self.complete_audio_output.setVolume(0.5)
         self.complete_player.play()
-
-    def toggle_sound_option(self):
-        """
-        Toggle notification sounds on/off.
-        
-        Saves the setting and shows status in the status bar.
-        """
-        self.enable_sound = self.sound_action.isChecked()
-        self.settings.setValue("enable_sound", self.enable_sound)
-        if self.enable_sound:
-            self.status_bar.showMessage(AppLabels.STATUS_SOUND_ENABLED, 2000)
-        else:
-            self.status_bar.showMessage(AppLabels.STATUS_SOUND_DISABLED, 2000)
-
-    def toggle_indicator_option(self):
-        """
-        Toggle indicator display on/off.
-        
-        Saves the setting and shows status in the status bar.
-        Also hides the indicator if turned off.
-        """
-        self.show_indicator = self.indicator_action.isChecked()
-        self.settings.setValue("show_indicator", self.show_indicator)
-        
-        # Hide indicator if disabled
-        if not self.show_indicator:
-            self.status_indicator_window.hide()
-            
-        if self.show_indicator:
-            self.status_bar.showMessage(AppLabels.STATUS_INDICATOR_SHOWN, 2000)
-        else:
-            self.status_bar.showMessage(AppLabels.STATUS_INDICATOR_HIDDEN, 2000)
 
     def setup_system_tray(self):
         """

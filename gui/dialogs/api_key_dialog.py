@@ -1,14 +1,15 @@
 """
 API Key Dialog
 
-This module provides a dialog for setting and validating the OpenAI API key.
+This module provides a dialog for setting and validating the OpenAI API key
+with thread-safe implementation.
 """
 
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
     QPushButton, QDialogButtonBox, QGridLayout
 )
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSlot
 
 from core.transcriber import WhisperTranscriber
 from gui.resources.labels import AppLabels
@@ -21,9 +22,15 @@ class APIKeyDialog(QDialog):
     
     This dialog allows users to enter, validate, and save their OpenAI API key
     which is required for transcription services.
+    
+    Thread Safety:
+    --------------
+    API key validation is performed using ThreadManager.run_in_worker_thread when 
+    thread_manager is provided. UI updates use ThreadManager.run_in_main_thread
+    to ensure thread safety.
     """
     
-    def __init__(self, parent=None, current_api_key=""):
+    def __init__(self, parent=None, current_api_key="", thread_manager=None):
         """
         Initialize the APIKeyDialog.
         
@@ -33,10 +40,13 @@ class APIKeyDialog(QDialog):
             Parent widget, by default None
         current_api_key : str, optional
             Current API key, by default ""
+        thread_manager : ThreadManager, optional
+            Thread manager for thread-safe operations
         """
         super().__init__(parent)
         
         self.api_key = current_api_key
+        self.thread_manager = thread_manager
         
         # Set up UI
         self.init_ui()
@@ -115,37 +125,80 @@ class APIKeyDialog(QDialog):
         
         This method attempts to create a WhisperTranscriber with the entered key
         to check if it's valid. Shows appropriate message based on the result.
+        Uses ThreadManager for thread-safe operation if available.
         """
         key = self.key_input.text().strip()
         
         if not key:
-            SimpleMessageDialog.show_message(
-                self,
-                AppLabels.API_KEY_EMPTY_ERROR_TITLE,
-                AppLabels.API_KEY_EMPTY_ERROR_MESSAGE,
-                SimpleMessageDialog.WARNING
-            )
+            self._show_empty_key_error()
             return
-        
-        try:
-            # Try to create a transcriber with this key
-            transcriber = WhisperTranscriber(api_key=key)
             
-            # If successful, show confirmation
-            SimpleMessageDialog.show_message(
-                self,
-                AppLabels.API_KEY_VALID_TITLE,
-                AppLabels.API_KEY_VALID_MESSAGE,
-                SimpleMessageDialog.INFO
+        # Define the validation worker function
+        def validation_worker():
+            try:
+                # Try to create a transcriber with this key
+                transcriber = WhisperTranscriber(api_key=key)
+                return True, None
+            except Exception as e:
+                return False, str(e)
+                
+        # Define the completion handler
+        def on_validation_complete(result):
+            success, error = result
+            
+            if success:
+                self._show_key_valid_message()
+            else:
+                self._show_key_validation_error(error)
+                
+        # Use thread manager if available, otherwise validate synchronously
+        if self.thread_manager:
+            self.thread_manager.run_in_worker_thread(
+                "api_key_validation",
+                validation_worker,
+                callback=on_validation_complete
             )
-        except Exception as e:
-            # If failed, show error
-            SimpleMessageDialog.show_message(
-                self,
-                AppLabels.API_KEY_VALIDATION_ERROR_TITLE,
-                AppLabels.API_KEY_VALIDATION_ERROR_MESSAGE.format(str(e)),
-                SimpleMessageDialog.ERROR
-            )
+        else:
+            # Synchronous validation
+            result = validation_worker()
+            on_validation_complete(result)
+    
+    def _show_empty_key_error(self):
+        """Show error message for empty API key."""
+        SimpleMessageDialog.show_message(
+            self,
+            AppLabels.API_KEY_EMPTY_ERROR_TITLE,
+            AppLabels.API_KEY_EMPTY_ERROR_MESSAGE,
+            SimpleMessageDialog.WARNING,
+            self.thread_manager
+        )
+    
+    def _show_key_valid_message(self):
+        """Show confirmation message for valid API key."""
+        SimpleMessageDialog.show_message(
+            self,
+            AppLabels.API_KEY_VALID_TITLE,
+            AppLabels.API_KEY_VALID_MESSAGE,
+            SimpleMessageDialog.INFO,
+            self.thread_manager
+        )
+    
+    def _show_key_validation_error(self, error_message):
+        """
+        Show error message for API key validation failure.
+        
+        Parameters
+        ----------
+        error_message : str
+            Error message to display
+        """
+        SimpleMessageDialog.show_message(
+            self,
+            AppLabels.API_KEY_VALIDATION_ERROR_TITLE,
+            AppLabels.API_KEY_VALIDATION_ERROR_MESSAGE.format(error_message),
+            SimpleMessageDialog.ERROR,
+            self.thread_manager
+        )
     
     def get_api_key(self):
         """
@@ -164,12 +217,7 @@ class APIKeyDialog(QDialog):
         key = self.get_api_key()
         
         if not key:
-            SimpleMessageDialog.show_message(
-                self,
-                AppLabels.API_KEY_EMPTY_ERROR_TITLE,
-                AppLabels.API_KEY_EMPTY_ERROR_MESSAGE,
-                SimpleMessageDialog.WARNING
-            )
+            self._show_empty_key_error()
             return
         
         # Update stored key

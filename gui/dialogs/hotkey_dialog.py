@@ -1,7 +1,7 @@
 """
 Hotkey Dialog
 
-This module provides a dialog for setting the global hotkey.
+This module provides a dialog for setting the global hotkey with thread-safe implementation.
 """
 
 from PyQt6.QtWidgets import (
@@ -13,6 +13,7 @@ from PyQt6.QtGui import QKeyEvent, QKeySequence
 
 from gui.resources.labels import AppLabels
 from gui.dialogs.simple_message_dialog import SimpleMessageDialog
+from gui.thread_management.hotkey_bridge import HotkeyBridge
 
 
 class HotkeyDialog(QDialog):
@@ -21,9 +22,14 @@ class HotkeyDialog(QDialog):
     
     This dialog allows users to define a custom hotkey combination
     for starting and stopping recording.
+    
+    Thread Safety:
+    --------------
+    Uses ThreadManager.run_in_main_thread for showing message dialogs when
+    thread_manager is provided. This ensures thread safety for UI operations.
     """
     
-    def __init__(self, parent=None, current_hotkey=""):
+    def __init__(self, parent=None, current_hotkey="", thread_manager=None):
         """
         Initialize the HotkeyDialog.
         
@@ -33,11 +39,20 @@ class HotkeyDialog(QDialog):
             Parent widget, by default None
         current_hotkey : str, optional
             Current hotkey string, by default ""
+        thread_manager : ThreadManager, optional
+            Thread manager for thread-safe operations
         """
         super().__init__(parent)
         
         self.hotkey = current_hotkey
         self.current_keys = set()
+        self.thread_manager = thread_manager
+        
+        # Store original hotkey for safe restoration
+        self.original_hotkey = current_hotkey
+        
+        # Flag to track if hotkeys were disabled
+        self.hotkeys_disabled = False
         
         # Set up UI
         self.init_ui()
@@ -178,16 +193,105 @@ class HotkeyDialog(QDialog):
         return self.hotkey
     
     def accept(self):
-        """Handle dialog acceptance with validation."""
+        """
+        Handle dialog acceptance with validation.
+        
+        This method is called when the OK button is clicked. It validates
+        the hotkey and re-enables all hotkeys that were disabled when the
+        dialog was shown.
+        """
         # Validate hotkey before accepting
         if not self.hotkey:
-            SimpleMessageDialog.show_message(
-                self,
-                AppLabels.HOTKEY_VALIDATION_ERROR_TITLE,
-                AppLabels.HOTKEY_VALIDATION_ERROR_MESSAGE,
-                SimpleMessageDialog.WARNING
-            )
+            self._show_validation_error()
             return
+        
+        # Re-enable hotkeys
+        self._restore_hotkeys()
         
         # Accept the dialog
         super().accept()
+    
+    def _show_validation_error(self):
+        """Show error message for empty hotkey."""
+        SimpleMessageDialog.show_message(
+            self,
+            AppLabels.HOTKEY_VALIDATION_ERROR_TITLE,
+            AppLabels.HOTKEY_VALIDATION_ERROR_MESSAGE,
+            SimpleMessageDialog.WARNING,
+            self.thread_manager
+        )
+    
+    def showEvent(self, event):
+        """
+        Handle dialog show event.
+        
+        This method is called when the dialog is shown. It disables all hotkeys
+        to prevent them from being triggered while the dialog is open.
+        
+        Parameters
+        ----------
+        event : QShowEvent
+            Show event
+        """
+        # Call parent class method first
+        super().showEvent(event)
+        
+        # Disable all hotkeys by using HotkeyBridge's set_recording_mode
+        # Setting enabled=True with an empty recording_hotkey effectively disables all hotkeys
+        hotkey_bridge = HotkeyBridge.instance()
+        if hotkey_bridge:
+            try:
+                hotkey_bridge.set_recording_mode(True, None)
+                self.hotkeys_disabled = True
+            except Exception as e:
+                print(f"Error disabling hotkeys: {e}")
+    
+    def closeEvent(self, event):
+        """
+        Handle dialog close event.
+        
+        This method is called when the dialog is closed. It re-enables all hotkeys
+        that were disabled when the dialog was shown.
+        
+        Parameters
+        ----------
+        event : QCloseEvent
+            Close event
+        """
+        # Re-enable hotkeys
+        self._restore_hotkeys()
+        
+        # Call parent class method
+        super().closeEvent(event)
+    
+    def reject(self):
+        """
+        Handle dialog rejection.
+        
+        This method is called when the Cancel button is clicked. It restores
+        the original hotkey and re-enables all hotkeys.
+        """
+        # Restore original hotkey
+        self.hotkey = self.original_hotkey
+        
+        # Re-enable hotkeys
+        self._restore_hotkeys()
+        
+        # Call parent class method
+        super().reject()
+    
+    def _restore_hotkeys(self):
+        """
+        Restore hotkeys that were disabled.
+        
+        This method re-enables all hotkeys that were disabled when the dialog was shown.
+        """
+        if self.hotkeys_disabled:
+            hotkey_bridge = HotkeyBridge.instance()
+            if hotkey_bridge:
+                try:
+                    # Disable recording mode to re-enable all hotkeys
+                    hotkey_bridge.set_recording_mode(False)
+                    self.hotkeys_disabled = False
+                except Exception as e:
+                    print(f"Error re-enabling hotkeys: {e}")
