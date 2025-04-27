@@ -58,11 +58,10 @@ def main():
     # Show hotkey information on first run
     settings = window.settings
     if not settings.contains("first_run_done"):
-        hotkey = settings.value("hotkey", AppConfig.DEFAULT_HOTKEY)
         SimpleMessageDialog.show_message(
             window, 
             AppLabels.MAIN_HOTKEY_INFO_TITLE, 
-            AppLabels.MAIN_HOTKEY_INFO_MESSAGE.format(hotkey),
+            AppLabels.MAIN_HOTKEY_INFO_MESSAGE,
             SimpleMessageDialog.INFO
         )
         settings.setValue("first_run_done", True)

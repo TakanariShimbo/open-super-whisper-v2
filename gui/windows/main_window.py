@@ -26,7 +26,6 @@ from core.hotkeys import HotkeyManager
 from gui.resources.config import AppConfig
 from gui.resources.labels import AppLabels
 from gui.dialogs.api_key_dialog import APIKeyDialog
-from gui.dialogs.hotkey_dialog import HotkeyDialog
 from gui.dialogs.instruction_sets_dialog import InstructionSetsDialog, GUIInstructionSetManager
 from gui.dialogs.simple_message_dialog import SimpleMessageDialog
 from gui.components.widgets.status_indicator import StatusIndicatorWindow

@@ -18,7 +18,6 @@ class AppConfig:
     
     # Default settings
     DEFAULT_API_KEY = ""
-    DEFAULT_HOTKEY = "ctrl+shift+r"
     DEFAULT_AUTO_COPY = True
     DEFAULT_ENABLE_SOUND = True
     DEFAULT_SHOW_INDICATOR = True
