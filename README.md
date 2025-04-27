@@ -1,4 +1,4 @@
-# Open Super Whisper
+# Open Super Whisper V2
 
 A PyQt6-based GUI application for audio transcription and LLM analysis using OpenAI's Whisper API and LLM models. This application allows users to record audio, send it to Whisper for transcription, process the transcription with LLMs, and view the results.
 
@@ -33,7 +33,7 @@ A PyQt6-based GUI application for audio transcription and LLM analysis using Ope
 │   ├── icon.png                 # Application icon (cross-platform)
 │   ├── start_sound.wav          # Sound played when recording starts
 │   └── stop_sound.wav           # Sound played when recording stops
-├── core/                # Core functionality (GUI-independent, fully implemented)
+├── core/                        # Core functionality (GUI-independent, fully implemented)
 │   ├── __init__.py
 │   ├── transcriber.py           # Audio transcription module
 │   ├── recorder.py              # Audio recording module
@@ -46,7 +46,7 @@ A PyQt6-based GUI application for audio transcription and LLM analysis using Ope
 │       ├── language.py          # Language data models and manager
 │       ├── whisper.py           # Whisper model data models and manager
 │       └── llm.py               # LLM model data models and manager
-└── gui/                 # GUI-related functionality (Qt-dependent)
+└── gui/                         # GUI-related functionality (Qt-dependent)
     ├── __init__.py
     ├── main.py                  # GUI entry point
     ├── components/              # Reusable UI components
@@ -64,6 +64,14 @@ A PyQt6-based GUI application for audio transcription and LLM analysis using Ope
     │   ├── __init__.py
     │   ├── config.py            # Configuration settings
     │   └── labels.py            # UI text labels
+    ├── thread_management/       # Thread management for async operations
+    │   ├── __init__.py
+    │   ├── hotkey_bridge.py     # Bridge between hotkeys and UI thread
+    │   ├── thread_manager.py    # Thread management and coordination
+    │   ├── ui_updater.py        # Safe UI updates from background threads
+    │   └── workers/             # Worker thread implementations
+    │       ├── __init__.py
+    │       └── task_worker.py   # Background task worker
     ├── utils/                   # Utility functions
     │   ├── __init__.py
     │   └── resource_helper.py   # Resource path resolution
@@ -82,6 +90,26 @@ A PyQt6-based GUI application for audio transcription and LLM analysis using Ope
    - Logical organization of features into dedicated directories
    - Reduced duplication of shared functionality
 
+3. Advanced Threading
+   - Dedicated thread management for UI responsiveness
+   - Background task workers for long-running operations
+   - Safe UI updates from background threads
+
+## Installation
+
+1. Ensure you have UV installed.
+
+2. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/open-super-whisper-v2.git
+   cd open-super-whisper-v2
+   ```
+
+3. Install dependencies:
+   ```bash
+   uv sync
+   ```
+
 ## How to Run
 
 To start the application, run:
@@ -89,6 +117,9 @@ To start the application, run:
 ```bash
 python main.py
 ```
+
+Command line options:
+- `--minimized` or `-m`: Start the application minimized to the system tray
 
 ## Packaging
 
@@ -118,7 +149,7 @@ Once the build is complete, you'll find `OpenSuperWhisper.exe` in the `dist` fol
 
 The core module (`core`) is fully implemented and independent of the GUI, providing transcription, LLM processing, recording, instruction set, and hotkey management features that can be reused in other projects.
 
-The GUI module (`gui`) leverages the core module to provide a user interface.
+The GUI module (`gui`) leverages the core module to provide a user interface with advanced threading support for a responsive experience.
 
 ## Using LLM Features
 
