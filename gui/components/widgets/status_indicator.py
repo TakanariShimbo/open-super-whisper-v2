@@ -2,10 +2,11 @@
 Status Indicator Window
 
 This module provides a floating window that displays the current status of recording.
+It is designed to work with the thread management framework to ensure thread-safe UI updates.
 """
 
 from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QFrame
-from PyQt6.QtCore import Qt, QPoint
+from PyQt6.QtCore import Qt, QPoint, pyqtSlot
 from PyQt6.QtGui import QPalette, QColor
 
 from gui.resources.labels import AppLabels
@@ -16,7 +17,8 @@ class StatusIndicatorWindow(QWidget):
     Floating indicator window for recording status.
     
     This window shows the current status of recording, transcription,
-    and provides visual feedback to the user.
+    and provides visual feedback to the user. It includes thread-safe
+    update methods for use with ThreadManager.
     """
     
     # Status constants
@@ -109,9 +111,10 @@ class StatusIndicatorWindow(QWidget):
             self.status_label.setStyleSheet("color: #5fff5f; font-weight: bold;")
             self.timer_label.setText("")
     
+    @pyqtSlot(int)
     def set_mode(self, mode):
         """
-        Set the current mode of the indicator.
+        Thread-safe method to set the current mode of the indicator.
         
         Parameters
         ----------
@@ -121,9 +124,10 @@ class StatusIndicatorWindow(QWidget):
         self._current_mode = mode
         self._update_indicator()
     
+    @pyqtSlot(str)
     def update_timer(self, time_str):
         """
-        Update the timer display.
+        Thread-safe method to update the timer display.
         
         Parameters
         ----------
@@ -136,3 +140,28 @@ class StatusIndicatorWindow(QWidget):
         """Handle show event by updating position."""
         super().showEvent(event)
         self._update_position()
+    
+    def connect_to_thread_manager(self, thread_manager):
+        """
+        Connect this window to the ThreadManager signals.
+        
+        Parameters
+        ----------
+        thread_manager : ThreadManager
+            The thread manager instance to connect to
+            
+        This method ensures that indicator updates and timer updates
+        are properly connected with QueuedConnection type for thread safety.
+        """
+        if thread_manager:
+            # Connect indicator update signal with QueuedConnection
+            thread_manager.indicatorUpdate.connect(
+                self.set_mode,
+                Qt.ConnectionType.QueuedConnection
+            )
+            
+            # Connect timer update signal with QueuedConnection
+            thread_manager.indicatorTimerUpdate.connect(
+                self.update_timer,
+                Qt.ConnectionType.QueuedConnection
+            )

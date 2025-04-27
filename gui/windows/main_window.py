@@ -7,7 +7,6 @@ with integrated LLM processing support.
 
 import os
 import sys
-import threading
 import time
 
 from PyQt6.QtWidgets import (
@@ -32,6 +31,10 @@ from gui.dialogs.instruction_sets_dialog import InstructionSetsDialog, GUIInstru
 from gui.dialogs.simple_message_dialog import SimpleMessageDialog
 from gui.components.widgets.status_indicator import StatusIndicatorWindow
 from gui.utils.resource_helper import getResourcePath
+
+# Thread management imports
+from thread_management.thread_manager import ThreadManager
+from thread_management.ui_updater import UIUpdater
 
 
 class MainWindow(QMainWindow):
@@ -60,6 +63,9 @@ class MainWindow(QMainWindow):
         # Hotkey and clipboard settings
         self.hotkey = self.settings.value("hotkey", AppConfig.DEFAULT_HOTKEY)
         self.auto_copy = self.settings.value("auto_copy", AppConfig.DEFAULT_AUTO_COPY, type=bool)
+        
+        # Initialize thread manager for safe thread operations
+        self.thread_manager = ThreadManager()
         
         # Initialize hotkey manager
         self.hotkey_manager = HotkeyManager()
@@ -107,13 +113,19 @@ class MainWindow(QMainWindow):
         # Set up UI
         self.init_ui()
         
+        # Set up ThreadManager signal connections
+        self._setup_thread_manager_connections()
+        
         # Connect signals
-        self.processing_complete.connect(self.on_processing_complete)
-        self.recording_status_changed.connect(self.update_recording_status)
+        self.processing_complete.connect(self.on_processing_complete, Qt.ConnectionType.QueuedConnection)
+        self.recording_status_changed.connect(self.update_recording_status, Qt.ConnectionType.QueuedConnection)
+        
+        # Connect status indicator window to ThreadManager
+        self.status_indicator_window.connect_to_thread_manager(self.thread_manager)
         
         # Check API key
         if not self.api_key:
-            self.show_api_key_dialog()
+            self.thread_manager.run_in_main_thread(self.show_api_key_dialog)
             
         # Set up additional connections
         self.setup_connections()
@@ -123,6 +135,45 @@ class MainWindow(QMainWindow):
         
         # Set up system tray
         self.setup_system_tray()
+        
+    def _setup_thread_manager_connections(self):
+        """
+        Set up connections between ThreadManager signals and MainWindow slots.
+        """
+        # Status update connection
+        self.thread_manager.statusUpdate.connect(
+            lambda msg, timeout: self.status_bar.showMessage(msg, timeout),
+            Qt.ConnectionType.QueuedConnection
+        )
+        
+        # Timer update connection
+        self.thread_manager.timerUpdate.connect(
+            lambda time_str: self.recording_timer_label.setText(time_str),
+            Qt.ConnectionType.QueuedConnection
+        )
+        
+        # Processing complete connection
+        self.thread_manager.processingComplete.connect(
+            self.on_processing_complete,
+            Qt.ConnectionType.QueuedConnection
+        )
+        
+        # Recording status connection
+        self.thread_manager.recordingStatusChanged.connect(
+            self.update_recording_status,
+            Qt.ConnectionType.QueuedConnection
+        )
+        
+        # Indicator update connections
+        self.thread_manager.indicatorUpdate.connect(
+            lambda mode: self.status_indicator_window.set_mode(mode),
+            Qt.ConnectionType.QueuedConnection
+        )
+        
+        self.thread_manager.indicatorTimerUpdate.connect(
+            lambda time_str: self.status_indicator_window.update_timer(time_str),
+            Qt.ConnectionType.QueuedConnection
+        )
     
     def apply_instruction_set_settings(self):
         """Apply settings from the active instruction set to the unified processor."""
@@ -275,6 +326,13 @@ class MainWindow(QMainWindow):
         # Complete layout
         central_widget.setLayout(main_layout)
         self.setCentralWidget(central_widget)
+        
+        # Initialize UIUpdater for thread-safe UI updates
+        self.ui_updater = UIUpdater(
+            self.status_bar,
+            self.recording_indicator,
+            self.recording_timer_label
+        )
     
     def create_toolbar(self):
         """
@@ -404,20 +462,21 @@ class MainWindow(QMainWindow):
                     llm_enabled=enabled
                 )
             
-            # Update status bar
+            # Update status bar via UIUpdater for thread safety
             if enabled:
-                self.status_bar.showMessage(AppLabels.STATUS_LLM_ENABLED, 2000)
+                self.ui_updater.update_status(AppLabels.STATUS_LLM_ENABLED, 2000)
             else:
-                self.status_bar.showMessage(AppLabels.STATUS_LLM_DISABLED, 2000)
+                self.ui_updater.update_status(AppLabels.STATUS_LLM_DISABLED, 2000)
     
     def toggle_recording(self):
         """
         Toggle recording start/stop.
         
         This method starts or stops recording based on the current state.
+        Uses ThreadManager to ensure thread-safe execution in the GUI thread.
         """
-        # Use QTimer.singleShot to ensure execution in GUI thread
-        QTimer.singleShot(0, self._toggle_recording_impl)
+        # Use ThreadManager to run in main thread instead of QTimer.singleShot
+        self.thread_manager.run_in_main_thread(self._toggle_recording_impl)
     
     def _toggle_recording_impl(self):
         """
@@ -444,28 +503,33 @@ class MainWindow(QMainWindow):
             SimpleMessageDialog.show_message(self, AppLabels.MAIN_WIN_API_KEY_ERROR_TITLE, AppLabels.MAIN_WIN_API_KEY_ERROR_REQUIRED, SimpleMessageDialog.WARNING)
             return
             
+        # Use UIUpdater for button text update
         self.record_button.setText(AppLabels.MAIN_WIN_RECORD_STOP_BUTTON)
         self.audio_recorder.start_recording()
-        self.recording_status_changed.emit(True)
         
-        # Start recording timer
-        self.recording_start_time = time.time()
-        self.recording_timer.start(1000)  # Update every second
+        # Signal recording status change through ThreadManager
+        self.thread_manager.recordingStatusChanged.emit(True)
+        
+        # Start recording timer using ThreadManager
+        self.thread_manager.start_recording_timer()
         
         # Show recording status
         if self.show_indicator:
             # Reset window first
             self.status_indicator_window.hide()
-            self.status_indicator_window.set_mode(StatusIndicatorWindow.MODE_RECORDING)
+            # Update indicator using ThreadManager
+            self.thread_manager.update_indicator(StatusIndicatorWindow.MODE_RECORDING)
             self.status_indicator_window.show()
         
-        # Enable recording mode to only allow the main hotkey to function
-        self.hotkey_manager.set_recording_mode(True, self.hotkey)
+        # Enable recording mode via HotkeyBridge to ensure thread safety
+        from thread_management.hotkey_bridge import HotkeyBridge
+        HotkeyBridge.instance().set_recording_mode(True, self.hotkey)
         
         # Disable instruction set hotkeys during recording (for backward compatibility)
         self.disable_instruction_set_hotkeys()
         
-        self.status_bar.showMessage(AppLabels.STATUS_RECORDING)
+        # Update status using ThreadManager
+        self.thread_manager.update_status(AppLabels.STATUS_RECORDING)
         
         # Play start sound
         self.play_start_sound()
@@ -479,21 +543,27 @@ class MainWindow(QMainWindow):
         It also updates the UI state. When recording stops, all
         previously disabled instruction set hotkeys are re-enabled.
         """
+        # Use UIUpdater for button text update
+        self.ui_updater.update_timer_label(AppLabels.STATUS_TIMER_INITIAL)
         self.record_button.setText(AppLabels.MAIN_WIN_RECORD_START_BUTTON)
         audio_file = self.audio_recorder.stop_recording()
-        self.recording_status_changed.emit(False)
         
-        # Stop recording timer
-        self.recording_timer.stop()
+        # Signal recording status change through ThreadManager
+        self.thread_manager.recordingStatusChanged.emit(False)
         
-        # Disable recording mode to allow all hotkeys again
-        self.hotkey_manager.set_recording_mode(False)
+        # Stop recording timer using ThreadManager
+        self.thread_manager.stop_recording_timer()
+        
+        # Disable recording mode via HotkeyBridge to ensure thread safety
+        from thread_management.hotkey_bridge import HotkeyBridge
+        HotkeyBridge.instance().set_recording_mode(False)
         
         # Re-enable instruction set hotkeys (for backward compatibility)
         self.restore_instruction_set_hotkeys()
         
         if audio_file:
-            self.status_bar.showMessage(AppLabels.STATUS_TRANSCRIBING)
+            # Update status using ThreadManager
+            self.thread_manager.update_status(AppLabels.STATUS_TRANSCRIBING)
             self.start_processing(audio_file)
         else:
             # Hide status indicator if no file was created
@@ -514,38 +584,34 @@ class MainWindow(QMainWindow):
         self.is_recording = is_recording
         
         if is_recording:
-            # Recording active
+            # Recording active - use UIUpdater for thread safety
             self.record_button.setText(AppLabels.MAIN_WIN_RECORD_STOP_BUTTON)
-            self.status_bar.showMessage(AppLabels.STATUS_RECORDING)
+            self.ui_updater.update_status(AppLabels.STATUS_RECORDING)
+            self.ui_updater.update_recording_indicator(is_recording)
             
             if self.show_indicator:
-                # Show recording indicator
-                self.status_indicator_window.set_mode(StatusIndicatorWindow.MODE_RECORDING)
+                # Show recording indicator via ThreadManager
+                self.thread_manager.update_indicator(StatusIndicatorWindow.MODE_RECORDING)
                 self.status_indicator_window.show()
         else:
-            # Recording stopped
+            # Recording stopped - use UIUpdater for thread safety
             self.record_button.setText(AppLabels.MAIN_WIN_RECORD_START_BUTTON)
-            self.status_bar.showMessage(AppLabels.STATUS_READY)
+            self.ui_updater.update_status(AppLabels.STATUS_READY)
+            self.ui_updater.update_recording_indicator(is_recording)
             
             # Reset timer
-            self.recording_timer_label.setText(AppLabels.STATUS_TIMER_INITIAL)
+            self.ui_updater.update_timer_label(AppLabels.STATUS_TIMER_INITIAL)
     
     def update_recording_time(self):
         """
         Update the recording time display.
         
-        This method calculates elapsed time and updates the timer display.
-        It also updates the timer in the indicator window.
+        DEPRECATED: This method is now handled by ThreadManager.
+        Kept for backward compatibility only.
         """
-        if self.audio_recorder.is_recording():
-            elapsed = int(time.time() - self.recording_start_time)
-            minutes = elapsed // 60
-            seconds = elapsed % 60
-            time_str = f"{minutes:02d}:{seconds:02d}"
-            self.recording_timer_label.setText(time_str)
-            
-            # Update timer in recording indicator window
-            self.status_indicator_window.update_timer(time_str)
+        # This functionality has been moved to ThreadManager._update_recording_time
+        # which sends signals for both the main UI and indicator window
+        pass
     
     def start_processing(self, audio_file=None):
         """
@@ -558,26 +624,28 @@ class MainWindow(QMainWindow):
             
         This method starts the processing chain and updates the UI state.
         """
-        self.status_bar.showMessage(AppLabels.STATUS_TRANSCRIBING)
+        # Update status using ThreadManager
+        self.thread_manager.update_status(AppLabels.STATUS_TRANSCRIBING)
         
         # Show transcribing status
         if self.show_indicator:
             # Reset window first
             self.status_indicator_window.hide()
-            self.status_indicator_window.set_mode(StatusIndicatorWindow.MODE_PROCESSING)
+            # Update indicator using ThreadManager
+            self.thread_manager.update_indicator(StatusIndicatorWindow.MODE_PROCESSING)
             self.status_indicator_window.show()
         
         # Get language from active instruction set
         selected_language = self.instruction_set_manager.get_active_language()
         
-        # Run processing in background thread
+        # Run processing in worker thread using ThreadManager
         if audio_file:
-            processing_thread = threading.Thread(
-                target=self.perform_processing,
-                args=(audio_file, selected_language)
+            self.thread_manager.run_in_worker_thread(
+                "audio_processing",
+                self.perform_processing,
+                audio_file, 
+                selected_language
             )
-            processing_thread.daemon = True
-            processing_thread.start()
     
     def perform_processing(self, audio_file, language=None):
         """
@@ -603,12 +671,16 @@ class MainWindow(QMainWindow):
         except Exception as e:
             # Handle errors
             error_msg = f"Error occurred during processing: {str(e)}"
+            print(error_msg)
+            
             # Create error result
             error_result = ProcessingResult(transcription=f"Error: {str(e)}")
+            
             # Signal the error result
             self.processing_complete.emit(error_result)
-            # Show error in status bar
-            QTimer.singleShot(0, lambda: self.status_bar.showMessage(AppLabels.MAIN_WIN_PROCESSING_ERROR, 5000))
+            
+            # Show error in status bar using ThreadManager for thread safety
+            self.thread_manager.update_status(AppLabels.MAIN_WIN_PROCESSING_ERROR, 5000)
     
     def on_processing_complete(self, result):
         """
@@ -619,13 +691,16 @@ class MainWindow(QMainWindow):
         result : ProcessingResult
             The processing result containing transcription and optional LLM response.
         """
-        # Update UI
+        # Update UI via ThreadManager for thread safety
         if self.show_indicator:
-            # Show processing complete indicator
-            self.status_indicator_window.set_mode(StatusIndicatorWindow.MODE_COMPLETE)
+            # Show processing complete indicator via ThreadManager
+            self.thread_manager.update_indicator(StatusIndicatorWindow.MODE_COMPLETE)
             
-            # Set timer to hide indicator after configured time
-            QTimer.singleShot(AppConfig.DEFAULT_INDICATOR_DISPLAY_TIME, lambda: self.status_indicator_window.hide())
+            # Schedule hiding the indicator with ThreadManager instead of QTimer
+            self.thread_manager.run_in_main_thread(
+                lambda: self.status_indicator_window.hide(),
+                delay_ms=AppConfig.DEFAULT_INDICATOR_DISPLAY_TIME
+            )
         
         # Show transcription text
         self.transcription_text.setText(result.transcription)
@@ -640,8 +715,8 @@ class MainWindow(QMainWindow):
             # Switch to transcription tab if no LLM processing
             self.tab_widget.setCurrentIndex(0)  # Transcription tab
         
-        # Update status
-        self.status_bar.showMessage(AppLabels.STATUS_COMPLETE)
+        # Update status via UIUpdater for thread safety
+        self.ui_updater.update_status(AppLabels.STATUS_COMPLETE)
         
         # Auto-copy if enabled
         if self.auto_copy:
@@ -660,13 +735,13 @@ class MainWindow(QMainWindow):
         """Copy transcription text to clipboard."""
         text = self.transcription_text.toPlainText()
         QApplication.clipboard().setText(text)
-        self.status_bar.showMessage(AppLabels.STATUS_TRANSCRIPTION_COPIED, 2000)
+        self.ui_updater.update_status(AppLabels.STATUS_TRANSCRIPTION_COPIED, 2000)
     
     def copy_llm_to_clipboard(self):
         """Copy LLM analysis text to clipboard."""
         text = self.llm_text.toPlainText()
         QApplication.clipboard().setText(text)
-        self.status_bar.showMessage(AppLabels.STATUS_LLM_COPIED, 2000)
+        self.ui_updater.update_status(AppLabels.STATUS_LLM_COPIED, 2000)
     
     def copy_all_to_clipboard(self):
         """
@@ -684,7 +759,7 @@ class MainWindow(QMainWindow):
             combined = transcription
         
         QApplication.clipboard().setText(combined)
-        self.status_bar.showMessage(AppLabels.STATUS_ALL_COPIED, 2000)
+        self.ui_updater.update_status(AppLabels.STATUS_ALL_COPIED, 2000)
     
     def setup_connections(self):
         """Set up additional connections."""
@@ -705,11 +780,16 @@ class MainWindow(QMainWindow):
         continue functioning.
         """
         try:
-            # Clear any existing hotkeys first to avoid conflicts
-            self.hotkey_manager.clear_all_hotkeys()
+            # Clear any existing hotkeys from HotkeyBridge
+            from thread_management.hotkey_bridge import HotkeyBridge
+            HotkeyBridge.instance().clear_all_hotkeys()
             
-            # Register the main recording toggle hotkey
-            result = self.hotkey_manager.register_hotkey(self.hotkey, self.toggle_recording)
+            # Register the main recording toggle hotkey using ThreadManager
+            result = self.thread_manager.register_hotkey_handler(
+                self.hotkey,
+                "main_recording_toggle",
+                self.toggle_recording
+            )
             
             if result:
                 print(f"Hotkey '{self.hotkey}' has been set successfully")
@@ -723,8 +803,11 @@ class MainWindow(QMainWindow):
         except Exception as e:
             error_msg = f"Hotkey setup error: {e}"
             print(error_msg)
-            # Show error message to user
-            self.status_bar.showMessage(AppLabels.HOTKEY_VALIDATION_ERROR_TITLE + ": " + str(e), 5000)
+            # Show error message to user using ThreadManager
+            self.thread_manager.update_status(
+                AppLabels.HOTKEY_VALIDATION_ERROR_TITLE + ": " + str(e), 
+                5000
+            )
             # Continue with application even if hotkey fails
             return False
     
@@ -738,11 +821,13 @@ class MainWindow(QMainWindow):
                     print(f"Warning: Instruction set '{instruction_set.name}' hotkey '{instruction_set.hotkey}' conflicts with main recording hotkey")
                     continue
                 
+                # Register the hotkey using ThreadManager
+                handler_id = f"instruction_set_{instruction_set.name}"
                 # Create a lambda with the instruction set - use default argument to capture current value
                 callback = lambda set_name=instruction_set.name: self.handle_instruction_set_hotkey(set_name)
                 
                 # Register the hotkey
-                if self.hotkey_manager.register_hotkey(instruction_set.hotkey, callback):
+                if self.thread_manager.register_hotkey_handler(instruction_set.hotkey, handler_id, callback):
                     print(f"Instruction set hotkey '{instruction_set.hotkey}' registered for '{instruction_set.name}'")
                 else:
                     print(f"Failed to register hotkey '{instruction_set.hotkey}' for instruction set '{instruction_set.name}'")
@@ -785,6 +870,10 @@ class MainWindow(QMainWindow):
         # Clear the saved hotkeys list
         self.instruction_set_hotkeys = []
         
+        # Get HotkeyBridge instance
+        from thread_management.hotkey_bridge import HotkeyBridge
+        hotkey_bridge = HotkeyBridge.instance()
+        
         # Save and unregister instruction set hotkeys
         for instruction_set in self.instruction_set_manager.get_all_sets():
             if instruction_set.hotkey and instruction_set.hotkey != self.hotkey:
@@ -794,8 +883,8 @@ class MainWindow(QMainWindow):
                     'hotkey': instruction_set.hotkey
                 })
                 
-                # Unregister the hotkey
-                self.hotkey_manager.unregister_hotkey(instruction_set.hotkey)
+                # Unregister the hotkey using HotkeyBridge
+                hotkey_bridge.unregister_hotkey(instruction_set.hotkey)
                 
         print(f"Disabled {len(self.instruction_set_hotkeys)} instruction set hotkeys during recording")
     
@@ -811,11 +900,14 @@ class MainWindow(QMainWindow):
             set_name = hotkey_info['name']
             hotkey = hotkey_info['hotkey']
             
+            # Create handler ID for ThreadManager
+            handler_id = f"instruction_set_{set_name}"
+            
             # Create callback function
             callback = lambda name=set_name: self.handle_instruction_set_hotkey(name)
             
-            # Register the hotkey
-            if self.hotkey_manager.register_hotkey(hotkey, callback):
+            # Register the hotkey using ThreadManager
+            if self.thread_manager.register_hotkey_handler(hotkey, handler_id, callback):
                 print(f"Restored hotkey '{hotkey}' for instruction set '{set_name}'")
             else:
                 print(f"Failed to restore hotkey '{hotkey}' for instruction set '{set_name}'")
@@ -895,9 +987,9 @@ class MainWindow(QMainWindow):
         self.auto_copy = self.auto_copy_action.isChecked()
         self.settings.setValue("auto_copy", self.auto_copy)
         if self.auto_copy:
-            self.status_bar.showMessage(AppLabels.STATUS_AUTO_COPY_ENABLED, 2000)
+            self.ui_updater.update_status(AppLabels.STATUS_AUTO_COPY_ENABLED, 2000)
         else:
-            self.status_bar.showMessage(AppLabels.STATUS_AUTO_COPY_DISABLED, 2000)
+            self.ui_updater.update_status(AppLabels.STATUS_AUTO_COPY_DISABLED, 2000)
     
     def toggle_sound_option(self):
         """
@@ -908,9 +1000,9 @@ class MainWindow(QMainWindow):
         self.enable_sound = self.sound_action.isChecked()
         self.settings.setValue("enable_sound", self.enable_sound)
         if self.enable_sound:
-            self.status_bar.showMessage(AppLabels.STATUS_SOUND_ENABLED, 2000)
+            self.ui_updater.update_status(AppLabels.STATUS_SOUND_ENABLED, 2000)
         else:
-            self.status_bar.showMessage(AppLabels.STATUS_SOUND_DISABLED, 2000)
+            self.ui_updater.update_status(AppLabels.STATUS_SOUND_DISABLED, 2000)
 
     def toggle_indicator_option(self):
         """
@@ -927,9 +1019,9 @@ class MainWindow(QMainWindow):
             self.status_indicator_window.hide()
             
         if self.show_indicator:
-            self.status_bar.showMessage(AppLabels.STATUS_INDICATOR_SHOWN, 2000)
+            self.ui_updater.update_status(AppLabels.STATUS_INDICATOR_SHOWN, 2000)
         else:
-            self.status_bar.showMessage(AppLabels.STATUS_INDICATOR_HIDDEN, 2000)
+            self.ui_updater.update_status(AppLabels.STATUS_INDICATOR_HIDDEN, 2000)
     
     def quit_application(self):
         """
