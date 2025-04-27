@@ -105,8 +105,8 @@ class HotkeyManager:
         Set recording mode to filter hotkey events.
         
         When recording mode is enabled, only the specified recording hotkey will trigger a callback.
-        All other hotkeys will be ignored. If recording_hotkey is None, the first registered hotkey
-        will be used.
+        All other hotkeys will be ignored. If recording_hotkey is None and enabled is True, 
+        all hotkeys will be disabled.
         
         Parameters
         ----------

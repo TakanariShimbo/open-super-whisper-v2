@@ -20,13 +20,13 @@ class AppLabels:
     MAIN_SYSTEM_TRAY_ERROR_MESSAGE = "System tray is not supported on this system"
     
     MAIN_HOTKEY_INFO_TITLE = "Hotkey Configuration"
-    MAIN_HOTKEY_INFO_MESSAGE = "You can start/stop recording by pressing {}. This works even when the app is minimized or in the background."
+    MAIN_HOTKEY_INFO_MESSAGE = "Use instruction set hotkeys for recording. Each instruction set can have its own hotkey - press once to start recording, press the same key again to stop. This works even when the app is minimized or in the background."
     
     # Main Window
     MAIN_WIN_RECORD_START_BUTTON = "Start Recording"
     MAIN_WIN_RECORD_STOP_BUTTON = "Stop Recording"
     MAIN_WIN_API_KEY_SETTINGS = "API Key Settings"
-    MAIN_WIN_HOTKEY_SETTINGS = "Hotkey Settings"
+    MAIN_WIN_HOTKEY_SETTINGS = "Legacy Hotkey Settings"
     MAIN_WIN_INSTRUCTION_SETS_BUTTON = "Instruction Sets"
     MAIN_WIN_COPY_TO_CLIPBOARD = "Copy to Clipboard"
     MAIN_WIN_COPY_TRANSCRIPTION = "Copy Transcription"
@@ -69,7 +69,7 @@ class AppLabels:
     STATUS_LLM_COPIED = "LLM analysis copied to clipboard"
     STATUS_ALL_COPIED = "All content copied to clipboard"
     STATUS_API_KEY_SAVED = "API key saved"
-    STATUS_HOTKEY_SET = "Hotkey set to '{}'"
+    STATUS_HOTKEY_SET = "Legacy hotkey set to '{}' (Note: This is not used for recording)"
     STATUS_AUTO_COPY_ENABLED = "Auto-copy enabled"
     STATUS_AUTO_COPY_DISABLED = "Auto-copy disabled"
     STATUS_LLM_ENABLED = "LLM processing enabled"
@@ -104,12 +104,12 @@ class AppLabels:
     INSTRUCTION_SETS_SAVE_BUTTON = "Save"
     
     # Instruction set hotkey labels
-    INSTRUCTION_SETS_HOTKEY_LABEL = "Hotkey:"
+    INSTRUCTION_SETS_HOTKEY_LABEL = "Recording Hotkey:"
     INSTRUCTION_SETS_HOTKEY_PLACEHOLDER = "No hotkey set"
     INSTRUCTION_SETS_SET_HOTKEY_BUTTON = "Set Hotkey"
     INSTRUCTION_SETS_HOTKEY_CONFLICT_TITLE = "Hotkey Conflict"
     INSTRUCTION_SETS_HOTKEY_CONFLICT_MESSAGE = "This hotkey is already assigned to '{}'."
-    STATUS_INSTRUCTION_SET_ACTIVATED_BY_HOTKEY = "Instruction set '{}' activated by hotkey"
+    STATUS_INSTRUCTION_SET_ACTIVATED_BY_HOTKEY = "Instruction set '{}' activated and recording started"
     
     ## Vocabulary Tab
     INSTRUCTION_SETS_VOCABULARY_TAB_NAME = "Vocabulary"
@@ -127,7 +127,7 @@ class AppLabels:
     
     ## Settings Tab
     INSTRUCTION_SETS_SETTINGS_TAB_NAME = "Settings"
-    INSTRUCTION_SETS_SETTINGS_HELP = "Configure language and model settings for this instruction set. These settings will be used when this instruction set is active."
+    INSTRUCTION_SETS_SETTINGS_HELP = "Configure language and model settings for this instruction set. These settings will be used when this instruction set is active.\n\nYou can assign a hotkey to start and stop recording with this instruction set. Press the assigned hotkey once to activate the set and start recording, then press the same hotkey again to stop recording."
     INSTRUCTION_SETS_LANGUAGE_LABEL = "Language:"
     INSTRUCTION_SETS_MODEL_LABEL = "Transcription Model:"
     INSTRUCTION_SETS_LLM_TOGGLE_LABEL = "LLM Processing:"
@@ -171,9 +171,9 @@ class AppLabels:
     API_KEY_VALIDATION_ERROR_MESSAGE = "Failed to validate API key: {}"
     
     # Hotkey Dialog
-    HOTKEY_TITLE = "Global Hotkey Settings"
-    HOTKEY_DESCRIPTION = "Set a global hotkey combination for starting and stopping recording. Press the desired key combination in the input field below."
-    HOTKEY_LABEL = "Hotkey:"
+    HOTKEY_TITLE = "Recording Hotkey Settings"
+    HOTKEY_DESCRIPTION = "Note: Each instruction set can have its own hotkey assigned for starting and stopping recording. Use the Instruction Sets dialog to configure these hotkeys.\n\nThis dialog is kept for compatibility with old settings. The global hotkey below is no longer used."
+    HOTKEY_LABEL = "Legacy Hotkey:"
     HOTKEY_PLACEHOLDER = "Click here and press hotkey combination..."
     HOTKEY_CLEAR_BUTTON = "Clear"
     HOTKEY_EXAMPLES = "Examples: ctrl+shift+r, alt+w, ctrl+alt+s"

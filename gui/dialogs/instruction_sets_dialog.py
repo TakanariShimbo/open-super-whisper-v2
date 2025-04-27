@@ -20,10 +20,8 @@ from gui.dialogs.simple_message_dialog import SimpleMessageDialog
 from gui.dialogs.hotkey_dialog import HotkeyDialog
 from gui.thread_management.hotkey_bridge import HotkeyBridge
 
-# Import core instruction sets
 from core.instructions import InstructionSetManager, InstructionSet
 
-# Import language and model data
 from core.models.language import LanguageManager
 from core.models.whisper import WhisperModelManager
 from core.models.llm import LLMModelManager
@@ -114,6 +112,25 @@ class GUIInstructionSetManager:
     def get_set_by_hotkey(self, hotkey):
         """Get an instruction set by its hotkey."""
         return self.core_manager.get_set_by_hotkey(hotkey)
+    
+    def get_set_by_name(self, name):
+        """
+        Get an instruction set by its name.
+        
+        Parameters
+        ----------
+        name : str
+            Name of the instruction set to retrieve.
+            
+        Returns
+        -------
+        Optional[InstructionSet]
+            The instruction set with the given name, or None if not found.
+        """
+        for instruction_set in self.core_manager.get_all_sets():
+            if instruction_set.name == name:
+                return instruction_set
+        return None
     
     def get_active_vocabulary(self):
         """Get vocabulary from the active set."""

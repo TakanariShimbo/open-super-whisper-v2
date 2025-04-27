@@ -14,6 +14,7 @@ from gui.resources.config import AppConfig
 from gui.resources.labels import AppLabels
 from gui.utils.resource_helper import getResourcePath
 from gui.dialogs.simple_message_dialog import SimpleMessageDialog
+from gui.windows import MainWindow
 
 
 def main():
@@ -50,9 +51,6 @@ def main():
     
     # Prevent application from exiting when last window is closed
     app.setQuitOnLastWindowClosed(False)
-    
-    # Import MainWindow here to avoid circular imports
-    from gui.windows import MainWindow
     
     # Create and show main window
     window = MainWindow()

@@ -35,6 +35,7 @@ from gui.utils.resource_helper import getResourcePath
 # Thread management imports
 from gui.thread_management.thread_manager import ThreadManager
 from gui.thread_management.ui_updater import UIUpdater
+from gui.thread_management.hotkey_bridge import HotkeyBridge
 
 
 class MainWindow(QMainWindow):
@@ -122,6 +123,9 @@ class MainWindow(QMainWindow):
         
         # Connect status indicator window to ThreadManager
         self.status_indicator_window.connect_to_thread_manager(self.thread_manager)
+        
+        # Connect HotkeyBridge recordingHotkeyPressed signal to stop_recording
+        HotkeyBridge.instance().recordingHotkeyPressed.connect(self.on_recording_hotkey_pressed, Qt.ConnectionType.QueuedConnection)
         
         # Check API key
         if not self.api_key:
@@ -490,14 +494,19 @@ class MainWindow(QMainWindow):
         else:
             self.start_recording()
     
-    def start_recording(self):
+    def start_recording(self, recording_hotkey=None):
         """
         Start audio recording.
         
         This method starts recording and updates the UI state. It also
         displays the timer during recording and shows the indicator window.
-        When recording starts, all instruction set hotkeys are temporarily
-        disabled so only the main recording hotkey works.
+        During recording, only the recording hotkey is active to stop recording.
+        
+        Parameters
+        ----------
+        recording_hotkey : str, optional
+            The hotkey that triggered recording, by default None
+            If None, the main recording hotkey is used
         """
         if not self.unified_processor:
             SimpleMessageDialog.show_message(self, AppLabels.MAIN_WIN_API_KEY_ERROR_TITLE, AppLabels.MAIN_WIN_API_KEY_ERROR_REQUIRED, SimpleMessageDialog.WARNING)
@@ -507,8 +516,11 @@ class MainWindow(QMainWindow):
         self.record_button.setText(AppLabels.MAIN_WIN_RECORD_STOP_BUTTON)
         self.audio_recorder.start_recording()
         
-        # Signal recording status change through ThreadManager
-        self.thread_manager.recordingStatusChanged.emit(True)
+        # Use the provided hotkey or fall back to main hotkey
+        active_hotkey = recording_hotkey if recording_hotkey else self.hotkey
+        
+        # Signal recording status change through ThreadManager with the active hotkey
+        self.thread_manager.recordingStatusChanged.emit(True, active_hotkey)
         
         # Start recording timer using ThreadManager
         self.thread_manager.start_recording_timer()
@@ -522,11 +534,7 @@ class MainWindow(QMainWindow):
             self.status_indicator_window.show()
         
         # Enable recording mode via HotkeyBridge to ensure thread safety
-        from gui.thread_management.hotkey_bridge import HotkeyBridge
-        HotkeyBridge.instance().set_recording_mode(True, self.hotkey)
-        
-        # Disable instruction set hotkeys during recording (for backward compatibility)
-        self.disable_instruction_set_hotkeys()
+        HotkeyBridge.instance().set_recording_mode(True, active_hotkey)
         
         # Update status using ThreadManager
         self.thread_manager.update_status(AppLabels.STATUS_RECORDING)
@@ -549,13 +557,12 @@ class MainWindow(QMainWindow):
         audio_file = self.audio_recorder.stop_recording()
         
         # Signal recording status change through ThreadManager
-        self.thread_manager.recordingStatusChanged.emit(False)
+        self.thread_manager.recordingStatusChanged.emit(False, "")
         
         # Stop recording timer using ThreadManager
         self.thread_manager.stop_recording_timer()
         
         # Disable recording mode via HotkeyBridge to ensure thread safety
-        from gui.thread_management.hotkey_bridge import HotkeyBridge
         HotkeyBridge.instance().set_recording_mode(False)
         
         # Re-enable instruction set hotkeys (for backward compatibility)
@@ -572,7 +579,7 @@ class MainWindow(QMainWindow):
         # Play stop sound
         self.play_stop_sound()
     
-    def update_recording_status(self, is_recording):
+    def update_recording_status(self, is_recording, active_hotkey=""):
         """
         Update UI based on recording status.
         
@@ -580,6 +587,8 @@ class MainWindow(QMainWindow):
         ----------
         is_recording : bool
             Whether recording is in progress.
+        active_hotkey : str, optional
+            The hotkey that started recording, by default ""
         """
         self.is_recording = is_recording
         
@@ -612,6 +621,23 @@ class MainWindow(QMainWindow):
         # This functionality has been moved to ThreadManager._update_recording_time
         # which sends signals for both the main UI and indicator window
         pass
+        
+    def on_recording_hotkey_pressed(self, hotkey_str):
+        """
+        Handle when the recording hotkey is pressed during recording.
+        
+        This is called when the HotkeyBridge emits the recordingHotkeyPressed signal.
+        It stops the current recording.
+        
+        Parameters
+        ----------
+        hotkey_str : str
+            The hotkey string that was pressed
+        """
+        # We're in recording mode and the active recording hotkey was pressed
+        # So we should stop recording
+        print(f"Recording hotkey '{hotkey_str}' pressed during recording - stopping recording")
+        self.thread_manager.run_in_main_thread(self.stop_recording)
     
     def start_processing(self, audio_file=None):
         """
@@ -768,38 +794,28 @@ class MainWindow(QMainWindow):
 
     def setup_global_hotkey(self):
         """
-        Set up the global hotkey.
+        Set up the global hotkeys.
         
         Returns
         -------
         bool
             Whether hotkey setup was successful.
             
-        This method sets up the global hotkey for the application.
+        This method sets up the global hotkeys for instruction sets.
+        The single recording start/stop hotkey has been removed.
         Errors are handled gracefully to allow the application to
         continue functioning.
         """
         try:
             # Clear any existing hotkeys from HotkeyBridge
-            from gui.thread_management.hotkey_bridge import HotkeyBridge
             HotkeyBridge.instance().clear_all_hotkeys()
             
-            # Register the main recording toggle hotkey using ThreadManager
-            result = self.thread_manager.register_hotkey_handler(
-                self.hotkey,
-                "main_recording_toggle",
-                self.toggle_recording
-            )
+            # Register instruction set hotkeys
+            self.register_instruction_set_hotkeys()
             
-            if result:
-                print(f"Hotkey '{self.hotkey}' has been set successfully")
-                
-                # Register instruction set hotkeys
-                self.register_instruction_set_hotkeys()
-                
-                return True
-            else:
-                raise ValueError(f"Failed to register hotkey: {self.hotkey}")
+            # We consider it a success if we get here without exception
+            return True
+            
         except Exception as e:
             error_msg = f"Hotkey setup error: {e}"
             print(error_msg)
@@ -812,15 +828,15 @@ class MainWindow(QMainWindow):
             return False
     
     def register_instruction_set_hotkeys(self):
-        """Register hotkeys for all instruction sets."""
+        """
+        Register hotkeys for all instruction sets.
+        
+        Each instruction set hotkey will start recording when pressed, and stop recording
+        when pressed again during recording.
+        """
         # Register hotkeys for all instruction sets with defined hotkeys
         for instruction_set in self.instruction_set_manager.get_all_sets():
             if instruction_set.hotkey:
-                # Check for conflict with main hotkey
-                if instruction_set.hotkey == self.hotkey:
-                    print(f"Warning: Instruction set '{instruction_set.name}' hotkey '{instruction_set.hotkey}' conflicts with main recording hotkey")
-                    continue
-                
                 # Register the hotkey using ThreadManager
                 handler_id = f"instruction_set_{instruction_set.name}"
                 # Create a lambda with the instruction set - use default argument to capture current value
@@ -852,74 +868,67 @@ class MainWindow(QMainWindow):
         """
         Handle instruction set hotkey press.
         
+        If not recording, activate the instruction set and start recording.
+        If already recording, stop recording only if the pressed hotkey
+        is the same as the one that started recording.
+        
         Parameters
         ----------
         set_name : str
             The name of the instruction set to activate.
         """
-        self.activate_instruction_set_by_name(set_name)
+        hotkey_bridge = HotkeyBridge.instance()
+        instruction_set = self.instruction_set_manager.get_set_by_name(set_name)
+        
+        if not instruction_set:
+            print(f"Warning: Instruction set '{set_name}' not found")
+            return
+            
+        # Get the hotkey for this instruction set
+        hotkey = instruction_set.hotkey
+        
+        # Check if we're currently recording
+        if self.audio_recorder.is_recording():
+            # Only stop recording if this is the same hotkey that started recording
+            if hotkey == hotkey_bridge.get_active_recording_hotkey():
+                self.stop_recording()
+            # Otherwise ignore the hotkey
+        else:
+            # Activate the instruction set
+            self.activate_instruction_set_by_name(set_name)
+            
+            # Start recording
+            self.start_recording(hotkey)
     
     def disable_instruction_set_hotkeys(self):
         """
-        Temporarily disable all instruction set hotkeys during recording.
+        This method is kept for backward compatibility.
         
-        This method saves the current instruction set hotkeys and then
-        unregisters them to ensure only the main recording hotkey works
-        during recording.
+        In the new design, we don't disable the instruction set hotkeys anymore.
+        Instead, we filter which hotkeys are active during recording in the
+        HotkeyManager.set_recording_mode method. Only the active recording
+        hotkey is allowed to trigger during recording.
         """
-        # Clear the saved hotkeys list
-        self.instruction_set_hotkeys = []
-        
-        # Get HotkeyBridge instance
-        from gui.thread_management.hotkey_bridge import HotkeyBridge
-        hotkey_bridge = HotkeyBridge.instance()
-        
-        # Save and unregister instruction set hotkeys
-        for instruction_set in self.instruction_set_manager.get_all_sets():
-            if instruction_set.hotkey and instruction_set.hotkey != self.hotkey:
-                # Save hotkey info for later restoration
-                self.instruction_set_hotkeys.append({
-                    'name': instruction_set.name,
-                    'hotkey': instruction_set.hotkey
-                })
-                
-                # Unregister the hotkey using HotkeyBridge
-                hotkey_bridge.unregister_hotkey(instruction_set.hotkey)
-                
-        print(f"Disabled {len(self.instruction_set_hotkeys)} instruction set hotkeys during recording")
+        # This is now a no-op
+        pass
     
     def restore_instruction_set_hotkeys(self):
         """
-        Restore previously disabled instruction set hotkeys after recording.
+        This method is kept for backward compatibility.
         
-        This method re-registers all instruction set hotkeys that were
-        disabled during recording.
+        In the new design, all hotkeys remain registered and we just filter
+        which ones are active during recording using the HotkeyManager.set_recording_mode
+        method. When recording stops, all hotkeys automatically become active again.
         """
-        # Re-register saved hotkeys
-        for hotkey_info in self.instruction_set_hotkeys:
-            set_name = hotkey_info['name']
-            hotkey = hotkey_info['hotkey']
-            
-            # Create handler ID for ThreadManager
-            handler_id = f"instruction_set_{set_name}"
-            
-            # Create callback function
-            callback = lambda name=set_name: self.handle_instruction_set_hotkey(name)
-            
-            # Register the hotkey using ThreadManager
-            if self.thread_manager.register_hotkey_handler(hotkey, handler_id, callback):
-                print(f"Restored hotkey '{hotkey}' for instruction set '{set_name}'")
-            else:
-                print(f"Failed to restore hotkey '{hotkey}' for instruction set '{set_name}'")
-        
-        # Clear the saved hotkeys list
-        self.instruction_set_hotkeys = []
+        # This is now a no-op
+        pass
     
     def show_hotkey_dialog(self):
         """
-        Show the global hotkey settings dialog.
+        Show the legacy hotkey settings dialog.
         
-        This method displays a dialog for changing the hotkey setting.
+        This method displays a dialog for changing the legacy hotkey setting.
+        This hotkey is no longer used for recording but is kept for compatibility.
         The current hotkey is temporarily released during dialog display.
         Hotkeys are automatically disabled/re-enabled by the HotkeyDialog class.
         """
@@ -937,7 +946,7 @@ class MainWindow(QMainWindow):
                 # Show status message using ThreadManager for thread safety
                 self.thread_manager.update_status(
                     AppLabels.STATUS_HOTKEY_SET.format(self.hotkey), 
-                    3000
+                    5000
                 )
         else:
             # Restore original hotkey if dialog was canceled

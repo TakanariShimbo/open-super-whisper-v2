@@ -10,6 +10,9 @@ from typing import Callable, Any, Dict, List, Optional
 import time
 import uuid
 
+from gui.thread_management.workers.task_worker import TaskWorker
+from gui.thread_management.hotkey_bridge import HotkeyBridge
+
 class ThreadManager(QObject):
     """
     A class for managing safe communication and operations between threads
@@ -22,7 +25,7 @@ class ThreadManager(QObject):
     taskCompleted = pyqtSignal(str, object)  # task_id, result
     taskFailed = pyqtSignal(str, str)        # task_id, error_message
     statusUpdate = pyqtSignal(str, int)      # status_message, timeout_ms
-    recordingStatusChanged = pyqtSignal(bool)  # is_recording
+    recordingStatusChanged = pyqtSignal(bool, str)  # is_recording, instruction_set_hotkey
     processingComplete = pyqtSignal(object)  # processing_result
     hotkeyTriggered = pyqtSignal(str)        # hotkey_id
     timerUpdate = pyqtSignal(str)            # time_string
@@ -132,7 +135,6 @@ class ThreadManager(QObject):
             task_id = f"task_{uuid.uuid4().hex[:8]}"
         
         # Create and run TaskWorker
-        from gui.thread_management.workers.task_worker import TaskWorker
         worker = TaskWorker(task_id, func, args, kwargs)
         
         # Connect signals
@@ -267,7 +269,6 @@ class ThreadManager(QObject):
         }
         
         # Register hotkey with HotkeyBridge
-        from gui.thread_management.hotkey_bridge import HotkeyBridge
         success = HotkeyBridge.instance().register_hotkey(
             hotkey, 
             lambda: self._on_hotkey_triggered(handler_id)

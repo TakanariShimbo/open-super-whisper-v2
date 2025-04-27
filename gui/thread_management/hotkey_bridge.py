@@ -25,6 +25,7 @@ class HotkeyBridge(QObject):
     # Signal definitions
     hotkeyTriggered = pyqtSignal(str)  # hotkey_str
     _execute_callback = pyqtSignal(str)  # Internal signal for executing callbacks
+    recordingHotkeyPressed = pyqtSignal(str)  # hotkey_str - Signal when an instruction set hotkey is pressed
     
     @classmethod
     def instance(cls) -> 'HotkeyBridge':
@@ -51,6 +52,10 @@ class HotkeyBridge(QObject):
         
         # Hotkey callback mapping
         self._hotkey_callbacks = {}
+        
+        # Recording state
+        self._is_recording = False
+        self._active_recording_hotkey = None
         
         # Connect internal signals
         self._execute_callback.connect(self._on_execute_callback, Qt.ConnectionType.QueuedConnection)
@@ -115,7 +120,12 @@ class HotkeyBridge(QObject):
         hotkey_str : str
             Triggered hotkey string
         """
-        if hotkey_str in self._hotkey_callbacks:
+        # If we're recording and this is the active recording hotkey, 
+        # emit recordingHotkeyPressed signal instead of normal callback
+        if self._is_recording and hotkey_str == self._active_recording_hotkey:
+            self.recordingHotkeyPressed.emit(hotkey_str)
+        elif hotkey_str in self._hotkey_callbacks:
+            # For non-recording case or different hotkeys
             # Use signal to execute callback in main thread
             self._execute_callback.emit(hotkey_str)
     
@@ -143,7 +153,31 @@ class HotkeyBridge(QObject):
         recording_hotkey : Optional[str], optional
             Recording hotkey string
         """
+        self._is_recording = enabled
+        self._active_recording_hotkey = recording_hotkey
         self.hotkey_manager.set_recording_mode(enabled, recording_hotkey)
+    
+    def is_recording(self) -> bool:
+        """
+        Check if recording mode is active
+        
+        Returns
+        -------
+        bool
+            Whether recording mode is active
+        """
+        return self._is_recording
+    
+    def get_active_recording_hotkey(self) -> Optional[str]:
+        """
+        Get the currently active recording hotkey
+        
+        Returns
+        -------
+        Optional[str]
+            The active recording hotkey or None if not recording
+        """
+        return self._active_recording_hotkey
     
     def clear_all_hotkeys(self) -> bool:
         """
