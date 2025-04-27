@@ -110,16 +110,20 @@ class SimpleMessageDialog:
             else:
                 msg_box.setDefaultButton(QMessageBox.StandardButton.No)
             
-            return msg_box.exec() == QMessageBox.StandardButton.Yes
+            result = msg_box.exec() == QMessageBox.StandardButton.Yes
+            return result
         
         # Use thread manager if provided, otherwise execute directly
         if thread_manager:
             # Execute in the main thread
+            # Note: This method does not support callbacks with thread_manager
+            # Use show_confirmation_async for async confirmation dialogs
             thread_manager.run_in_main_thread(_show_confirmation)
             return None  # Can't return result when using thread_manager
         else:
             # Execute directly (should only be called from main thread)
-            return _show_confirmation()
+            result = _show_confirmation()
+            return result
     
     @staticmethod
     def show_message_async(parent, title, message, callback=None, icon=QMessageBox.Icon.Information, thread_manager=None):

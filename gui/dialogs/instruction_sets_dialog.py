@@ -751,6 +751,9 @@ class InstructionSetsDialog(QDialog):
         
         Uses thread_manager to ensure UI updates and dialog operations happen
         on the main thread if thread_manager is provided.
+        
+        NOTE: This method was modified to fix a bug with Yes button not working
+        in the confirmation dialog when using thread_manager.
         """
         row = self.sets_list.currentRow()
         if row < 0:
@@ -769,31 +772,45 @@ class InstructionSetsDialog(QDialog):
         
         name = self.sets_list.item(row).text()
         
-        def show_confirmation_and_delete():
-            # Confirm deletion
-            if SimpleMessageDialog.show_confirmation(
-                self,
-                AppLabels.INSTRUCTION_SETS_CONFIRM_DELETION_TITLE,
-                AppLabels.INSTRUCTION_SETS_CONFIRM_DELETION_MESSAGE.format(name),
-                False,
-                self.thread_manager
-            ):
-                self._perform_delete(row, name)
+        # Define confirmation callback that will be used for both sync and async paths
+        def confirmation_callback(result):
+            """Handle the confirmation dialog result"""
+            if result:
+                # Use thread manager to safely call _perform_delete in main thread
+                if self.thread_manager:
+                    self.thread_manager.run_in_main_thread(lambda: self._perform_delete(row, name))
+                else:
+                    self._perform_delete(row, name)
         
-        # Use thread manager if available
+        # Set up confirmation dialog
+        confirm_title = AppLabels.INSTRUCTION_SETS_CONFIRM_DELETION_TITLE
+        confirm_message = AppLabels.INSTRUCTION_SETS_CONFIRM_DELETION_MESSAGE.format(name)
+        
+        # Always use the async version with callback when thread_manager is available
         if self.thread_manager:
-            self.thread_manager.run_in_main_thread(show_confirmation_and_delete)
+            # Run the dialog setup in the main thread
+            def show_confirmation_async():
+                SimpleMessageDialog.show_confirmation_async(
+                    self,
+                    confirm_title,
+                    confirm_message,
+                    confirmation_callback,
+                    False,  # default_yes=False
+                    self.thread_manager
+                )
+            
+            self.thread_manager.run_in_main_thread(show_confirmation_async)
         else:
-            # Synchronous execution
-            confirm = SimpleMessageDialog.show_confirmation(
+            # Use synchronous path when thread_manager is not available
+            result = SimpleMessageDialog.show_confirmation(
                 self,
-                AppLabels.INSTRUCTION_SETS_CONFIRM_DELETION_TITLE,
-                AppLabels.INSTRUCTION_SETS_CONFIRM_DELETION_MESSAGE.format(name),
-                False
+                confirm_title,
+                confirm_message,
+                False  # default_yes=False
             )
             
-            if confirm:
-                self._perform_delete(row, name)
+            # Process the result through the same callback for consistency
+            confirmation_callback(result)
     
     def _perform_delete(self, row, name):
         """
@@ -1075,8 +1092,9 @@ class InstructionSetsDialog(QDialog):
             try:
                 hotkey_bridge.set_recording_mode(True, None)
                 self.hotkeys_disabled = True
-            except Exception as e:
-                print(f"Error disabling hotkeys: {e}")
+            except Exception:
+                # Silent error handling for hotkey disabling failures
+                pass
     
     def closeEvent(self, event):
         """
@@ -1135,5 +1153,6 @@ class InstructionSetsDialog(QDialog):
                     # Disable recording mode to re-enable all hotkeys
                     hotkey_bridge.set_recording_mode(False)
                     self.hotkeys_disabled = False
-                except Exception as e:
-                    print(f"Error re-enabling hotkeys: {e}")
+                except Exception:
+                    # Silent error handling for hotkey restoration failures
+                    pass
