@@ -49,23 +49,16 @@ class UIUpdater(QObject):
         """
         self.status_bar.showMessage(message, timeout)
     
-    def update_recording_indicator(self, is_recording: bool) -> None:
+    def update_recording_indicator(self, text: str) -> None:
         """
         Update the recording status indicator
         
         Parameters
         ----------
-        is_recording : bool
-            Whether recording is in progress
+        text : str
+            Text to display for the recording status
         """
-        if is_recording:
-            # Recording display
-            self.recording_indicator.setText("●REC")
-            self.recording_indicator.setStyleSheet("color: red; font-weight: bold;")
-        else:
-            # Stopped display
-            self.recording_indicator.setText("■STOP")
-            self.recording_indicator.setStyleSheet("color: gray;")
+        self.recording_indicator.setText(text)
     
     def update_timer_label(self, time_str: str) -> None:
         """

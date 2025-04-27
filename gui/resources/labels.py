@@ -79,7 +79,8 @@ class AppLabels:
     STATUS_INDICATOR_SHOWN = "Status indicator enabled"
     STATUS_INDICATOR_HIDDEN = "Status indicator disabled"
     STATUS_INSTRUCTION_SET_ACTIVE = "Instruction set '{}' activated"
-    STATUS_RECORDING_INDICATOR = "●"
+    STATUS_RECORDING_INDICATOR_RECORDING = "●REC"
+    STATUS_RECORDING_INDICATOR_STOPPED = "■STOP"
     STATUS_TIMER_INITIAL = "00:00"
     
     # Indicator

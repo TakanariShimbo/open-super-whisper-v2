@@ -311,7 +311,7 @@ class MainWindow(QMainWindow):
         self.status_bar.showMessage(AppLabels.STATUS_READY)
         
         # Recording indicator
-        self.recording_indicator = QLabel(AppLabels.STATUS_RECORDING_INDICATOR)
+        self.recording_indicator = QLabel(AppLabels.STATUS_RECORDING_INDICATOR_STOPPED)
         
         self.recording_timer_label = QLabel(AppLabels.STATUS_TIMER_INITIAL)
         
@@ -587,7 +587,7 @@ class MainWindow(QMainWindow):
             # Recording active - use UIUpdater for thread safety
             self.record_button.setText(AppLabels.MAIN_WIN_RECORD_STOP_BUTTON)
             self.ui_updater.update_status(AppLabels.STATUS_RECORDING)
-            self.ui_updater.update_recording_indicator(is_recording)
+            self.ui_updater.update_recording_indicator(AppLabels.STATUS_RECORDING_INDICATOR_RECORDING)
             
             if self.show_indicator:
                 # Show recording indicator via ThreadManager
@@ -597,7 +597,7 @@ class MainWindow(QMainWindow):
             # Recording stopped - use UIUpdater for thread safety
             self.record_button.setText(AppLabels.MAIN_WIN_RECORD_START_BUTTON)
             self.ui_updater.update_status(AppLabels.STATUS_READY)
-            self.ui_updater.update_recording_indicator(is_recording)
+            self.ui_updater.update_recording_indicator(AppLabels.STATUS_RECORDING_INDICATOR_STOPPED)
             
             # Reset timer
             self.ui_updater.update_timer_label(AppLabels.STATUS_TIMER_INITIAL)
