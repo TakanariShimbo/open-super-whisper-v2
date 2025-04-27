@@ -105,7 +105,7 @@ class ThreadManager(QObject):
             # Execute immediately (through signal for thread safety)
             self._execute_in_main_thread.emit(func, args, kwargs)
     
-    def run_in_worker_thread(self, task_id: str, func: Callable, *args, **kwargs) -> str:
+    def run_in_worker_thread(self, task_id: str, func: Callable, *args, callback=None, **kwargs) -> str:
         """
         Run a function in a worker thread
         
@@ -115,8 +115,12 @@ class ThreadManager(QObject):
             Task identifier
         func : Callable
             Function to execute
-        *args, **kwargs
-            Arguments to pass to the function
+        *args
+            Positional arguments to pass to the function
+        callback : Optional[Callable], optional
+            Function to call with the result when the task completes
+        **kwargs
+            Keyword arguments to pass to the function
             
         Returns
         -------
@@ -132,8 +136,14 @@ class ThreadManager(QObject):
         worker = TaskWorker(task_id, func, args, kwargs)
         
         # Connect signals
+        def handle_task_completed(tid, result):
+            self.taskCompleted.emit(tid, result)
+            if callback and tid == task_id:
+                # Run callback in main thread for thread safety
+                self.run_in_main_thread(callback, result)
+        
         worker.taskCompleted.connect(
-            lambda tid, result: self.taskCompleted.emit(tid, result),
+            handle_task_completed,
             Qt.ConnectionType.QueuedConnection
         )
         worker.taskFailed.connect(
