@@ -33,8 +33,8 @@ from gui.components.widgets.status_indicator import StatusIndicatorWindow
 from gui.utils.resource_helper import getResourcePath
 
 # Thread management imports
-from thread_management.thread_manager import ThreadManager
-from thread_management.ui_updater import UIUpdater
+from gui.thread_management.thread_manager import ThreadManager
+from gui.thread_management.ui_updater import UIUpdater
 
 
 class MainWindow(QMainWindow):
@@ -522,7 +522,7 @@ class MainWindow(QMainWindow):
             self.status_indicator_window.show()
         
         # Enable recording mode via HotkeyBridge to ensure thread safety
-        from thread_management.hotkey_bridge import HotkeyBridge
+        from gui.thread_management.hotkey_bridge import HotkeyBridge
         HotkeyBridge.instance().set_recording_mode(True, self.hotkey)
         
         # Disable instruction set hotkeys during recording (for backward compatibility)
@@ -555,7 +555,7 @@ class MainWindow(QMainWindow):
         self.thread_manager.stop_recording_timer()
         
         # Disable recording mode via HotkeyBridge to ensure thread safety
-        from thread_management.hotkey_bridge import HotkeyBridge
+        from gui.thread_management.hotkey_bridge import HotkeyBridge
         HotkeyBridge.instance().set_recording_mode(False)
         
         # Re-enable instruction set hotkeys (for backward compatibility)
@@ -781,7 +781,7 @@ class MainWindow(QMainWindow):
         """
         try:
             # Clear any existing hotkeys from HotkeyBridge
-            from thread_management.hotkey_bridge import HotkeyBridge
+            from gui.thread_management.hotkey_bridge import HotkeyBridge
             HotkeyBridge.instance().clear_all_hotkeys()
             
             # Register the main recording toggle hotkey using ThreadManager
@@ -871,7 +871,7 @@ class MainWindow(QMainWindow):
         self.instruction_set_hotkeys = []
         
         # Get HotkeyBridge instance
-        from thread_management.hotkey_bridge import HotkeyBridge
+        from gui.thread_management.hotkey_bridge import HotkeyBridge
         hotkey_bridge = HotkeyBridge.instance()
         
         # Save and unregister instruction set hotkeys

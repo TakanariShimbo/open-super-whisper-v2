@@ -1,20 +1,29 @@
-# ホットキーダイアログ修正タスク
+# スレッドマネージメント移行タスク
 
-## 問題分析と現状理解
-- [x] ホットキーダイアログとインストラクションセットダイアログのホットキー無効化処理の確認
-  - [x] `hotkey_dialog.py`の`showEvent`では`HotkeyBridge.instance().set_recording_mode(True, None)`を呼び出している
-  - [x] `instruction_sets_dialog.py`も同様に`showEvent`でホットキーを無効化している
-  - [x] これらのダイアログでは`closeEvent`や`accept`/`reject`時に`HotkeyBridge.instance().set_recording_mode(False)`でホットキーを再有効化している
-- [x] システムログの動作不具合の分析
-  - [x] ログでは「Disabled all hotkeys while hotkey dialog is open」と出力されているが、実際にはホットキーが反応している
+## スレッドマネージメントディレクトリをGUIディレクトリ内に移動
+- [x] 現在の構造とファイル間の依存関係を分析
+- [ ] スレッドマネージメントディレクトリをGUIディレクトリ内に移動
+- [ ] インポートパスの更新
+- [ ] 移行後の動作確認
+- [ ] ドキュメント（READMEなど）の更新
 
-## 修正計画
-- [ ] デバッグ用のログ追加
-  - [ ] `HotkeyBridge`の`set_recording_mode`メソッドにより詳細なログを追加
-  - [ ] `HotkeyManager`の`start_listener`と`stop_listener`にデバッグ情報を追加
-- [ ] ホットキー無効化の改善
-  - [ ] `HotkeyBridge`の実装を再確認し、必要に応じて修正
-  - [ ] `set_recording_mode`の処理フローで問題がないか確認
-- [ ] テスト検証
-  - [ ] 修正後の動作確認
-  - [ ] ダイアログ表示中のホットキー動作検証
+## 依存関係分析結果
+- 外部からの依存関係:
+  - `gui/windows/main_window.py`で`thread_management.thread_manager`と`thread_management.ui_updater`をインポート
+  - `gui/dialogs/hotkey_dialog.py`で`thread_management.hotkey_bridge`をインポート
+  - `gui/dialogs/instruction_sets_dialog.py`で`thread_management.hotkey_bridge`をインポート
+
+- 内部での依存関係:
+  - `thread_management/thread_manager.py`内で`thread_management.workers.task_worker`と`thread_management.hotkey_bridge`をインポート
+  - `workers/task_worker.py`はスレッドの実行に使用
+  - `hotkey_bridge.py`はホットキー処理のブリッジとして使用
+  - `ui_updater.py`はUIの更新を管理
+
+## 移動計画
+1. `thread_management`ディレクトリを`gui`ディレクトリ内に移動
+2. 参照しているすべてのファイルのインポートパスを更新
+   - `gui/windows/main_window.py`
+   - `gui/dialogs/hotkey_dialog.py`
+   - `gui/dialogs/instruction_sets_dialog.py`
+   - 新しい場所の`gui/thread_management/thread_manager.py`内部のインポート
+3. ドキュメントの更新（READMEなど）

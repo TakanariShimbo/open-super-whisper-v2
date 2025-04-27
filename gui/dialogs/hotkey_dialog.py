@@ -13,7 +13,7 @@ from PyQt6.QtGui import QKeyEvent, QKeySequence
 
 from gui.resources.labels import AppLabels
 from gui.dialogs.simple_message_dialog import SimpleMessageDialog
-from thread_management.hotkey_bridge import HotkeyBridge
+from gui.thread_management.hotkey_bridge import HotkeyBridge
 
 
 class HotkeyDialog(QDialog):

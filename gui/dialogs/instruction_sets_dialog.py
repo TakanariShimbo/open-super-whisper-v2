@@ -18,7 +18,7 @@ from gui.resources.labels import AppLabels
 from gui.resources.config import AppConfig
 from gui.dialogs.simple_message_dialog import SimpleMessageDialog
 from gui.dialogs.hotkey_dialog import HotkeyDialog
-from thread_management.hotkey_bridge import HotkeyBridge
+from gui.thread_management.hotkey_bridge import HotkeyBridge
 
 # Import core instruction sets
 from core.instructions import InstructionSetManager, InstructionSet

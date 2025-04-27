@@ -128,7 +128,7 @@ class ThreadManager(QObject):
             task_id = f"task_{uuid.uuid4().hex[:8]}"
         
         # Create and run TaskWorker
-        from thread_management.workers.task_worker import TaskWorker
+        from gui.thread_management.workers.task_worker import TaskWorker
         worker = TaskWorker(task_id, func, args, kwargs)
         
         # Connect signals
@@ -257,7 +257,7 @@ class ThreadManager(QObject):
         }
         
         # Register hotkey with HotkeyBridge
-        from thread_management.hotkey_bridge import HotkeyBridge
+        from gui.thread_management.hotkey_bridge import HotkeyBridge
         success = HotkeyBridge.instance().register_hotkey(
             hotkey, 
             lambda: self._on_hotkey_triggered(handler_id)
