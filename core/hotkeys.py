@@ -116,6 +116,9 @@ class HotkeyManager:
             The hotkey string used for recording. This hotkey will still work
             even when recording mode is enabled.
         """
+        # Store previous state for restart check
+        prev_recording_mode = self._recording_mode
+        
         self._recording_mode = enabled
         
         if enabled and recording_hotkey:
@@ -127,6 +130,11 @@ class HotkeyManager:
             self._recording_hotkey = None
             if not enabled:
                 print("Recording mode disabled. All hotkeys are active.")
+        
+        # If listener is active and recording mode changed, restart the listener to apply the changes
+        if self._listener_active and prev_recording_mode != self._recording_mode:
+            self.stop_listener()
+            self.start_listener()
     
     def start_listener(self) -> bool:
         """
@@ -143,23 +151,28 @@ class HotkeyManager:
                 return False
             
             # Create and start a listener with our hotkeys and event filtering
-            if self._recording_mode and self._recording_hotkey:
+            if self._recording_mode:
                 # In recording mode, we need to create a custom listener that filters events
                 filtered_hotkeys = {}
                 
-                # Only include the recording hotkey
-                for hotkey, callback in self._hotkeys.items():
-                    if hotkey == self._recording_hotkey:
-                        filtered_hotkeys[hotkey] = callback
-                
-                # Use filtered hotkeys if we're in recording mode
-                if filtered_hotkeys:
-                    self._listener = keyboard.GlobalHotKeys(filtered_hotkeys)
-                    print(f"Started hotkey listener in recording mode with 1 active hotkey")
+                if self._recording_hotkey:
+                    # Only include the recording hotkey if specified
+                    for hotkey, callback in self._hotkeys.items():
+                        if hotkey == self._recording_hotkey:
+                            filtered_hotkeys[hotkey] = callback
+                    
+                    # Use filtered hotkeys if we're in recording mode
+                    if filtered_hotkeys:
+                        self._listener = keyboard.GlobalHotKeys(filtered_hotkeys)
+                        print(f"Started hotkey listener in recording mode with 1 active hotkey")
+                    else:
+                        # If recording hotkey not found, use no hotkeys to effectively disable all
+                        self._listener = keyboard.GlobalHotKeys({})
+                        print(f"Warning: Recording hotkey not found in registered hotkeys. All hotkeys will be disabled.")
                 else:
-                    # If recording hotkey not found, use all hotkeys but print warning
-                    self._listener = keyboard.GlobalHotKeys(self._hotkeys)
-                    print(f"Warning: Recording hotkey not found in registered hotkeys. All hotkeys will be active.")
+                    # If recording_hotkey is None in recording mode, disable all hotkeys
+                    self._listener = keyboard.GlobalHotKeys({})
+                    print("Disabled all hotkeys in recording mode with no active hotkey")
             else:
                 # Normal mode, use all hotkeys
                 self._listener = keyboard.GlobalHotKeys(self._hotkeys)

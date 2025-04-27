@@ -921,20 +921,28 @@ class MainWindow(QMainWindow):
         
         This method displays a dialog for changing the hotkey setting.
         The current hotkey is temporarily released during dialog display.
+        Hotkeys are automatically disabled/re-enabled by the HotkeyDialog class.
         """
-        # Temporarily stop the listener
-        self.hotkey_manager.stop_listener()
+        # Create dialog with thread manager for thread-safe operations
+        dialog = HotkeyDialog(self, self.hotkey, self.thread_manager)
         
-        dialog = HotkeyDialog(self, self.hotkey)
+        # Show dialog
         if dialog.exec():
             new_hotkey = dialog.get_hotkey()
             if new_hotkey:
                 self.hotkey = new_hotkey
                 self.settings.setValue("hotkey", self.hotkey)
                 self.setup_global_hotkey()
-                self.status_bar.showMessage(AppLabels.STATUS_HOTKEY_SET.format(self.hotkey), 3000)
+                
+                # Show status message using ThreadManager for thread safety
+                self.thread_manager.update_status(
+                    AppLabels.STATUS_HOTKEY_SET.format(self.hotkey), 
+                    3000
+                )
         else:
             # Restore original hotkey if dialog was canceled
+            # HotkeyDialog.reject() already handles restoring the original hotkey value
+            # We just need to make sure the hotkey is properly registered
             self.setup_global_hotkey()
             
     def show_instruction_sets_dialog(self):
@@ -944,17 +952,21 @@ class MainWindow(QMainWindow):
         This method displays a dialog for managing instruction sets,
         including vocabulary, system instructions, and LLM settings.
         It requires an API key to be set.
+        
+        Note: Hotkeys are automatically disabled/re-enabled by the InstructionSetsDialog class.
         """
         if not self.unified_processor:
             SimpleMessageDialog.show_message(
                 self,
                 AppLabels.MAIN_WIN_API_KEY_ERROR_TITLE,
                 AppLabels.MAIN_WIN_API_KEY_ERROR_REQUIRED,
-                SimpleMessageDialog.WARNING
+                SimpleMessageDialog.WARNING,
+                self.thread_manager
             )
             return
             
-        dialog = InstructionSetsDialog(self, self.instruction_set_manager, self.hotkey_manager)
+        # Create dialog with thread manager for thread-safe operations
+        dialog = InstructionSetsDialog(self, self.instruction_set_manager, self.hotkey_manager, self.thread_manager)
         
         if dialog.exec() == QDialog.DialogCode.Accepted:
             # Get updated manager
@@ -970,9 +982,9 @@ class MainWindow(QMainWindow):
             # Re-register hotkeys
             self.setup_global_hotkey()
             
-            # Show status message
+            # Show status message using ThreadManager for thread safety
             if self.instruction_set_manager.active_set:
-                self.status_bar.showMessage(
+                self.thread_manager.update_status(
                     AppLabels.STATUS_INSTRUCTION_SET_ACTIVE.format(self.instruction_set_manager.active_set.name),
                     3000
                 )

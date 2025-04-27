@@ -13,6 +13,7 @@ from PyQt6.QtGui import QKeyEvent, QKeySequence
 
 from gui.resources.labels import AppLabels
 from gui.dialogs.simple_message_dialog import SimpleMessageDialog
+from thread_management.hotkey_bridge import HotkeyBridge
 
 
 class HotkeyDialog(QDialog):
@@ -46,6 +47,12 @@ class HotkeyDialog(QDialog):
         self.hotkey = current_hotkey
         self.current_keys = set()
         self.thread_manager = thread_manager
+        
+        # Store original hotkey for safe restoration
+        self.original_hotkey = current_hotkey
+        
+        # Flag to track if hotkeys were disabled
+        self.hotkeys_disabled = False
         
         # Set up UI
         self.init_ui()
@@ -186,11 +193,20 @@ class HotkeyDialog(QDialog):
         return self.hotkey
     
     def accept(self):
-        """Handle dialog acceptance with validation."""
+        """
+        Handle dialog acceptance with validation.
+        
+        This method is called when the OK button is clicked. It validates
+        the hotkey and re-enables all hotkeys that were disabled when the
+        dialog was shown.
+        """
         # Validate hotkey before accepting
         if not self.hotkey:
             self._show_validation_error()
             return
+        
+        # Re-enable hotkeys
+        self._restore_hotkeys()
         
         # Accept the dialog
         super().accept()
@@ -204,3 +220,78 @@ class HotkeyDialog(QDialog):
             SimpleMessageDialog.WARNING,
             self.thread_manager
         )
+    
+    def showEvent(self, event):
+        """
+        Handle dialog show event.
+        
+        This method is called when the dialog is shown. It disables all hotkeys
+        to prevent them from being triggered while the dialog is open.
+        
+        Parameters
+        ----------
+        event : QShowEvent
+            Show event
+        """
+        # Call parent class method first
+        super().showEvent(event)
+        
+        # Disable all hotkeys by using HotkeyBridge's set_recording_mode
+        # Setting enabled=True with an empty recording_hotkey effectively disables all hotkeys
+        hotkey_bridge = HotkeyBridge.instance()
+        if hotkey_bridge:
+            try:
+                hotkey_bridge.set_recording_mode(True, None)
+                self.hotkeys_disabled = True
+            except Exception as e:
+                print(f"Error disabling hotkeys: {e}")
+    
+    def closeEvent(self, event):
+        """
+        Handle dialog close event.
+        
+        This method is called when the dialog is closed. It re-enables all hotkeys
+        that were disabled when the dialog was shown.
+        
+        Parameters
+        ----------
+        event : QCloseEvent
+            Close event
+        """
+        # Re-enable hotkeys
+        self._restore_hotkeys()
+        
+        # Call parent class method
+        super().closeEvent(event)
+    
+    def reject(self):
+        """
+        Handle dialog rejection.
+        
+        This method is called when the Cancel button is clicked. It restores
+        the original hotkey and re-enables all hotkeys.
+        """
+        # Restore original hotkey
+        self.hotkey = self.original_hotkey
+        
+        # Re-enable hotkeys
+        self._restore_hotkeys()
+        
+        # Call parent class method
+        super().reject()
+    
+    def _restore_hotkeys(self):
+        """
+        Restore hotkeys that were disabled.
+        
+        This method re-enables all hotkeys that were disabled when the dialog was shown.
+        """
+        if self.hotkeys_disabled:
+            hotkey_bridge = HotkeyBridge.instance()
+            if hotkey_bridge:
+                try:
+                    # Disable recording mode to re-enable all hotkeys
+                    hotkey_bridge.set_recording_mode(False)
+                    self.hotkeys_disabled = False
+                except Exception as e:
+                    print(f"Error re-enabling hotkeys: {e}")
