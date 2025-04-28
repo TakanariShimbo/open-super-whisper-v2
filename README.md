@@ -33,6 +33,11 @@ A PyQt6-based GUI application for audio transcription and LLM analysis using Ope
 │   ├── icon.png                 # Application icon (cross-platform)
 │   ├── start_sound.wav          # Sound played when recording starts
 │   └── stop_sound.wav           # Sound played when recording stops
+├── ffmpeg/                      # FFmpeg executables and libraries
+│   ├── bin/                     # FFmpeg binary files (executables, DLLs)
+│   ├── lib/                     # Library files
+│   ├── include/                 # Include files
+│   └── doc/                     # Documentation
 ├── core/                        # Core functionality (GUI-independent, fully implemented)
 │   ├── __init__.py
 │   ├── transcriber.py           # Audio transcription module
@@ -144,21 +149,21 @@ To package the application into a standalone executable:
 
 ```bash
 # Windows
-python -m PyInstaller --onefile --windowed --icon assets/icon.ico --name "OpenSuperWhisper" --add-data "assets;assets" main.py
+python -m PyInstaller --onefile --icon assets/icon.ico --name "OpenSuperWhisper" --add-data "assets;assets" --add-data "ffmpeg;ffmpeg" main.py
 
 # For macOS
-python -m PyInstaller --onefile --windowed --icon assets/icon.icns --name "OpenSuperWhisper" --add-data "assets:assets" main.py
+python -m PyInstaller --onefile --icon assets/icon.icns --name "OpenSuperWhisper" --add-data "assets:assets" --add-data "ffmpeg:ffmpeg" main.py
 
 # For Linux
-python -m PyInstaller --onefile --windowed --icon assets/icon.png --name "OpenSuperWhisper" --add-data "assets:assets" main.py
+python -m PyInstaller --onefile --icon assets/icon.png --name "OpenSuperWhisper" --add-data "assets:assets" --add-data "ffmpeg:ffmpeg" main.py
 ```
 
 The Windows command does the following:
 - `--onefile`: Creates a single executable file
-- `--windowed`: Prevents a console window from appearing
 - `--icon assets/icon.ico`: Sets the application icon
 - `--name "OpenSuperWhisper"`: Specifies the output filename
 - `--add-data "assets;assets"`: Includes the entire assets directory in the executable
+- `--add-data "ffmpeg;ffmpeg"`: Includes the entire ffmpeg directory in the executable
 
 Once the build is complete, you'll find `OpenSuperWhisper.exe` in the `dist` folder on Windows, `OpenSuperWhisper.app` in the `dist` folder on macOS, or `OpenSuperWhisper` in the `dist` folder on Linux.
 
