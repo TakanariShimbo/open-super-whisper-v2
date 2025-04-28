@@ -85,6 +85,7 @@ class AppLabels:
     STATUS_INDICATOR_SHOWN = "Status indicator enabled"
     STATUS_INDICATOR_HIDDEN = "Status indicator disabled"
     STATUS_INSTRUCTION_SET_ACTIVE = "Instruction set '{}' activated"
+    STATUS_INSTRUCTION_SET_ACTIVATED_BY_HOTKEY = "Instruction set '{}' activated and recording started"
     STATUS_RECORDING_INDICATOR_RECORDING = "●REC"
     STATUS_RECORDING_INDICATOR_STOPPED = "■STOP"
     STATUS_TIMER_INITIAL = "00:00"
@@ -108,15 +109,7 @@ class AppLabels:
     INSTRUCTION_SETS_DELETE_BUTTON = "Delete"
     INSTRUCTION_SETS_ACTIVATE_BUTTON = "Activate"
     INSTRUCTION_SETS_SAVE_BUTTON = "Save"
-    
-    # Instruction set hotkey labels
-    INSTRUCTION_SETS_HOTKEY_LABEL = "Recording Hotkey:"
-    INSTRUCTION_SETS_HOTKEY_PLACEHOLDER = "No hotkey set"
-    INSTRUCTION_SETS_SET_HOTKEY_BUTTON = "Set Hotkey"
-    INSTRUCTION_SETS_HOTKEY_CONFLICT_TITLE = "Hotkey Conflict"
-    INSTRUCTION_SETS_HOTKEY_CONFLICT_MESSAGE = "This hotkey is already assigned to '{}'."
-    STATUS_INSTRUCTION_SET_ACTIVATED_BY_HOTKEY = "Instruction set '{}' activated and recording started"
-    
+      
     ## Vocabulary Tab
     INSTRUCTION_SETS_VOCABULARY_TAB_NAME = "Vocabulary"
     INSTRUCTION_SETS_VOCABULARY_HELP = "Enter words or phrases to improve transcription accuracy. One item per line."
@@ -130,10 +123,6 @@ class AppLabels:
     ## LLM Instructions Tab
     INSTRUCTION_SETS_LLM_TAB_NAME = "LLM Instructions"
     INSTRUCTION_SETS_LLM_HELP = "Enter system instructions for the Large Language Model to guide how it processes the transcription."
-    INSTRUCTION_SETS_LLM_CLIPBOARD_TEXT_LABEL = "Include clipboard text when starting LLM"
-    INSTRUCTION_SETS_LLM_CLIPBOARD_TEXT_TOOLTIP = "When enabled, text from clipboard will be included in LLM input"
-    INSTRUCTION_SETS_LLM_CLIPBOARD_IMAGE_LABEL = "Include clipboard images when starting LLM"
-    INSTRUCTION_SETS_LLM_CLIPBOARD_IMAGE_TOOLTIP = "When enabled, images from clipboard will be included in LLM input"
     
     ## Settings Tab
     INSTRUCTION_SETS_SETTINGS_TAB_NAME = "Settings"
@@ -142,6 +131,16 @@ class AppLabels:
     INSTRUCTION_SETS_MODEL_LABEL = "Transcription Model:"
     INSTRUCTION_SETS_LLM_TOGGLE_LABEL = "LLM Processing:"
     INSTRUCTION_SETS_LLM_MODEL_LABEL = "LLM Model:"
+    INSTRUCTION_SETS_CLIPBOARD_INPUT_LABEL = "Clipboard Input: "
+    INSTRUCTION_SETS_LLM_CLIPBOARD_TEXT_LABEL = "Include text"
+    INSTRUCTION_SETS_LLM_CLIPBOARD_TEXT_TOOLTIP = "When enabled, text from clipboard will be included in LLM input"
+    INSTRUCTION_SETS_LLM_CLIPBOARD_IMAGE_LABEL = "Include images"
+    INSTRUCTION_SETS_LLM_CLIPBOARD_IMAGE_TOOLTIP = "When enabled, images from clipboard will be included in LLM input"
+    INSTRUCTION_SETS_HOTKEY_LABEL = "Recording Hotkey:"
+    INSTRUCTION_SETS_HOTKEY_PLACEHOLDER = "No hotkey set"
+    INSTRUCTION_SETS_SET_HOTKEY_BUTTON = "Set Hotkey"
+    INSTRUCTION_SETS_HOTKEY_CONFLICT_TITLE = "Hotkey Conflict"
+    INSTRUCTION_SETS_HOTKEY_CONFLICT_MESSAGE = "This hotkey is already assigned to '{}'."
 
     ## Instruction Set Dialogs
     INSTRUCTION_SETS_NEW_INSTRUCTION_SET_TITLE = "New Instruction Set"

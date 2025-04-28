@@ -446,6 +446,16 @@ class InstructionSetsDialog(QDialog):
         
         main_layout.addRow(llm_model_label, self.llm_model_combo)
         
+        # Add checkbox for clipboard text
+        self.llm_clipboard_text_checkbox = QCheckBox(AppLabels.INSTRUCTION_SETS_LLM_CLIPBOARD_TEXT_LABEL)
+        self.llm_clipboard_text_checkbox.setToolTip(AppLabels.INSTRUCTION_SETS_LLM_CLIPBOARD_TEXT_TOOLTIP)
+        main_layout.addRow(AppLabels.INSTRUCTION_SETS_CLIPBOARD_INPUT_LABEL, self.llm_clipboard_text_checkbox)
+        
+        # Add checkbox for clipboard image
+        self.llm_clipboard_image_checkbox = QCheckBox(AppLabels.INSTRUCTION_SETS_LLM_CLIPBOARD_IMAGE_LABEL)
+        self.llm_clipboard_image_checkbox.setToolTip(AppLabels.INSTRUCTION_SETS_LLM_CLIPBOARD_IMAGE_TOOLTIP)
+        main_layout.addRow("", self.llm_clipboard_image_checkbox)
+
         # Add hotkey selection
         hotkey_label = QLabel(AppLabels.INSTRUCTION_SETS_HOTKEY_LABEL)
         self.hotkey_input = QLineEdit()
@@ -460,7 +470,7 @@ class InstructionSetsDialog(QDialog):
         hotkey_layout.addWidget(hotkey_button)
         
         main_layout.addRow(hotkey_label, hotkey_layout)
-        
+
         settings_layout.addWidget(main_form)
         
         # Add spacer
@@ -476,15 +486,6 @@ class InstructionSetsDialog(QDialog):
         llm_help = QLabel(AppLabels.INSTRUCTION_SETS_LLM_HELP)
         llm_help.setWordWrap(True)
         llm_layout.addWidget(llm_help)
-        
-        # LLM Clipboard options
-        self.llm_clipboard_text_checkbox = QCheckBox(AppLabels.INSTRUCTION_SETS_LLM_CLIPBOARD_TEXT_LABEL)
-        self.llm_clipboard_text_checkbox.setToolTip(AppLabels.INSTRUCTION_SETS_LLM_CLIPBOARD_TEXT_TOOLTIP)
-        llm_layout.addWidget(self.llm_clipboard_text_checkbox)
-        
-        self.llm_clipboard_image_checkbox = QCheckBox(AppLabels.INSTRUCTION_SETS_LLM_CLIPBOARD_IMAGE_LABEL)
-        self.llm_clipboard_image_checkbox.setToolTip(AppLabels.INSTRUCTION_SETS_LLM_CLIPBOARD_IMAGE_TOOLTIP)
-        llm_layout.addWidget(self.llm_clipboard_image_checkbox)
         
         # LLM instructions        
         self.llm_instructions_edit = QTextEdit()
