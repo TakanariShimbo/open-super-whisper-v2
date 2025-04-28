@@ -298,14 +298,9 @@ class WhisperTranscriber:
             
             print(f"File size is {file_size_mb:.2f}MB, splitting into chunks...")
             
-            # Initialize audio chunker and progress tracker
+            # Initialize audio chunker and progress tracker (memory-only implementation)
             chunker = AudioChunker()
             progress_tracker = TranscriptionProgressTracker()
-            
-            # If this file has already been fully processed, return the merged result
-            if progress_tracker.is_completed():
-                print("Found completed transcription in progress file, returning cached result...")
-                return self._merge_transcriptions(list(progress_tracker.get_all_results().values()))
             
             # Split audio file into chunks
             chunk_paths = chunker.split_audio_file(audio_file)
@@ -376,10 +371,7 @@ class WhisperTranscriber:
                 
             merged_result = self._merge_transcriptions(transcriptions)
             
-            # Mark as completed and clean up
-            progress_tracker.mark_completed()
-            
-            # Only clean up chunks if the entire process completed successfully
+            # Only clean up chunks if all chunks were successfully processed
             if all(progress_tracker.is_chunk_processed(chunk) for chunk in chunk_paths):
                 chunker.cleanup_chunks()
             
