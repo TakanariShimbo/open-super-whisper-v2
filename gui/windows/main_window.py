@@ -677,34 +677,36 @@ class MainWindow(QMainWindow):
     
     def get_clipboard_content(self):
         """
-        Get text and/or image from clipboard when LLM clipboard option is enabled.
+        Get text and/or image from clipboard when LLM clipboard options are enabled.
         
         Returns
         -------
         tuple
-            (clipboard_text, clipboard_image) - either may be None if not available
+            (clipboard_text, clipboard_image) - either may be None if not available or disabled
         """
         clipboard_text = None
         clipboard_image = None
         
-        # Check if the clipboard option is enabled
-        if (self.unified_processor and self.unified_processor.is_llm_enabled() and 
-                self.instruction_set_manager.get_active_llm_clipboard_enabled()):
-            
-            # Get the clipboard
+        # Only proceed if LLM is enabled
+        if self.unified_processor and self.unified_processor.is_llm_enabled():
+            # Get the clipboard manager
             clipboard = QApplication.clipboard()
             
-            # Check if clipboard has text
-            clipboard_text = clipboard.text()
+            # Check if text clipboard option is enabled
+            if self.instruction_set_manager.get_active_llm_clipboard_text_enabled():
+                # Get clipboard text
+                clipboard_text = clipboard.text()
             
-            # Check if clipboard has an image
-            image = clipboard.image()
-            if not image.isNull():
-                # Convert QImage to bytes
-                buffer = QBuffer()
-                buffer.open(QIODevice.OpenModeFlag.WriteOnly)
-                image.save(buffer, "JPEG")
-                clipboard_image = buffer.data().data()  # Get bytes from QByteArray
+            # Check if image clipboard option is enabled
+            if self.instruction_set_manager.get_active_llm_clipboard_image_enabled():
+                # Check if clipboard has an image
+                image = clipboard.image()
+                if not image.isNull():
+                    # Convert QImage to bytes
+                    buffer = QBuffer()
+                    buffer.open(QIODevice.OpenModeFlag.WriteOnly)
+                    image.save(buffer, "JPEG")
+                    clipboard_image = buffer.data().data()  # Get bytes from QByteArray
         
         return clipboard_text, clipboard_image
         

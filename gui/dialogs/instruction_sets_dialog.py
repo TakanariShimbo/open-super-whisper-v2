@@ -76,11 +76,13 @@ class GUIInstructionSetManager:
         return result
     
     def update_set(self, name, vocabulary=None, instructions=None, language=None, model=None,
-                  llm_enabled=None, llm_model=None, llm_instructions=None, llm_clipboard_enabled=None, hotkey=None):
+                  llm_enabled=None, llm_model=None, llm_instructions=None, llm_clipboard_text_enabled=None,
+                  llm_clipboard_image_enabled=None, hotkey=None):
         """Update an existing instruction set."""
         result = self.core_manager.update_set(
             name, vocabulary, instructions, language, model,
-            llm_enabled, llm_model, llm_instructions, llm_clipboard_enabled, hotkey
+            llm_enabled, llm_model, llm_instructions, llm_clipboard_text_enabled,
+            llm_clipboard_image_enabled, hotkey
         )
         self.save_to_settings()
         return result
@@ -160,9 +162,13 @@ class GUIInstructionSetManager:
         """Get LLM instructions from the active set."""
         return self.core_manager.get_active_llm_instructions()
         
-    def get_active_llm_clipboard_enabled(self):
-        """Get LLM clipboard enabled setting from the active set."""
-        return self.core_manager.get_active_llm_clipboard_enabled()
+    def get_active_llm_clipboard_text_enabled(self):
+        """Get LLM clipboard text enabled setting from the active set."""
+        return self.core_manager.get_active_llm_clipboard_text_enabled()
+        
+    def get_active_llm_clipboard_image_enabled(self):
+        """Get LLM clipboard image enabled setting from the active set."""
+        return self.core_manager.get_active_llm_clipboard_image_enabled()
     
     def save_to_settings(self):
         """
@@ -471,10 +477,14 @@ class InstructionSetsDialog(QDialog):
         llm_help.setWordWrap(True)
         llm_layout.addWidget(llm_help)
         
-        # LLM Clipboard option
-        self.llm_clipboard_checkbox = QCheckBox(AppLabels.INSTRUCTION_SETS_LLM_CLIPBOARD_LABEL)
-        self.llm_clipboard_checkbox.setToolTip(AppLabels.INSTRUCTION_SETS_LLM_CLIPBOARD_TOOLTIP)
-        llm_layout.addWidget(self.llm_clipboard_checkbox)
+        # LLM Clipboard options
+        self.llm_clipboard_text_checkbox = QCheckBox(AppLabels.INSTRUCTION_SETS_LLM_CLIPBOARD_TEXT_LABEL)
+        self.llm_clipboard_text_checkbox.setToolTip(AppLabels.INSTRUCTION_SETS_LLM_CLIPBOARD_TEXT_TOOLTIP)
+        llm_layout.addWidget(self.llm_clipboard_text_checkbox)
+        
+        self.llm_clipboard_image_checkbox = QCheckBox(AppLabels.INSTRUCTION_SETS_LLM_CLIPBOARD_IMAGE_LABEL)
+        self.llm_clipboard_image_checkbox.setToolTip(AppLabels.INSTRUCTION_SETS_LLM_CLIPBOARD_IMAGE_TOOLTIP)
+        llm_layout.addWidget(self.llm_clipboard_image_checkbox)
         
         # LLM instructions        
         self.llm_instructions_edit = QTextEdit()
@@ -590,8 +600,9 @@ class InstructionSetsDialog(QDialog):
             # Update LLM settings
             self.llm_enabled_checkbox.setChecked(instruction_set.llm_enabled)
             
-            # Update LLM clipboard option
-            self.llm_clipboard_checkbox.setChecked(instruction_set.llm_clipboard_enabled)
+            # Update LLM clipboard options
+            self.llm_clipboard_text_checkbox.setChecked(instruction_set.llm_clipboard_text_enabled)
+            self.llm_clipboard_image_checkbox.setChecked(instruction_set.llm_clipboard_image_enabled)
             
             # Update LLM model selection
             llm_model_index = 0  # Default to first model
@@ -973,8 +984,9 @@ class InstructionSetsDialog(QDialog):
         llm_model = self.llm_model_combo.currentData()
         llm_instructions = self.llm_instructions_edit.toPlainText().strip().split("\n")
         
-        # Get LLM clipboard setting
-        llm_clipboard_enabled = self.llm_clipboard_checkbox.isChecked()
+        # Get LLM clipboard settings
+        llm_clipboard_text_enabled = self.llm_clipboard_text_checkbox.isChecked()
+        llm_clipboard_image_enabled = self.llm_clipboard_image_checkbox.isChecked()
         
         # Get hotkey
         hotkey = self.hotkey_input.text()
@@ -986,7 +998,8 @@ class InstructionSetsDialog(QDialog):
             # Update set
             return self.manager.update_set(
                 name, vocabulary, instructions, language, model,
-                llm_enabled, llm_model, llm_instructions, llm_clipboard_enabled, hotkey
+                llm_enabled, llm_model, llm_instructions, llm_clipboard_text_enabled,
+                llm_clipboard_image_enabled, hotkey
             )
             
         def on_save_complete(result):

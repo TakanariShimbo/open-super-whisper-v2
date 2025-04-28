@@ -32,7 +32,8 @@ class InstructionSet:
     llm_enabled: bool = False
     llm_model: str = "gpt-4o"
     llm_instructions: List[str] = field(default_factory=list)
-    llm_clipboard_enabled: bool = False  # Whether to include clipboard content in LLM input
+    llm_clipboard_text_enabled: bool = False  # Whether to include clipboard text in LLM input
+    llm_clipboard_image_enabled: bool = False  # Whether to include clipboard images in LLM input
     
     # Hotkey setting
     hotkey: str = ""  # Hotkey string (e.g., "ctrl+shift+1", "alt+f1")
@@ -71,8 +72,8 @@ class InstructionSetManager:
     def create_set(self, name: str, vocabulary: List[str] = None, instructions: List[str] = None, 
                 language: Optional[str] = None, model: str = "gpt-4o-transcribe",
                 llm_enabled: bool = False, llm_model: str = "gpt-4o", 
-                llm_instructions: List[str] = None, llm_clipboard_enabled: bool = False,
-                hotkey: str = "") -> bool:
+                llm_instructions: List[str] = None, llm_clipboard_text_enabled: bool = False,
+                llm_clipboard_image_enabled: bool = False, hotkey: str = "") -> bool:
         """
         Create a new instruction set.
         
@@ -94,8 +95,10 @@ class InstructionSetManager:
             LLM model ID to use, by default "gpt-4o".
         llm_instructions : List[str], optional
             List of LLM system instructions, by default None.
-        llm_clipboard_enabled : bool, optional
-            Whether to include clipboard content in LLM input, by default False.
+        llm_clipboard_text_enabled : bool, optional
+            Whether to include clipboard text in LLM input, by default False.
+        llm_clipboard_image_enabled : bool, optional
+            Whether to include clipboard images in LLM input, by default False.
         hotkey : str, optional
             Hotkey string for quick activation, by default empty string.
             
@@ -116,7 +119,8 @@ class InstructionSetManager:
             llm_enabled=llm_enabled,
             llm_model=llm_model,
             llm_instructions=llm_instructions or [],
-            llm_clipboard_enabled=llm_clipboard_enabled,
+            llm_clipboard_text_enabled=llm_clipboard_text_enabled,
+            llm_clipboard_image_enabled=llm_clipboard_image_enabled,
             hotkey=hotkey
         )
         
@@ -129,8 +133,8 @@ class InstructionSetManager:
     def update_set(self, name: str, vocabulary: List[str] = None, instructions: List[str] = None,
                  language: Optional[str] = None, model: Optional[str] = None,
                  llm_enabled: Optional[bool] = None, llm_model: Optional[str] = None,
-                 llm_instructions: List[str] = None, llm_clipboard_enabled: Optional[bool] = None,
-                 hotkey: Optional[str] = None) -> bool:
+                 llm_instructions: List[str] = None, llm_clipboard_text_enabled: Optional[bool] = None,
+                 llm_clipboard_image_enabled: Optional[bool] = None, hotkey: Optional[str] = None) -> bool:
         """
         Update an existing instruction set.
         
@@ -152,8 +156,10 @@ class InstructionSetManager:
             LLM model ID to use, by default None (unchanged).
         llm_instructions : List[str], optional
             List of LLM system instructions, by default None (unchanged).
-        llm_clipboard_enabled : bool, optional
-            Whether to include clipboard content in LLM input, by default None (unchanged).
+        llm_clipboard_text_enabled : bool, optional
+            Whether to include clipboard text in LLM input, by default None (unchanged).
+        llm_clipboard_image_enabled : bool, optional
+            Whether to include clipboard images in LLM input, by default None (unchanged).
         hotkey : str, optional
             Hotkey string for quick activation, by default None (unchanged).
             
@@ -186,8 +192,11 @@ class InstructionSetManager:
         if llm_instructions is not None:
             self.sets[name].llm_instructions = llm_instructions
             
-        if llm_clipboard_enabled is not None:
-            self.sets[name].llm_clipboard_enabled = llm_clipboard_enabled
+        if llm_clipboard_text_enabled is not None:
+            self.sets[name].llm_clipboard_text_enabled = llm_clipboard_text_enabled
+            
+        if llm_clipboard_image_enabled is not None:
+            self.sets[name].llm_clipboard_image_enabled = llm_clipboard_image_enabled
             
         if hotkey is not None:
             self.sets[name].hotkey = hotkey
@@ -290,7 +299,8 @@ class InstructionSetManager:
             llm_enabled=instruction_set.llm_enabled,
             llm_model=instruction_set.llm_model,
             llm_instructions=instruction_set.llm_instructions,
-            llm_clipboard_enabled=instruction_set.llm_clipboard_enabled,
+            llm_clipboard_text_enabled=instruction_set.llm_clipboard_text_enabled,
+            llm_clipboard_image_enabled=instruction_set.llm_clipboard_image_enabled,
             hotkey=instruction_set.hotkey
         )
         
@@ -412,19 +422,34 @@ class InstructionSetManager:
             return []
         return self.active_set.llm_instructions
         
-    def get_active_llm_clipboard_enabled(self) -> bool:
+    def get_active_llm_clipboard_text_enabled(self) -> bool:
         """
-        Get LLM clipboard enabled setting from the active set.
+        Get LLM clipboard text enabled setting from the active set.
         
         Returns
         -------
         bool
-            Whether clipboard content should be included in LLM input in the active set,
+            Whether clipboard text should be included in LLM input in the active set,
             or False if no active set.
         """
         if not self.active_set:
             return False
-        return self.active_set.llm_clipboard_enabled
+        return self.active_set.llm_clipboard_text_enabled
+        
+    def get_active_llm_clipboard_image_enabled(self) -> bool:
+        """
+        Get LLM clipboard image enabled setting from the active set.
+        
+        Returns
+        -------
+        bool
+            Whether clipboard images should be included in LLM input in the active set,
+            or False if no active set.
+        """
+        if not self.active_set:
+            return False
+        return self.active_set.llm_clipboard_image_enabled
+        
     
     def update_set_hotkey(self, name: str, hotkey: str) -> bool:
         """
@@ -487,6 +512,10 @@ class InstructionSetManager:
         for set_data in sets_data:
             name = set_data.get("name", "")
             if name:
+                # Get clipboard fields
+                llm_clipboard_text_enabled = set_data.get("llm_clipboard_text_enabled", False)
+                llm_clipboard_image_enabled = set_data.get("llm_clipboard_image_enabled", False)
+                
                 self.sets[name] = InstructionSet(
                     name=name,
                     vocabulary=set_data.get("vocabulary", []),
@@ -496,7 +525,8 @@ class InstructionSetManager:
                     llm_enabled=set_data.get("llm_enabled", False),
                     llm_model=set_data.get("llm_model", "gpt-4o"),
                     llm_instructions=set_data.get("llm_instructions", []),
-                    llm_clipboard_enabled=set_data.get("llm_clipboard_enabled", False),
+                    llm_clipboard_text_enabled=llm_clipboard_text_enabled,
+                    llm_clipboard_image_enabled=llm_clipboard_image_enabled,
                     hotkey=set_data.get("hotkey", "")
                 )
         
@@ -526,7 +556,8 @@ class InstructionSetManager:
                 "llm_enabled": instruction_set.llm_enabled,
                 "llm_model": instruction_set.llm_model,
                 "llm_instructions": instruction_set.llm_instructions,
-                "llm_clipboard_enabled": instruction_set.llm_clipboard_enabled,
+                "llm_clipboard_text_enabled": instruction_set.llm_clipboard_text_enabled,
+                "llm_clipboard_image_enabled": instruction_set.llm_clipboard_image_enabled,
                 "hotkey": instruction_set.hotkey
             })
         
