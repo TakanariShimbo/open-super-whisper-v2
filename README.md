@@ -152,10 +152,10 @@ To package the application into a standalone executable:
 python -m PyInstaller --onefile --icon assets/icon.ico --name "OpenSuperWhisper" --add-data "assets;assets" --add-data "ffmpeg;ffmpeg" main.py
 
 # For macOS
-python -m PyInstaller --onefile --icon assets/icon.icns --name "OpenSuperWhisper" --add-data "assets:assets" --add-data "ffmpeg:ffmpeg" main.py
+# python -m PyInstaller --onefile --icon assets/icon.icns --name "OpenSuperWhisper" --add-data "assets:assets" --add-data "ffmpeg:ffmpeg" main.py
 
 # For Linux
-python -m PyInstaller --onefile --icon assets/icon.png --name "OpenSuperWhisper" --add-data "assets:assets" --add-data "ffmpeg:ffmpeg" main.py
+# python -m PyInstaller --onefile --icon assets/icon.png --name "OpenSuperWhisper" --add-data "assets:assets" --add-data "ffmpeg:ffmpeg" main.py
 ```
 
 The Windows command does the following:
@@ -172,32 +172,6 @@ Once the build is complete, you'll find `OpenSuperWhisper.exe` in the `dist` fol
 The core module (`core`) is fully implemented and independent of the GUI, providing transcription, LLM processing, recording, instruction set, and hotkey management features that can be reused in other projects.
 
 The GUI module (`gui`) leverages the core module to provide a user interface with advanced threading support for a responsive experience.
-
-## Using LLM Features
-
-To use the LLM features:
-
-1. Enable LLM processing using the checkbox in the main window
-2. Configure LLM settings in the instruction sets dialog:
-   - Select which LLM model to use
-   - Add custom system instructions to guide the LLM processing
-   - Enable/disable LLM processing per instruction set
-3. After recording and transcription, the LLM will process the transcribed text
-4. View the results in the LLM Analysis tab
-5. Use the Copy dropdown menu to copy transcription, LLM analysis, or both
-
-## Tag System
-
-The application uses a comprehensive tag system to manage different settings:
-
-- **Transcription Settings**: Language, model selection
-- **LLM Settings**: Model selection, enable/disable LLM processing
-- **Word Tags**: Custom vocabulary words/phrases for improved transcription accuracy
-- **System Prompts**:
-  - Transcription system prompts: Control how the audio is transcribed
-  - LLM system prompts: Control how the LLM analyzes the transcribed text
-
-All these settings can be managed per instruction set, allowing you to create specialized configurations for different use cases.
 
 ## License
 
