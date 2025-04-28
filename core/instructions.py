@@ -26,11 +26,11 @@ class InstructionSet:
     vocabulary: List[str] = field(default_factory=list)
     instructions: List[str] = field(default_factory=list)
     language: Optional[str] = None  # Language code (e.g., "en", "ja"), None for auto-detection
-    model: str = "whisper-1"  # Default model ID
+    model: str = "gpt-4o-transcribe"  # Default model ID
     
     # LLM settings
     llm_enabled: bool = False
-    llm_model: str = "gpt-3.5-turbo"
+    llm_model: str = "gpt-4o"
     llm_instructions: List[str] = field(default_factory=list)
     llm_clipboard_enabled: bool = False  # Whether to include clipboard content in LLM input
     
@@ -69,8 +69,8 @@ class InstructionSetManager:
         return self.sets[self.active_set_name]
     
     def create_set(self, name: str, vocabulary: List[str] = None, instructions: List[str] = None, 
-                language: Optional[str] = None, model: str = "whisper-1",
-                llm_enabled: bool = False, llm_model: str = "gpt-3.5-turbo", 
+                language: Optional[str] = None, model: str = "gpt-4o-transcribe",
+                llm_enabled: bool = False, llm_model: str = "gpt-4o", 
                 llm_instructions: List[str] = None, llm_clipboard_enabled: bool = False,
                 hotkey: str = "") -> bool:
         """
@@ -87,11 +87,11 @@ class InstructionSetManager:
         language : Optional[str], optional
             Language code (e.g., "en", "ja"), or None for auto-detection, by default None.
         model : str, optional
-            Whisper model ID to use, by default "whisper-1".
+            Whisper model ID to use, by default "gpt-4o-transcribe".
         llm_enabled : bool, optional
             Whether LLM processing is enabled, by default False.
         llm_model : str, optional
-            LLM model ID to use, by default "gpt-3.5-turbo".
+            LLM model ID to use, by default "gpt-4o".
         llm_instructions : List[str], optional
             List of LLM system instructions, by default None.
         llm_clipboard_enabled : bool, optional
@@ -364,10 +364,10 @@ class InstructionSetManager:
         -------
         str
             Model ID from the active set,
-            or "whisper-1" if no active set.
+            or "gpt-4o-transcribe" if no active set.
         """
         if not self.active_set:
-            return "whisper-1"
+            return "gpt-4o-transcribe"
         return self.active_set.model
     
     def get_active_llm_enabled(self) -> bool:
@@ -392,10 +392,10 @@ class InstructionSetManager:
         -------
         str
             LLM model ID from the active set,
-            or "gpt-3.5-turbo" if no active set.
+            or "gpt-4o" if no active set.
         """
         if not self.active_set:
-            return "gpt-3.5-turbo"
+            return "gpt-4o"
         return self.active_set.llm_model
     
     def get_active_llm_instructions(self) -> List[str]:
@@ -492,9 +492,9 @@ class InstructionSetManager:
                     vocabulary=set_data.get("vocabulary", []),
                     instructions=set_data.get("instructions", []),
                     language=set_data.get("language", None),
-                    model=set_data.get("model", "whisper-1"),
+                    model=set_data.get("model", "gpt-4o-transcribe"),
                     llm_enabled=set_data.get("llm_enabled", False),
-                    llm_model=set_data.get("llm_model", "gpt-3.5-turbo"),
+                    llm_model=set_data.get("llm_model", "gpt-4o"),
                     llm_instructions=set_data.get("llm_instructions", []),
                     llm_clipboard_enabled=set_data.get("llm_clipboard_enabled", False),
                     hotkey=set_data.get("hotkey", "")

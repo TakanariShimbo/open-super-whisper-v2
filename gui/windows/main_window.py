@@ -672,6 +672,44 @@ class MainWindow(QMainWindow):
         print(f"Recording hotkey '{hotkey_str}' pressed during recording - stopping recording")
         self.thread_manager.run_in_main_thread(self.stop_recording)
     
+    def get_clipboard_content(self):
+        """
+        Get text and/or image from clipboard when LLM clipboard option is enabled.
+        
+        Returns
+        -------
+        tuple
+            (clipboard_text, clipboard_image) - either may be None if not available
+        """
+        clipboard_text = None
+        clipboard_image = None
+        
+        # Check if the clipboard option is enabled
+        if (self.unified_processor and self.unified_processor.is_llm_enabled() and 
+                self.instruction_set_manager.get_active_llm_clipboard_enabled()):
+            
+            # Get the clipboard
+            clipboard = QApplication.clipboard()
+            
+            # Check if clipboard has text
+            clipboard_text = clipboard.text()
+            
+            # Check if clipboard has an image
+            image = clipboard.image()
+            if not image.isNull():
+                # Convert QImage to bytes
+                from PyQt6.QtCore import QBuffer, QIODevice
+                from PyQt6.QtGui import QImage
+                import io
+                
+                # Convert QImage to bytes
+                buffer = QBuffer()
+                buffer.open(QIODevice.OpenModeFlag.WriteOnly)
+                image.save(buffer, "JPEG")
+                clipboard_image = buffer.data().data()  # Get bytes from QByteArray
+        
+        return clipboard_text, clipboard_image
+        
     def start_processing(self, audio_file=None):
         """
         Start audio processing (transcription + optional LLM).
@@ -697,11 +735,8 @@ class MainWindow(QMainWindow):
         # Get language from active instruction set
         selected_language = self.instruction_set_manager.get_active_language()
         
-        # Get clipboard text if LLM clipboard option is enabled
-        clipboard_text = None
-        if (self.unified_processor and self.unified_processor.is_llm_enabled() and 
-                self.instruction_set_manager.get_active_llm_clipboard_enabled()):
-            clipboard_text = QApplication.clipboard().text()
+        # Get clipboard content (text and/or image) if LLM clipboard option is enabled
+        clipboard_text, clipboard_image = self.get_clipboard_content()
         
         # Run processing in worker thread using ThreadManager
         if audio_file:
@@ -710,10 +745,11 @@ class MainWindow(QMainWindow):
                 self.perform_processing,
                 audio_file, 
                 selected_language,
-                clipboard_text
+                clipboard_text,
+                clipboard_image
             )
     
-    def perform_processing(self, audio_file, language=None, clipboard_text=None):
+    def perform_processing(self, audio_file, language=None, clipboard_text=None, clipboard_image=None):
         """
         Perform audio processing in a background thread.
         
@@ -725,13 +761,15 @@ class MainWindow(QMainWindow):
             Language code for transcription.
         clipboard_text : str, optional
             Text from clipboard to include in LLM input, by default None.
+        clipboard_image : bytes, optional
+            Image data from clipboard to include in LLM input, by default None.
             
         This method uses UnifiedProcessor to process the audio
         and signals the result. It also handles errors appropriately.
         """
         try:
-            # Process audio with optional clipboard content
-            result = self.unified_processor.process(audio_file, language, clipboard_text)
+            # Process audio with optional clipboard content (text and/or image)
+            result = self.unified_processor.process(audio_file, language, clipboard_text, clipboard_image)
             
             # Signal the result
             self.processing_complete.emit(result)

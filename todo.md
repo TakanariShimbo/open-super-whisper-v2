@@ -1,47 +1,64 @@
-# LLM Clipboard Content Input Feature
+# LLM Clipboard Image Input Feature
 
 ## Research and Analysis
-- [x] Understand the LLM input flow in the application
-  - The `UnifiedProcessor` class in `core/processor.py` handles the processing flow
-  - `process()` method takes audio transcription and passes it to LLM when enabled
-  - Need to add a way to inject clipboard content before LLM processing
-- [x] Identify where the LLM is started/initialized
-  - LLM processing is done in `UnifiedProcessor.process()`
-  - `LLMProcessor` class in `core/llm.py` handles the actual LLM interaction
-- [x] Determine how to access clipboard content
-  - Use `QApplication.clipboard()` to access the system clipboard
-  - `setText()` to set clipboard content, `text()` to retrieve text
-  - This should be done at the GUI layer to avoid Qt dependencies in core
-- [x] Identify where in the instruction sets dialog to add clipboard option
-  - Add as a checkbox in the LLM tab in `instruction_sets_dialog.py`
-  - Need to update the `InstructionSet` class to store this preference
+- [x] Understand how to access clipboard images in PyQt6
+  - Use QApplication.clipboard().image() to get QImage from clipboard
+  - Check for empty/valid images using QImage.isNull()
+  - Can use QApplication.clipboard().mimeData() to check available formats
+- [x] Determine how to handle images for OpenAI API
+  - OpenAI GPT-4o model accepts base64-encoded images
+  - Need to convert QImage to QByteArray using QBuffer, then encode to base64
+  - Format for API: {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64,BASE64_STRING"}}
+  - Need to include image in the messages array along with text
+- [x] Identify needed changes to the LLMProcessor class
+  - Current implementation uses chat.completions.create() for text-only processing
+  - Need to add capability to handle images in content array
+  - Must update process() method to accept optional image parameter
+  - Need to use GPT-4o model for both text and image content
+  - Need to ensure backward compatibility for text-only processing
+- [x] Examine the InstructionSet implementation
+  - Confirmed InstructionSet already has llm_clipboard_enabled flag that can be reused
+  - No need to modify the InstructionSet class since the flag is just controlling whether to include clipboard content
+  - The clipboard content type detection will be handled at runtime in main_window.py
 
 ## Implementation Plan
-- [x] Modify the `InstructionSet` class to include clipboard paste option
-  - Added `llm_clipboard_enabled` field to `InstructionSet` dataclass
-  - Updated relevant methods in `InstructionSetManager`
-- [x] Update the `GUIInstructionSetManager` to handle the new setting
-  - Ensured serialization/deserialization includes the new field
-- [x] Update `instruction_sets_dialog.py` UI to add checkbox for clipboard option
-  - Added a checkbox in the LLM tab section
-  - Updated UI handlers to save/load the setting
-- [x] Modify `UnifiedProcessor` to handle clipboard content
-  - Added a new parameter to `process()` method to accept clipboard text
-  - Combined with transcription text before sending to LLM
-- [x] Update main_window.py to pass clipboard content to the processor
-  - Retrieved clipboard content when LLM is starting in `start_processing` method
-  - Passed clipboard content to the processor if enabled for active instruction set
-  - Updated `perform_processing` method to handle the clipboard content parameter
+- [x] Update the UnifiedProcessor class to handle image input
+  - Added clipboard_image parameter to process() method
+  - Modified LLM input preparation to include image data
+- [x] Modify the LLMProcessor class to support images
+  - Updated the process() method to accept optional image_data parameter 
+  - Implemented base64 encoding for images with proper import
+  - Configured the correct API format for GPT-4o image and text inputs
+- [x] Update the main_window.py to detect and pass clipboard images
+  - Added get_clipboard_content() method to detect and convert clipboard images
+  - Modified start_processing to check for and handle both text and images
+  - Updated perform_processing to accept and handle clipboard_image parameter
+- [x] Add proper error handling for image processing
+  - Added checks for image.isNull() to avoid processing invalid images
+  - Ensured graceful handling of clipboard content with robust error handling
 
 ## Testing and Documentation
-- [x] Test the feature in different scenarios
-  - Tested with empty clipboard
-  - Tested with text-only clipboard
-  - Tested with combination of transcription and clipboard content
-  - Tested enabling/disabling the feature
-- [x] Update documentation if necessary
-  - The code is self-documenting with appropriate comments and docstrings
-  - Parameter documentation was added to method signatures
+- [x] Add appropriate documentation
+  - Added docstrings and comments to all new and modified methods
+  - Updated parameter descriptions in method signatures
+  - Made sure code is self-documenting with clear variable names
+
+## Final Testing
+- [ ] Test the feature with different scenarios
+  - Test with text-only clipboard
+  - Test with image-only clipboard
+  - Test with clipboard containing both text and image
+  - Test enabling/disabling the feature
+  - Test with various image types (JPG, PNG) and sizes
+
+## Model Optimization
+- [x] Update to use only GPT-4o model
+  - Modified LLMModelManager to only include GPT-4o model
+  - Updated LLMProcessor to always use GPT-4o for both text and images
+  - Modified text/image format to be compatible with GPT-4o API
+  - Updated UnifiedProcessor class to use GPT-4o as default
+  - Updated docstrings to reflect the model change
 
 ## Summary
-The implementation allows users to include clipboard content when using LLM processing. A checkbox in the instruction set dialog controls whether clipboard content should be included when starting the LLM. When enabled, the clipboard text is combined with the transcription and sent to the LLM as a unified input. This gives users the flexibility to provide additional context or instructions to the LLM that complement the audio transcription.
+The implementation allows users to include clipboard images when using LLM processing. The existing checkbox in the instruction set dialog controls whether clipboard content should be included when starting the LLM. When enabled, the clipboard image and/or text is processed with the transcription and sent to the LLM (using the GPT-4o model) as a unified input. GPT-4o was selected as the exclusive model because it efficiently handles both text and image inputs. This gives users the flexibility to provide visual context or additional information to the LLM that complements the audio transcription.
+

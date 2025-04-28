@@ -56,8 +56,7 @@ class UnifiedProcessor:
     a seamless processing pipeline, with optional LLM processing.
     """
     
-    def __init__(self, api_key: str = None, whisper_model: str = "whisper-1", 
-                 llm_model: str = "gpt-3.5-turbo"):
+    def __init__(self, api_key: str = None, whisper_model: str = "gpt-4o-transcribe", llm_model: str = "gpt-4o"):
         """
         Initialize the UnifiedProcessor.
         
@@ -66,9 +65,9 @@ class UnifiedProcessor:
         api_key : str, optional
             OpenAI API key, by default None. If None, tries to get from environment.
         whisper_model : str, optional
-            Whisper model to use, by default "whisper-1".
+            Whisper model to use, by default "gpt-4o-transcribe".
         llm_model : str, optional
-            LLM model to use, by default "gpt-3.5-turbo".
+            LLM model to use, by default "gpt-4o".
             
         Raises
         ------
@@ -165,7 +164,8 @@ class UnifiedProcessor:
         """Clear system instructions for LLM processing."""
         self.llm_processor.clear_system_instructions()
     
-    def process(self, audio_file: str, language: Optional[str] = None, clipboard_text: Optional[str] = None) -> ProcessingResult:
+    def process(self, audio_file: str, language: Optional[str] = None, 
+             clipboard_text: Optional[str] = None, clipboard_image: Optional[bytes] = None) -> ProcessingResult:
         """
         Process an audio file with transcription and optional LLM processing.
         
@@ -177,6 +177,8 @@ class UnifiedProcessor:
             Language code (e.g., "en", "ja"), or None for auto-detection, by default None.
         clipboard_text : Optional[str], optional
             Text from clipboard to include in LLM input, by default None.
+        clipboard_image : Optional[bytes], optional
+            Image data from clipboard to include in LLM input, by default None.
             
         Returns
         -------
@@ -200,10 +202,26 @@ class UnifiedProcessor:
             try:
                 # Combine transcription with clipboard content if provided
                 llm_input = transcription
+                
+                # Add clipboard text if provided
                 if clipboard_text:
                     llm_input = f"Clipboard Content:\n{clipboard_text}\n\nTranscription:\n{transcription}"
                 
-                llm_response = self.llm_processor.process(llm_input)
+                # Process with or without image
+                if clipboard_image:
+                    # If we have both clipboard text and image
+                    if clipboard_text:
+                        prompt = llm_input
+                    else:
+                        # Just transcription with image
+                        prompt = f"Analyze this image along with the following transcription:\n\n{transcription}"
+                    
+                    # Process with image
+                    llm_response = self.llm_processor.process(prompt, clipboard_image)
+                else:
+                    # Process text only
+                    llm_response = self.llm_processor.process(llm_input)
+                
                 result.llm_response = llm_response
                 result.llm_processed = True
             except Exception as e:

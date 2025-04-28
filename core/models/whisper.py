@@ -21,7 +21,7 @@ class WhisperModel:
     Attributes
     ----------
     id : str
-        Model identifier used for API calls (e.g., "whisper-1").
+        Model identifier used for API calls (e.g., "gpt-4o-transcribe").
     name : str
         Display name (e.g., "Whisper-1").
     description : str
@@ -59,22 +59,22 @@ class WhisperModelManager:
     # This list represents models that are currently available through the OpenAI API
     _MODELS: ClassVar[List[WhisperModel]] = [
         WhisperModel(
-            id="whisper-1",
-            name="Whisper-1",
-            description="Original Whisper model with broad language support",
-            performance_tier="standard",
-            is_default=True
-        ),
-        WhisperModel(
             id="gpt-4o-transcribe",
             name="GPT-4o Transcribe",
             description="High-performance transcription model with enhanced accuracy",
-            performance_tier="enhanced"
+            performance_tier="enhanced",
+            is_default=True
         ),
         WhisperModel(
             id="gpt-4o-mini-transcribe",
             name="GPT-4o Mini Transcribe",
             description="Lightweight, fast transcription model with good accuracy",
+            performance_tier="standard"
+        ),
+        WhisperModel(
+            id="whisper-1",
+            name="Whisper-1",
+            description="Original Whisper model with broad language support",
             performance_tier="standard"
         )
     ]

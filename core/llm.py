@@ -23,7 +23,7 @@ class LLMProcessor:
     # Use model manager for available models
     AVAILABLE_MODELS = LLMModelManager.to_api_format()
     
-    def __init__(self, api_key: str = None, model: str = "gpt-3.5-turbo"):
+    def __init__(self, api_key: str = None, model: str = "gpt-4o"):
         """
         Initialize the LLMProcessor.
         
@@ -32,7 +32,7 @@ class LLMProcessor:
         api_key : str, optional
             OpenAI API key, by default None. If None, tries to get from environment.
         model : str, optional
-            LLM model to use, by default "gpt-3.5-turbo".
+            LLM model to use, by default "gpt-4o".
             
         Raises
         ------
@@ -117,14 +117,16 @@ class LLMProcessor:
         
         return " ".join(self.system_instructions)
     
-    def process(self, text: str) -> str:
+    def process(self, text: str, image_data: bytes = None) -> str:
         """
-        Process text using the selected LLM.
+        Process text and optionally an image using GPT-4o.
         
         Parameters
         ----------
         text : str
             Text to process.
+        image_data : bytes, optional
+            Image data in bytes format, by default None.
             
         Returns
         -------
@@ -139,13 +141,37 @@ class LLMProcessor:
         try:
             system_message = self._build_system_message()
             
+            # Always use GPT-4o which supports both text and images
+            model_to_use = "gpt-4o"
+            
+            # Prepare user content
+            if image_data is not None:
+                # Convert image bytes to base64 string
+                import base64
+                base64_image = base64.b64encode(image_data).decode('utf-8')
+                
+                # Create user content with both text and image using the format for GPT-4o
+                user_content = [
+                    {"type": "text", "text": text},
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{base64_image}"
+                        }
+                    }
+                ]
+            else:
+                # Text-only content can also use the array format for consistency
+                user_content = [{"type": "text", "text": text}]
+            
             # Make API call
             response = self.client.chat.completions.create(
-                model=self.model,
+                model=model_to_use,
                 messages=[
                     {"role": "system", "content": system_message},
-                    {"role": "user", "content": text}
-                ]
+                    {"role": "user", "content": user_content}
+                ],
+                max_tokens=4096  # Set reasonable limit for responses
             )
             
             # Extract and return the response text

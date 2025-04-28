@@ -31,7 +31,7 @@ class WhisperTranscriber:
     # Use model manager for available models
     AVAILABLE_MODELS = WhisperModelManager.to_api_format()
     
-    def __init__(self, api_key: str = None, model: str = "whisper-1"):
+    def __init__(self, api_key: str = None, model: str = "gpt-4o-transcribe"):
         """
         Initialize the WhisperTranscriber.
         
@@ -40,7 +40,7 @@ class WhisperTranscriber:
         api_key : str, optional
             OpenAI API key, by default None. If None, tries to get from environment.
         model : str, optional
-            Whisper model to use, by default "whisper-1".
+            Whisper model to use, by default "gpt-4o-transcribe".
             
         Raises
         ------

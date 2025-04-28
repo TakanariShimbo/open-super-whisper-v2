@@ -59,23 +59,11 @@ class LLMModelManager:
     # This list represents models that are currently available through the OpenAI API
     _MODELS: ClassVar[List[LLMModel]] = [
         LLMModel(
-            id="gpt-3.5-turbo",
-            name="GPT-3.5 Turbo",
-            description="Fast and cost-effective model for general purpose tasks",
-            performance_tier="standard",
-            is_default=True
-        ),
-        LLMModel(
             id="gpt-4o",
             name="GPT-4o",
-            description="Advanced model with strong reasoning capabilities",
-            performance_tier="advanced"
-        ),
-        LLMModel(
-            id="gpt-4-turbo",
-            name="GPT-4 Turbo",
-            description="High-performance model with advanced capabilities",
-            performance_tier="advanced"
+            description="Advanced model with vision capabilities for text and image processing",
+            performance_tier="advanced",
+            is_default=True
         )
     ]
     
