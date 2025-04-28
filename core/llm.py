@@ -4,6 +4,7 @@ LLM Processing Interface
 This module provides a complete implementation for the OpenAI API to process text using LLMs.
 """
 
+import base64
 import os
 from typing import List, Dict, Any, Optional, Union
 import openai
@@ -141,13 +142,9 @@ class LLMProcessor:
         try:
             system_message = self._build_system_message()
             
-            # Always use GPT-4o which supports both text and images
-            model_to_use = "gpt-4o"
-            
             # Prepare user content
             if image_data is not None:
                 # Convert image bytes to base64 string
-                import base64
                 base64_image = base64.b64encode(image_data).decode('utf-8')
                 
                 # Create user content with both text and image using the format for GPT-4o
@@ -166,12 +163,11 @@ class LLMProcessor:
             
             # Make API call
             response = self.client.chat.completions.create(
-                model=model_to_use,
+                model=self.model,
                 messages=[
                     {"role": "system", "content": system_message},
                     {"role": "user", "content": user_content}
-                ],
-                max_tokens=4096  # Set reasonable limit for responses
+                ]
             )
             
             # Extract and return the response text

@@ -5,6 +5,7 @@ This module provides the main application window and core functionality
 with integrated LLM processing support.
 """
 
+import io
 import os
 import sys
 import time
@@ -15,8 +16,10 @@ from PyQt6.QtWidgets import (
     QGridLayout, QFormLayout, QTabWidget, QSplitter,
     QSystemTrayIcon, QMenu, QStyle, QStatusBar, QToolBar, QDialog
 )
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QSettings, QUrl, QSize
-from PyQt6.QtGui import QIcon, QAction
+from PyQt6.QtCore import QBuffer, QIODevice
+
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QSettings, QUrl, QSize, QBuffer, QIODevice
+from PyQt6.QtGui import QIcon, QAction, QImage
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 
 from core.recorder import AudioRecorder, NoMicrophoneError, MicrophoneAccessError, MicrophoneError
@@ -697,11 +700,6 @@ class MainWindow(QMainWindow):
             # Check if clipboard has an image
             image = clipboard.image()
             if not image.isNull():
-                # Convert QImage to bytes
-                from PyQt6.QtCore import QBuffer, QIODevice
-                from PyQt6.QtGui import QImage
-                import io
-                
                 # Convert QImage to bytes
                 buffer = QBuffer()
                 buffer.open(QIODevice.OpenModeFlag.WriteOnly)
