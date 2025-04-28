@@ -39,75 +39,12 @@ class MarkdownTextBrowser(QTextBrowser):
         self.setOpenExternalLinks(True)
         self.setOpenLinks(True)
         
-        # Set up styling
-        # self.setup_styling()
-        
         # Set size policy to allow the widget to expand both ways
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         
         # Configure markdown extension options
         self.markdown_extensions = ['nl2br']  # nl2br converts newlines to <br> tags
-        
-    def setup_styling(self):
-        """Configure styling for better Markdown rendering"""
-        # Use a nicer font for content display
-        font = QFont("Segoe UI", 10)
-        self.setFont(font)
-        
-        # Set margins for better readability
-        document = self.document()
-        document.setDocumentMargin(10)
-        
-        # Setup color scheme for light background/dark text
-        palette = self.palette()
-        palette.setColor(QPalette.ColorRole.Base, QColor(252, 252, 252))
-        palette.setColor(QPalette.ColorRole.Text, QColor(34, 34, 34))
-        self.setPalette(palette)
-        
-        # Improve code block presentation
-        css = """
-        pre {
-            background-color: #f5f5f5;
-            border: 1px solid #e0e0e0;
-            border-radius: 3px;
-            padding: 8px;
-            font-family: 'Courier New', monospace;
-        }
-        code {
-            background-color: #f5f5f5;
-            padding: 2px 4px;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
-        }
-        blockquote {
-            border-left: 4px solid #e0e0e0;
-            padding-left: 16px;
-            color: #444;
-            margin-left: 0;
-        }
-        h1, h2, h3, h4, h5, h6 {
-            margin-top: 20px;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-        a {
-            color: #0366d6;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        ul, ol {
-            margin-left: 15px;
-        }
-        p {
-            margin-top: 0;
-            margin-bottom: 10px;
-            line-height: 1.5;
-        }
-        """
-        document.setDefaultStyleSheet(css)
-        
+                
     def setMarkdownText(self, text):
         """
         Set the text content as Markdown with improved line break handling
