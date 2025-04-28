@@ -17,7 +17,7 @@ A PyQt6-based GUI application for audio transcription and LLM analysis using Ope
 - Clipboard integration
 - Status indicator window
 - Settings management
-- LLM Analysis - Process transcriptions with Large Language Models
+- LLM - Process transcriptions with Large Language Models
 
 ## Project Structure
 
@@ -58,6 +58,7 @@ A PyQt6-based GUI application for audio transcription and LLM analysis using Ope
     │   ├── __init__.py
     │   └── widgets/             # Custom widgets
     │       ├── __init__.py
+    │       ├── markdown_text_browser.py # Markdown rendering widget
     │       └── status_indicator.py
     ├── dialogs/                 # Dialog windows
     │   ├── __init__.py
