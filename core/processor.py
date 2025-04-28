@@ -187,16 +187,8 @@ class UnifiedProcessor:
             print(error_msg)
             return ProcessingResult(transcription=f"Error: {error_msg}")
         
-        # Check file size in MB
-        file_size_mb = os.path.getsize(audio_file) / (1024 * 1024)
-        
-        # Perform transcription with appropriate method based on file size
-        if file_size_mb > 25:
-            print(f"File size is {file_size_mb:.2f}MB, using large file transcription...")
-            transcription = self.transcriber.transcribe_large_file(audio_file, language)
-        else:
-            print(f"File size is {file_size_mb:.2f}MB, using standard transcription...")
-            transcription = self.transcriber.transcribe(audio_file, language)
+        # Perform transcription - now transcribe() handles both small and large files
+        transcription = self.transcriber.transcribe(audio_file, language)
         
         # Create result object
         result = ProcessingResult(transcription=transcription)

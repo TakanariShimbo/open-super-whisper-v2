@@ -167,101 +167,8 @@ class WhisperTranscriber:
         """
         Transcribe an audio file using OpenAI's Whisper API.
         
-        Parameters
-        ----------
-        audio_file : str
-            Path to the audio file to transcribe.
-        language : Optional[str], optional
-            Language code (e.g., "en", "ja"), or None for auto-detection.
-        response_format : str, optional
-            Response format: "text", "json", "verbose_json", or "vtt".
-            
-        Returns
-        -------
-        Union[str, Dict]
-            Transcribed text or dictionary depending on response_format.
-            
-        Raises
-        ------
-        Exception
-            If transcription fails.
-        """
-        try:
-            # Check if file exists
-            audio_path = Path(audio_file)
-            if not audio_path.exists():
-                raise FileNotFoundError(f"Audio file not found: {audio_file}")
-            
-            # Build API call parameters
-            params = {
-                "model": self.model,
-                "response_format": response_format,
-            }
-            
-            # Add language if specified
-            if language:
-                params["language"] = language
-                
-            # Add custom prompt if available
-            prompt = self._build_prompt()
-            if prompt:
-                params["prompt"] = prompt
-            
-            # Make API call
-            with open(audio_path, "rb") as audio:
-                response = self.client.audio.transcriptions.create(
-                    file=audio,
-                    **params
-                )
-                
-            # Process response based on format
-            if response_format == "json" or response_format == "verbose_json":
-                return json.loads(str(response))
-            else:
-                return str(response)
-        
-        except Exception as e:
-            error_msg = f"Error occurred during transcription: {str(e)}"
-            print(error_msg)
-            return f"Error: {str(e)}"
-    
-    def get_api_key(self) -> str:
-        """
-        Get the current API key.
-        
-        Returns
-        -------
-        str
-            The current API key.
-        """
-        return self.api_key
-    
-    def set_api_key(self, api_key: str) -> None:
-        """
-        Set a new API key.
-        
-        Parameters
-        ----------
-        api_key : str
-            New API key to use.
-            
-        Raises
-        ------
-        ValueError
-            If API key is empty.
-        """
-        if not api_key:
-            raise ValueError("API key cannot be empty")
-        
-        self.api_key = api_key
-        # Update the client with the new API key
-        self.client = openai.OpenAI(api_key=self.api_key)
-    
-    def transcribe_large_file(self, audio_file: str, language: Optional[str] = None, 
-                           response_format: str = "text") -> Union[str, Dict]:
-        """
-        Transcribe a large audio file by splitting it into smaller chunks.
-        Handles files larger than the OpenAI API's 25MB limit.
+        This method automatically handles large files by splitting them into smaller chunks
+        when necessary, and seamlessly processes files of any size.
         
         Parameters
         ----------
@@ -294,7 +201,34 @@ class WhisperTranscriber:
             # If file is under 25MB, process it directly with standard method
             if file_size_mb <= 25:
                 print(f"File size is {file_size_mb:.2f}MB, processing directly...")
-                return self.transcribe(audio_file, language, response_format)
+                
+                # Build API call parameters
+                params = {
+                    "model": self.model,
+                    "response_format": response_format,
+                }
+                
+                # Add language if specified
+                if language:
+                    params["language"] = language
+                    
+                # Add custom prompt if available
+                prompt = self._build_prompt()
+                if prompt:
+                    params["prompt"] = prompt
+                
+                # Make API call
+                with open(audio_path, "rb") as audio:
+                    response = self.client.audio.transcriptions.create(
+                        file=audio,
+                        **params
+                    )
+                    
+                # Process response based on format
+                if response_format == "json" or response_format == "verbose_json":
+                    return json.loads(str(response))
+                else:
+                    return str(response)
             
             print(f"File size is {file_size_mb:.2f}MB, splitting into chunks...")
             
@@ -392,9 +326,72 @@ class WhisperTranscriber:
                 return merged_result
             
         except Exception as e:
-            error_msg = f"Error occurred during large file transcription: {str(e)}"
+            error_msg = f"Error occurred during transcription: {str(e)}"
             print(error_msg)
             return f"Error: {str(e)}"
+    
+    def get_api_key(self) -> str:
+        """
+        Get the current API key.
+        
+        Returns
+        -------
+        str
+            The current API key.
+        """
+        return self.api_key
+    
+    def set_api_key(self, api_key: str) -> None:
+        """
+        Set a new API key.
+        
+        Parameters
+        ----------
+        api_key : str
+            New API key to use.
+            
+        Raises
+        ------
+        ValueError
+            If API key is empty.
+        """
+        if not api_key:
+            raise ValueError("API key cannot be empty")
+        
+        self.api_key = api_key
+        # Update the client with the new API key
+        self.client = openai.OpenAI(api_key=self.api_key)
+    
+    def transcribe_large_file(self, audio_file: str, language: Optional[str] = None, 
+                           response_format: str = "text") -> Union[str, Dict]:
+        """
+        Transcribe a large audio file by splitting it into smaller chunks.
+        Handles files larger than the OpenAI API's 25MB limit.
+        
+        This method is now a wrapper for the transcribe method, which has been updated
+        to handle large files automatically. It is maintained for backward compatibility.
+        
+        Parameters
+        ----------
+        audio_file : str
+            Path to the audio file to transcribe.
+        language : Optional[str], optional
+            Language code (e.g., "en", "ja"), or None for auto-detection.
+        response_format : str, optional
+            Response format: "text", "json", "verbose_json", or "vtt".
+            
+        Returns
+        -------
+        Union[str, Dict]
+            Transcribed text or dictionary depending on response_format.
+            
+        Raises
+        ------
+        Exception
+            If transcription fails.
+        """
+        # Simply call the transcribe method which now handles large files
+        return self.transcribe(audio_file, language, response_format)
     
     def _merge_transcriptions(self, transcriptions: List[str]) -> str:
         """
