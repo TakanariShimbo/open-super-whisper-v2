@@ -847,8 +847,8 @@ class MainWindow(QMainWindow):
         # Update Markdown view with the accumulated text
         self.markdown_browser.setMarkdownText(new_text)
         
-        # Ensure LLM tab is visible during streaming
-        self.tab_widget.setCurrentIndex(1)  # LLM tab
+        # Ensure Formatted LLM tab is visible during streaming
+        self.tab_widget.setCurrentIndex(2)  # Formatted LLM tab
     
     def switch_to_markdown_tab(self):
         """
@@ -895,8 +895,8 @@ class MainWindow(QMainWindow):
             # Update the Markdown view with the LLM response
             self.markdown_browser.setMarkdownText(result.llm_response)
             
-            # Switch to LLM tab if LLM processing was performed
-            self.tab_widget.setCurrentIndex(1)  # LLM tab
+            # Switch to Formatted LLM tab if LLM processing was performed
+            self.tab_widget.setCurrentIndex(2)  # Formatted LLM tab
         else:
             self.llm_text.clear()
             self.markdown_browser.setMarkdownText("")
