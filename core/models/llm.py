@@ -61,20 +61,36 @@ class LLMModelManager:
     # Define supported models
     # This list represents models that are currently available through the OpenAI API
     _MODELS: ClassVar[List[LLMModel]] = [
+        # GPT-4.1 Series
         LLMModel(
-            id="gpt-4o",
-            name="GPT-4o",
-            description="Standard model with vision capabilities for text and image processing",
-            performance_tier="standard",
+            id="gpt-4.1",
+            name="GPT-4.1",
+            description="Premium model with superior coding, instruction following, and 1M token context support",
+            performance_tier="advanced",
             supports_image=True,
             is_default=True
         ),
         LLMModel(
-            id="gpt-3.5-turbo",
-            name="GPT-3.5 Turbo",
-            description="Standard model for text processing",
+            id="gpt-4o",
+            name="GPT-4o",
+            description="Versatile omni model with balanced text and image processing capabilities",
             performance_tier="standard",
-            supports_image=False
+            supports_image=True
+        ),
+        # o-Series reasoning models
+        # LLMModel(
+        #     id="o3",
+        #     name="O3",
+        #     description="Advanced reasoning model specialized for complex problem-solving and tool use",
+        #     performance_tier="premium",
+        #     supports_image=True
+        # ),
+        LLMModel(
+            id="o1",
+            name="O1",
+            description="Base reasoning model designed for practical problem solving",
+            performance_tier="advanced",
+            supports_image=True
         )
     ]
     

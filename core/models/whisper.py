@@ -74,7 +74,7 @@ class WhisperModelManager:
         WhisperModel(
             id="whisper-1",
             name="Whisper-1",
-            description="Original Whisper model with broad language support",
+            description="Legacy transcription model with broad language support",
             performance_tier="standard"
         )
     ]
