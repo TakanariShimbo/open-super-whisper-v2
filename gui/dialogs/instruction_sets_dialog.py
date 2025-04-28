@@ -720,14 +720,31 @@ class InstructionSetsDialog(QDialog):
                 self.sets_list.setCurrentRow(i)
                 break
         
+        # Clear all input fields to ensure UI matches the empty state of a new instruction set
+        self.vocabulary_edit.clear()
+        self.instructions_edit.clear()
+        self.llm_instructions_edit.clear()
+        self.hotkey_input.clear()  # Explicitly clear hotkey field to fix the inheritance issue
+        
+        # Reset comboboxes to their default values
+        self.language_combo.setCurrentIndex(0)  # First option (usually "Auto-detect")
+        self.model_combo.setCurrentIndex(0)     # First option (default model)
+        self.llm_model_combo.setCurrentIndex(0) # First option (default LLM model)
+        
         # Set initial state of LLM UI components (disabled by default for new sets)
         # New sets have llm_enabled=False by default in the core manager
         is_llm_enabled = False  # New sets have LLM disabled by default
+        self.llm_enabled_checkbox.setChecked(False)
         
         # Get default LLM model and check if it supports images
         default_model_id = LLMModelManager.get_default_model().id
         supports_image = LLMModelManager.supports_image_input(default_model_id)
         
+        # Reset checkboxes
+        self.llm_clipboard_text_checkbox.setChecked(False)
+        self.llm_clipboard_image_checkbox.setChecked(False)
+        
+        # Set enabled states for UI components
         self.llm_model_combo.setEnabled(is_llm_enabled)
         self.llm_clipboard_text_checkbox.setEnabled(is_llm_enabled)
         self.llm_clipboard_image_checkbox.setEnabled(is_llm_enabled and supports_image)
