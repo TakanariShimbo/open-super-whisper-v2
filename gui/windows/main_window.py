@@ -179,6 +179,12 @@ class MainWindow(QMainWindow):
             lambda time_str: self.status_indicator_window.update_timer(time_str),
             Qt.ConnectionType.QueuedConnection
         )
+        
+        # Stream update connection
+        self.thread_manager.streamUpdate.connect(
+            self.on_stream_update,
+            Qt.ConnectionType.QueuedConnection
+        )
     
     def apply_instruction_set_settings(self):
         """Apply settings from the active instruction set to the unified processor."""
@@ -768,8 +774,21 @@ class MainWindow(QMainWindow):
         and signals the result. It also handles errors appropriately.
         """
         try:
-            # Process audio with optional clipboard content (text and/or image)
-            result = self.unified_processor.process(audio_file, language, clipboard_text, clipboard_image)
+            # Clear LLM text area before streaming starts - using thread manager for thread safety
+            self.thread_manager.run_in_main_thread(lambda: self.llm_text.clear())
+            
+            # Define a streaming callback function that emits streamUpdate signals
+            def stream_callback(chunk):
+                self.thread_manager.update_stream(chunk)
+            
+            # Process audio with optional clipboard content (text and/or image) and streaming
+            result = self.unified_processor.process(
+                audio_file, 
+                language, 
+                clipboard_text, 
+                clipboard_image,
+                stream_callback=stream_callback
+            )
             
             # Signal the result
             self.processing_complete.emit(result)
@@ -787,6 +806,29 @@ class MainWindow(QMainWindow):
             
             # Show error in status bar using ThreadManager for thread safety
             self.thread_manager.update_status(AppLabels.MAIN_WIN_PROCESSING_ERROR, 5000)
+    
+    def on_stream_update(self, chunk: str):
+        """
+        Handle streaming LLM updates.
+        
+        Parameters
+        ----------
+        chunk : str
+            Text chunk from streaming response.
+        """
+        # Get current text
+        current_text = self.llm_text.toPlainText()
+        
+        # Append new chunk
+        self.llm_text.setText(current_text + chunk)
+        
+        # Move cursor to end
+        cursor = self.llm_text.textCursor()
+        cursor.movePosition(cursor.MoveOperation.End)
+        self.llm_text.setTextCursor(cursor)
+        
+        # Ensure LLM tab is visible during streaming
+        self.tab_widget.setCurrentIndex(1)  # LLM tab
     
     def on_processing_complete(self, result):
         """
@@ -811,9 +853,11 @@ class MainWindow(QMainWindow):
         # Show transcription text
         self.transcription_text.setText(result.transcription)
         
-        # Show LLM response if available
+        # Show LLM response if available (this may already be shown via streaming)
         if result.llm_processed and result.llm_response:
-            self.llm_text.setText(result.llm_response)
+            # Only set the text if it's not already set by streaming
+            if self.llm_text.toPlainText() != result.llm_response:
+                self.llm_text.setText(result.llm_response)
             # Switch to LLM tab if LLM processing was performed
             self.tab_widget.setCurrentIndex(1)  # LLM tab
         else:

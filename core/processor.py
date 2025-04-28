@@ -6,7 +6,7 @@ both transcription and LLM processing in a seamless way.
 """
 
 from dataclasses import dataclass
-from typing import Optional, List, Dict, Any, Union
+from typing import Optional, List, Dict, Any, Union, Callable, Generator, Tuple
 import os
 
 from core.transcriber import WhisperTranscriber
@@ -165,7 +165,8 @@ class UnifiedProcessor:
         self.llm_processor.clear_system_instructions()
     
     def process(self, audio_file: str, language: Optional[str] = None, 
-             clipboard_text: Optional[str] = None, clipboard_image: Optional[bytes] = None) -> ProcessingResult:
+             clipboard_text: Optional[str] = None, clipboard_image: Optional[bytes] = None,
+             stream_callback: Optional[Callable[[str], None]] = None) -> ProcessingResult:
         """
         Process an audio file with transcription and optional LLM processing.
         
@@ -179,6 +180,9 @@ class UnifiedProcessor:
             Text from clipboard to include in LLM input, by default None.
         clipboard_image : Optional[bytes], optional
             Image data from clipboard to include in LLM input, by default None.
+        stream_callback : Optional[Callable[[str], None]], optional
+            Callback function for streaming LLM responses, by default None.
+            If None, non-streaming API will be used.
             
         Returns
         -------
@@ -207,7 +211,7 @@ class UnifiedProcessor:
                 if clipboard_text:
                     llm_input = f"Clipboard Content:\n{clipboard_text}\n\nTranscription:\n{transcription}"
                 
-                # Process with or without image
+                # Prepare prompt based on inputs
                 if clipboard_image:
                     # If we have both clipboard text and image
                     if clipboard_text:
@@ -215,12 +219,26 @@ class UnifiedProcessor:
                     else:
                         # Just transcription with image
                         prompt = f"Analyze this image along with the following transcription:\n\n{transcription}"
-                    
-                    # Process with image
-                    llm_response = self.llm_processor.process(prompt, clipboard_image)
                 else:
-                    # Process text only
-                    llm_response = self.llm_processor.process(llm_input)
+                    prompt = llm_input
+                
+                # Process with or without streaming based on callback
+                if stream_callback:
+                    # Use streaming API with callback
+                    if clipboard_image:
+                        # Process with image and streaming
+                        llm_response = self.llm_processor.process_stream(prompt, stream_callback, clipboard_image)
+                    else:
+                        # Process text only with streaming
+                        llm_response = self.llm_processor.process_stream(prompt, stream_callback)
+                else:
+                    # Use non-streaming API
+                    if clipboard_image:
+                        # Process with image
+                        llm_response = self.llm_processor.process(prompt, clipboard_image)
+                    else:
+                        # Process text only
+                        llm_response = self.llm_processor.process(prompt)
                 
                 result.llm_response = llm_response
                 result.llm_processed = True
@@ -231,3 +249,82 @@ class UnifiedProcessor:
                 result.llm_processed = False
         
         return result
+        
+    def process_with_stream_generator(self, audio_file: str, language: Optional[str] = None,
+                                     clipboard_text: Optional[str] = None, 
+                                     clipboard_image: Optional[bytes] = None) -> Tuple[ProcessingResult, Optional[Generator[str, None, None]]]:
+        """
+        Process an audio file with transcription and optional LLM processing, returning a streaming generator.
+        
+        Parameters
+        ----------
+        audio_file : str
+            Path to the audio file to process.
+        language : Optional[str], optional
+            Language code (e.g., "en", "ja"), or None for auto-detection, by default None.
+        clipboard_text : Optional[str], optional
+            Text from clipboard to include in LLM input, by default None.
+        clipboard_image : Optional[bytes], optional
+            Image data from clipboard to include in LLM input, by default None.
+            
+        Returns
+        -------
+        Tuple[ProcessingResult, Optional[Generator[str, None, None]]]
+            A tuple containing:
+            - The initial processing result with transcription
+            - A generator for streaming LLM response chunks (or None if LLM is disabled)
+        """
+        # Check if file exists
+        if not os.path.exists(audio_file):
+            error_msg = f"Audio file not found: {audio_file}"
+            print(error_msg)
+            return ProcessingResult(transcription=f"Error: {error_msg}"), None
+        
+        # Perform transcription
+        transcription = self.transcriber.transcribe(audio_file, language)
+        
+        # Create result object
+        result = ProcessingResult(transcription=transcription)
+        
+        # If LLM is enabled, prepare streaming generator
+        if self.llm_enabled:
+            try:
+                # Combine transcription with clipboard content if provided
+                llm_input = transcription
+                
+                # Add clipboard text if provided
+                if clipboard_text:
+                    llm_input = f"Clipboard Content:\n{clipboard_text}\n\nTranscription:\n{transcription}"
+                
+                # Prepare prompt based on inputs
+                if clipboard_image:
+                    # If we have both clipboard text and image
+                    if clipboard_text:
+                        prompt = llm_input
+                    else:
+                        # Just transcription with image
+                        prompt = f"Analyze this image along with the following transcription:\n\n{transcription}"
+                else:
+                    prompt = llm_input
+                
+                # Get streaming generator
+                if clipboard_image:
+                    generator = self.llm_processor.get_stream_generator(prompt, clipboard_image)
+                else:
+                    generator = self.llm_processor.get_stream_generator(prompt)
+                
+                # Mark as LLM processed
+                result.llm_processed = True
+                
+                # Return result and generator
+                return result, generator
+                
+            except Exception as e:
+                print(f"LLM processing error: {e}")
+                # Still return the transcription even if LLM processing fails
+                result.llm_response = f"Error in LLM processing: {str(e)}"
+                result.llm_processed = False
+                return result, None
+        
+        # LLM not enabled, return result with no generator
+        return result, None

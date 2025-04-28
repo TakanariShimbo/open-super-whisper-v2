@@ -31,6 +31,7 @@ class ThreadManager(QObject):
     timerUpdate = pyqtSignal(str)            # time_string
     indicatorUpdate = pyqtSignal(int)        # mode (1=recording, 2=processing, 3=complete)
     indicatorTimerUpdate = pyqtSignal(str)   # time_string
+    streamUpdate = pyqtSignal(str)           # stream_chunk
     
     # Internal signals
     _execute_in_main_thread = pyqtSignal(object, tuple, dict)  # func, args, kwargs
@@ -302,3 +303,14 @@ class ThreadManager(QObject):
             Indicator mode (1=recording, 2=processing, 3=complete)
         """
         self.indicatorUpdate.emit(mode)
+        
+    def update_stream(self, chunk: str) -> None:
+        """
+        Send an LLM streaming update
+        
+        Parameters
+        ----------
+        chunk : str
+            Text chunk from LLM streaming response
+        """
+        self.streamUpdate.emit(chunk)

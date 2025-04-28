@@ -1,12 +1,13 @@
 """
 LLM Processing Interface
 
-This module provides a complete implementation for the OpenAI API to process text using LLMs.
+This module provides a complete implementation for the OpenAI API to process text using LLMs,
+including support for streaming responses.
 """
 
 import base64
 import os
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional, Union, Callable, Generator, Iterator
 import openai
 
 # Import model data from core.models
@@ -18,7 +19,8 @@ class LLMProcessor:
     Implementation of OpenAI LLM API text processing.
     
     This class provides methods to process text using large language models 
-    through the OpenAI API, with support for different models and custom instructions.
+    through the OpenAI API, with support for different models, custom instructions,
+    and streaming responses.
     """
     
     # Use model manager for available models
@@ -118,6 +120,40 @@ class LLMProcessor:
         
         return " ".join(self.system_instructions)
     
+    def _prepare_user_content(self, text: str, image_data: bytes = None) -> List[Dict[str, Any]]:
+        """
+        Prepare user content for OpenAI API including optional image data.
+        
+        Parameters
+        ----------
+        text : str
+            Text to process.
+        image_data : bytes, optional
+            Image data in bytes format, by default None.
+            
+        Returns
+        -------
+        List[Dict[str, Any]]
+            Formatted user content for the OpenAI API.
+        """
+        if image_data is not None:
+            # Convert image bytes to base64 string
+            base64_image = base64.b64encode(image_data).decode('utf-8')
+            
+            # Create user content with both text and image using the format for GPT-4o
+            return [
+                {"type": "text", "text": text},
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/jpeg;base64,{base64_image}"
+                    }
+                }
+            ]
+        else:
+            # Text-only content can also use the array format for consistency
+            return [{"type": "text", "text": text}]
+    
     def process(self, text: str, image_data: bytes = None) -> str:
         """
         Process text and optionally an image using GPT-4o.
@@ -143,23 +179,7 @@ class LLMProcessor:
             system_message = self._build_system_message()
             
             # Prepare user content
-            if image_data is not None:
-                # Convert image bytes to base64 string
-                base64_image = base64.b64encode(image_data).decode('utf-8')
-                
-                # Create user content with both text and image using the format for GPT-4o
-                user_content = [
-                    {"type": "text", "text": text},
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/jpeg;base64,{base64_image}"
-                        }
-                    }
-                ]
-            else:
-                # Text-only content can also use the array format for consistency
-                user_content = [{"type": "text", "text": text}]
+            user_content = self._prepare_user_content(text, image_data)
             
             # Make API call
             response = self.client.chat.completions.create(
@@ -180,6 +200,131 @@ class LLMProcessor:
             error_msg = f"Error occurred during LLM processing: {str(e)}"
             print(error_msg)
             return f"Error: {str(e)}"
+    
+    def process_stream(self, text: str, chunk_callback: Optional[Callable[[str], None]] = None, 
+                      image_data: bytes = None) -> str:
+        """
+        Process text with streaming responses, optionally with an image.
+        
+        Parameters
+        ----------
+        text : str
+            Text to process.
+        chunk_callback : Optional[Callable[[str], None]], optional
+            Function to call with each response chunk, by default None.
+            If None, chunks are accumulated and the final result is returned.
+        image_data : bytes, optional
+            Image data in bytes format, by default None.
+            
+        Returns
+        -------
+        str
+            Complete LLM response (all chunks combined).
+            
+        Raises
+        ------
+        Exception
+            If processing fails.
+        """
+        try:
+            system_message = self._build_system_message()
+            
+            # Prepare user content
+            user_content = self._prepare_user_content(text, image_data)
+            
+            # Make streaming API call
+            stream = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system_message},
+                    {"role": "user", "content": user_content}
+                ],
+                stream=True
+            )
+            
+            # Process streaming response
+            full_response = ""
+            
+            for chunk in stream:
+                # Extract content from the chunk
+                if chunk.choices and len(chunk.choices) > 0:
+                    # Get delta content (may be None)
+                    content = chunk.choices[0].delta.content
+                    
+                    # Skip if no content in this chunk
+                    if content is None:
+                        continue
+                    
+                    # Append to full response
+                    full_response += content
+                    
+                    # Call callback if provided
+                    if chunk_callback:
+                        chunk_callback(content)
+            
+            return full_response
+            
+        except Exception as e:
+            error_msg = f"Error occurred during LLM streaming: {str(e)}"
+            print(error_msg)
+            
+            # Call callback with error message if provided
+            if chunk_callback:
+                chunk_callback(f"\nError: {str(e)}")
+                
+            return f"Error: {str(e)}"
+    
+    def get_stream_generator(self, text: str, image_data: bytes = None) -> Generator[str, None, None]:
+        """
+        Get a generator that yields chunks of streaming response.
+        
+        Parameters
+        ----------
+        text : str
+            Text to process.
+        image_data : bytes, optional
+            Image data in bytes format, by default None.
+            
+        Returns
+        -------
+        Generator[str, None, None]
+            Generator that yields response chunks.
+            
+        Raises
+        ------
+        Exception
+            If processing fails.
+        """
+        try:
+            system_message = self._build_system_message()
+            
+            # Prepare user content
+            user_content = self._prepare_user_content(text, image_data)
+            
+            # Make streaming API call
+            stream = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system_message},
+                    {"role": "user", "content": user_content}
+                ],
+                stream=True
+            )
+            
+            # Yield chunks
+            for chunk in stream:
+                if chunk.choices and len(chunk.choices) > 0:
+                    # Get delta content (may be None)
+                    content = chunk.choices[0].delta.content
+                    
+                    # Skip if no content in this chunk
+                    if content is not None:
+                        yield content
+                        
+        except Exception as e:
+            error_msg = f"Error occurred during LLM streaming: {str(e)}"
+            print(error_msg)
+            yield f"\nError: {str(e)}"
     
     def get_api_key(self) -> str:
         """
