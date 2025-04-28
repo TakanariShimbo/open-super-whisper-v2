@@ -460,6 +460,9 @@ class InstructionSetsDialog(QDialog):
                 Qt.ItemDataRole.ToolTipRole
             )
         
+        # Connect signal to update UI when LLM model selection changes
+        self.llm_model_combo.currentIndexChanged.connect(self.on_llm_model_changed)
+        
         main_layout.addRow(llm_model_label, self.llm_model_combo)
         
         # Add checkbox for clipboard text
@@ -626,10 +629,15 @@ class InstructionSetsDialog(QDialog):
             # Update LLM instructions
             self.llm_instructions_edit.setPlainText("\n".join(instruction_set.llm_instructions))
             
+            # Check if model supports image input
+            supports_image = False
+            if instruction_set.llm_model:
+                supports_image = LLMModelManager.supports_image_input(instruction_set.llm_model)
+            
             # Set enabled state for LLM-related UI components
             self.llm_model_combo.setEnabled(is_llm_enabled)
             self.llm_clipboard_text_checkbox.setEnabled(is_llm_enabled)
-            self.llm_clipboard_image_checkbox.setEnabled(is_llm_enabled)
+            self.llm_clipboard_image_checkbox.setEnabled(is_llm_enabled and supports_image)
             self.llm_instructions_edit.setEnabled(is_llm_enabled)
             
             # Update hotkey field
@@ -714,10 +722,16 @@ class InstructionSetsDialog(QDialog):
         
         # Set initial state of LLM UI components (disabled by default for new sets)
         # New sets have llm_enabled=False by default in the core manager
-        self.llm_model_combo.setEnabled(False)
-        self.llm_clipboard_text_checkbox.setEnabled(False)
-        self.llm_clipboard_image_checkbox.setEnabled(False)
-        self.llm_instructions_edit.setEnabled(False)
+        is_llm_enabled = False  # New sets have LLM disabled by default
+        
+        # Get default LLM model and check if it supports images
+        default_model_id = LLMModelManager.get_default_model().id
+        supports_image = LLMModelManager.supports_image_input(default_model_id)
+        
+        self.llm_model_combo.setEnabled(is_llm_enabled)
+        self.llm_clipboard_text_checkbox.setEnabled(is_llm_enabled)
+        self.llm_clipboard_image_checkbox.setEnabled(is_llm_enabled and supports_image)
+        self.llm_instructions_edit.setEnabled(is_llm_enabled)
     
     def _show_name_exists_error(self, name):
         """
@@ -1210,6 +1224,46 @@ class InstructionSetsDialog(QDialog):
                     pass
     
     @pyqtSlot(int)
+    def on_llm_model_changed(self, index):
+        """
+        Handle changes to the LLM model selection.
+        
+        Updates the clipboard image checkbox based on whether the selected model
+        supports image inputs.
+        
+        Parameters
+        ----------
+        index : int
+            The index of the selected item in the combo box.
+        """
+        # Get the selected model ID
+        selected_model_id = self.llm_model_combo.itemData(index)
+        
+        # Check if LLM is enabled
+        is_llm_enabled = self.llm_enabled_checkbox.isChecked()
+        
+        # Check if model supports image input
+        supports_image = False
+        if selected_model_id:
+            supports_image = LLMModelManager.supports_image_input(selected_model_id)
+        
+        # Update UI components
+        def update_ui():
+            # Image checkbox is enabled only if LLM is enabled AND model supports images
+            self.llm_clipboard_image_checkbox.setEnabled(is_llm_enabled and supports_image)
+            
+            # If model doesn't support images, uncheck the checkbox
+            if not supports_image:
+                self.llm_clipboard_image_checkbox.setChecked(False)
+        
+        # Use thread manager if available
+        if self.thread_manager:
+            self.thread_manager.run_in_main_thread(update_ui)
+        else:
+            # Synchronous update
+            update_ui()
+    
+    @pyqtSlot(int)
     def on_llm_enabled_changed(self, state):
         """
         Handle changes to the LLM enabled checkbox.
@@ -1224,6 +1278,14 @@ class InstructionSetsDialog(QDialog):
         # Define if LLM is enabled
         is_enabled = state == Qt.CheckState.Checked.value
         
+        # Get current selected LLM model
+        selected_model_id = self.llm_model_combo.currentData()
+        
+        # Check if model supports image input
+        supports_image = False
+        if selected_model_id:
+            supports_image = LLMModelManager.supports_image_input(selected_model_id)
+        
         # Update UI components
         def update_ui():
             # Enable/disable LLM model selector
@@ -1231,7 +1293,9 @@ class InstructionSetsDialog(QDialog):
             
             # Enable/disable LLM context checkboxes
             self.llm_clipboard_text_checkbox.setEnabled(is_enabled)
-            self.llm_clipboard_image_checkbox.setEnabled(is_enabled)
+            
+            # Image checkbox is enabled only if LLM is enabled AND model supports images
+            self.llm_clipboard_image_checkbox.setEnabled(is_enabled and supports_image)
             
             # Enable/disable LLM tab (instructions)
             llm_tab_index = self.tab_widget.indexOf(self.tab_widget.findChild(QWidget, "", 

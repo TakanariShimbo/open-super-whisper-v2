@@ -28,6 +28,8 @@ class LLMModel:
         Description of the model's capabilities and characteristics.
     performance_tier : str
         Performance category (e.g., "standard", "advanced").
+    supports_image : bool
+        Whether the model supports image inputs, by default False.
     is_default : bool
         Whether this is the default model, by default False.
     """
@@ -35,6 +37,7 @@ class LLMModel:
     name: str
     description: str
     performance_tier: str
+    supports_image: bool = False
     is_default: bool = False
     
     def __str__(self) -> str:
@@ -61,9 +64,17 @@ class LLMModelManager:
         LLMModel(
             id="gpt-4o",
             name="GPT-4o",
-            description="Advanced model with vision capabilities for text and image processing",
+            description="Standard model with vision capabilities for text and image processing",
             performance_tier="standard",
+            supports_image=True,
             is_default=True
+        ),
+        LLMModel(
+            id="gpt-3.5-turbo",
+            name="GPT-3.5 Turbo",
+            description="Standard model for text processing",
+            performance_tier="standard",
+            supports_image=False
         )
     ]
     
@@ -169,6 +180,24 @@ class LLMModelManager:
         """
         return [model for model in cls._MODELS if model.performance_tier == tier]
     
+    @classmethod
+    def supports_image_input(cls, model_id: str) -> bool:
+        """
+        Check if a model supports image input.
+        
+        Parameters
+        ----------
+        model_id : str
+            Model ID to check.
+            
+        Returns
+        -------
+        bool
+            True if the model supports image input, False otherwise.
+        """
+        model = cls.get_model_by_id(model_id)
+        return model.supports_image if model else False
+        
     @classmethod
     def to_api_format(cls) -> List[Dict[str, str]]:
         """
