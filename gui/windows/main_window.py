@@ -942,7 +942,7 @@ class MainWindow(QMainWindow):
         
         # Format with headers if LLM text exists
         if llm_text:
-            combined = f"Transcription:\n{transcription}\n\nLLM Analysis:\n{llm_text}"
+            combined = f"Transcription:\n{transcription}\n\nRaw LLM:\n{llm_text}"
         else:
             combined = transcription
         

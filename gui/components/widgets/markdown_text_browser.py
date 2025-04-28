@@ -40,7 +40,7 @@ class MarkdownTextBrowser(QTextBrowser):
         self.setOpenLinks(True)
         
         # Set up styling
-        self.setup_styling()
+        # self.setup_styling()
         
         # Set size policy to allow the widget to expand both ways
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)

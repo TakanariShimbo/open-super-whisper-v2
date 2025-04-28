@@ -31,7 +31,7 @@ class AppLabels:
     MAIN_WIN_INSTRUCTION_SET_LABEL = "Instruction Set:"
     MAIN_WIN_COPY_TO_CLIPBOARD = "Copy to Clipboard"
     MAIN_WIN_COPY_TRANSCRIPTION = "Copy Transcription"
-    MAIN_WIN_COPY_LLM = "Copy LLM Analysis"
+    MAIN_WIN_COPY_LLM = "Copy Raw LLM"
     MAIN_WIN_COPY_ALL = "Copy All"
     MAIN_WIN_AUTO_COPY_BUTTON = "Auto-Copy"
     MAIN_WIN_SOUND_BUTTON = "Enable Sounds"
