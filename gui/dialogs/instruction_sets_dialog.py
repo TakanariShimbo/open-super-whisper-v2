@@ -442,6 +442,7 @@ class InstructionSetsDialog(QDialog):
         # LLM enable/disable
         llm_enabled_label = QLabel(AppLabels.INSTRUCTION_SETS_LLM_TOGGLE_LABEL)
         self.llm_enabled_checkbox = QCheckBox()
+        self.llm_enabled_checkbox.stateChanged.connect(self.on_llm_enabled_changed)
         main_layout.addRow(llm_enabled_label, self.llm_enabled_checkbox)
         
         # LLM model selection
@@ -489,6 +490,7 @@ class InstructionSetsDialog(QDialog):
         
         # LLM instructions        
         self.llm_instructions_edit = QTextEdit()
+        self.llm_instructions_edit.setEnabled(False)  # Disabled by default
         llm_layout.addWidget(self.llm_instructions_edit)
         
         # Add tabs to the tab widget in specified order
@@ -519,6 +521,13 @@ class InstructionSetsDialog(QDialog):
         button_box.rejected.connect(self.accept)  # Close button
         
         layout.addWidget(button_box)
+        
+        # Set initial state of LLM-related UI components
+        # By default, these should be disabled unless LLM is enabled
+        self.llm_model_combo.setEnabled(False)
+        self.llm_clipboard_text_checkbox.setEnabled(False)
+        self.llm_clipboard_image_checkbox.setEnabled(False)
+        # LLM tab's contents will be enabled/disabled when a set is selected
     
     def load_instruction_sets(self):
         """
@@ -599,7 +608,8 @@ class InstructionSetsDialog(QDialog):
             self.model_combo.setCurrentIndex(model_index)
             
             # Update LLM settings
-            self.llm_enabled_checkbox.setChecked(instruction_set.llm_enabled)
+            is_llm_enabled = instruction_set.llm_enabled
+            self.llm_enabled_checkbox.setChecked(is_llm_enabled)
             
             # Update LLM clipboard options
             self.llm_clipboard_text_checkbox.setChecked(instruction_set.llm_clipboard_text_enabled)
@@ -615,6 +625,12 @@ class InstructionSetsDialog(QDialog):
             
             # Update LLM instructions
             self.llm_instructions_edit.setPlainText("\n".join(instruction_set.llm_instructions))
+            
+            # Set enabled state for LLM-related UI components
+            self.llm_model_combo.setEnabled(is_llm_enabled)
+            self.llm_clipboard_text_checkbox.setEnabled(is_llm_enabled)
+            self.llm_clipboard_image_checkbox.setEnabled(is_llm_enabled)
+            self.llm_instructions_edit.setEnabled(is_llm_enabled)
             
             # Update hotkey field
             self.hotkey_input.setText(instruction_set.hotkey)
@@ -695,6 +711,13 @@ class InstructionSetsDialog(QDialog):
             if self.sets_list.item(i).text() == name:
                 self.sets_list.setCurrentRow(i)
                 break
+        
+        # Set initial state of LLM UI components (disabled by default for new sets)
+        # New sets have llm_enabled=False by default in the core manager
+        self.llm_model_combo.setEnabled(False)
+        self.llm_clipboard_text_checkbox.setEnabled(False)
+        self.llm_clipboard_image_checkbox.setEnabled(False)
+        self.llm_instructions_edit.setEnabled(False)
     
     def _show_name_exists_error(self, name):
         """
@@ -1185,3 +1208,49 @@ class InstructionSetsDialog(QDialog):
                 except Exception:
                     # Silent error handling for hotkey restoration failures
                     pass
+    
+    @pyqtSlot(int)
+    def on_llm_enabled_changed(self, state):
+        """
+        Handle changes to the LLM enabled checkbox.
+        
+        Enables/disables LLM-related UI elements based on the checkbox state.
+        
+        Parameters
+        ----------
+        state : int
+            Checkbox state (Qt.Checked or Qt.Unchecked).
+        """
+        # Define if LLM is enabled
+        is_enabled = state == Qt.CheckState.Checked.value
+        
+        # Update UI components
+        def update_ui():
+            # Enable/disable LLM model selector
+            self.llm_model_combo.setEnabled(is_enabled)
+            
+            # Enable/disable LLM context checkboxes
+            self.llm_clipboard_text_checkbox.setEnabled(is_enabled)
+            self.llm_clipboard_image_checkbox.setEnabled(is_enabled)
+            
+            # Enable/disable LLM tab (instructions)
+            llm_tab_index = self.tab_widget.indexOf(self.tab_widget.findChild(QWidget, "", 
+                                                   Qt.FindChildOption.FindDirectChildrenOnly))
+            
+            # Since we don't have direct tab references, let's find the LLM tab by index
+            # We know it's tab index 2 from the init_ui method
+            # (self.tab_widget.addTab(llm_tab, AppLabels.INSTRUCTION_SETS_LLM_TAB_NAME))
+            llm_tab_index = 2
+            
+            # We don't disable the tab entirely as that would make it inaccessible
+            # Instead, we disable the contents of the tab
+            llm_tab = self.tab_widget.widget(llm_tab_index)
+            if llm_tab:
+                self.llm_instructions_edit.setEnabled(is_enabled)
+        
+        # Use thread manager if available
+        if self.thread_manager:
+            self.thread_manager.run_in_main_thread(update_ui)
+        else:
+            # Synchronous update
+            update_ui()
