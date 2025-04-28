@@ -423,7 +423,22 @@ class InstructionSetsDialog(QDialog):
             )
         
         main_layout.addRow(model_label, self.model_combo)
-                      
+        
+        # Add hotkey selection
+        hotkey_label = QLabel(AppLabels.INSTRUCTION_SETS_HOTKEY_LABEL)
+        self.hotkey_input = QLineEdit()
+        self.hotkey_input.setReadOnly(True)
+        self.hotkey_input.setPlaceholderText(AppLabels.INSTRUCTION_SETS_HOTKEY_PLACEHOLDER)
+
+        hotkey_button = QPushButton(AppLabels.INSTRUCTION_SETS_SET_HOTKEY_BUTTON)
+        hotkey_button.clicked.connect(self.show_hotkey_dialog)
+        
+        hotkey_layout = QHBoxLayout()
+        hotkey_layout.addWidget(self.hotkey_input)
+        hotkey_layout.addWidget(hotkey_button)
+        
+        main_layout.addRow(hotkey_label, hotkey_layout)
+
         # LLM enable/disable
         llm_enabled_label = QLabel(AppLabels.INSTRUCTION_SETS_LLM_TOGGLE_LABEL)
         self.llm_enabled_checkbox = QCheckBox()
@@ -449,27 +464,12 @@ class InstructionSetsDialog(QDialog):
         # Add checkbox for clipboard text
         self.llm_clipboard_text_checkbox = QCheckBox(AppLabels.INSTRUCTION_SETS_LLM_CLIPBOARD_TEXT_LABEL)
         self.llm_clipboard_text_checkbox.setToolTip(AppLabels.INSTRUCTION_SETS_LLM_CLIPBOARD_TEXT_TOOLTIP)
-        main_layout.addRow(AppLabels.INSTRUCTION_SETS_CLIPBOARD_INPUT_LABEL, self.llm_clipboard_text_checkbox)
+        main_layout.addRow(AppLabels.INSTRUCTION_SETS_LLM_CONTEXT_LABEL, self.llm_clipboard_text_checkbox)
         
         # Add checkbox for clipboard image
         self.llm_clipboard_image_checkbox = QCheckBox(AppLabels.INSTRUCTION_SETS_LLM_CLIPBOARD_IMAGE_LABEL)
         self.llm_clipboard_image_checkbox.setToolTip(AppLabels.INSTRUCTION_SETS_LLM_CLIPBOARD_IMAGE_TOOLTIP)
         main_layout.addRow("", self.llm_clipboard_image_checkbox)
-
-        # Add hotkey selection
-        hotkey_label = QLabel(AppLabels.INSTRUCTION_SETS_HOTKEY_LABEL)
-        self.hotkey_input = QLineEdit()
-        self.hotkey_input.setReadOnly(True)
-        self.hotkey_input.setPlaceholderText(AppLabels.INSTRUCTION_SETS_HOTKEY_PLACEHOLDER)
-        
-        hotkey_button = QPushButton(AppLabels.INSTRUCTION_SETS_SET_HOTKEY_BUTTON)
-        hotkey_button.clicked.connect(self.show_hotkey_dialog)
-        
-        hotkey_layout = QHBoxLayout()
-        hotkey_layout.addWidget(self.hotkey_input)
-        hotkey_layout.addWidget(hotkey_button)
-        
-        main_layout.addRow(hotkey_label, hotkey_layout)
 
         settings_layout.addWidget(main_form)
         
