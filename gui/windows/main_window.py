@@ -697,16 +697,23 @@ class MainWindow(QMainWindow):
         # Get language from active instruction set
         selected_language = self.instruction_set_manager.get_active_language()
         
+        # Get clipboard text if LLM clipboard option is enabled
+        clipboard_text = None
+        if (self.unified_processor and self.unified_processor.is_llm_enabled() and 
+                self.instruction_set_manager.get_active_llm_clipboard_enabled()):
+            clipboard_text = QApplication.clipboard().text()
+        
         # Run processing in worker thread using ThreadManager
         if audio_file:
             self.thread_manager.run_in_worker_thread(
                 "audio_processing",
                 self.perform_processing,
                 audio_file, 
-                selected_language
+                selected_language,
+                clipboard_text
             )
     
-    def perform_processing(self, audio_file, language=None):
+    def perform_processing(self, audio_file, language=None, clipboard_text=None):
         """
         Perform audio processing in a background thread.
         
@@ -716,13 +723,15 @@ class MainWindow(QMainWindow):
             Path to the audio file to process.
         language : str, optional
             Language code for transcription.
+        clipboard_text : str, optional
+            Text from clipboard to include in LLM input, by default None.
             
         This method uses UnifiedProcessor to process the audio
         and signals the result. It also handles errors appropriately.
         """
         try:
-            # Process audio
-            result = self.unified_processor.process(audio_file, language)
+            # Process audio with optional clipboard content
+            result = self.unified_processor.process(audio_file, language, clipboard_text)
             
             # Signal the result
             self.processing_complete.emit(result)

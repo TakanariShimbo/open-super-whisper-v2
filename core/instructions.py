@@ -32,6 +32,7 @@ class InstructionSet:
     llm_enabled: bool = False
     llm_model: str = "gpt-3.5-turbo"
     llm_instructions: List[str] = field(default_factory=list)
+    llm_clipboard_enabled: bool = False  # Whether to include clipboard content in LLM input
     
     # Hotkey setting
     hotkey: str = ""  # Hotkey string (e.g., "ctrl+shift+1", "alt+f1")
@@ -70,7 +71,8 @@ class InstructionSetManager:
     def create_set(self, name: str, vocabulary: List[str] = None, instructions: List[str] = None, 
                 language: Optional[str] = None, model: str = "whisper-1",
                 llm_enabled: bool = False, llm_model: str = "gpt-3.5-turbo", 
-                llm_instructions: List[str] = None, hotkey: str = "") -> bool:
+                llm_instructions: List[str] = None, llm_clipboard_enabled: bool = False,
+                hotkey: str = "") -> bool:
         """
         Create a new instruction set.
         
@@ -92,6 +94,8 @@ class InstructionSetManager:
             LLM model ID to use, by default "gpt-3.5-turbo".
         llm_instructions : List[str], optional
             List of LLM system instructions, by default None.
+        llm_clipboard_enabled : bool, optional
+            Whether to include clipboard content in LLM input, by default False.
         hotkey : str, optional
             Hotkey string for quick activation, by default empty string.
             
@@ -112,6 +116,7 @@ class InstructionSetManager:
             llm_enabled=llm_enabled,
             llm_model=llm_model,
             llm_instructions=llm_instructions or [],
+            llm_clipboard_enabled=llm_clipboard_enabled,
             hotkey=hotkey
         )
         
@@ -124,7 +129,8 @@ class InstructionSetManager:
     def update_set(self, name: str, vocabulary: List[str] = None, instructions: List[str] = None,
                  language: Optional[str] = None, model: Optional[str] = None,
                  llm_enabled: Optional[bool] = None, llm_model: Optional[str] = None,
-                 llm_instructions: List[str] = None, hotkey: Optional[str] = None) -> bool:
+                 llm_instructions: List[str] = None, llm_clipboard_enabled: Optional[bool] = None,
+                 hotkey: Optional[str] = None) -> bool:
         """
         Update an existing instruction set.
         
@@ -146,6 +152,8 @@ class InstructionSetManager:
             LLM model ID to use, by default None (unchanged).
         llm_instructions : List[str], optional
             List of LLM system instructions, by default None (unchanged).
+        llm_clipboard_enabled : bool, optional
+            Whether to include clipboard content in LLM input, by default None (unchanged).
         hotkey : str, optional
             Hotkey string for quick activation, by default None (unchanged).
             
@@ -177,6 +185,9 @@ class InstructionSetManager:
             
         if llm_instructions is not None:
             self.sets[name].llm_instructions = llm_instructions
+            
+        if llm_clipboard_enabled is not None:
+            self.sets[name].llm_clipboard_enabled = llm_clipboard_enabled
             
         if hotkey is not None:
             self.sets[name].hotkey = hotkey
@@ -279,6 +290,7 @@ class InstructionSetManager:
             llm_enabled=instruction_set.llm_enabled,
             llm_model=instruction_set.llm_model,
             llm_instructions=instruction_set.llm_instructions,
+            llm_clipboard_enabled=instruction_set.llm_clipboard_enabled,
             hotkey=instruction_set.hotkey
         )
         
@@ -399,6 +411,20 @@ class InstructionSetManager:
         if not self.active_set:
             return []
         return self.active_set.llm_instructions
+        
+    def get_active_llm_clipboard_enabled(self) -> bool:
+        """
+        Get LLM clipboard enabled setting from the active set.
+        
+        Returns
+        -------
+        bool
+            Whether clipboard content should be included in LLM input in the active set,
+            or False if no active set.
+        """
+        if not self.active_set:
+            return False
+        return self.active_set.llm_clipboard_enabled
     
     def update_set_hotkey(self, name: str, hotkey: str) -> bool:
         """
@@ -470,6 +496,7 @@ class InstructionSetManager:
                     llm_enabled=set_data.get("llm_enabled", False),
                     llm_model=set_data.get("llm_model", "gpt-3.5-turbo"),
                     llm_instructions=set_data.get("llm_instructions", []),
+                    llm_clipboard_enabled=set_data.get("llm_clipboard_enabled", False),
                     hotkey=set_data.get("hotkey", "")
                 )
         
@@ -499,6 +526,7 @@ class InstructionSetManager:
                 "llm_enabled": instruction_set.llm_enabled,
                 "llm_model": instruction_set.llm_model,
                 "llm_instructions": instruction_set.llm_instructions,
+                "llm_clipboard_enabled": instruction_set.llm_clipboard_enabled,
                 "hotkey": instruction_set.hotkey
             })
         

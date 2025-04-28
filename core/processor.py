@@ -165,7 +165,7 @@ class UnifiedProcessor:
         """Clear system instructions for LLM processing."""
         self.llm_processor.clear_system_instructions()
     
-    def process(self, audio_file: str, language: Optional[str] = None) -> ProcessingResult:
+    def process(self, audio_file: str, language: Optional[str] = None, clipboard_text: Optional[str] = None) -> ProcessingResult:
         """
         Process an audio file with transcription and optional LLM processing.
         
@@ -175,6 +175,8 @@ class UnifiedProcessor:
             Path to the audio file to process.
         language : Optional[str], optional
             Language code (e.g., "en", "ja"), or None for auto-detection, by default None.
+        clipboard_text : Optional[str], optional
+            Text from clipboard to include in LLM input, by default None.
             
         Returns
         -------
@@ -196,7 +198,12 @@ class UnifiedProcessor:
         # If LLM is enabled, process the transcription
         if self.llm_enabled:
             try:
-                llm_response = self.llm_processor.process(transcription)
+                # Combine transcription with clipboard content if provided
+                llm_input = transcription
+                if clipboard_text:
+                    llm_input = f"Clipboard Content:\n{clipboard_text}\n\nTranscription:\n{transcription}"
+                
+                llm_response = self.llm_processor.process(llm_input)
                 result.llm_response = llm_response
                 result.llm_processed = True
             except Exception as e:
