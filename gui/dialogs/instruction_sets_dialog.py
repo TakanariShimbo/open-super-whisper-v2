@@ -472,8 +472,8 @@ class InstructionSetsDialog(QDialog):
         llm_layout.addWidget(llm_help)
         
         # LLM Clipboard option
-        self.llm_clipboard_checkbox = QCheckBox("Include clipboard content when starting LLM")
-        self.llm_clipboard_checkbox.setToolTip("When enabled, text from clipboard will be included in LLM input")
+        self.llm_clipboard_checkbox = QCheckBox(AppLabels.INSTRUCTION_SETS_LLM_CLIPBOARD_LABEL)
+        self.llm_clipboard_checkbox.setToolTip(AppLabels.INSTRUCTION_SETS_LLM_CLIPBOARD_TOOLTIP)
         llm_layout.addWidget(self.llm_clipboard_checkbox)
         
         # LLM instructions        

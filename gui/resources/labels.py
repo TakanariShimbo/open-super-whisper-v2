@@ -130,6 +130,8 @@ class AppLabels:
     ## LLM Instructions Tab
     INSTRUCTION_SETS_LLM_TAB_NAME = "LLM Instructions"
     INSTRUCTION_SETS_LLM_HELP = "Enter system instructions for the Large Language Model to guide how it processes the transcription."
+    INSTRUCTION_SETS_LLM_CLIPBOARD_LABEL = "Include clipboard content when starting LLM"
+    INSTRUCTION_SETS_LLM_CLIPBOARD_TOOLTIP = "When enabled, text from clipboard will be included in LLM input"
     
     ## Settings Tab
     INSTRUCTION_SETS_SETTINGS_TAB_NAME = "Settings"
