@@ -110,6 +110,23 @@ A PyQt6-based GUI application for audio transcription and LLM analysis using Ope
    uv sync
    ```
 
+4. Set up FFmpeg:
+   
+   The application requires FFmpeg. You need to create an `ffmpeg` directory in the project root with a `bin` subdirectory containing FFmpeg executables.
+
+   **For Windows:**
+   ```bash
+   # 1. Download FFmpeg from https://ffmpeg.org/download.html
+   #    - Recommended: "ffmpeg-release-essentials.zip" (Windows version)
+   
+   # 2. Extract the downloaded ZIP file
+   
+   # 3. Copy the entire extracted folder to the ffmpeg directory in the project root
+   #    Example: Extracted "ffmpeg-x.x.x-win64-static/" → Project's "ffmpeg/"
+   ```
+
+   The application will automatically add the `ffmpeg/bin` directory to the PATH when started.
+
 ## How to Run
 
 To start the application, run:
