@@ -65,7 +65,7 @@ class LLMModelManager:
         LLMModel(
             id="gpt-4.1",
             name="GPT-4.1",
-            description="Premium model with superior coding, instruction following, and 1M token context support",
+            description="Advanced model with superior coding, instruction following, and 1M token context support",
             performance_tier="advanced",
             supports_image=True,
             is_default=True
@@ -81,7 +81,7 @@ class LLMModelManager:
         # LLMModel(
         #     id="o3",
         #     name="O3",
-        #     description="Advanced reasoning model specialized for complex problem-solving and tool use",
+        #     description="Premium reasoning model specialized for complex problem-solving and tool use",
         #     performance_tier="premium",
         #     supports_image=True
         # ),
