@@ -62,7 +62,7 @@ class LLMModelManager:
             id="gpt-4o",
             name="GPT-4o",
             description="Advanced model with vision capabilities for text and image processing",
-            performance_tier="advanced",
+            performance_tier="standard",
             is_default=True
         )
     ]
