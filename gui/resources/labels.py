@@ -77,7 +77,7 @@ class AppLabels:
     STATUS_COMPLETE = "Complete!"
     STATUS_COPIED = "Copied to clipboard"
     STATUS_TRANSCRIPTION_COPIED = "Transcription copied to clipboard"
-    STATUS_LLM_COPIED = "LLM analysis copied to clipboard"
+    STATUS_LLM_COPIED = "Raw LLM copied to clipboard"
     STATUS_ALL_COPIED = "All content copied to clipboard"
     STATUS_API_KEY_SAVED = "API key saved"
     STATUS_HOTKEY_SET = "Legacy hotkey set to '{}' (Note: This is not used for recording)"
