@@ -32,6 +32,7 @@ from gui.dialogs.api_key_dialog import APIKeyDialog
 from gui.dialogs.instruction_sets_dialog import InstructionSetsDialog, GUIInstructionSetManager
 from gui.dialogs.simple_message_dialog import SimpleMessageDialog
 from gui.components.widgets.status_indicator import StatusIndicatorWindow
+from gui.components.widgets.markdown_text_browser import MarkdownTextBrowser
 from gui.utils.resource_helper import getResourcePath
 
 # Thread management imports
@@ -319,9 +320,24 @@ class MainWindow(QMainWindow):
         
         llm_layout.addWidget(self.llm_text)
         
+        # Markdown output tab
+        markdown_tab = QWidget()
+        markdown_layout = QVBoxLayout(markdown_tab)
+        
+        # Markdown output
+        markdown_label = QLabel(AppLabels.MAIN_WIN_MARKDOWN_OUTPUT_LABEL)
+        markdown_layout.addWidget(markdown_label)
+        
+        self.markdown_browser = MarkdownTextBrowser()
+        self.markdown_browser.setPlaceholderText(AppLabels.MAIN_WIN_MARKDOWN_PLACEHOLDER)
+        self.markdown_browser.setMinimumHeight(250)
+        
+        markdown_layout.addWidget(self.markdown_browser)
+        
         # Add tabs
         self.tab_widget.addTab(transcription_tab, AppLabels.MAIN_WIN_TRANSCRIPTION_TAB_TITLE)
         self.tab_widget.addTab(llm_tab, AppLabels.MAIN_WIN_LLM_TAB_TITLE)
+        self.tab_widget.addTab(markdown_tab, AppLabels.MAIN_WIN_MARKDOWN_TAB_TITLE)
         
         main_layout.addWidget(self.tab_widget, 1)
         
@@ -820,15 +836,32 @@ class MainWindow(QMainWindow):
         current_text = self.llm_text.toPlainText()
         
         # Append new chunk
-        self.llm_text.setText(current_text + chunk)
+        new_text = current_text + chunk
+        self.llm_text.setText(new_text)
         
         # Move cursor to end
         cursor = self.llm_text.textCursor()
         cursor.movePosition(cursor.MoveOperation.End)
         self.llm_text.setTextCursor(cursor)
         
+        # Update Markdown view with the accumulated text
+        self.markdown_browser.setMarkdownText(new_text)
+        
         # Ensure LLM tab is visible during streaming
         self.tab_widget.setCurrentIndex(1)  # LLM tab
+    
+    def switch_to_markdown_tab(self):
+        """
+        Switch to the Markdown view tab.
+        
+        This method can be used as a convenience method to quickly
+        switch to the Markdown view tab.
+        """
+        # Find the index of the Markdown tab (should be 2, but this is more robust)
+        for i in range(self.tab_widget.count()):
+            if self.tab_widget.tabText(i) == AppLabels.MAIN_WIN_MARKDOWN_TAB_TITLE:
+                self.tab_widget.setCurrentIndex(i)
+                break
     
     def on_processing_complete(self, result):
         """
@@ -858,10 +891,15 @@ class MainWindow(QMainWindow):
             # Only set the text if it's not already set by streaming
             if self.llm_text.toPlainText() != result.llm_response:
                 self.llm_text.setText(result.llm_response)
+            
+            # Update the Markdown view with the LLM response
+            self.markdown_browser.setMarkdownText(result.llm_response)
+            
             # Switch to LLM tab if LLM processing was performed
             self.tab_widget.setCurrentIndex(1)  # LLM tab
         else:
             self.llm_text.clear()
+            self.markdown_browser.setMarkdownText("")
             # Switch to transcription tab if no LLM processing
             self.tab_widget.setCurrentIndex(0)  # Transcription tab
         

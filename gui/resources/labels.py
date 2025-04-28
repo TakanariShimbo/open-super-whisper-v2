@@ -44,16 +44,21 @@ class AppLabels:
     MAIN_WIN_MIC_ACCESS_ERROR = "Could not access microphone. Please check your device permissions."
     
     # LLM Related
+    MAIN_WIN_TRANSCRIPTION_TITLE = "Transcription"
     MAIN_WIN_LLM_ENABLED = "Enable LLM Processing"
-    MAIN_WIN_LLM_TAB_TITLE = "LLM Analysis"
-    MAIN_WIN_LLM_PLACEHOLDER = "LLM analysis will appear here when enabled..."
     MAIN_WIN_PROCESSING_ERROR = "Processing error"
+
     MAIN_WIN_TRANSCRIPTION_TAB_TITLE = "Transcription"
     MAIN_WIN_TRANSCRIPTION_OUTPUT_LABEL = "Transcription Output"
-    MAIN_WIN_LLM_OUTPUT_LABEL = "LLM Analysis Output"
-    
-    MAIN_WIN_TRANSCRIPTION_TITLE = "Transcription"
     MAIN_WIN_TRANSCRIPTION_PLACEHOLDER = "Transcription will appear here..."
+
+    MAIN_WIN_LLM_TAB_TITLE = "Raw LLM"
+    MAIN_WIN_LLM_PLACEHOLDER = "Raw LLM content will appear here when LLM Processing is enabled..."
+    MAIN_WIN_LLM_OUTPUT_LABEL = "Raw LLM Output"
+    
+    MAIN_WIN_MARKDOWN_TAB_TITLE = "Formatted LLM"
+    MAIN_WIN_MARKDOWN_OUTPUT_LABEL = "Formatted LLM Output"
+    MAIN_WIN_MARKDOWN_PLACEHOLDER = "Formatted LLM content will appear here when LLM Processing is enabled..." 
 
     MAIN_WIN_API_KEY_ERROR_TITLE = "API Key Error"
     MAIN_WIN_API_KEY_ERROR_MISSING = "API Key is missing or invalid"
