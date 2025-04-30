@@ -15,25 +15,55 @@ class HotkeyManager:
     This class provides methods to register and unregister global hotkeys
     that can be triggered even when the application is not in focus.
     Uses pynput library for the actual keyboard monitoring.
+    
+    Examples
+    --------
+    Basic usage:
+    
+    >>> hotkey_manager = HotkeyManager()
+    >>> # Register a hotkey for Ctrl+Shift+R
+    >>> hotkey_manager.register_hotkey("ctrl+shift+r", lambda: print("Hotkey pressed!"))
+    >>> # Unregister the hotkey when no longer needed
+    >>> hotkey_manager.unregister_hotkey("ctrl+shift+r")
+    
+    Recording mode example:
+    
+    >>> hotkey_manager = HotkeyManager()
+    >>> # Register multiple hotkeys
+    >>> hotkey_manager.register_hotkey("ctrl+shift+r", lambda: print("Recording started"))
+    >>> hotkey_manager.register_hotkey("ctrl+shift+s", lambda: print("Normal action"))
+    >>> # Enter recording mode, where only the specified hotkey works
+    >>> hotkey_manager.enable_recording_mode(True, "ctrl+shift+r")
+    >>> # Later, disable recording mode to restore all hotkeys
+    >>> hotkey_manager.enable_recording_mode(False)
+    
+    Method Relationships
+    -------------------
+    - register_hotkey: Registers a new hotkey and starts the listener
+    - unregister_hotkey: Removes a registered hotkey
+    - enable_recording_mode: Filters active hotkeys to only allow the recording hotkey
+    - start_listener: Called automatically by other methods, starts keyboard monitoring
+    - stop_listener: Stops keyboard monitoring without removing registered hotkeys
+    - clear_all_hotkeys: Removes all registered hotkeys at once
     """
     
     def __init__(self):
         """
         Initialize the HotkeyManager.
         """
-        self._listener_active = False
+        self._is_listener_active = False
         self._hotkeys = {}  # Dictionary to store hotkey strings and their callbacks
         self._listener = None
-        self._recording_mode = False  # Flag to indicate if recording is in progress
-        self._recording_hotkey = None  # Store the recording hotkey for filtering
+        self._is_recording_active = False  # Flag to indicate if recording is in progress
+        self._active_recording_hotkey = None  # Store the recording hotkey for filtering
     
-    def register_hotkey(self, hotkey_str: str, callback: Callable) -> bool:
+    def register_hotkey(self, hotkey_string: str, callback: Callable) -> bool:
         """
         Register a global hotkey.
         
         Parameters
         ----------
-        hotkey_str : str
+        hotkey_string : str
             String representation of the hotkey (e.g., "ctrl+shift+r").
         callback : Callable
             Function to call when the hotkey is pressed.
@@ -48,7 +78,7 @@ class HotkeyManager:
             self.stop_listener()
             
             # Parse hotkey string into the format pynput expects
-            hotkey_combination = self.parse_hotkey_string(hotkey_str)
+            hotkey_combination = self.parse_hotkey_string(hotkey_string)
             if not hotkey_combination:
                 return False
             
@@ -62,13 +92,13 @@ class HotkeyManager:
             print(f"Failed to register hotkey: {e}")
             return False
     
-    def unregister_hotkey(self, hotkey_str: str) -> bool:
+    def unregister_hotkey(self, hotkey_string: str) -> bool:
         """
         Unregister a previously registered global hotkey.
         
         Parameters
         ----------
-        hotkey_str : str
+        hotkey_string : str
             String representation of the hotkey to unregister.
             
         Returns
@@ -78,7 +108,7 @@ class HotkeyManager:
         """
         try:
             # Parse hotkey string
-            hotkey_combination = self.parse_hotkey_string(hotkey_str)
+            hotkey_combination = self.parse_hotkey_string(hotkey_string)
             
             # Check if hotkey is registered
             if not hotkey_combination or hotkey_combination not in self._hotkeys:
@@ -100,9 +130,9 @@ class HotkeyManager:
             print(f"Failed to unregister hotkey: {e}")
             return False
     
-    def set_recording_mode(self, enabled: bool, recording_hotkey: Optional[str] = None) -> None:
+    def enable_recording_mode(self, enabled: bool, recording_hotkey: Optional[str] = None) -> None:
         """
-        Set recording mode to filter hotkey events.
+        Enable or disable recording mode to filter hotkey events.
         
         When recording mode is enabled, only the specified recording hotkey will trigger a callback.
         All other hotkeys will be ignored. If recording_hotkey is None and enabled is True, 
@@ -117,22 +147,22 @@ class HotkeyManager:
             even when recording mode is enabled.
         """
         # Store previous state for restart check
-        prev_recording_mode = self._recording_mode
+        prev_recording_mode = self._is_recording_active
         
-        self._recording_mode = enabled
+        self._is_recording_active = enabled
         
         if enabled and recording_hotkey:
             # Parse and store the recording hotkey for filtering
-            self._recording_hotkey = self.parse_hotkey_string(recording_hotkey)
+            self._active_recording_hotkey = self.parse_hotkey_string(recording_hotkey)
             print(f"Recording mode enabled. Only hotkey '{recording_hotkey}' will be active.")
         else:
             # Reset recording hotkey when disabled
-            self._recording_hotkey = None
+            self._active_recording_hotkey = None
             if not enabled:
                 print("Recording mode disabled. All hotkeys are active.")
         
         # If listener is active and recording mode changed, restart the listener to apply the changes
-        if self._listener_active and prev_recording_mode != self._recording_mode:
+        if self._is_listener_active and prev_recording_mode != self._is_recording_active:
             self.stop_listener()
             self.start_listener()
     
@@ -151,14 +181,14 @@ class HotkeyManager:
                 return False
             
             # Create and start a listener with our hotkeys and event filtering
-            if self._recording_mode:
+            if self._is_recording_active:
                 # In recording mode, we need to create a custom listener that filters events
                 filtered_hotkeys = {}
                 
-                if self._recording_hotkey:
+                if self._active_recording_hotkey:
                     # Only include the recording hotkey if specified
                     for hotkey, callback in self._hotkeys.items():
-                        if hotkey == self._recording_hotkey:
+                        if hotkey == self._active_recording_hotkey:
                             filtered_hotkeys[hotkey] = callback
                     
                     # Use filtered hotkeys if we're in recording mode
@@ -170,7 +200,7 @@ class HotkeyManager:
                         self._listener = keyboard.GlobalHotKeys({})
                         print(f"Warning: Recording hotkey not found in registered hotkeys. All hotkeys will be disabled.")
                 else:
-                    # If recording_hotkey is None in recording mode, disable all hotkeys
+                    # If active_recording_hotkey is None in recording mode, disable all hotkeys
                     self._listener = keyboard.GlobalHotKeys({})
                     print("Disabled all hotkeys in recording mode with no active hotkey")
             else:
@@ -179,13 +209,13 @@ class HotkeyManager:
                 print(f"Started hotkey listener with {len(self._hotkeys)} hotkeys")
             
             self._listener.start()
-            self._listener_active = True
+            self._is_listener_active = True
             
             return True
             
         except Exception as e:
             print(f"Failed to start hotkey listener: {e}")
-            self._listener_active = False
+            self._is_listener_active = False
             return False
     
     def stop_listener(self) -> bool:
@@ -199,33 +229,17 @@ class HotkeyManager:
         bool
             True if the listener was stopped successfully.
         """
-        if self._listener and self._listener_active:
+        if self._listener and self._is_listener_active:
             try:
                 self._listener.stop()
                 self._listener = None
-                self._listener_active = False
+                self._is_listener_active = False
                 print("Stopped hotkey listener")
                 return True
             except Exception as e:
                 print(f"Failed to stop hotkey listener: {e}")
         
         return False
-    
-    def restart_listener(self) -> bool:
-        """
-        Restart the hotkey listener.
-        
-        This method restarts the listener if it was previously stopped.
-        
-        Returns
-        -------
-        bool
-            True if the listener was restarted successfully.
-        """
-        if self._listener_active or not self._hotkeys:
-            return False
-        
-        return self.start_listener()
     
     def clear_all_hotkeys(self) -> bool:
         """
@@ -245,13 +259,13 @@ class HotkeyManager:
         return True
     
     @staticmethod
-    def parse_hotkey_string(hotkey_str: str) -> Optional[str]:
+    def parse_hotkey_string(hotkey_string: str) -> Optional[str]:
         """
         Convert a user-friendly hotkey string to the format pynput expects.
         
         Parameters
         ----------
-        hotkey_str : str
+        hotkey_string : str
             User-friendly hotkey string (e.g., "ctrl+shift+r").
             
         Returns
@@ -259,11 +273,11 @@ class HotkeyManager:
         Optional[str]
             Pynput format hotkey string (e.g., "<ctrl>+<shift>+r"), or None if invalid.
         """
-        if not hotkey_str:
+        if not hotkey_string:
             return None
         
         # Normalize to lowercase
-        hotkey_str = hotkey_str.lower()
+        hotkey_string = hotkey_string.lower()
         
         # Define mappings for modifier keys
         modifier_mapping = {
@@ -303,7 +317,7 @@ class HotkeyManager:
         }
         
         # Split the hotkey string by '+' and process each part
-        parts = hotkey_str.split('+')
+        parts = hotkey_string.split('+')
         processed_parts = []
         
         for part in parts:
@@ -326,65 +340,3 @@ class HotkeyManager:
         # Join all parts with '+' to create the final hotkey string
         return '+'.join(processed_parts)
     
-    def has_hotkey_conflict(self, hotkey_str: str) -> bool:
-        """
-        Check if a hotkey string conflicts with any registered hotkeys.
-        
-        Parameters
-        ----------
-        hotkey_str : str
-            Hotkey string to check.
-            
-        Returns
-        -------
-        bool
-            True if there is a conflict, False otherwise.
-        """
-        # Parse hotkey string
-        hotkey_combination = self.parse_hotkey_string(hotkey_str)
-        
-        # Check if valid and already registered
-        if not hotkey_combination:
-            return False
-            
-        return hotkey_combination in self._hotkeys
-    
-    @staticmethod
-    def is_valid_hotkey(hotkey_str: str) -> bool:
-        """
-        Check if a hotkey string is valid.
-        
-        Parameters
-        ----------
-        hotkey_str : str
-            Hotkey string to check.
-            
-        Returns
-        -------
-        bool
-            True if the hotkey string is valid, False otherwise.
-        """
-        return HotkeyManager.parse_hotkey_string(hotkey_str) is not None
-    
-    @staticmethod
-    def contains_modifier(hotkey_str: str) -> bool:
-        """
-        Check if a hotkey string contains a modifier key.
-        
-        Parameters
-        ----------
-        hotkey_str : str
-            Hotkey string to check.
-            
-        Returns
-        -------
-        bool
-            True if the hotkey string contains a modifier key, False otherwise.
-        """
-        if not hotkey_str:
-            return False
-        
-        modifiers = ['ctrl', 'control', 'alt', 'option', 'shift', 'cmd', 'command', 'win', 'windows', 'meta']
-        parts = hotkey_str.lower().split('+')
-        
-        return any(part.strip() in modifiers for part in parts)

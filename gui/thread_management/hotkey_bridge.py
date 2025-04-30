@@ -155,7 +155,7 @@ class HotkeyBridge(QObject):
         """
         self._is_recording = enabled
         self._active_recording_hotkey = recording_hotkey
-        self.hotkey_manager.set_recording_mode(enabled, recording_hotkey)
+        self.hotkey_manager.enable_recording_mode(enabled, recording_hotkey)
     
     def is_recording(self) -> bool:
         """
