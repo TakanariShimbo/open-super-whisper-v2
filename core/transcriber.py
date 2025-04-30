@@ -237,7 +237,7 @@ class WhisperTranscriber:
             progress_tracker = TranscriptionProgressTracker()
             
             # Split audio file into chunks
-            chunk_paths = chunker.split_audio_file(audio_file)
+            chunk_paths = chunker.chunk_audio_file(audio_file)
             if not chunk_paths:
                 raise ValueError("Failed to split audio file into chunks")
                 
@@ -307,7 +307,7 @@ class WhisperTranscriber:
             
             # Only clean up chunks if all chunks were successfully processed
             if all(progress_tracker.is_chunk_processed(chunk) for chunk in chunk_paths):
-                chunker.cleanup_chunks()
+                chunker.remove_temp_chunks()
             
             # Format the result according to requested response_format
             if response_format == "text":

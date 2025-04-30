@@ -2,7 +2,7 @@
 
 ## Changes by File
 
-### main.py
+### ✅main.py
 
 | Type | Before | After | Reason |
 |------|--------|-------|--------|
@@ -27,7 +27,7 @@
 | Variable | __all__ | Updated with new class names | Reflect renamed classes in __all__ list to maintain proper export of public API |
 | Docstring | (current docstring) | "Core functionality for Open Super Whisper\n\nThis package provides audio transcription, recording, and LLM processing functionality\nwith a focus on OpenAI services. All modules are UI-independent and can be used\nin various contexts." | Update docstring to accurately reflect the application name and better explain the module's purpose and architecture |
 
-### core/audio_chunker.py
+### ✅core/audio_chunker.py
 
 | Type | Before | After | Reason |
 |------|--------|-------|--------|
