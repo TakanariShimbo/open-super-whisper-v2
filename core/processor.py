@@ -10,7 +10,7 @@ from typing import Optional, List, Dict, Any, Union, Callable, Generator, Tuple
 import os
 
 from core.transcriber import WhisperTranscriber
-from core.llm import LLMProcessor
+from core.llm_processor import OpenAILLMProcessor
 
 
 @dataclass
@@ -82,7 +82,7 @@ class UnifiedProcessor:
         
         # Initialize components
         self.transcriber = WhisperTranscriber(api_key=self.api_key, model=whisper_model)
-        self.llm_processor = LLMProcessor(api_key=self.api_key, model=llm_model)
+        self.llm_processor = OpenAILLMProcessor(api_key=self.api_key, model=llm_model)
         
         # Processing state
         self.llm_enabled = False
@@ -128,7 +128,7 @@ class UnifiedProcessor:
         
         self.api_key = api_key
         self.transcriber.set_api_key(api_key)
-        self.llm_processor.set_api_key(api_key)
+        self.llm_processor.set_openai_api_key(api_key)
     
     # Transcriber delegation methods
     def set_whisper_model(self, model: str) -> None:
@@ -227,18 +227,18 @@ class UnifiedProcessor:
                     # Use streaming API with callback
                     if clipboard_image:
                         # Process with image and streaming
-                        llm_response = self.llm_processor.process_stream(prompt, stream_callback, clipboard_image)
+                        llm_response = self.llm_processor.process_with_stream(prompt, stream_callback, clipboard_image)
                     else:
                         # Process text only with streaming
-                        llm_response = self.llm_processor.process_stream(prompt, stream_callback)
+                        llm_response = self.llm_processor.process_with_stream(prompt, stream_callback)
                 else:
                     # Use non-streaming API
                     if clipboard_image:
                         # Process with image
-                        llm_response = self.llm_processor.process(prompt, clipboard_image)
+                        llm_response = self.llm_processor.process_with_llm(prompt, clipboard_image)
                     else:
                         # Process text only
-                        llm_response = self.llm_processor.process(prompt)
+                        llm_response = self.llm_processor.process_with_llm(prompt)
                 
                 result.llm_response = llm_response
                 result.llm_processed = True
@@ -309,9 +309,9 @@ class UnifiedProcessor:
                 
                 # Get streaming generator
                 if clipboard_image:
-                    generator = self.llm_processor.get_stream_generator(prompt, clipboard_image)
+                    generator = self.llm_processor.create_response_stream(prompt, clipboard_image)
                 else:
-                    generator = self.llm_processor.get_stream_generator(prompt)
+                    generator = self.llm_processor.create_response_stream(prompt)
                 
                 # Mark as LLM processed
                 result.llm_processed = True

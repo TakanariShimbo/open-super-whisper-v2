@@ -67,7 +67,7 @@
 | Docstring | Current | Improve method documentation with examples | Enhance documentation with concrete examples to make API usage clearer |
 | Variable | Add appropriate type annotations | throughout module | Improve code readability and enable better IDE support through comprehensive type hints |
 
-### core/llm.py
+### ✅core/llm.py
 
 | Type | Before | After | Reason |
 |------|--------|-------|--------|
