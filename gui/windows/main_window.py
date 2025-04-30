@@ -23,7 +23,7 @@ from PyQt6.QtGui import QIcon, QAction, QImage
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 
 from core.recorder import AudioRecorder, NoMicrophoneError, MicrophoneAccessError, MicrophoneError
-from core.processor import UnifiedProcessor, ProcessingResult
+from core.transcription_and_llm_processor import TranscriptionAndLLMProcessor, TranscriptionAndLLMResult
 
 from core.hotkeys import HotkeyManager
 from gui.resources.config import AppConfig
@@ -51,7 +51,7 @@ class MainWindow(QMainWindow):
     """
     
     # Custom signals
-    processing_complete = pyqtSignal(ProcessingResult)
+    processing_complete = pyqtSignal(TranscriptionAndLLMResult)
     recording_status_changed = pyqtSignal(bool)
     
     def __init__(self):
@@ -102,9 +102,9 @@ class MainWindow(QMainWindow):
         self.status_indicator_window = StatusIndicatorWindow()
         self.status_indicator_window.set_mode(StatusIndicatorWindow.MODE_RECORDING)
         
-        # Initialize unified processor if API key is available
+        # Initialize transcription processor if API key is available
         try:
-            self.unified_processor = UnifiedProcessor(api_key=self.api_key)
+            self.unified_processor = TranscriptionAndLLMProcessor(openai_api_key=self.api_key)
             
             # Apply settings from active instruction set
             if self.instruction_set_manager.active_set:
@@ -188,7 +188,7 @@ class MainWindow(QMainWindow):
         )
     
     def apply_instruction_set_settings(self):
-        """Apply settings from the active instruction set to the unified processor."""
+        """Apply settings from the active instruction set to the transcription processor."""
         if not self.unified_processor or not self.instruction_set_manager.active_set:
             return
         
@@ -210,7 +210,7 @@ class MainWindow(QMainWindow):
             self.unified_processor.set_whisper_model(active_set.model)
         
         # LLM settings
-        self.unified_processor.enable_llm(active_set.llm_enabled)
+        self.unified_processor.enable_llm_processing(active_set.llm_enabled)
         
         # Set LLM model
         if active_set.llm_model:
@@ -262,7 +262,7 @@ class MainWindow(QMainWindow):
         # LLM Processing control
         self.llm_enabled_checkbox = QCheckBox(AppLabels.MAIN_WIN_LLM_ENABLED)
         self.llm_enabled_checkbox.setChecked(
-            self.unified_processor.is_llm_enabled() if self.unified_processor else False
+            self.unified_processor.is_llm_processing_enabled if self.unified_processor else False
         )
         self.llm_enabled_checkbox.toggled.connect(self.toggle_llm_processing)
         
@@ -464,7 +464,7 @@ class MainWindow(QMainWindow):
             
             # Reinitialize processor with new API key
             try:
-                self.unified_processor = UnifiedProcessor(api_key=self.api_key)
+                self.unified_processor = TranscriptionAndLLMProcessor(openai_api_key=self.api_key)
                 self.apply_instruction_set_settings()
                 self.status_bar.showMessage(AppLabels.STATUS_API_KEY_SAVED, 3000)
             except ValueError as e:
@@ -481,7 +481,7 @@ class MainWindow(QMainWindow):
             Whether to enable LLM processing.
         """
         if self.unified_processor:
-            self.unified_processor.enable_llm(enabled)
+            self.unified_processor.enable_llm_processing(enabled)
             
             # Update active instruction set
             if self.instruction_set_manager.active_set:
@@ -710,7 +710,7 @@ class MainWindow(QMainWindow):
         clipboard_image = None
         
         # Only proceed if LLM is enabled
-        if self.unified_processor and self.unified_processor.is_llm_enabled():
+        if self.unified_processor and self.unified_processor.is_llm_processing_enabled:
             # Get the clipboard manager
             clipboard = QApplication.clipboard()
             
@@ -798,7 +798,7 @@ class MainWindow(QMainWindow):
                 self.thread_manager.update_stream(chunk)
             
             # Process audio with optional clipboard content (text and/or image) and streaming
-            result = self.unified_processor.process(
+            result = self.unified_processor.process_transcription_and_llm(
                 audio_file, 
                 language, 
                 clipboard_text, 
@@ -815,7 +815,7 @@ class MainWindow(QMainWindow):
             print(error_msg)
             
             # Create error result
-            error_result = ProcessingResult(transcription=f"Error: {str(e)}")
+            error_result = TranscriptionAndLLMResult(transcription=f"Error: {str(e)}")
             
             # Signal the error result
             self.processing_complete.emit(error_result)
@@ -863,13 +863,13 @@ class MainWindow(QMainWindow):
                 self.tab_widget.setCurrentIndex(i)
                 break
     
-    def on_processing_complete(self, result):
+    def on_processing_complete(self, result: TranscriptionAndLLMResult):
         """
         Handle processing completion.
         
         Parameters
         ----------
-        result : ProcessingResult
+        result : TranscriptionAndLLMResult
             The processing result containing transcription and optional LLM response.
         """
         # Update UI via ThreadManager for thread safety
@@ -908,7 +908,7 @@ class MainWindow(QMainWindow):
         
         # Auto-copy if enabled
         if self.auto_copy:
-            if self.unified_processor.is_llm_enabled() and result.llm_processed and result.llm_response:
+            if self.unified_processor.is_llm_processing_enabled and result.llm_processed and result.llm_response:
                 # Copy LLM output if LLM is enabled and result is available
                 self.copy_llm_to_clipboard()
             else:
@@ -1117,7 +1117,7 @@ class MainWindow(QMainWindow):
             self.apply_instruction_set_settings()
             
             # Update UI to reflect LLM enabled state
-            self.llm_enabled_checkbox.setChecked(self.unified_processor.is_llm_enabled())
+            self.llm_enabled_checkbox.setChecked(self.unified_processor.is_llm_processing_enabled)
             
             # Re-register hotkeys
             self.setup_global_hotkey()
@@ -1405,4 +1405,4 @@ class MainWindow(QMainWindow):
         
         # Update the UI
         if self.unified_processor:
-            self.llm_enabled_checkbox.setChecked(self.unified_processor.is_llm_enabled())
+            self.llm_enabled_checkbox.setChecked(self.unified_processor.is_llm_processing_enabled)
