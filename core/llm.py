@@ -55,18 +55,6 @@ class LLMProcessor:
         self.model = model
         self.system_instructions: List[str] = []
     
-    @classmethod
-    def get_available_models(cls) -> List[Dict[str, str]]:
-        """
-        Get a list of available LLM models.
-        
-        Returns
-        -------
-        List[Dict[str, str]]
-            List of dictionaries with model information (id, name, description).
-        """
-        return cls.AVAILABLE_MODELS
-    
     def set_model(self, model: str) -> None:
         """
         Set the LLM model to use.
@@ -94,17 +82,6 @@ class LLMProcessor:
     def clear_system_instructions(self) -> None:
         """Clear all system instructions."""
         self.system_instructions = []
-    
-    def get_system_instructions(self) -> List[str]:
-        """
-        Get the current list of system instructions.
-        
-        Returns
-        -------
-        List[str]
-            List of instruction strings.
-        """
-        return self.system_instructions
     
     def _build_system_message(self) -> str:
         """
@@ -325,17 +302,6 @@ class LLMProcessor:
             error_msg = f"Error occurred during LLM streaming: {str(e)}"
             print(error_msg)
             yield f"\nError: {str(e)}"
-    
-    def get_api_key(self) -> str:
-        """
-        Get the current API key.
-        
-        Returns
-        -------
-        str
-            The current API key.
-        """
-        return self.api_key
     
     def set_api_key(self, api_key: str) -> None:
         """
