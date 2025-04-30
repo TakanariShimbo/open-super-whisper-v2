@@ -217,7 +217,7 @@
 | Documentation | Basic | Add detailed parameter and return type documentation | Enhance developer experience with better method documentation and clearer expected return values |
 | Model Definitions | Current list | Add documentation about when models were added/updated | Provide context about model lifecycle and help track when models were added or changed |
 
-### core/models/whisper.py
+### ✅core/models/whisper.py
 
 | Type | Before | After | Reason |
 |------|--------|-------|--------|

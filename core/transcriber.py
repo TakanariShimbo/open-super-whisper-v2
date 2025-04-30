@@ -12,7 +12,7 @@ import openai
 from typing import List, Dict, Optional, Union
 
 # Import model data from core.models
-from core.models.whisper import WhisperModelManager
+from core.models.whisper import OpenAIWhisperModelManager
 
 # Import chunking and progress tracking modules
 from core.audio_chunker import AudioChunker
@@ -42,7 +42,7 @@ class OpenAIWhisperTranscriber:
     """
     
     # Use model manager for available models
-    AVAILABLE_MODELS = WhisperModelManager.to_api_format()
+    AVAILABLE_MODELS = OpenAIWhisperModelManager.to_api_format()
     
     def __init__(self, openai_api_key: str = None, whisper_model: str = "gpt-4o-transcribe"):
         """

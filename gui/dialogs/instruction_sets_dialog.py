@@ -23,7 +23,7 @@ from gui.thread_management.hotkey_bridge import HotkeyBridge
 from core.instructions import InstructionSetManager, InstructionSet
 
 from core.models.language import LanguageManager
-from core.models.whisper import WhisperModelManager
+from core.models.whisper import OpenAIWhisperModelManager
 from core.models.llm import OpenAILLMModelManager
 
 
@@ -412,7 +412,7 @@ class InstructionSetsDialog(QDialog):
         self.model_combo = QComboBox()
         
         # Add model options from WhisperModelManager
-        models = WhisperModelManager.get_models()
+        models = OpenAIWhisperModelManager.get_available_models()
         for model in models:
             self.model_combo.addItem(model.name, model.id)
             # Add tooltip
