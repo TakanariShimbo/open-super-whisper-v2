@@ -127,7 +127,7 @@
 | Exception Handling | None | Add proper error handling for missing chunks and edge cases | Enhance reliability by adding specific error checks and handling for edge cases |
 | Type Annotations | None | Add comprehensive type hints | Improve code readability and enable better IDE support through type annotations |
 
-### core/recorder.py
+### ✅core/recorder.py
 
 | Type | Before | After | Reason |
 |------|--------|-------|--------|

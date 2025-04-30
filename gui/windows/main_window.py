@@ -22,7 +22,7 @@ from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QSettings, QUrl, QSize, QBuffer
 from PyQt6.QtGui import QIcon, QAction, QImage
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 
-from core.recorder import AudioRecorder, NoMicrophoneError, MicrophoneAccessError, MicrophoneError
+from core.recorder import AudioInputRecorder, NoMicrophoneError, MicrophoneAccessError, MicrophoneError
 from core.transcription_and_llm_processor import TranscriptionAndLLMProcessor, TranscriptionAndLLMResult
 
 from core.hotkeys import HotkeyManager
@@ -96,7 +96,7 @@ class MainWindow(QMainWindow):
         self.setup_sound_players()
         
         # Initialize components
-        self.audio_recorder = AudioRecorder()
+        self.audio_recorder = AudioInputRecorder()
         
         # Status indicator window
         self.status_indicator_window = StatusIndicatorWindow()
@@ -513,7 +513,7 @@ class MainWindow(QMainWindow):
         This method checks the recording state and starts or stops
         recording accordingly.
         """
-        if self.audio_recorder.is_recording():
+        if self.audio_recorder.is_recording_active():
             self.stop_recording()
         else:
             self.start_recording()
@@ -1050,7 +1050,7 @@ class MainWindow(QMainWindow):
         hotkey = instruction_set.hotkey
         
         # Check if we're currently recording
-        if self.audio_recorder.is_recording():
+        if self.audio_recorder.is_recording_active():
             # Only stop recording if this is the same hotkey that started recording
             if hotkey == hotkey_bridge.get_active_recording_hotkey():
                 self.stop_recording()
