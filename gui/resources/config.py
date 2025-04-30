@@ -23,6 +23,7 @@ class AppConfig:
     DEFAULT_SHOW_INDICATOR = True
     
     # Asset paths
+    ICON_PATH = "assets/icon.png"
     START_SOUND_PATH = "assets/start_sound.wav"
     STOP_SOUND_PATH = "assets/stop_sound.wav"
     COMPLETE_SOUND_PATH = "assets/complete_sound.wav"

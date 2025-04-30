@@ -6,7 +6,6 @@ This is the main entry point for the application.
 """
 
 import os
-import sys
 
 # Configure ffmpeg environment before any imports
 def setup_ffmpeg_environment():
