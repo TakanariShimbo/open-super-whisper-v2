@@ -55,8 +55,7 @@ class InstructionSetManager:
         self.sets: Dict[str, InstructionSet] = {}
         self.active_set_name: Optional[str] = None
     
-    @property
-    def active_set(self) -> Optional[InstructionSet]:
+    def get_active_set(self) -> Optional[InstructionSet]:
         """
         Get the currently active instruction set.
         
@@ -64,6 +63,15 @@ class InstructionSetManager:
         -------
         Optional[InstructionSet]
             The active instruction set, or None if no set is active.
+            
+        Examples
+        --------
+        >>> manager = InstructionSetManager()
+        >>> manager.create_set("Default")
+        True
+        >>> active_set = manager.get_active_set()
+        >>> active_set.name
+        'Default'
         """
         if not self.active_set_name or self.active_set_name not in self.sets:
             return None
@@ -333,10 +341,19 @@ class InstructionSetManager:
         List[str]
             List of vocabulary items from the active set,
             or an empty list if no active set.
+            
+        Examples
+        --------
+        >>> manager = InstructionSetManager()
+        >>> manager.create_set("Default", vocabulary=["term1", "term2"])
+        True
+        >>> manager.get_active_vocabulary()
+        ['term1', 'term2']
         """
-        if not self.active_set:
+        active_set = self.get_active_set()
+        if not active_set:
             return []
-        return self.active_set.vocabulary
+        return active_set.vocabulary
     
     def get_active_instructions(self) -> List[str]:
         """
@@ -347,10 +364,19 @@ class InstructionSetManager:
         List[str]
             List of instructions from the active set,
             or an empty list if no active set.
+            
+        Examples
+        --------
+        >>> manager = InstructionSetManager()
+        >>> manager.create_set("Default", instructions=["Use technical terms", "Be concise"])
+        True
+        >>> manager.get_active_instructions()
+        ['Use technical terms', 'Be concise']
         """
-        if not self.active_set:
+        active_set = self.get_active_set()
+        if not active_set:
             return []
-        return self.active_set.instructions
+        return active_set.instructions
         
     def get_active_language(self) -> Optional[str]:
         """
@@ -361,10 +387,19 @@ class InstructionSetManager:
         Optional[str]
             Language code from the active set,
             or None if no active set or no language specified.
+            
+        Examples
+        --------
+        >>> manager = InstructionSetManager()
+        >>> manager.create_set("Default", language="en")
+        True
+        >>> manager.get_active_language()
+        'en'
         """
-        if not self.active_set:
+        active_set = self.get_active_set()
+        if not active_set:
             return None
-        return self.active_set.language
+        return active_set.language
         
     def get_active_model(self) -> str:
         """
@@ -375,10 +410,19 @@ class InstructionSetManager:
         str
             Model ID from the active set,
             or "gpt-4o-transcribe" if no active set.
+            
+        Examples
+        --------
+        >>> manager = InstructionSetManager()
+        >>> manager.create_set("Default", model="gpt-4o-mini")
+        True
+        >>> manager.get_active_model()
+        'gpt-4o-mini'
         """
-        if not self.active_set:
+        active_set = self.get_active_set()
+        if not active_set:
             return "gpt-4o-transcribe"
-        return self.active_set.model
+        return active_set.model
     
     def get_active_llm_enabled(self) -> bool:
         """
@@ -389,10 +433,19 @@ class InstructionSetManager:
         bool
             Whether LLM processing is enabled in the active set,
             or False if no active set.
+            
+        Examples
+        --------
+        >>> manager = InstructionSetManager()
+        >>> manager.create_set("Default", llm_enabled=True)
+        True
+        >>> manager.get_active_llm_enabled()
+        True
         """
-        if not self.active_set:
+        active_set = self.get_active_set()
+        if not active_set:
             return False
-        return self.active_set.llm_enabled
+        return active_set.llm_enabled
     
     def get_active_llm_model(self) -> str:
         """
@@ -403,10 +456,19 @@ class InstructionSetManager:
         str
             LLM model ID from the active set,
             or "gpt-4o" if no active set.
+            
+        Examples
+        --------
+        >>> manager = InstructionSetManager()
+        >>> manager.create_set("Default", llm_model="gpt-4o-mini")
+        True
+        >>> manager.get_active_llm_model()
+        'gpt-4o-mini'
         """
-        if not self.active_set:
+        active_set = self.get_active_set()
+        if not active_set:
             return "gpt-4o"
-        return self.active_set.llm_model
+        return active_set.llm_model
     
     def get_active_llm_instructions(self) -> List[str]:
         """
@@ -417,10 +479,19 @@ class InstructionSetManager:
         List[str]
             List of LLM instructions from the active set,
             or an empty list if no active set.
+            
+        Examples
+        --------
+        >>> manager = InstructionSetManager()
+        >>> manager.create_set("Default", llm_instructions=["Be technical", "Use examples"])
+        True
+        >>> manager.get_active_llm_instructions()
+        ['Be technical', 'Use examples']
         """
-        if not self.active_set:
+        active_set = self.get_active_set()
+        if not active_set:
             return []
-        return self.active_set.llm_instructions
+        return active_set.llm_instructions
         
     def get_active_llm_clipboard_text_enabled(self) -> bool:
         """
@@ -431,10 +502,19 @@ class InstructionSetManager:
         bool
             Whether clipboard text should be included in LLM input in the active set,
             or False if no active set.
+            
+        Examples
+        --------
+        >>> manager = InstructionSetManager()
+        >>> manager.create_set("Default", llm_clipboard_text_enabled=True)
+        True
+        >>> manager.get_active_llm_clipboard_text_enabled()
+        True
         """
-        if not self.active_set:
+        active_set = self.get_active_set()
+        if not active_set:
             return False
-        return self.active_set.llm_clipboard_text_enabled
+        return active_set.llm_clipboard_text_enabled
         
     def get_active_llm_clipboard_image_enabled(self) -> bool:
         """
@@ -445,10 +525,19 @@ class InstructionSetManager:
         bool
             Whether clipboard images should be included in LLM input in the active set,
             or False if no active set.
+            
+        Examples
+        --------
+        >>> manager = InstructionSetManager()
+        >>> manager.create_set("Default", llm_clipboard_image_enabled=True)
+        True
+        >>> manager.get_active_llm_clipboard_image_enabled()
+        True
         """
-        if not self.active_set:
+        active_set = self.get_active_set()
+        if not active_set:
             return False
-        return self.active_set.llm_clipboard_image_enabled
+        return active_set.llm_clipboard_image_enabled
         
     
     def update_set_hotkey(self, name: str, hotkey: str) -> bool:
@@ -473,9 +562,9 @@ class InstructionSetManager:
         self.sets[name].hotkey = hotkey
         return True
     
-    def get_set_by_hotkey(self, hotkey: str) -> Optional[InstructionSet]:
+    def find_set_by_hotkey(self, hotkey: str) -> Optional[InstructionSet]:
         """
-        Get an instruction set by its hotkey.
+        Find an instruction set by its hotkey.
         
         Parameters
         ----------
@@ -486,30 +575,65 @@ class InstructionSetManager:
         -------
         Optional[InstructionSet]
             The instruction set with the given hotkey, or None if not found.
+            
+        Examples
+        --------
+        >>> manager = InstructionSetManager()
+        >>> manager.create_set("Default", hotkey="ctrl+shift+1")
+        True
+        >>> found_set = manager.find_set_by_hotkey("ctrl+shift+1")
+        >>> found_set.name
+        'Default'
+        >>> manager.find_set_by_hotkey("invalid_hotkey") is None
+        True
         """
         for instruction_set in self.sets.values():
             if instruction_set.hotkey == hotkey:
                 return instruction_set
         return None
     
-    def load_from_dict(self, data: Dict[str, Any]) -> None:
+    def import_from_dict(self, data: Dict[str, Any]) -> None:
         """
-        Load instruction sets from a dictionary.
+        Import instruction sets from an external dictionary.
+        
+        This method loads instruction set configurations from external
+        data (e.g., from a JSON file) into the current manager instance.
         
         Parameters
         ----------
         data : Dict[str, Any]
             Dictionary containing serialized instruction sets.
+            
+        Examples
+        --------
+        >>> manager = InstructionSetManager()
+        >>> data = {"active_set": "Custom", "sets": [{"name": "Custom", "vocabulary": ["term1"]}]}
+        >>> manager.import_from_dict(data)
+        >>> active_set = manager.get_active_set()
+        >>> active_set.name
+        'Custom'
+        >>> active_set.vocabulary
+        ['term1']
         """
+        # Validate input data
+        if not isinstance(data, dict):
+            raise TypeError("Data must be a dictionary")
+            
         # Clear existing sets
         self.sets.clear()
         
-        # Load active set name
+        # Import active set name
         self.active_set_name = data.get("active_set", "")
         
-        # Load sets
+        # Import sets
         sets_data = data.get("sets", [])
+        if not isinstance(sets_data, list):
+            raise ValueError("The 'sets' field must be a list")
+            
         for set_data in sets_data:
+            if not isinstance(set_data, dict):
+                continue  # Skip invalid entries
+                
             name = set_data.get("name", "")
             if name:
                 # Get clipboard fields
@@ -536,14 +660,28 @@ class InstructionSetManager:
             self.create_set(default_name)
             self.active_set_name = default_name
     
-    def to_dict(self) -> Dict[str, Any]:
+    def export_to_dict(self) -> Dict[str, Any]:
         """
-        Convert instruction sets to a dictionary for serialization.
+        Export instruction sets to a dictionary for external serialization.
+        
+        This method prepares the current instruction set configuration
+        for saving to external storage (e.g., JSON file).
         
         Returns
         -------
         Dict[str, Any]
             Dictionary containing serialized instruction sets.
+            
+        Examples
+        --------
+        >>> manager = InstructionSetManager()
+        >>> manager.create_set("Default", vocabulary=["term1"])
+        True
+        >>> data = manager.export_to_dict()
+        >>> data["active_set"]
+        'Default'
+        >>> data["sets"][0]["vocabulary"]
+        ['term1']
         """
         sets_data = []
         for name, instruction_set in self.sets.items():

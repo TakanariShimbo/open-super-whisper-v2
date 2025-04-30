@@ -59,7 +59,7 @@ class GUIInstructionSetManager:
     @property
     def active_set(self):
         """Get the active instruction set."""
-        return self.core_manager.active_set
+        return self.core_manager.get_active_set()
     
     def get_all_sets(self):
         """Get all instruction sets."""
@@ -113,7 +113,7 @@ class GUIInstructionSetManager:
     
     def get_set_by_hotkey(self, hotkey):
         """Get an instruction set by its hotkey."""
-        return self.core_manager.get_set_by_hotkey(hotkey)
+        return self.core_manager.find_set_by_hotkey(hotkey)
     
     def get_set_by_name(self, name):
         """
@@ -177,7 +177,7 @@ class GUIInstructionSetManager:
         Uses ThreadManager for thread-safe operation if available.
         """
         def save_operation():
-            data = self.core_manager.to_dict()
+            data = self.core_manager.export_to_dict()
             
             # Save to QSettings
             prefix = "InstructionSets"
@@ -235,7 +235,7 @@ class GUIInstructionSetManager:
             
         def finish_loading(data):
             # Load into core manager
-            self.core_manager.load_from_dict(data)
+            self.core_manager.import_from_dict(data)
         
         # Use thread manager if available
         if self.thread_manager:
@@ -551,7 +551,7 @@ class InstructionSetsDialog(QDialog):
                 self.sets_list.addItem(instruction_set.name)
             
             # Select active set
-            active_set = self.manager.active_set
+            active_set = self.manager.get_active_set()
             if active_set:
                 for i in range(self.sets_list.count()):
                     if self.sets_list.item(i).text() == active_set.name:
@@ -914,7 +914,7 @@ class InstructionSetsDialog(QDialog):
                 self.sets_list.setCurrentRow(next_row)
                 
                 # Refresh the active set selection in UI
-                active_set = self.manager.active_set
+                active_set = self.manager.get_active_set()
                 if active_set:
                     for i in range(self.sets_list.count()):
                         if self.sets_list.item(i).text() == active_set.name:
