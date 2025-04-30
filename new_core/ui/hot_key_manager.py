@@ -4,7 +4,7 @@ Hotkey Manager Implementation
 This module provides a platform-independent implementation for registering and managing global hotkeys.
 """
 
-from typing import Callable, Dict, Optional, Set
+from typing import Callable, Optional
 from pynput import keyboard
 
 
@@ -64,24 +64,19 @@ class HotKeyManager:
         bool
             True if registration was successful, False otherwise.
         """
-        try:
-            # Stop existing listener if it's running
-            self.stop_listening()
-            
-            # Parse hotkey string into the format pynput expects
-            hotkey_combination = self.parse_hotkey_string(hotkey_string)
-            if not hotkey_combination:
-                return False
-            
-            # Add the hotkey to our dictionary
-            self._hotkeys[hotkey_combination] = callback
-            
-            # Start the listener with the updated hotkeys
-            return self.start_listening()
-            
-        except Exception as e:
-            print(f"Failed to register hotkey: {e}")
+        # Stop existing listener if it's running
+        self.stop_listening()
+        
+        # Parse hotkey string into the format pynput expects
+        hotkey_combination = self.parse_hotkey_string(hotkey_string)
+        if not hotkey_combination:
             return False
+        
+        # Add the hotkey to our dictionary
+        self._hotkeys[hotkey_combination] = callback
+        
+        # Start the listener with the updated hotkeys
+        return self.start_listening()
     
     def unregister_hotkey(self, hotkey_string: str) -> bool:
         """
@@ -97,29 +92,24 @@ class HotKeyManager:
         bool
             True if unregistration was successful, False otherwise.
         """
-        try:
-            # Parse hotkey string
-            hotkey_combination = self.parse_hotkey_string(hotkey_string)
-            
-            # Check if hotkey is registered
-            if not hotkey_combination or hotkey_combination not in self._hotkeys:
-                return False
-            
-            # Stop listener
-            self.stop_listening()
-            
-            # Remove hotkey from dictionary
-            del self._hotkeys[hotkey_combination]
-            
-            # Restart listener if there are still hotkeys registered
-            if self._hotkeys:
-                return self.start_listening()
-                
-            return True
-            
-        except Exception as e:
-            print(f"Failed to unregister hotkey: {e}")
+        # Parse hotkey string
+        hotkey_combination = self.parse_hotkey_string(hotkey_string)
+        
+        # Check if hotkey is registered
+        if not hotkey_combination or hotkey_combination not in self._hotkeys:
             return False
+        
+        # Stop listener
+        self.stop_listening()
+        
+        # Remove hotkey from dictionary
+        del self._hotkeys[hotkey_combination]
+        
+        # Restart listener if there are still hotkeys registered
+        if self._hotkeys:
+            return self.start_listening()
+            
+        return True
     
     def enable_recording_mode(self, enabled: bool, recording_hotkey: Optional[str] = None) -> None:
         """
@@ -145,12 +135,9 @@ class HotKeyManager:
         if enabled and recording_hotkey:
             # Parse and store the recording hotkey for filtering
             self._active_recording_hotkey = self.parse_hotkey_string(recording_hotkey)
-            print(f"Recording mode enabled. Only hotkey '{recording_hotkey}' will be active.")
         else:
             # Reset recording hotkey when disabled
             self._active_recording_hotkey = None
-            if not enabled:
-                print("Recording mode disabled. All hotkeys are active.")
         
         # If listener is active and recording mode changed, restart the listener to apply the changes
         if self._is_listener_active and prev_recording_mode != self._is_recording_active:
@@ -166,48 +153,38 @@ class HotKeyManager:
         bool
             True if the listener was started successfully.
         """
-        try:
-            # Only start if we have hotkeys to listen for
-            if not self._hotkeys:
-                return False
-            
-            # Create and start a listener with our hotkeys and event filtering
-            if self._is_recording_active:
-                # In recording mode, we need to create a custom listener that filters events
-                filtered_hotkeys = {}
-                
-                if self._active_recording_hotkey:
-                    # Only include the recording hotkey if specified
-                    for hotkey, callback in self._hotkeys.items():
-                        if hotkey == self._active_recording_hotkey:
-                            filtered_hotkeys[hotkey] = callback
-                    
-                    # Use filtered hotkeys if we're in recording mode
-                    if filtered_hotkeys:
-                        self._listener = keyboard.GlobalHotKeys(filtered_hotkeys)
-                        print(f"Started hotkey listener in recording mode with 1 active hotkey")
-                    else:
-                        # If recording hotkey not found, use no hotkeys to effectively disable all
-                        self._listener = keyboard.GlobalHotKeys({})
-                        print(f"Warning: Recording hotkey not found in registered hotkeys. All hotkeys will be disabled.")
-                else:
-                    # If active_recording_hotkey is None in recording mode, disable all hotkeys
-                    self._listener = keyboard.GlobalHotKeys({})
-                    print("Disabled all hotkeys in recording mode with no active hotkey")
-            else:
-                # Normal mode, use all hotkeys
-                self._listener = keyboard.GlobalHotKeys(self._hotkeys)
-                print(f"Started hotkey listener with {len(self._hotkeys)} hotkeys")
-            
-            self._listener.start()
-            self._is_listener_active = True
-            
-            return True
-            
-        except Exception as e:
-            print(f"Failed to start hotkey listener: {e}")
-            self._is_listener_active = False
+        # Only start if we have hotkeys to listen for
+        if not self._hotkeys:
             return False
+        
+        # Create and start a listener with our hotkeys and event filtering
+        if self._is_recording_active:
+            # In recording mode, we need to create a custom listener that filters events
+            filtered_hotkeys = {}
+            
+            if self._active_recording_hotkey:
+                # Only include the recording hotkey if specified
+                for hotkey, callback in self._hotkeys.items():
+                    if hotkey == self._active_recording_hotkey:
+                        filtered_hotkeys[hotkey] = callback
+                
+                # Use filtered hotkeys if we're in recording mode
+                if filtered_hotkeys:
+                    self._listener = keyboard.GlobalHotKeys(filtered_hotkeys)
+                else:
+                    # If recording hotkey not found, use no hotkeys to effectively disable all
+                    self._listener = keyboard.GlobalHotKeys({})
+            else:
+                # If active_recording_hotkey is None in recording mode, disable all hotkeys
+                self._listener = keyboard.GlobalHotKeys({})
+        else:
+            # Normal mode, use all hotkeys
+            self._listener = keyboard.GlobalHotKeys(self._hotkeys)
+        
+        self._listener.start()
+        self._is_listener_active = True
+        
+        return True
     
     def stop_listening(self) -> bool:
         """
@@ -221,14 +198,10 @@ class HotKeyManager:
             True if the listener was stopped successfully.
         """
         if self._listener and self._is_listener_active:
-            try:
-                self._listener.stop()
-                self._listener = None
-                self._is_listener_active = False
-                print("Stopped hotkey listener")
-                return True
-            except Exception as e:
-                print(f"Failed to stop hotkey listener: {e}")
+            self._listener.stop()
+            self._listener = None
+            self._is_listener_active = False
+            return True
         
         return False
     
@@ -321,7 +294,6 @@ class HotKeyManager:
             elif len(part) == 1:  # Single character keys
                 processed_parts.append(part)
             else:
-                print(f"Warning: Unknown key '{part}' in hotkey. Using as is.")
                 processed_parts.append(part)
         
         # Return None if no valid parts were found
