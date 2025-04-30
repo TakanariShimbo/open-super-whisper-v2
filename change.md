@@ -199,7 +199,7 @@
 | Documentation | Basic | Add detailed parameter and return type documentation | Enhance developer experience with better method documentation and clearer expected return values |
 | Class Documentation | Basic | Add examples of usage with common language codes | Make API usage clearer with concrete examples for better developer understanding |
 
-### core/models/llm.py
+### ✅core/models/llm.py
 
 | Type | Before | After | Reason |
 |------|--------|-------|--------|
