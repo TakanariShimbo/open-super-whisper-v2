@@ -7,7 +7,7 @@ a consistent interface for accessing language information.
 """
 
 from dataclasses import dataclass
-from typing import List, Optional, Dict, Any, ClassVar
+from typing import List, Dict, ClassVar
 
 
 @dataclass
@@ -54,7 +54,7 @@ class LanguageManager:
     
     # Define supported languages
     # The list includes commonly supported languages by transcription services
-    _LANGUAGES: ClassVar[List[Language]] = [
+    _SUPPORTED_LANGUAGES: ClassVar[List[Language]] = [
         Language(code="", name="Auto-detect", native_name="Auto-detect"),
         Language(code="en", name="English", native_name="English"),
         Language(code="es", name="Spanish", native_name="Español"),
@@ -89,8 +89,8 @@ class LanguageManager:
     ]
     
     # Create a lookup dictionary for efficient access by code
-    _LANGUAGE_DICT: ClassVar[Dict[str, Language]] = {
-        lang.code: lang for lang in _LANGUAGES
+    _LANGUAGE_CODE_MAP: ClassVar[Dict[str, Language]] = {
+        lang.code: lang for lang in _SUPPORTED_LANGUAGES
     }
     
     @classmethod
@@ -101,71 +101,7 @@ class LanguageManager:
         Returns
         -------
         List[Language]
-            List of all supported languages.
+            List of all supported language objects.
+            The first element is always the auto-detect option.
         """
-        return cls._LANGUAGES.copy()
-    
-    @classmethod
-    def get_language_by_code(cls, code: str) -> Optional[Language]:
-        """
-        Get a language by its code.
-        
-        Parameters
-        ----------
-        code : str
-            Language code to look up.
-            
-        Returns
-        -------
-        Optional[Language]
-            Language object if found, None otherwise.
-        """
-        return cls._LANGUAGE_DICT.get(code)
-    
-    @classmethod
-    def get_default_language(cls) -> Language:
-        """
-        Get the default language (Auto-detect).
-        
-        Returns
-        -------
-        Language
-            Default language object.
-        """
-        return cls._LANGUAGES[0]  # Auto-detect is the first item
-    
-    @classmethod
-    def is_valid_code(cls, code: str) -> bool:
-        """
-        Check if a language code is valid.
-        
-        Parameters
-        ----------
-        code : str
-            Language code to validate.
-            
-        Returns
-        -------
-        bool
-            True if the code is valid, False otherwise.
-            Empty string is considered valid (auto-detect).
-        """
-        return code in cls._LANGUAGE_DICT
-    
-    @classmethod
-    def get_language_display_name(cls, code: str) -> str:
-        """
-        Get the display name for a language code.
-        
-        Parameters
-        ----------
-        code : str
-            Language code.
-            
-        Returns
-        -------
-        str
-            Display name of the language, or "Unknown" if not found.
-        """
-        language = cls.get_language_by_code(code)
-        return language.name if language else "Unknown"
+        return cls._SUPPORTED_LANGUAGES.copy()
