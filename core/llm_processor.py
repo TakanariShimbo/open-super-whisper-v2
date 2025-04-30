@@ -19,7 +19,7 @@ from typing import List, Dict, Any, Optional, Union, Callable, Generator
 import openai
 
 # Import model data from core.models
-from core.models.llm import LLMModelManager
+from core.models.llm import OpenAILLMModelManager
 
 
 class OpenAILLMProcessor:
@@ -40,7 +40,7 @@ class OpenAILLMProcessor:
     """
     
     # Use model manager for available models
-    AVAILABLE_MODELS = LLMModelManager.to_api_format()
+    AVAILABLE_MODELS = OpenAILLMModelManager.to_api_format()
     
     def __init__(self, openai_api_key: str = None, llm_model: str = "gpt-4o"):
         """

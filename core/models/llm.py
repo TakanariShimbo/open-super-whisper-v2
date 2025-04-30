@@ -1,21 +1,21 @@
 """
 LLM Model Data Model
 
-This module provides data structures and utilities for managing LLM model data
+This module provides data structures and utilities for managing OpenAI LLM model data
 throughout the application. It centralizes model definitions and provides
 a consistent interface for accessing model information.
 """
 
 from dataclasses import dataclass
-from typing import List, Optional, Dict, Any, ClassVar
+from typing import List, Optional, Dict, ClassVar, Any
 
 
 @dataclass
-class LLMModel:
+class OpenAILLMModel:
     """
-    LLM model data model.
+    OpenAI LLM model data model.
     
-    This class represents an LLM (Large Language Model) with its properties
+    This class represents an OpenAI LLM (Large Language Model) with its properties
     like ID, name, description, and other metadata.
     
     Attributes
@@ -46,23 +46,24 @@ class LLMModel:
     
     def __repr__(self) -> str:
         """Return a string representation of the model."""
-        return f"LLMModel(id='{self.id}', name='{self.name}')"
+        return f"OpenAILLMModel(id='{self.id}', name='{self.name}')"
 
 
-class LLMModelManager:
+class OpenAILLMModelManager:
     """
-    Manager for LLM model data.
+    Manager for OpenAI LLM model data.
     
-    This class provides methods to access and manage LLM model data.
+    This class provides methods to access and manage OpenAI LLM model data.
     It maintains a list of supported models and provides utilities
     for lookup and validation.
     """
     
     # Define supported models
     # This list represents models that are currently available through the OpenAI API
-    _MODELS: ClassVar[List[LLMModel]] = [
+    # Last updated: April 2025
+    _SUPPORTED_LLM_MODELS: ClassVar[List[OpenAILLMModel]] = [
         # GPT-4.1 Series
-        LLMModel(
+        OpenAILLMModel(
             id="gpt-4.1",
             name="GPT-4.1",
             description="Advanced model with superior coding, instruction following, and 1M token context support",
@@ -70,7 +71,7 @@ class LLMModelManager:
             supports_image=True,
             is_default=True
         ),
-        LLMModel(
+        OpenAILLMModel(
             id="gpt-4o",
             name="GPT-4o",
             description="Versatile omni model with balanced text and image processing capabilities",
@@ -78,14 +79,14 @@ class LLMModelManager:
             supports_image=True
         ),
         # o-Series reasoning models
-        # LLMModel(
+        # OpenAILLMModel(
         #     id="o3",
         #     name="O3",
         #     description="Premium reasoning model specialized for complex problem-solving and tool use",
         #     performance_tier="premium",
         #     supports_image=True
         # ),
-        LLMModel(
+        OpenAILLMModel(
             id="o1",
             name="O1",
             description="Base reasoning model designed for practical problem solving",
@@ -95,26 +96,26 @@ class LLMModelManager:
     ]
     
     # Create a lookup dictionary for efficient access by ID
-    _MODEL_DICT: ClassVar[Dict[str, LLMModel]] = {
-        model.id: model for model in _MODELS
+    _LLM_MODEL_ID_MAP: ClassVar[Dict[str, OpenAILLMModel]] = {
+        model.id: model for model in _SUPPORTED_LLM_MODELS
     }
     
     @classmethod
-    def get_models(cls) -> List[LLMModel]:
+    def get_available_models(cls) -> List[OpenAILLMModel]:
         """
-        Get all supported models.
+        Get all available supported models.
         
         Returns
         -------
-        List[LLMModel]
-            List of all supported models.
+        List[OpenAILLMModel]
+            List of all supported models that are currently available.
         """
-        return cls._MODELS.copy()
+        return cls._SUPPORTED_LLM_MODELS.copy()
     
     @classmethod
-    def get_model_by_id(cls, model_id: str) -> Optional[LLMModel]:
+    def find_model_by_id(cls, model_id: str) -> Optional[OpenAILLMModel]:
         """
-        Get a model by its ID.
+        Find a model by its ID.
         
         Parameters
         ----------
@@ -123,79 +124,32 @@ class LLMModelManager:
             
         Returns
         -------
-        Optional[LLMModel]
+        Optional[OpenAILLMModel]
             Model object if found, None otherwise.
         """
-        return cls._MODEL_DICT.get(model_id)
+        return cls._LLM_MODEL_ID_MAP.get(model_id)
     
     @classmethod
-    def get_default_model(cls) -> LLMModel:
+    def get_default_model(cls) -> OpenAILLMModel:
         """
         Get the default model.
         
         Returns
         -------
-        LLMModel
+        OpenAILLMModel
             Default model object.
+            
+        Notes
+        -----
+        Returns the first model flagged as default. If no model is flagged as default,
+        returns the first model in the list.
         """
-        for model in cls._MODELS:
+        for model in cls._SUPPORTED_LLM_MODELS:
             if model.is_default:
                 return model
         # Fallback to first model if no default is marked
-        return cls._MODELS[0]
-    
-    @classmethod
-    def is_valid_id(cls, model_id: str) -> bool:
-        """
-        Check if a model ID is valid.
-        
-        Parameters
-        ----------
-        model_id : str
-            Model ID to validate.
-            
-        Returns
-        -------
-        bool
-            True if the ID is valid, False otherwise.
-        """
-        return model_id in cls._MODEL_DICT
-    
-    @classmethod
-    def get_model_display_name(cls, model_id: str) -> str:
-        """
-        Get the display name for a model ID.
-        
-        Parameters
-        ----------
-        model_id : str
-            Model ID.
-            
-        Returns
-        -------
-        str
-            Display name of the model, or "Unknown" if not found.
-        """
-        model = cls.get_model_by_id(model_id)
-        return model.name if model else "Unknown"
-    
-    @classmethod
-    def get_models_by_tier(cls, tier: str) -> List[LLMModel]:
-        """
-        Get models by performance tier.
-        
-        Parameters
-        ----------
-        tier : str
-            Performance tier to filter by.
-            
-        Returns
-        -------
-        List[LLMModel]
-            List of models in the specified tier.
-        """
-        return [model for model in cls._MODELS if model.performance_tier == tier]
-    
+        return cls._SUPPORTED_LLM_MODELS[0]
+               
     @classmethod
     def supports_image_input(cls, model_id: str) -> bool:
         """
@@ -211,9 +165,9 @@ class LLMModelManager:
         bool
             True if the model supports image input, False otherwise.
         """
-        model = cls.get_model_by_id(model_id)
+        model = cls.find_model_by_id(model_id)
         return model.supports_image if model else False
-        
+
     @classmethod
     def to_api_format(cls) -> List[Dict[str, str]]:
         """
@@ -223,6 +177,11 @@ class LLMModelManager:
         -------
         List[Dict[str, str]]
             List of dictionaries with model information (id, name, description).
+            
+        Examples
+        --------
+        >>> OpenAILLMModelManager.to_api_format()
+        [{'id': 'gpt-4.1', 'name': 'GPT-4.1', 'description': '...'}, ...]
         """
         return [
             {
@@ -230,5 +189,5 @@ class LLMModelManager:
                 "name": model.name,
                 "description": model.description
             }
-            for model in cls._MODELS
+            for model in cls._SUPPORTED_LLM_MODELS
         ]

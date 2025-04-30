@@ -24,7 +24,7 @@ from core.instructions import InstructionSetManager, InstructionSet
 
 from core.models.language import LanguageManager
 from core.models.whisper import WhisperModelManager
-from core.models.llm import LLMModelManager
+from core.models.llm import OpenAILLMModelManager
 
 
 class GUIInstructionSetManager:
@@ -450,7 +450,7 @@ class InstructionSetsDialog(QDialog):
         self.llm_model_combo = QComboBox()
         
         # Add model options from LLMModelManager
-        llm_models = LLMModelManager.get_models()
+        llm_models = OpenAILLMModelManager.get_available_models()
         for model in llm_models:
             self.llm_model_combo.addItem(model.name, model.id)
             # Add tooltip
@@ -632,7 +632,7 @@ class InstructionSetsDialog(QDialog):
             # Check if model supports image input
             supports_image = False
             if instruction_set.llm_model:
-                supports_image = LLMModelManager.supports_image_input(instruction_set.llm_model)
+                supports_image = OpenAILLMModelManager.supports_image_input(instruction_set.llm_model)
             
             # Set enabled state for LLM-related UI components
             self.llm_model_combo.setEnabled(is_llm_enabled)
@@ -737,8 +737,8 @@ class InstructionSetsDialog(QDialog):
         self.llm_enabled_checkbox.setChecked(False)
         
         # Get default LLM model and check if it supports images
-        default_model_id = LLMModelManager.get_default_model().id
-        supports_image = LLMModelManager.supports_image_input(default_model_id)
+        default_model_id = OpenAILLMModelManager.get_default_model().id
+        supports_image = OpenAILLMModelManager.supports_image_input(default_model_id)
         
         # Reset checkboxes
         self.llm_clipboard_text_checkbox.setChecked(False)
@@ -1262,7 +1262,7 @@ class InstructionSetsDialog(QDialog):
         # Check if model supports image input
         supports_image = False
         if selected_model_id:
-            supports_image = LLMModelManager.supports_image_input(selected_model_id)
+            supports_image = OpenAILLMModelManager.supports_image_input(selected_model_id)
         
         # Update UI components
         def update_ui():
@@ -1301,7 +1301,7 @@ class InstructionSetsDialog(QDialog):
         # Check if model supports image input
         supports_image = False
         if selected_model_id:
-            supports_image = LLMModelManager.supports_image_input(selected_model_id)
+            supports_image = OpenAILLMModelManager.supports_image_input(selected_model_id)
         
         # Update UI components
         def update_ui():

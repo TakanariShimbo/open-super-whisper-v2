@@ -187,7 +187,7 @@
 | Variable | __all__ | ["Language", "LanguageManager", "OpenAIWhisperModel", "OpenAIWhisperModelManager", "OpenAILLMModel", "OpenAILLMModelManager"] | Update exported symbols to reflect renamed classes and add LLM model exports |
 | Docstring | "Data Models Package\n\nThis package contains data models and managers for different types of data\nused throughout the application, such as language and whisper model definitions." | "Data models for language, Whisper, and LLM models\n\nThis package provides data structures and management classes for the different models\nand configurations used throughout the application." | Improve docstring to be more specific about all included model types and their purpose |
 
-### core/models/language.py
+### ✅core/models/language.py
 
 | Type | Before | After | Reason |
 |------|--------|-------|--------|
