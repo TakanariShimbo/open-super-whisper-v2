@@ -52,7 +52,7 @@ class AudioChunker:
         # Create chunk directory if it doesn't exist
         os.makedirs(self.chunk_dir, exist_ok=True)
     
-    def get_audio_duration(self, audio_file_path: str) -> float:
+    def _get_audio_duration(self, audio_file_path: str) -> float:
         """
         Get the duration of an audio file in seconds.
         
@@ -134,7 +134,7 @@ class AudioChunker:
         
         # Get audio duration
         try:
-            total_duration = self.get_audio_duration(audio_file_path)
+            total_duration = self._get_audio_duration(audio_file_path)
             if total_duration <= 0:
                 raise AudioDurationError(f"Invalid audio duration: {total_duration} seconds")
         except AudioDurationError as e:
