@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, pyqtSlot
 
-from core.transcriber import WhisperTranscriber
+from core.transcriber import OpenAIWhisperTranscriber
 from gui.resources.labels import AppLabels
 from gui.dialogs.simple_message_dialog import SimpleMessageDialog
 
@@ -137,7 +137,7 @@ class APIKeyDialog(QDialog):
         def validation_worker():
             try:
                 # Try to create a transcriber with this key
-                transcriber = WhisperTranscriber(api_key=key)
+                transcriber = OpenAIWhisperTranscriber(api_key=key)
                 return True, None
             except Exception as e:
                 return False, str(e)

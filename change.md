@@ -145,7 +145,7 @@
 | Type Annotations | Limited | Add comprehensive type hints | Improve code readability and enable better IDE support with complete type annotations |
 | Exception Messages | Generic | More detailed error messages with troubleshooting hints | Help users and developers understand and resolve issues with specific troubleshooting information |
 
-### core/transcriber.py
+### ✅core/transcriber.py
 
 | Type | Before | After | Reason |
 |------|--------|-------|--------|

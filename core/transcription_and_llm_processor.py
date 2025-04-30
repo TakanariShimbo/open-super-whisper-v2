@@ -10,7 +10,7 @@ from typing import Optional, List, Union, Callable
 import os
 import openai
 
-from core.transcriber import WhisperTranscriber
+from core.transcriber import OpenAIWhisperTranscriber
 from core.llm_processor import OpenAILLMProcessor
 
 
@@ -82,8 +82,8 @@ class TranscriptionAndLLMProcessor:
             raise ValueError("API key is required. Provide it directly or set OPENAI_API_KEY environment variable.")
         
         # Initialize components
-        self.whisper_transcriber = WhisperTranscriber(api_key=self.openai_api_key, model=whisper_model)
-        self.openai_llm_processor = OpenAILLMProcessor(api_key=self.openai_api_key, model=llm_model)
+        self.whisper_transcriber = OpenAIWhisperTranscriber(openai_api_key=self.openai_api_key, whisper_model=whisper_model)
+        self.openai_llm_processor = OpenAILLMProcessor(openai_api_key=self.openai_api_key, llm_model=llm_model)
         
         # Processing state
         self.is_llm_processing_enabled = False
@@ -117,29 +117,29 @@ class TranscriptionAndLLMProcessor:
             raise ValueError("API key cannot be empty")
         
         self.openai_api_key = api_key
-        self.whisper_transcriber.set_api_key(api_key)
+        self.whisper_transcriber.set_openai_api_key(api_key)
         self.openai_llm_processor.set_openai_api_key(api_key)
     
     # Transcriber delegation methods
     def set_whisper_model(self, model: str) -> None:
         """Set the Whisper model."""
-        self.whisper_transcriber.set_model(model)
+        self.whisper_transcriber.set_whisper_model(model)
     
     def add_custom_vocabulary(self, vocabulary: Union[str, List[str]]) -> None:
         """Add custom vocabulary for transcription."""
-        self.whisper_transcriber.add_custom_vocabulary(vocabulary)
+        self.whisper_transcriber.add_custom_terminology(vocabulary)
     
     def clear_custom_vocabulary(self) -> None:
         """Clear custom vocabulary for transcription."""
-        self.whisper_transcriber.clear_custom_vocabulary()
+        self.whisper_transcriber.clear_custom_terminology()
     
     def add_transcription_instruction(self, instructions: Union[str, List[str]]) -> None:
         """Add system instructions for transcription."""
-        self.whisper_transcriber.add_system_instruction(instructions)
+        self.whisper_transcriber.add_transcription_instruction(instructions)
     
     def clear_transcription_instructions(self) -> None:
         """Clear system instructions for transcription."""
-        self.whisper_transcriber.clear_system_instructions()
+        self.whisper_transcriber.clear_transcription_instructions()
     
     # LLM processor delegation methods
     def set_llm_model(self, model: str) -> None:

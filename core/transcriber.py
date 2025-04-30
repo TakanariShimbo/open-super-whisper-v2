@@ -1,5 +1,5 @@
 """
-Whisper Transcription Interface
+OpenAI Whisper Transcription Interface
 
 This module provides a complete implementation for the OpenAI Whisper API to transcribe audio.
 Includes support for transcribing large audio files by splitting them into smaller chunks.
@@ -9,37 +9,50 @@ import os
 import json
 from pathlib import Path
 import openai
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Optional, Union
+
+# Import model data from core.models
+from core.models.whisper import WhisperModelManager
 
 # Import chunking and progress tracking modules
 from core.audio_chunker import AudioChunker
 from core.progress_tracker import ChunkProgressTracker
 
-# Import model data from core.models
-from core.models.whisper import WhisperModelManager
 
-
-class WhisperTranscriber:
+class OpenAIWhisperTranscriber:
     """
     Implementation of OpenAI Whisper API transcription.
     
     This class provides methods to transcribe audio files using the
-    OpenAI Whisper API, with support for custom vocabulary, system instructions,
+    OpenAI Whisper API, with support for custom terminology, transcription instructions,
     and language selection.
+    
+    Attributes
+    ----------
+    openai_api_key : str
+        The OpenAI API key used for authentication
+    openai_client : openai.OpenAI
+        The OpenAI client instance used for API requests
+    whisper_model : str
+        The Whisper model to use for transcription
+    custom_terminology : List[str]
+        List of domain-specific terminology to improve transcription accuracy
+    whisper_system_instructions : List[str]
+        List of instructions to control transcription behavior
     """
     
     # Use model manager for available models
     AVAILABLE_MODELS = WhisperModelManager.to_api_format()
     
-    def __init__(self, api_key: str = None, model: str = "gpt-4o-transcribe"):
+    def __init__(self, openai_api_key: str = None, whisper_model: str = "gpt-4o-transcribe"):
         """
-        Initialize the WhisperTranscriber.
+        Initialize the OpenAIWhisperTranscriber.
         
         Parameters
         ----------
-        api_key : str, optional
+        openai_api_key : str, optional
             OpenAI API key, by default None. If None, tries to get from environment.
-        model : str, optional
+        whisper_model : str, optional
             Whisper model to use, by default "gpt-4o-transcribe".
             
         Raises
@@ -48,116 +61,123 @@ class WhisperTranscriber:
             If no API key is provided and none is found in environment variables.
         """
         # Get API key from parameter or environment variable
-        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+        self.openai_api_key = openai_api_key or os.getenv("OPENAI_API_KEY")
         
-        if not self.api_key:
+        if not self.openai_api_key:
             raise ValueError("API key is required. Provide it directly or set OPENAI_API_KEY environment variable.")
         
         # Initialize OpenAI client
-        self.client = openai.OpenAI(api_key=self.api_key)
+        self.openai_client = openai.OpenAI(api_key=self.openai_api_key)
         
-        # Set model and initialize custom vocabulary and instructions
-        self.model = model
-        self.custom_vocabulary: List[str] = []
-        self.system_instructions: List[str] = []
-    
-    @classmethod
-    def get_available_models(cls) -> List[Dict[str, str]]:
-        """
-        Get a list of available Whisper models.
-        
-        Returns
-        -------
-        List[Dict[str, str]]
-            List of dictionaries with model information (id, name, description).
-        """
-        return cls.AVAILABLE_MODELS
-    
-    def set_model(self, model: str) -> None:
+        # Set model and initialize custom terminology and instructions
+        self.whisper_model = whisper_model
+        self.custom_terminology: List[str] = []
+        self.whisper_system_instructions: List[str] = []
+
+    def set_whisper_model(self, whisper_model: str) -> None:
         """
         Set the Whisper model to use.
         
         Parameters
         ----------
-        model : str
+        whisper_model : str
             Model ID to use for transcription.
+            
+        Notes
+        -----
+        The model must be one of the supported models that can be obtained 
+        using get_supported_whisper_models().
         """
-        self.model = model
+        self.whisper_model = whisper_model
     
-    def add_custom_vocabulary(self, vocabulary: Union[str, List[str]]) -> None:
+    def add_custom_terminology(self, terminology: Union[str, List[str]]) -> None:
         """
-        Add custom vocabulary to improve transcription accuracy.
+        Add custom terminology to improve transcription accuracy.
         
         Parameters
         ----------
-        vocabulary : Union[str, List[str]]
-            Custom vocabulary word/phrase or list of words/phrases.
+        terminology : Union[str, List[str]]
+            Custom terminology word/phrase or list of words/phrases.
+            
+        Notes
+        -----
+        This is particularly useful for domain-specific vocabulary, proper nouns,
+        or technical terms that may not be properly recognized by default.
         """
-        if isinstance(vocabulary, str):
-            vocabulary = [vocabulary]
-        self.custom_vocabulary.extend(vocabulary)
+        if isinstance(terminology, str):
+            terminology = [terminology]
+        self.custom_terminology.extend(terminology)
     
-    def clear_custom_vocabulary(self) -> None:
-        """Clear all custom vocabulary."""
-        self.custom_vocabulary = []
-    
-    def get_custom_vocabulary(self) -> List[str]:
+    def clear_custom_terminology(self) -> None:
         """
-        Get the current custom vocabulary list.
+        Clear all custom terminology.
         
-        Returns
-        -------
-        List[str]
-            List of custom vocabulary items.
+        This removes all previously added custom terminology from the transcriber.
         """
-        return self.custom_vocabulary
+        self.custom_terminology = []
     
-    def add_system_instruction(self, instructions: Union[str, List[str]]) -> None:
+    
+    def add_transcription_instruction(self, instructions: Union[str, List[str]]) -> None:
         """
-        Add system instructions to control transcription behavior.
+        Add transcription instructions to control transcription behavior.
         
         Parameters
         ----------
         instructions : Union[str, List[str]]
             Instruction or list of instruction strings.
+            
+        Notes
+        -----
+        These instructions guide the Whisper model on how to transcribe the audio.
+        Examples include formatting preferences, handling of specific content,
+        or guidance on transcription style.
         """
         if isinstance(instructions, str):
             instructions = [instructions]
-        self.system_instructions.extend(instructions)
+        self.whisper_system_instructions.extend(instructions)
     
-    def clear_system_instructions(self) -> None:
-        """Clear all system instructions."""
-        self.system_instructions = []
-    
-    def get_system_instructions(self) -> List[str]:
+    def clear_transcription_instructions(self) -> None:
         """
-        Get the current list of system instructions.
+        Clear all transcription instructions.
+        
+        This removes all previously added instructions from the transcriber.
+        """
+        self.whisper_system_instructions = []
+    
+    def get_transcription_instructions(self) -> List[str]:
+        """
+        Get the current list of transcription instructions.
         
         Returns
         -------
         List[str]
             List of instruction strings.
         """
-        return self.system_instructions
+        return self.whisper_system_instructions
     
-    def _build_prompt(self) -> Optional[str]:
+    def _create_whisper_system_prompt(self) -> Optional[str]:
         """
-        Build a prompt with vocabulary and instructions.
+        Create a system prompt with terminology and instructions.
         
         Returns
         -------
         Optional[str]
-            Combined prompt string, or None if no vocabulary or instructions exist.
+            Combined prompt string, or None if no terminology or instructions exist.
+            
+        Notes
+        -----
+        This internal method combines custom terminology and system instructions
+        into a single prompt string that can be sent to the Whisper API.
         """
         prompt_parts = []
         
-        # Add custom vocabulary
-        if self.custom_vocabulary:
-            prompt_parts.append("Vocabulary: " + ", ".join(self.custom_vocabulary))
+        # Add custom terminology
+        if self.custom_terminology:
+            prompt_parts.append("Vocabulary: " + ", ".join(self.custom_terminology))
         
         # Add system instructions
-        if self.system_instructions:
-            prompt_parts.append("Instructions: " + ". ".join(self.system_instructions))
+        if self.whisper_system_instructions:
+            prompt_parts.append("Instructions: " + ". ".join(self.whisper_system_instructions))
         
         # Return None if no parts, otherwise join with space
         return None if not prompt_parts else " ".join(prompt_parts)
@@ -167,8 +187,8 @@ class WhisperTranscriber:
         """
         Transcribe an audio file using OpenAI's Whisper API.
         
-        This method automatically handles large files by splitting them into smaller chunks
-        when necessary, and seamlessly processes files of any size.
+        This method automatically handles files of any size by splitting larger files 
+        into smaller chunks when necessary, and then seamlessly combining the results.
         
         Parameters
         ----------
@@ -186,8 +206,17 @@ class WhisperTranscriber:
             
         Raises
         ------
+        FileNotFoundError
+            If the audio file does not exist.
+        ValueError
+            If the audio file cannot be chunked or no chunks were transcribed.
         Exception
-            If transcription fails.
+            If an unexpected error occurs during transcription.
+        
+        Notes
+        -----
+        Files larger than 25MB are automatically split into chunks, transcribed
+        separately, and then recombined into a coherent transcript.
         """
         try:
             # Check if file exists
@@ -204,7 +233,7 @@ class WhisperTranscriber:
                 
                 # Build API call parameters
                 params = {
-                    "model": self.model,
+                    "model": self.whisper_model,
                     "response_format": response_format,
                 }
                 
@@ -213,14 +242,14 @@ class WhisperTranscriber:
                     params["language"] = language
                     
                 # Add custom prompt if available
-                prompt = self._build_prompt()
+                prompt = self._create_whisper_system_prompt()
                 if prompt:
                     params["prompt"] = prompt
                 
                 # Make API call
-                with open(audio_path, "rb") as audio:
-                    response = self.client.audio.transcriptions.create(
-                        file=audio,
+                with open(audio_path, "rb") as audio_file_handle:
+                    response = self.openai_client.audio.transcriptions.create(
+                        file=audio_file_handle,
                         **params
                     )
                     
@@ -237,26 +266,26 @@ class WhisperTranscriber:
             progress_tracker = ChunkProgressTracker()
             
             # Split audio file into chunks
-            chunk_paths = chunker.chunk_audio_file(audio_file)
-            if not chunk_paths:
+            audio_chunk_file_paths = chunker.chunk_audio_file(audio_file)
+            if not audio_chunk_file_paths:
                 raise ValueError("Failed to split audio file into chunks")
                 
-            print(f"Split into {len(chunk_paths)} chunks, starting transcription...")
+            print(f"Split into {len(audio_chunk_file_paths)} chunks, starting transcription...")
             
             transcriptions = []
             
             # Process each chunk
-            for i, chunk_path in enumerate(chunk_paths):
+            for i, chunk_path in enumerate(audio_chunk_file_paths):
                 # Check if this chunk has already been processed
                 if progress_tracker.has_chunk_been_processed(chunk_path):
-                    print(f"Chunk {i+1}/{len(chunk_paths)} already processed, using cached result...")
+                    print(f"Chunk {i+1}/{len(audio_chunk_file_paths)} already processed, using cached result...")
                     transcriptions.append(progress_tracker.retrieve_chunk_result(chunk_path))
                     continue
                 
-                print(f"Processing chunk {i+1}/{len(chunk_paths)}...")
+                print(f"Processing chunk {i+1}/{len(audio_chunk_file_paths)}...")
                 
                 # Use previous chunk's end as context for better continuity
-                prompt = self._build_prompt()
+                prompt = self._create_whisper_system_prompt()
                 if i > 0 and transcriptions:
                     # Extract last few words from previous transcription
                     last_transcript = transcriptions[-1]
@@ -272,7 +301,7 @@ class WhisperTranscriber:
                 
                 # Process the chunk
                 params = {
-                    "model": self.model,
+                    "model": self.whisper_model,
                     "response_format": "text",  # Always use text for chunks
                 }
                 
@@ -283,9 +312,9 @@ class WhisperTranscriber:
                     params["prompt"] = prompt
                 
                 try:
-                    with open(chunk_path, "rb") as audio:
-                        response = self.client.audio.transcriptions.create(
-                            file=audio,
+                    with open(chunk_path, "rb") as audio_file_handle:
+                        response = self.openai_client.audio.transcriptions.create(
+                            file=audio_file_handle,
                             **params
                         )
                     
@@ -295,18 +324,18 @@ class WhisperTranscriber:
                     transcriptions.append(chunk_result)
                     progress_tracker.store_chunk_result(chunk_path, chunk_result)
                     
-                except Exception as e:
-                    print(f"Error processing chunk {i+1}: {str(e)}")
+                except Exception as api_error:
+                    print(f"Error processing chunk {i+1}: {str(api_error)}")
                     # Continue with next chunk even if this one fails
             
-            # Merge transcriptions
+            # Combine transcriptions
             if not transcriptions:
                 raise ValueError("No chunks were successfully transcribed")
                 
-            merged_result = self._merge_transcriptions(transcriptions)
+            merged_result = self._combine_chunk_transcriptions(transcriptions)
             
             # Only clean up chunks if all chunks were successfully processed
-            if all(progress_tracker.has_chunk_been_processed(chunk) for chunk in chunk_paths):
+            if all(progress_tracker.has_chunk_been_processed(chunk) for chunk in audio_chunk_file_paths):
                 chunker.remove_temp_chunks()
             
             # Format the result according to requested response_format
@@ -325,77 +354,51 @@ class WhisperTranscriber:
             else:
                 return merged_result
             
-        except Exception as e:
-            error_msg = f"Error occurred during transcription: {str(e)}"
+        except Exception as error:
+            error_msg = f"Error occurred during transcription: {str(error)}"
             print(error_msg)
-            return f"Error: {str(e)}"
+            return f"Error: {str(error)}"
     
-    def get_api_key(self) -> str:
+    def get_openai_api_key(self) -> str:
         """
-        Get the current API key.
+        Get the current OpenAI API key.
         
         Returns
         -------
         str
-            The current API key.
+            The current OpenAI API key.
         """
-        return self.api_key
+        return self.openai_api_key
     
-    def set_api_key(self, api_key: str) -> None:
+    def set_openai_api_key(self, openai_api_key: str) -> None:
         """
-        Set a new API key.
+        Set a new OpenAI API key.
         
         Parameters
         ----------
-        api_key : str
-            New API key to use.
+        openai_api_key : str
+            New OpenAI API key to use.
             
         Raises
         ------
         ValueError
             If API key is empty.
+            
+        Notes
+        -----
+        This updates both the stored API key and reinitializes the OpenAI client
+        with the new key.
         """
-        if not api_key:
+        if not openai_api_key:
             raise ValueError("API key cannot be empty")
         
-        self.api_key = api_key
+        self.openai_api_key = openai_api_key
         # Update the client with the new API key
-        self.client = openai.OpenAI(api_key=self.api_key)
+        self.openai_client = openai.OpenAI(api_key=self.openai_api_key)
     
-    def transcribe_large_file(self, audio_file: str, language: Optional[str] = None, 
-                           response_format: str = "text") -> Union[str, Dict]:
+    def _combine_chunk_transcriptions(self, transcriptions: List[str]) -> str:
         """
-        Transcribe a large audio file by splitting it into smaller chunks.
-        Handles files larger than the OpenAI API's 25MB limit.
-        
-        This method is now a wrapper for the transcribe method, which has been updated
-        to handle large files automatically. It is maintained for backward compatibility.
-        
-        Parameters
-        ----------
-        audio_file : str
-            Path to the audio file to transcribe.
-        language : Optional[str], optional
-            Language code (e.g., "en", "ja"), or None for auto-detection.
-        response_format : str, optional
-            Response format: "text", "json", "verbose_json", or "vtt".
-            
-        Returns
-        -------
-        Union[str, Dict]
-            Transcribed text or dictionary depending on response_format.
-            
-        Raises
-        ------
-        Exception
-            If transcription fails.
-        """
-        # Simply call the transcribe method which now handles large files
-        return self.transcribe(audio_file, language, response_format)
-    
-    def _merge_transcriptions(self, transcriptions: List[str]) -> str:
-        """
-        Merge multiple chunk transcriptions into a single coherent text.
+        Combine multiple chunk transcriptions into a single coherent text.
         
         Parameters
         ----------
@@ -405,7 +408,13 @@ class WhisperTranscriber:
         Returns
         -------
         str
-            Merged transcription text
+            Combined transcription text
+            
+        Notes
+        -----
+        This method performs basic text merging and cleanup to create a coherent
+        transcript from individual chunks. Future versions may implement more
+        sophisticated text processing for improved flow between chunks.
         """
         if not transcriptions:
             return ""

@@ -42,7 +42,7 @@ class OpenAILLMProcessor:
     # Use model manager for available models
     AVAILABLE_MODELS = LLMModelManager.to_api_format()
     
-    def __init__(self, api_key: str = None, model: str = "gpt-4o"):
+    def __init__(self, openai_api_key: str = None, llm_model: str = "gpt-4o"):
         """
         Initialize the LLMProcessor.
         
@@ -59,7 +59,7 @@ class OpenAILLMProcessor:
             If no API key is provided and none is found in environment variables.
         """
         # Get API key from parameter or environment variable
-        self.openai_api_key = api_key or os.getenv("OPENAI_API_KEY")
+        self.openai_api_key = openai_api_key or os.getenv("OPENAI_API_KEY")
         
         if not self.openai_api_key:
             raise ValueError("API key is required. Provide it directly or set OPENAI_API_KEY environment variable.")
@@ -68,7 +68,7 @@ class OpenAILLMProcessor:
         self.openai_client = openai.OpenAI(api_key=self.openai_api_key)
         
         # Set model and initialize instructions
-        self.model = model
+        self.model = llm_model
         self.system_instructions: List[str] = []
     
     def set_model(self, model: str) -> None:
