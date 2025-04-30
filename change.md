@@ -40,7 +40,7 @@
 | Error handling | try-except structure | More robust with specific error types | Improve error handling with specific exception types for better debugging and user feedback |
 | Docstring | Current | Add parameter types, return types, and exceptions raised | Enhance documentation to include complete type information and potential exceptions for API clarity |
 
-### core/hotkeys.py
+### ✅core/hotkeys.py
 
 | Type | Before | After | Reason |
 |------|--------|-------|--------|
