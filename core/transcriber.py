@@ -13,7 +13,7 @@ from typing import List, Dict, Any, Optional, Union
 
 # Import chunking and progress tracking modules
 from core.audio_chunker import AudioChunker
-from core.progress_tracker import TranscriptionProgressTracker
+from core.progress_tracker import ChunkProgressTracker
 
 # Import model data from core.models
 from core.models.whisper import WhisperModelManager
@@ -234,7 +234,7 @@ class WhisperTranscriber:
             
             # Initialize audio chunker and progress tracker (memory-only implementation)
             chunker = AudioChunker()
-            progress_tracker = TranscriptionProgressTracker()
+            progress_tracker = ChunkProgressTracker()
             
             # Split audio file into chunks
             chunk_paths = chunker.chunk_audio_file(audio_file)
@@ -248,9 +248,9 @@ class WhisperTranscriber:
             # Process each chunk
             for i, chunk_path in enumerate(chunk_paths):
                 # Check if this chunk has already been processed
-                if progress_tracker.is_chunk_processed(chunk_path):
+                if progress_tracker.has_chunk_been_processed(chunk_path):
                     print(f"Chunk {i+1}/{len(chunk_paths)} already processed, using cached result...")
-                    transcriptions.append(progress_tracker.get_chunk_result(chunk_path))
+                    transcriptions.append(progress_tracker.retrieve_chunk_result(chunk_path))
                     continue
                 
                 print(f"Processing chunk {i+1}/{len(chunk_paths)}...")
@@ -293,7 +293,7 @@ class WhisperTranscriber:
                     
                     # Save result and add to list
                     transcriptions.append(chunk_result)
-                    progress_tracker.save_chunk_result(chunk_path, chunk_result)
+                    progress_tracker.store_chunk_result(chunk_path, chunk_result)
                     
                 except Exception as e:
                     print(f"Error processing chunk {i+1}: {str(e)}")
@@ -306,7 +306,7 @@ class WhisperTranscriber:
             merged_result = self._merge_transcriptions(transcriptions)
             
             # Only clean up chunks if all chunks were successfully processed
-            if all(progress_tracker.is_chunk_processed(chunk) for chunk in chunk_paths):
+            if all(progress_tracker.has_chunk_been_processed(chunk) for chunk in chunk_paths):
                 chunker.remove_temp_chunks()
             
             # Format the result according to requested response_format

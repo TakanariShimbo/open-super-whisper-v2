@@ -1,86 +1,137 @@
 """
-Transcription Progress Tracker
+Chunk Progress Tracker
 
 This module provides functionality to track and manage the progress
-of audio file transcription in memory during a single session.
+of audio chunks processing in memory during a single session.
 """
 
-from typing import Dict, Any, Optional, List, Union
+from typing import Dict, Optional
 
-class TranscriptionProgressTracker:
+class ChunkProgressTracker:
     """
-    Class to track and manage the progress of audio transcription in memory.
+    Class to track and manage the progress of audio chunk processing in memory.
     All data is stored in memory only without any file operations.
+    This class handles tracking of audio chunks and their corresponding results.
     """
     
     def __init__(self):
         """
-        Initialize the progress tracker with in-memory storage only.
+        Initialize the chunk progress tracker with in-memory storage only.
+        
+        Notes
+        -----
+        This initializes an empty dictionary structure to track processed chunks
+        and their corresponding results.
         """
-        self.progress_data = {
+        self.chunk_progress_data = {
             "processed_chunks": {}
         }
     
-    def save_chunk_result(self, chunk_path: str, transcription: str) -> None:
+    def store_chunk_result(self, chunk_path: str, transcription: str) -> None:
         """
-        Save the result for a processed chunk.
+        Store the result for a processed audio chunk.
         
         Parameters
         ----------
         chunk_path : str
-            Path to the processed chunk
+            Path or identifier of the processed audio chunk
         transcription : str
-            Transcription result for the chunk
+            Transcription result or data associated with the chunk
+            
+        Returns
+        -------
+        None
+            This method doesn't return any value
+            
+        Raises
+        ------
+        TypeError
+            If chunk_path is not a string or transcription is not a string
         """
-        self.progress_data["processed_chunks"][chunk_path] = transcription
+        if not isinstance(chunk_path, str):
+            raise TypeError("chunk_path must be a string")
+        if not isinstance(transcription, str):
+            raise TypeError("transcription must be a string")
+            
+        self.chunk_progress_data["processed_chunks"][chunk_path] = transcription
     
-    def is_chunk_processed(self, chunk_path: str) -> bool:
+    def has_chunk_been_processed(self, chunk_path: str) -> bool:
         """
-        Check if a chunk has already been processed.
+        Check if a specific audio chunk has already been processed.
         
         Parameters
         ----------
         chunk_path : str
-            Path to the chunk to check
+            Path or identifier of the audio chunk to check
             
         Returns
         -------
         bool
             True if the chunk has been processed, False otherwise
+            
+        Raises
+        ------
+        TypeError
+            If chunk_path is not a string
         """
-        return chunk_path in self.progress_data["processed_chunks"]
+        if not isinstance(chunk_path, str):
+            raise TypeError("chunk_path must be a string")
+            
+        return chunk_path in self.chunk_progress_data["processed_chunks"]
     
-    def get_chunk_result(self, chunk_path: str) -> Optional[str]:
+    def retrieve_chunk_result(self, chunk_path: str) -> Optional[str]:
         """
-        Get the transcription result for a processed chunk.
+        Retrieve the transcription result for a processed audio chunk.
         
         Parameters
         ----------
         chunk_path : str
-            Path to the chunk
+            Path or identifier of the audio chunk
             
         Returns
         -------
         Optional[str]
             Transcription result for the chunk, or None if not processed
+            
+        Raises
+        ------
+        TypeError
+            If chunk_path is not a string
         """
-        return self.progress_data["processed_chunks"].get(chunk_path)
-    
-    def get_all_results(self) -> Dict[str, str]:
+        if not isinstance(chunk_path, str):
+            raise TypeError("chunk_path must be a string")
+            
+        return self.chunk_progress_data["processed_chunks"].get(chunk_path)
+        
+    def get_all_chunk_results(self) -> Dict[str, str]:
         """
-        Get all processed chunk results.
+        Retrieve all processed chunks and their results.
         
         Returns
         -------
         Dict[str, str]
-            Dictionary mapping chunk paths to transcription results
+            Dictionary mapping chunk paths to their transcription results
+            
+        Notes
+        -----
+        This method returns a copy of the internal data to prevent 
+        accidental modification of the stored data.
         """
-        return self.progress_data["processed_chunks"]
-    
-    def reset_progress(self) -> None:
+        return self.chunk_progress_data["processed_chunks"].copy()
+        
+    def clear_all_progress_data(self) -> None:
         """
-        Reset progress data, clearing all processed chunks.
+        Clear all stored progress data and reset the tracker.
+        
+        Returns
+        -------
+        None
+            This method doesn't return any value
+            
+        Notes
+        -----
+        This operation cannot be undone and all tracked progress will be lost.
         """
-        self.progress_data = {
+        self.chunk_progress_data = {
             "processed_chunks": {}
         }
