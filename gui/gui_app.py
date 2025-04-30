@@ -1,7 +1,7 @@
 """
 GUI Application Entry Point
 
-This module provides the main entry point for starting the GUI application.
+This module provides the entry point for starting the GUI application.
 """
 
 import os
@@ -17,7 +17,7 @@ from gui.dialogs.simple_message_dialog import SimpleMessageDialog
 from gui.windows import MainWindow
 
 
-def main():
+def start_application():
     """
     Application entry point.
     
@@ -77,4 +77,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    start_application()
