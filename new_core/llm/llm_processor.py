@@ -67,9 +67,9 @@ class LLMProcessor:
         # Initialize OpenAI client
         self.client = openai.OpenAI(api_key=self.api_key)
         
-        # Set model and initialize instructions
+        # Set model and initialize instruction
         self.model_id = model_id
-        self.system_instructions: List[str] = []
+        self.system_instruction: str = ""
     
     def set_model(self, model_id: str) -> None:
         """
@@ -82,36 +82,34 @@ class LLMProcessor:
         """
         self.model_id = model_id
     
-    def add_system_instruction(self, instructions: Union[str, List[str]]) -> None:
+    def set_system_instruction(self, instruction: str) -> None:
         """
-        Add system instructions to control LLM behavior.
+        Set system instruction to control LLM behavior.
         
         Parameters
         ----------
-        instructions : Union[str, List[str]]
-            Instruction or list of instruction strings.
+        instruction : str
+            Instruction string.
         """
-        if isinstance(instructions, str):
-            instructions = [instructions]
-        self.system_instructions.extend(instructions)
+        self.system_instruction = instruction
     
-    def clear_system_instructions(self) -> None:
-        """Clear all system instructions."""
-        self.system_instructions = []
+    def clear_system_instruction(self) -> None:
+        """Clear the system instruction."""
+        self.system_instruction = ""
     
     def _create_llm_system_message(self) -> str:
         """
-        Create a system message with instructions for the LLM.
+        Get the system message with instruction for the LLM.
         
         Returns
         -------
         str
-            Combined system message, or a default message if no instructions exist.
+            System message, or a default message if no instruction exists.
         """
-        if not self.system_instructions:
+        if not self.system_instruction:
             return "You are a helpful assistant. Process the following transcribed text."
         
-        return " ".join(self.system_instructions)
+        return self.system_instruction
     
     def _format_user_content(self, text: str, image_data: Optional[bytes] = None) -> List[Dict[str, Any]]:
         """
@@ -177,71 +175,32 @@ class LLMProcessor:
         ------
         ValueError
             If the text input is empty or invalid.
-        openai.BadRequestError
-            If the API rejects the request due to invalid parameters.
-        openai.AuthenticationError
-            If the API key is invalid or missing.
-        openai.RateLimitError
-            If rate limits are exceeded when calling the API.
-        Exception
-            For any other unexpected errors during processing.
         """
         if not text or not isinstance(text, str):
             raise ValueError("Text input must be a non-empty string")
-            
-        try:
-            system_message = self._create_llm_system_message()
-            
-            # Format user content
-            user_content = self._format_user_content(text, image_data)
-            
-            # Make API call
-            response = self.client.chat.completions.create(
-                model=self.model_id,
-                messages=[
-                    {"role": "system", "content": system_message},
-                    {"role": "user", "content": user_content}
-                ]
-            )
-            
-            # Extract and return the response text
-            if response.choices and len(response.choices) > 0:
-                return response.choices[0].message.content
-            else:
-                return "No response generated."
 
-        except openai.APIConnectionError as e:
-            error_msg = f"Failed to connect to API: {str(e)}"
-            print(error_msg)
-            raise
-            
-        except openai.RateLimitError as e:
-            error_msg = f"API request exceeded rate limit: {str(e)}"
-            print(error_msg)
-            raise
-            
-        except openai.AuthenticationError as e:
-            error_msg = f"API authentication error: {str(e)}"
-            print(error_msg)
-            raise
-            
-        except openai.BadRequestError as e:
-            error_msg = f"API request was invalid: {str(e)}"
-            print(error_msg)
-            raise
-
-        except openai.APIError as e:
-            error_msg = f"API returned an API Error: {str(e)}"
-            print(error_msg)
-            raise
-            
-        except Exception as e:
-            error_msg = f"Unexpected error during LLM processing: {str(e)}"
-            print(error_msg)
-            raise Exception(f"Error during LLM processing: {str(e)}") from e
+        system_message = self._create_llm_system_message()
+        
+        # Format user content
+        user_content = self._format_user_content(text, image_data)
+        
+        # Make API call
+        response = self.client.chat.completions.create(
+            model=self.model_id,
+            messages=[
+                {"role": "system", "content": system_message},
+                {"role": "user", "content": user_content}
+            ]
+        )
+        
+        # Extract and return the response text
+        if response.choices and len(response.choices) > 0:
+            return response.choices[0].message.content
+        else:
+            return "No response generated."
     
-    def process_with_stream(self, text: str, callback: Optional[Callable[[str], None]] = None, 
-                      image_data: Optional[bytes] = None) -> str:
+    def process_text_with_stream(self, text: str, callback: Optional[Callable[[str], None]] = None, 
+                            image_data: Optional[bytes] = None) -> str:
         """
         Process text through the LLM with streaming responses, optionally with an image.
         
@@ -259,111 +218,46 @@ class LLMProcessor:
         -------
         str
             Complete LLM response (all chunks combined).
-            
-        Raises
-        ------
-        Exception
-            If processing fails.
         """
-        try:
-            system_message = self._create_llm_system_message()
-            
-            # Format user content
-            user_content = self._format_user_content(text, image_data)
-            
-            # Make streaming API call
-            response_stream = self.client.chat.completions.create(
-                model=self.model_id,
-                messages=[
-                    {"role": "system", "content": system_message},
-                    {"role": "user", "content": user_content}
-                ],
-                stream=True
-            )
-            
-            # Process streaming response
-            full_response = ""
-            
-            for chunk in response_stream:
-                # Extract content from the chunk
-                if chunk.choices and len(chunk.choices) > 0:
-                    # Get delta content (may be None)
-                    content = chunk.choices[0].delta.content
-                    
-                    # Skip if no content in this chunk
-                    if content is None:
-                        continue
-                    
-                    # Append to full response
-                    full_response += content
-                    
-                    # Call callback if provided
-                    if callback:
-                        callback(content)
-            
-            return full_response
-            
-        except Exception as e:
-            error_msg = f"Error occurred during LLM streaming: {str(e)}"
-            print(error_msg)
-            
-            # Call callback with error message if provided
-            if callback:
-                callback(f"\nError: {str(e)}")
-                
-            return f"Error: {str(e)}"
-    
-    def create_response_stream(self, text: str, image_data: Optional[bytes] = None) -> Generator[str, None, None]:
-        """
-        Create a response stream generator that yields chunks of LLM output.
+        if not text or not isinstance(text, str):
+            raise ValueError("Text input must be a non-empty string")
         
-        Parameters
-        ----------
-        text : str
-            Text to process.
-        image_data : bytes, optional
-            Image data in bytes format, by default None.
-            
-        Returns
-        -------
-        Generator[str, None, None]
-            Generator that yields response chunks.
-            
-        Raises
-        ------
-        Exception
-            If processing fails.
-        """
-        try:
-            system_message = self._create_llm_system_message()
-            
-            # Format user content
-            user_content = self._format_user_content(text, image_data)
-            
-            # Make streaming API call
-            response_stream = self.client.chat.completions.create(
-                model=self.model_id,
-                messages=[
-                    {"role": "system", "content": system_message},
-                    {"role": "user", "content": user_content}
-                ],
-                stream=True
-            )
-            
-            # Yield chunks
-            for chunk in response_stream:
-                if chunk.choices and len(chunk.choices) > 0:
-                    # Get delta content (may be None)
-                    content = chunk.choices[0].delta.content
-                    
-                    # Skip if no content in this chunk
-                    if content is not None:
-                        yield content
-                        
-        except Exception as e:
-            error_msg = f"Error occurred during LLM streaming: {str(e)}"
-            print(error_msg)
-            yield f"\nError: {str(e)}"
+        system_message = self._create_llm_system_message()
+        
+        # Format user content
+        user_content = self._format_user_content(text, image_data)
+        
+        # Make streaming API call
+        response_stream = self.client.chat.completions.create(
+            model=self.model_id,
+            messages=[
+                {"role": "system", "content": system_message},
+                {"role": "user", "content": user_content}
+            ],
+            stream=True
+        )
+        
+        # Process streaming response
+        full_response = ""
+        
+        for chunk in response_stream:
+            # Extract content from the chunk
+            if chunk.choices and len(chunk.choices) > 0:
+                # Get delta content (may be None)
+                content = chunk.choices[0].delta.content
+                
+                # Skip if no content in this chunk
+                if content is None:
+                    continue
+                
+                # Append to full response
+                full_response += content
+                
+                # Call callback if provided
+                if callback:
+                    callback(content)
+        
+        return full_response
     
     def set_api_key(self, api_key: str) -> None:
         """
