@@ -6,8 +6,7 @@ both speech-to-text transcription and LLM processing in a seamless way.
 """
 
 import os
-from typing import Optional, List, Union, Callable
-import openai
+from typing import Optional, Callable
 
 from ..stt.stt_processor import STTProcessor
 from ..llm.llm_processor import LLMProcessor
@@ -90,34 +89,118 @@ class STTLLMPipeline:
         """Set the speech-to-text model."""
         self.stt_processor.set_model(model_id)
     
-    def add_custom_vocabulary(self, vocabulary: Union[str, List[str]]) -> None:
-        """Add custom vocabulary for transcription."""
-        self.stt_processor.add_custom_vocabulary(vocabulary)
+    def set_custom_vocabulary(self, vocabulary: str) -> None:
+        """
+        Set custom vocabulary for transcription.
+        
+        Parameters
+        ----------
+        vocabulary : str
+            Custom vocabulary words/phrases.
+        """
+        self.stt_processor.set_custom_vocabulary(vocabulary)
     
     def clear_custom_vocabulary(self) -> None:
         """Clear custom vocabulary for transcription."""
         self.stt_processor.clear_custom_vocabulary()
     
-    def add_transcription_instruction(self, instructions: Union[str, List[str]]) -> None:
-        """Add system instructions for transcription."""
-        self.stt_processor.add_transcription_instruction(instructions)
+    def set_transcription_instruction(self, instruction: str) -> None:
+        """
+        Set system instruction for transcription.
+        
+        Parameters
+        ----------
+        instruction : str
+            Instruction for transcription.
+        """
+        self.stt_processor.set_system_instruction(instruction)
     
-    def clear_transcription_instructions(self) -> None:
-        """Clear system instructions for transcription."""
-        self.stt_processor.clear_transcription_instructions()
+    def clear_transcription_instruction(self) -> None:
+        """Clear system instruction for transcription."""
+        self.stt_processor.clear_system_instruction()
     
     # LLM processor delegation methods
     def set_llm_model(self, model_id: str) -> None:
         """Set the LLM model."""
         self.llm_processor.set_model(model_id)
     
-    def add_llm_instruction(self, instructions: Union[str, List[str]]) -> None:
-        """Add system instructions for LLM processing."""
-        self.llm_processor.add_system_instruction(instructions)
+    def set_llm_instruction(self, instruction: str) -> None:
+        """
+        Set system instruction for LLM processing.
+        
+        Parameters
+        ----------
+        instruction : str
+            Instruction for LLM.
+        """
+        self.llm_processor.set_system_instruction(instruction)
     
-    def clear_llm_instructions(self) -> None:
-        """Clear system instructions for LLM processing."""
-        self.llm_processor.clear_system_instructions()
+    def clear_llm_instruction(self) -> None:
+        """Clear system instruction for LLM processing."""
+        self.llm_processor.clear_system_instruction()
+    
+    def _prepare_prompt(self, transcription: str, clipboard_text: Optional[str] = None, 
+                        clipboard_image: Optional[bytes] = None) -> str:
+        """
+        Prepare the prompt for LLM processing based on available inputs.
+        
+        Parameters
+        ----------
+        transcription : str
+            Transcribed text from audio.
+        clipboard_text : Optional[str], optional
+            Text from clipboard, by default None.
+        clipboard_image : Optional[bytes], optional
+            Image data from clipboard, by default None.
+            
+        Returns
+        -------
+        str
+            Formatted prompt for LLM.
+        """
+        # Start with just the transcription
+        prompt = transcription
+        
+        # Add clipboard text if provided
+        if clipboard_text:
+            prompt = f"Clipboard Content:\n{clipboard_text}\n\nTranscription:\n{transcription}"
+        
+        # Add image context if there's an image but no clipboard text
+        if clipboard_image and not clipboard_text:
+            prompt = f"Analyze this image along with the following transcription:\n\n{transcription}"
+        
+        return prompt
+    
+    def _process_with_text(self, prompt: str, clipboard_image: Optional[bytes] = None,
+                           stream_callback: Optional[Callable[[str], None]] = None) -> str:
+        """
+        Process text through LLM with appropriate method based on parameters.
+        
+        Parameters
+        ----------
+        prompt : str
+            Text prompt to process.
+        clipboard_image : Optional[bytes], optional
+            Image data to include in processing, by default None.
+        stream_callback : Optional[Callable[[str], None]], optional
+            Callback for streaming responses, by default None.
+            
+        Returns
+        -------
+        str
+            LLM response.
+        """
+        # Determine if we're using streaming
+        if stream_callback:
+            if clipboard_image:
+                return self.llm_processor.process_text_with_stream(prompt, stream_callback, clipboard_image)
+            else:
+                return self.llm_processor.process_text_with_stream(prompt, stream_callback)
+        else:
+            if clipboard_image:
+                return self.llm_processor.process_text(prompt, clipboard_image)
+            else:
+                return self.llm_processor.process_text(prompt)
     
     def process(self, audio_file_path: str, language: Optional[str] = None, 
                 clipboard_text: Optional[str] = None, clipboard_image: Optional[bytes] = None,
@@ -143,103 +226,23 @@ class STTLLMPipeline:
         -------
         PipelineResult
             Processing result containing transcription and optional LLM response.
-            
-        Raises
-        ------
-        FileNotFoundError
-            If the audio file does not exist.
-        ValueError
-            If the API key is invalid or other input validation fails.
-        openai.AuthenticationError
-            If the API key is invalid or authentication fails.
-        openai.RateLimitError
-            If rate limits are exceeded.
-        Exception
-            For any other unexpected errors during processing.
         """
-        # Check if file exists
-        if not os.path.exists(audio_file_path):
-            error_msg = f"Audio file not found: {audio_file_path}"
-            print(error_msg)
-            raise FileNotFoundError(error_msg)
+        # Perform transcription
+        transcription = self.stt_processor.transcribe_file_with_chunks(audio_file_path, language)
         
-        try:
-            # Perform transcription - handles both small and large files
-            transcription = self.stt_processor.transcribe(audio_file_path, language)
+        # Create result object
+        result = PipelineResult(transcription=transcription)
+        
+        # If LLM is enabled, process the transcription
+        if self.is_llm_processing_enabled:
+            # Prepare the prompt
+            prompt = self._prepare_prompt(transcription, clipboard_text, clipboard_image)
             
-            # Create result object
-            result = PipelineResult(transcription=transcription)
+            # Process with LLM
+            llm_response = self._process_with_text(prompt, clipboard_image, stream_callback)
             
-            # If LLM is enabled, process the transcription
-            if self.is_llm_processing_enabled:
-                try:
-                    # Combine transcription with clipboard content if provided
-                    llm_input = transcription
-                    
-                    # Add clipboard text if provided
-                    if clipboard_text:
-                        llm_input = f"Clipboard Content:\n{clipboard_text}\n\nTranscription:\n{transcription}"
-                    
-                    # Prepare prompt based on inputs
-                    if clipboard_image:
-                        # If we have both clipboard text and image
-                        if clipboard_text:
-                            prompt = llm_input
-                        else:
-                            # Just transcription with image
-                            prompt = f"Analyze this image along with the following transcription:\n\n{transcription}"
-                    else:
-                        prompt = llm_input
-                    
-                    # Process with or without streaming based on callback
-                    if stream_callback:
-                        # Use streaming API with callback
-                        if clipboard_image:
-                            # Process with image and streaming
-                            llm_response = self.llm_processor.process_with_stream(prompt, stream_callback, clipboard_image)
-                        else:
-                            # Process text only with streaming
-                            llm_response = self.llm_processor.process_with_stream(prompt, stream_callback)
-                    else:
-                        # Use non-streaming API
-                        if clipboard_image:
-                            # Process with image
-                            llm_response = self.llm_processor.process_text(prompt, clipboard_image)
-                        else:
-                            # Process text only
-                            llm_response = self.llm_processor.process_text(prompt)
-                    
-                    result.llm_response = llm_response
-                    result.llm_processed = True
-                except openai.AuthenticationError as e:
-                    error_msg = f"API authentication error: {str(e)}"
-                    print(error_msg)
-                    result.llm_response = error_msg
-                    result.llm_processed = False
-                except openai.RateLimitError as e:
-                    error_msg = f"API rate limit exceeded: {str(e)}"
-                    print(error_msg)
-                    result.llm_response = error_msg
-                    result.llm_processed = False
-                except openai.BadRequestError as e:
-                    error_msg = f"API request was invalid: {str(e)}"
-                    print(error_msg)
-                    result.llm_response = error_msg
-                    result.llm_processed = False
-                except openai.APIError as e:
-                    error_msg = f"API error: {str(e)}"
-                    print(error_msg)
-                    result.llm_response = error_msg
-                    result.llm_processed = False
-                except Exception as e:
-                    error_msg = f"LLM processing error: {str(e)}"
-                    print(error_msg)
-                    # Still return the transcription even if LLM processing fails
-                    result.llm_response = error_msg
-                    result.llm_processed = False
-            
-            return result
-        except Exception as e:
-            error_msg = f"Error during transcription processing: {str(e)}"
-            print(error_msg)
-            raise
+            # Update result
+            result.llm_response = llm_response
+            result.llm_processed = True
+        
+        return result
