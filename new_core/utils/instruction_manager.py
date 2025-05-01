@@ -5,8 +5,8 @@ This module provides functionality for managing instruction sets
 used in speech-to-text and LLM processing.
 """
 
-from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any, Union
+from dataclasses import dataclass
+from typing import List, Optional, Dict, Any
 
 
 @dataclass
