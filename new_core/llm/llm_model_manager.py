@@ -23,7 +23,7 @@ class LLMModelManager:
     # This list represents models that are currently available through the API
     # Last updated: April 2025
     _SUPPORTED_LLM_MODELS: ClassVar[List[LLMModel]] = [
-        # GPT-4.1 Series
+        # GPT-4 Series
         LLMModel(
             id="gpt-4.1",
             name="GPT-4.1",
