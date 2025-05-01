@@ -15,7 +15,7 @@ including authentication, request formatting, and response processing.
 
 import base64
 import os
-from typing import List, Dict, Any, Optional, Union, Callable, Generator
+from typing import List, Dict, Any, Optional, Callable
 import openai
 
 # Import model data
