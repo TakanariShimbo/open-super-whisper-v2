@@ -206,7 +206,7 @@ class InstructionManager:
         if len(self.sets) <= 1:
             return False
                 
-        # Now that active_set is handled safely, delete the set
+        # delete the set
         del self.sets[name]
         return True
     
