@@ -3,7 +3,7 @@
 Command-line test for STTProcessor
 
 This test verifies the functionality of the STTProcessor class
-from the new_core.stt module.
+from the core.stt module.
 """
 
 import os
@@ -14,7 +14,7 @@ import time
 # Add parent directory to path so we can import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from new_core.stt.stt_processor import STTProcessor
+from core.stt.stt_processor import STTProcessor
 
 
 def test_stt_processor(audio_file_path: str, api_key: str = None, 

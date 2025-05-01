@@ -3,7 +3,7 @@
 Command-line test for LLMModel
 
 This test verifies the functionality of the LLMModel class
-from the new_core.llm module.
+from the core.llm module.
 """
 
 import os
@@ -13,7 +13,7 @@ import argparse
 # Add parent directory to path so we can import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from new_core.llm.llm_model import LLMModel
+from core.llm.llm_model import LLMModel
 
 
 def test_llm_model(verbose: bool = False):

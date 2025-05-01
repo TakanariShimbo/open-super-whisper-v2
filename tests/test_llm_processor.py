@@ -3,7 +3,7 @@
 Command-line test for LLMProcessor
 
 This test verifies the functionality of the LLMProcessor class
-from the new_core.llm module.
+from the core.llm module.
 """
 
 import os
@@ -14,7 +14,7 @@ import time
 # Add parent directory to path so we can import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from new_core.llm.llm_processor import LLMProcessor
+from core.llm.llm_processor import LLMProcessor
 
 
 def stream_callback(chunk: str) -> None:

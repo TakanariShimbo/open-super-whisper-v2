@@ -3,7 +3,7 @@
 Command-line test for AudioChunker
 
 This test verifies the functionality of the AudioChunker class
-from the new_core.stt module.
+from the core.stt module.
 """
 
 import os
@@ -13,7 +13,7 @@ import argparse
 # Add parent directory to path so we can import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from new_core.stt.audio_chunker import AudioChunker
+from core.stt.audio_chunker import AudioChunker
 
 
 def test_audio_chunking(audio_file_path: str, max_size_mb: float = 24.0, verbose: bool = False):

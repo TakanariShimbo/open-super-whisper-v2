@@ -3,7 +3,7 @@
 Command-line test for STTLLMPipeline
 
 This test verifies the functionality of the STTLLMPipeline class
-from the new_core.pipelines module.
+from the core.pipelines module.
 """
 
 import os
@@ -14,7 +14,7 @@ import time
 # Add parent directory to path so we can import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from new_core.pipelines.stt_llm_pipeline import STTLLMPipeline
+from core.pipelines.stt_llm_pipeline import STTLLMPipeline
 
 
 def stream_callback(chunk: str) -> None:

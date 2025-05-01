@@ -3,7 +3,7 @@
 Command-line test for LLMModelManager
 
 This test verifies the functionality of the LLMModelManager class
-from the new_core.llm module.
+from the core.llm module.
 """
 
 import os
@@ -14,7 +14,7 @@ import json
 # Add parent directory to path so we can import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from new_core.llm.llm_model_manager import LLMModelManager
+from core.llm.llm_model_manager import LLMModelManager
 
 
 def test_model_manager(verbose: bool = False):

@@ -3,7 +3,7 @@
 Command-line test for AudioRecorder
 
 This test verifies the functionality of the AudioRecorder class
-from the new_core.recorder module.
+from the core.recorder module.
 """
 
 import os
@@ -15,7 +15,7 @@ import threading
 # Add parent directory to path so we can import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from new_core.recorder.audio_recorder import AudioRecorder
+from core.recorder.audio_recorder import AudioRecorder
 
 
 def test_list_devices():

@@ -3,7 +3,7 @@
 Command-line test for PipelineResult
 
 This test verifies the functionality of the PipelineResult class
-from the new_core.pipelines module.
+from the core.pipelines module.
 """
 
 import os
@@ -13,7 +13,7 @@ import argparse
 # Add parent directory to path so we can import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from new_core.pipelines.pipeline_result import PipelineResult
+from core.pipelines.pipeline_result import PipelineResult
 
 
 def test_pipeline_result(verbose: bool = False):

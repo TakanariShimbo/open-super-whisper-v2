@@ -3,7 +3,7 @@
 Command-line test for InstructionSet
 
 This test verifies the functionality of the InstructionSet class
-from the new_core.utils module.
+from the core.utils module.
 """
 
 import os
@@ -14,7 +14,7 @@ import json
 # Add parent directory to path so we can import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from new_core.utils.instruction_set import InstructionSet
+from core.utils.instruction_set import InstructionSet
 
 
 def test_instruction_set(verbose: bool = False):

@@ -3,7 +3,7 @@
 Command-line test for HotKeyManager
 
 This test verifies the functionality of the HotKeyManager class
-from the new_core.ui module.
+from the core.ui module.
 """
 
 import os
@@ -15,7 +15,7 @@ import threading
 # Add parent directory to path so we can import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from new_core.ui.hot_key_manager import HotKeyManager
+from core.ui.hot_key_manager import HotKeyManager
 
 
 def test_callback(shortcut_name: str):

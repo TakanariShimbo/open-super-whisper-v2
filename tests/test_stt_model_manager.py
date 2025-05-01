@@ -3,7 +3,7 @@
 Command-line test for STTModelManager
 
 This test verifies the functionality of the STTModelManager class
-from the new_core.stt module.
+from the core.stt module.
 """
 
 import os
@@ -14,7 +14,7 @@ import json
 # Add parent directory to path so we can import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from new_core.stt.stt_model_manager import STTModelManager
+from core.stt.stt_model_manager import STTModelManager
 
 
 def test_model_manager(verbose: bool = False):
