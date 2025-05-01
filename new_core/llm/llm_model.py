@@ -7,7 +7,6 @@ a consistent interface for accessing model information.
 """
 
 from dataclasses import dataclass
-from typing import List, Optional, Dict, ClassVar, Any
 
 
 @dataclass

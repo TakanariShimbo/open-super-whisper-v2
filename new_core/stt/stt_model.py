@@ -4,16 +4,9 @@ Speech-to-Text Model Data Model
 This module provides data structures and utilities for managing speech-to-text model data
 throughout the application. It centralizes model definitions and provides
 a consistent interface for accessing model information.
-
-Models Evolution:
-----------------
-- whisper-1: Released in 2022, the original Whisper model with broad language support
-- gpt-4o-mini-transcribe: Released in 2024, faster and more efficient model
-- gpt-4o-transcribe: Released in 2024, highest accuracy model with enhanced capabilities
 """
 
 from dataclasses import dataclass
-from typing import List, Dict, ClassVar, Optional, Union, Any
 
 
 @dataclass
