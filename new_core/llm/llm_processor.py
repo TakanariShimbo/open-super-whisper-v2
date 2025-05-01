@@ -71,6 +71,27 @@ class LLMProcessor:
         self.model_id = model_id
         self.system_instruction: str = ""
     
+    def set_api_key(self, api_key: str) -> None:
+        """
+        Set a new API key.
+        
+        Parameters
+        ----------
+        api_key : str
+            New API key to use.
+            
+        Raises
+        ------
+        ValueError
+            If API key is empty.
+        """
+        if not api_key:
+            raise ValueError("API key cannot be empty")
+        
+        self.api_key = api_key
+        # Update the client with the new API key
+        self.client = openai.OpenAI(api_key=self.api_key)
+    
     def set_model(self, model_id: str) -> None:
         """
         Set the LLM model to use.
@@ -145,99 +166,88 @@ class LLMProcessor:
             # Text-only content can also use the array format for consistency
             return [{"type": "text", "text": text}]
     
-    def process_text(self, text: str, image_data: bytes = None) -> str:
+    def _create_api_messages(self, text: str, image_data: Optional[bytes] = None) -> List[Dict[str, Any]]:
         """
-        Process text and optionally an image using the configured LLM.
-        
-        This method sends the provided text (and optional image) to the API
-        for processing with the currently configured model. It handles creating the
-        appropriate system message and formatting the user content.
-        
-        Parameters
-        ----------
-        text : str
-            Text to process through the LLM. This can be a prompt, question, or
-            any text content you want the LLM to respond to.
-            Example: "Summarize the following transcription: {...}"
-        image_data : bytes, optional
-            Image data in bytes format that will be sent alongside the text.
-            This must be raw image bytes that can be base64 encoded.
-            Example: open("image.jpg", "rb").read()
-            By default None.
-            
-        Returns
-        -------
-        str
-            The complete text response from the LLM.
-            Example: "Based on the provided transcription, the main points are..."
-            
-        Raises
-        ------
-        ValueError
-            If the text input is empty or invalid.
-        """
-        if not text or not isinstance(text, str):
-            raise ValueError("Text input must be a non-empty string")
-
-        system_message = self._create_llm_system_message()
-        
-        # Format user content
-        user_content = self._format_user_content(text, image_data)
-        
-        # Make API call
-        response = self.client.chat.completions.create(
-            model=self.model_id,
-            messages=[
-                {"role": "system", "content": system_message},
-                {"role": "user", "content": user_content}
-            ]
-        )
-        
-        # Extract and return the response text
-        if response.choices and len(response.choices) > 0:
-            return response.choices[0].message.content
-        else:
-            return "No response generated."
-    
-    def process_text_with_stream(self, text: str, callback: Optional[Callable[[str], None]] = None, 
-                            image_data: Optional[bytes] = None) -> str:
-        """
-        Process text through the LLM with streaming responses, optionally with an image.
+        Create formatted messages for API call.
         
         Parameters
         ----------
         text : str
             Text to process.
+        image_data : Optional[bytes], optional
+            Image data in bytes format, by default None.
+            
+        Returns
+        -------
+        List[Dict[str, Any]]
+            Formatted messages for API call.
+        """
+        system_message = self._create_llm_system_message()
+        user_content = self._format_user_content(text, image_data)
+        
+        return [
+            {"role": "system", "content": system_message},
+            {"role": "user", "content": user_content}
+        ]
+    
+    def _make_api_call(self, messages: List[Dict[str, Any]], stream: bool = False) -> Any:
+        """
+        Make API call to the LLM service.
+        
+        Parameters
+        ----------
+        messages : List[Dict[str, Any]]
+            Formatted messages for API call.
+        stream : bool, optional
+            Whether to stream the response, by default False.
+            
+        Returns
+        -------
+        Any
+            API response object.
+        """
+        return self.client.chat.completions.create(
+            model=self.model_id,
+            messages=messages,
+            stream=stream
+        )
+    
+    def _process_standard_response(self, response: Any) -> str:
+        """
+        Process standard (non-streaming) API response.
+        
+        Parameters
+        ----------
+        response : Any
+            API response object.
+            
+        Returns
+        -------
+        str
+            Extracted text content from response.
+        """
+        if response.choices and len(response.choices) > 0:
+            return response.choices[0].message.content
+        else:
+            return "No response generated."
+    
+    def _process_streaming_response(self, response_stream: Any, 
+                                    callback: Optional[Callable[[str], None]] = None) -> str:
+        """
+        Process streaming API response.
+        
+        Parameters
+        ----------
+        response_stream : Any
+            Streaming API response.
         callback : Optional[Callable[[str], None]], optional
             Function to call with each response chunk, by default None.
-            If None, chunks are accumulated and the final result is returned.
-        image_data : bytes, optional
-            Image data in bytes format, by default None.
             
         Returns
         -------
         str
             Complete LLM response (all chunks combined).
         """
-        if not text or not isinstance(text, str):
-            raise ValueError("Text input must be a non-empty string")
-        
-        system_message = self._create_llm_system_message()
-        
-        # Format user content
-        user_content = self._format_user_content(text, image_data)
-        
-        # Make streaming API call
-        response_stream = self.client.chat.completions.create(
-            model=self.model_id,
-            messages=[
-                {"role": "system", "content": system_message},
-                {"role": "user", "content": user_content}
-            ],
-            stream=True
-        )
-        
-        # Process streaming response
         full_response = ""
         
         for chunk in response_stream:
@@ -259,23 +269,50 @@ class LLMProcessor:
         
         return full_response
     
-    def set_api_key(self, api_key: str) -> None:
+    def process_text(self, text: str, image_data: bytes = None) -> str:
         """
-        Set a new API key.
+        Process text and optionally an image using the configured LLM.
         
         Parameters
         ----------
-        api_key : str
-            New API key to use.
+        text : str
+            Text to process through the LLM.
+        image_data : bytes, optional
+            Image data in bytes format, by default None.
+            
+        Returns
+        -------
+        str
+            The complete text response from the LLM.
             
         Raises
         ------
         ValueError
-            If API key is empty.
+            If the text input is empty or invalid.
         """
-        if not api_key:
-            raise ValueError("API key cannot be empty")
+        messages = self._create_api_messages(text, image_data)
+        response = self._make_api_call(messages)
+        return self._process_standard_response(response)
+    
+    def process_text_with_stream(self, text: str, callback: Optional[Callable[[str], None]] = None, 
+                            image_data: Optional[bytes] = None) -> str:
+        """
+        Process text through the LLM with streaming responses, optionally with an image.
         
-        self.api_key = api_key
-        # Update the client with the new API key
-        self.client = openai.OpenAI(api_key=self.api_key)
+        Parameters
+        ----------
+        text : str
+            Text to process.
+        callback : Optional[Callable[[str], None]], optional
+            Function to call with each response chunk, by default None.
+        image_data : bytes, optional
+            Image data in bytes format, by default None.
+            
+        Returns
+        -------
+        str
+            Complete LLM response (all chunks combined).
+        """
+        messages = self._create_api_messages(text, image_data)
+        response_stream = self._make_api_call(messages, stream=True)
+        return self._process_streaming_response(response_stream, callback)
