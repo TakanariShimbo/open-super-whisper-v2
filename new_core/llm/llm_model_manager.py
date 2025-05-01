@@ -103,7 +103,7 @@ class LLMModelManager:
                 return model
         # Fallback to first model if no default is marked
         return cls._SUPPORTED_LLM_MODELS[0]
-           
+    
     @classmethod
     def supports_image_input(cls, model_id: str) -> bool:
         """
@@ -121,7 +121,7 @@ class LLMModelManager:
         """
         model = cls.find_model_by_id(model_id)
         return model.supports_image if model else False
-
+    
     @classmethod
     def to_api_format(cls) -> List[Dict[str, str]]:
         """
