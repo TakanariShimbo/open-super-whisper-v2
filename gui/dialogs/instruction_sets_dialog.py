@@ -20,11 +20,11 @@ from gui.dialogs.simple_message_dialog import SimpleMessageDialog
 from gui.dialogs.hotkey_dialog import HotkeyDialog
 from gui.thread_management.hotkey_bridge import HotkeyBridge
 
-from core.instructions import InstructionSetManager, InstructionSet
+from old_core.instructions import InstructionSetManager, InstructionSet
 
-from core.models.language import LanguageManager
-from core.models.whisper import OpenAIWhisperModelManager
-from core.models.llm import OpenAILLMModelManager
+from old_core.models.language import LanguageManager
+from old_core.models.whisper import OpenAIWhisperModelManager
+from old_core.models.llm import OpenAILLMModelManager
 
 
 class GUIInstructionSetManager:

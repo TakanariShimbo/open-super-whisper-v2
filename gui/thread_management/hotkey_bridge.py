@@ -9,7 +9,7 @@ from PyQt6.QtCore import QObject, pyqtSignal, QThread, Qt
 from typing import Dict, Callable, Optional
 import threading
 
-from core.hotkeys import HotkeyManager
+from old_core.hotkeys import HotkeyManager
 
 class HotkeyBridge(QObject):
     """

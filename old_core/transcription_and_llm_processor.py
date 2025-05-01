@@ -10,8 +10,8 @@ from typing import Optional, List, Union, Callable
 import os
 import openai
 
-from core.transcriber import OpenAIWhisperTranscriber
-from core.llm_processor import OpenAILLMProcessor
+from old_core.transcriber import OpenAIWhisperTranscriber
+from old_core.llm_processor import OpenAILLMProcessor
 
 
 @dataclass

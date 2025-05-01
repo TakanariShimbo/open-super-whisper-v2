@@ -5,8 +5,8 @@ This package contains data models and managers for different types of data
 used throughout the application, such as language and whisper model definitions.
 """
 
-from core.models.language import Language, LanguageManager
-from core.models.whisper import OpenAIWhisperModel, OpenAIWhisperModelManager
+from old_core.models.language import Language, LanguageManager
+from old_core.models.whisper import OpenAIWhisperModel, OpenAIWhisperModelManager
 
 # Re-export core classes for easier imports
 __all__ = [

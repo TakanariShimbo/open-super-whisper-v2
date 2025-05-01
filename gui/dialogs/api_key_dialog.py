@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, pyqtSlot
 
-from core.transcriber import OpenAIWhisperTranscriber
+from old_core.transcriber import OpenAIWhisperTranscriber
 from gui.resources.labels import AppLabels
 from gui.dialogs.simple_message_dialog import SimpleMessageDialog
 

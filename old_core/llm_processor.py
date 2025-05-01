@@ -18,8 +18,8 @@ import os
 from typing import List, Dict, Any, Optional, Union, Callable, Generator
 import openai
 
-# Import model data from core.models
-from core.models.llm import OpenAILLMModelManager
+# Import model data from old_core.models
+from old_core.models.llm import OpenAILLMModelManager
 
 
 class OpenAILLMProcessor:

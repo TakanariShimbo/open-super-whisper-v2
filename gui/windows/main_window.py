@@ -22,10 +22,10 @@ from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QSettings, QUrl, QSize, QBuffer
 from PyQt6.QtGui import QIcon, QAction, QImage
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 
-from core.recorder import AudioInputRecorder, NoMicrophoneError, MicrophoneAccessError, MicrophoneError
-from core.transcription_and_llm_processor import TranscriptionAndLLMProcessor, TranscriptionAndLLMResult
+from old_core.recorder import AudioInputRecorder, NoMicrophoneError, MicrophoneAccessError, MicrophoneError
+from old_core.transcription_and_llm_processor import TranscriptionAndLLMProcessor, TranscriptionAndLLMResult
 
-from core.hotkeys import HotkeyManager
+from old_core.hotkeys import HotkeyManager
 from gui.resources.config import AppConfig
 from gui.resources.labels import AppLabels
 from gui.dialogs.api_key_dialog import APIKeyDialog

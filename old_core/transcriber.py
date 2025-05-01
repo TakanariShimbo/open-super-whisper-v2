@@ -11,12 +11,12 @@ from pathlib import Path
 import openai
 from typing import List, Dict, Optional, Union
 
-# Import model data from core.models
-from core.models.whisper import OpenAIWhisperModelManager
+# Import model data from old_core.models
+from old_core.models.whisper import OpenAIWhisperModelManager
 
 # Import chunking and progress tracking modules
-from core.audio_chunker import AudioChunker
-from core.progress_tracker import ChunkProgressTracker
+from old_core.audio_chunker import AudioChunker
+from old_core.progress_tracker import ChunkProgressTracker
 
 
 class OpenAIWhisperTranscriber:
