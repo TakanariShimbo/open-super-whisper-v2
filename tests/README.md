@@ -4,7 +4,7 @@ This directory contains command-line test tools for the various components of th
 
 ## Overview
 
-Each test file corresponds to a specific component in the `new_core` directory and provides a way to test the functionality from the command line. The tests are written in Python and can be run directly.
+Each test file corresponds to a specific component in the `core` directory and provides a way to test the functionality from the command line. The tests are written in Python and can be run directly.
 
 ## Requirements
 
