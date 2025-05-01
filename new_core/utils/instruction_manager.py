@@ -6,7 +6,7 @@ used in speech-to-text and LLM processing.
 """
 
 from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 
 
 @dataclass
@@ -22,17 +22,17 @@ class InstructionSet:
     between instruction sets using keyboard shortcuts.
     """
     name: str
-    stt_vocabulary: List[str] = field(default_factory=list)
-    stt_instructions: List[str] = field(default_factory=list)
+    stt_vocabulary: str = ""
+    stt_instructions: str = ""
     stt_language: Optional[str] = None  # Language code (e.g., "en", "ja"), None for auto-detection
-    stt_model: str = "gpt-4o-transcribe"  # Default model ID
+    stt_model: str = "gpt-4o-transcribe"
     
     # LLM settings
     llm_enabled: bool = False
     llm_model: str = "gpt-4o"
-    llm_instructions: List[str] = field(default_factory=list)
-    llm_clipboard_text_enabled: bool = False  # Whether to include clipboard text in LLM input
-    llm_clipboard_image_enabled: bool = False  # Whether to include clipboard images in LLM input
+    llm_instructions: str = ""
+    llm_clipboard_text_enabled: bool = False
+    llm_clipboard_image_enabled: bool = False
     
     # Hotkey setting
     hotkey: str = ""  # Hotkey string (e.g., "ctrl+shift+1", "alt+f1")
@@ -54,13 +54,13 @@ class InstructionSet:
         """
         return cls(
             name=data.get("name", ""),
-            stt_vocabulary=data.get("stt_vocabulary", []),
-            stt_instructions=data.get("stt_instructions", []),
+            stt_vocabulary=data.get("stt_vocabulary", ""),
+            stt_instructions=data.get("stt_instructions", ""),
             stt_language=data.get("stt_language", None),
             stt_model=data.get("stt_model", "gpt-4o-transcribe"),
             llm_enabled=data.get("llm_enabled", False),
             llm_model=data.get("llm_model", "gpt-4o"),
-            llm_instructions=data.get("llm_instructions", []),
+            llm_instructions=data.get("llm_instructions", ""),
             llm_clipboard_text_enabled=data.get("llm_clipboard_text_enabled", False),
             llm_clipboard_image_enabled=data.get("llm_clipboard_image_enabled", False),
             hotkey=data.get("hotkey", "")
@@ -89,20 +89,20 @@ class InstructionSet:
             "hotkey": self.hotkey
         }
     
-    def update(self, stt_vocabulary: List[str] = None, stt_instructions: List[str] = None,
+    def update(self, stt_vocabulary: Optional[str] = None, stt_instructions: Optional[str] = None,
               stt_language: Optional[str] = None, stt_model: Optional[str] = None,
               llm_enabled: Optional[bool] = None, llm_model: Optional[str] = None,
-              llm_instructions: List[str] = None, llm_clipboard_text_enabled: Optional[bool] = None,
+              llm_instructions: Optional[str] = None, llm_clipboard_text_enabled: Optional[bool] = None,
               llm_clipboard_image_enabled: Optional[bool] = None, hotkey: Optional[str] = None) -> None:
         """
         Update this instruction set with new values.
         
         Parameters
         ----------
-        stt_vocabulary : List[str], optional
-            New vocabulary list, by default None (unchanged).
-        stt_instructions : List[str], optional
-            New instructions list, by default None (unchanged).
+        stt_vocabulary : str, optional
+            New vocabulary string, by default None (unchanged).
+        stt_instructions : str, optional
+            New instructions string, by default None (unchanged).
         stt_language : Optional[str], optional
             Language code (e.g., "en", "ja"), by default None (unchanged).
         stt_model : str, optional
@@ -111,8 +111,8 @@ class InstructionSet:
             Whether LLM processing is enabled, by default None (unchanged).
         llm_model : str, optional
             LLM model ID to use, by default None (unchanged).
-        llm_instructions : List[str], optional
-            List of LLM system instructions, by default None (unchanged).
+        llm_instructions : str, optional
+            LLM system instructions, by default None (unchanged).
         llm_clipboard_text_enabled : bool, optional
             Whether to include clipboard text in LLM input, by default None (unchanged).
         llm_clipboard_image_enabled : bool, optional
@@ -154,7 +154,7 @@ class InstructionManager:
     """
     Manager for instruction sets.
     
-    This class provides methods to create, edit, and manage
+    This class provides methods to add, delete, and manage
     instruction sets for speech-to-text and LLM processing.
     """
     
@@ -163,7 +163,7 @@ class InstructionManager:
         Initialize the InstructionManager.
         """
         self.sets: Dict[str, InstructionSet] = {}
-     
+        
     def add_set(self, instruction_set: InstructionSet) -> bool:
         """
         Add a new instruction set.
