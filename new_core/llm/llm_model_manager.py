@@ -5,7 +5,7 @@ This module provides functionality for managing LLM model information,
 including model selection, validation, and information retrieval.
 """
 
-from typing import List, Optional, Dict, ClassVar, Any
+from typing import List, Optional, Dict, ClassVar
 
 from .llm_model import LLMModel
 
