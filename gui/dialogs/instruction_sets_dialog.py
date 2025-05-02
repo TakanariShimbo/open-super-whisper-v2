@@ -620,8 +620,8 @@ class InstructionSetsDialog(QDialog):
         # Define UI update function
         def update_ui_with_set(instruction_set):
             # Update editors
-            self.vocabulary_edit.setPlainText("\n".join(instruction_set.stt_vocabulary))
-            self.instructions_edit.setPlainText("\n".join(instruction_set.stt_instructions))
+            self.vocabulary_edit.setPlainText(instruction_set.stt_vocabulary)
+            self.instructions_edit.setPlainText(instruction_set.stt_instructions)
             
             # Update language selection
             language_index = 0  # Default to auto-detect
@@ -657,7 +657,7 @@ class InstructionSetsDialog(QDialog):
             self.llm_model_combo.setCurrentIndex(llm_model_index)
             
             # Update LLM instructions
-            self.llm_instructions_edit.setPlainText("\n".join(instruction_set.llm_instructions))
+            self.llm_instructions_edit.setPlainText(instruction_set.llm_instructions)
             
             # Check if model supports image input
             supports_image = False
@@ -1053,8 +1053,8 @@ class InstructionSetsDialog(QDialog):
         name = self.sets_list.item(row).text()
         
         # Get edited values
-        vocabulary = self.vocabulary_edit.toPlainText().strip().split("\n")
-        instructions = self.instructions_edit.toPlainText().strip().split("\n")
+        vocabulary = self.vocabulary_edit.toPlainText()
+        instructions = self.instructions_edit.toPlainText()
         
         # Filter empty lines
         vocabulary = [v for v in vocabulary if v]
@@ -1067,7 +1067,7 @@ class InstructionSetsDialog(QDialog):
         # Get LLM settings
         llm_enabled = self.llm_enabled_checkbox.isChecked()
         llm_model = self.llm_model_combo.currentData()
-        llm_instructions = self.llm_instructions_edit.toPlainText().strip().split("\n")
+        llm_instructions = self.llm_instructions_edit.toPlainText()
         
         # Get LLM clipboard settings
         llm_clipboard_text_enabled = self.llm_clipboard_text_checkbox.isChecked()
@@ -1075,9 +1075,6 @@ class InstructionSetsDialog(QDialog):
         
         # Get hotkey
         hotkey = self.hotkey_input.text()
-        
-        # Filter empty LLM instructions
-        llm_instructions = [i for i in llm_instructions if i]
         
         def save_operation():
             # Update set
