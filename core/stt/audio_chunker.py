@@ -5,12 +5,15 @@ This module provides functionality to split large audio files into smaller chunk
 to work around file size limitations for speech-to-text processing.
 """
 
+# Standard library imports
 import os
 import tempfile
 import math
-import ffmpeg
 from pathlib import Path
 from typing import List, Optional
+
+# Third-party imports
+import ffmpeg
 
 class AudioChunker:
     """

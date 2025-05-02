@@ -5,15 +5,16 @@ This module provides a complete implementation for speech-to-text processing.
 Includes support for processing large audio files by splitting them into smaller chunks.
 """
 
+# Standard library imports
 import os
 from pathlib import Path
-import openai
 from typing import List, Dict, Optional
 
-# Import model data
-from .stt_model_manager import STTModelManager
+# Third-party imports
+import openai
 
-# Import chunking and progress tracking modules
+# Local application imports
+from .stt_model_manager import STTModelManager
 from .audio_chunker import AudioChunker
 
 

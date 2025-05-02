@@ -13,11 +13,14 @@ The primary class (LLMProcessor) handles all communication with the LLM API,
 including authentication, request formatting, and response processing.
 """
 
+# Standard library imports
 import base64
 from typing import List, Dict, Any, Optional, Callable
+
+# Third-party imports
 import openai
 
-# Import model data
+# Local application imports
 from .llm_model_manager import LLMModelManager
 
 

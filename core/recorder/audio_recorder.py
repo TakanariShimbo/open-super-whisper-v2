@@ -4,14 +4,17 @@ Audio Recorder Module
 This module provides implementation for recording audio from the microphone.
 """
 
+# Standard library imports
 import os
 import threading
 import tempfile
+from datetime import datetime
+from typing import Optional, List, Dict, Any
+
+# Third-party imports
 import numpy as np
 import sounddevice as sd
 import soundfile as sf
-from datetime import datetime
-from typing import Optional, List, Dict, Any
 
 
 class AudioRecorder:

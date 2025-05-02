@@ -5,8 +5,10 @@ This module provides a unified processing pipeline that integrates
 both speech-to-text transcription and LLM processing in a seamless way.
 """
 
+# Standard library imports
 from typing import Optional, Callable
 
+# Local application imports
 from ..stt.stt_processor import STTProcessor
 from ..llm.llm_processor import LLMProcessor
 from .pipeline_result import PipelineResult

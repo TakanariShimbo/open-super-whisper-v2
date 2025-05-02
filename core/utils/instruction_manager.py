@@ -5,8 +5,10 @@ This module provides functionality for managing instruction sets
 used in speech-to-text and LLM processing.
 """
 
+# Standard library imports
 from typing import List, Optional, Dict, Any
 
+# Local application imports
 from .instruction_set import InstructionSet
 
 

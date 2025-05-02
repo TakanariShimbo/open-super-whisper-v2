@@ -4,7 +4,10 @@ Hotkey Manager Implementation
 This module provides a platform-independent implementation for registering and managing global hotkeys.
 """
 
+# Standard library imports
 from typing import Callable, Optional
+
+# Third-party imports
 from pynput import keyboard
 
 
