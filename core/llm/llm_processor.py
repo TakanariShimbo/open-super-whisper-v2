@@ -42,14 +42,14 @@ class LLMProcessor:
     # Use model manager for available models
     AVAILABLE_MODELS = LLMModelManager.to_api_format()
     
-    def __init__(self, api_key: str = None, model_id: str = "gpt-4o"):
+    def __init__(self, api_key: str, model_id: str = "gpt-4o"):
         """
         Initialize the LLMProcessor.
         
         Parameters
         ----------
-        api_key : str, optional
-            API key, by default None. If None, tries to get from environment.
+        api_key : str
+            API key.
         model_id : str, optional
             LLM model to use, by default "gpt-4o".
             
@@ -58,10 +58,9 @@ class LLMProcessor:
         ValueError
             If no API key is provided and none is found in environment variables.
         """
-        # Get API key from parameter or environment variable
-        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
-        
-        if not self.api_key:
+        # Set API key
+        is_valid = self.set_api_key(api_key)
+        if not is_valid:
             raise ValueError("API key is required. Provide it directly or set OPENAI_API_KEY environment variable.")
         
         # Initialize OpenAI client
@@ -71,7 +70,7 @@ class LLMProcessor:
         self.model_id = model_id
         self.system_instruction: str = ""
     
-    def set_api_key(self, api_key: str) -> None:
+    def set_api_key(self, api_key: str) -> bool:
         """
         Set a new API key.
         
@@ -85,12 +84,15 @@ class LLMProcessor:
         ValueError
             If API key is empty.
         """
-        if not api_key:
-            raise ValueError("API key cannot be empty")
-        
+        client = openai.OpenAI(api_key=api_key)
+        try:
+            client.models.list()
+        except openai.AuthenticationError:
+            return False
+
         self.api_key = api_key
-        # Update the client with the new API key
-        self.client = openai.OpenAI(api_key=self.api_key)
+        self.client = client
+        return True
     
     def set_model(self, model_id: str) -> None:
         """

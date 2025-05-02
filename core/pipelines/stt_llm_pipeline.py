@@ -21,14 +21,14 @@ class STTLLMPipeline:
     a seamless processing pipeline, with optional LLM processing.
     """
     
-    def __init__(self, api_key: str = None, stt_model_id: str = "gpt-4o-transcribe", llm_model_id: str = "gpt-4o"):
+    def __init__(self, api_key, stt_model_id: str = "gpt-4o-transcribe", llm_model_id: str = "gpt-4o"):
         """
         Initialize the STTLLMPipeline.
         
         Parameters
         ----------
-        api_key : str, optional
-            API key, by default None. If None, tries to get from environment.
+        api_key : str
+            API key.
         stt_model_id : str, optional
             Speech-to-text model to use, by default "gpt-4o-transcribe".
         llm_model_id : str, optional
@@ -39,15 +39,9 @@ class STTLLMPipeline:
         ValueError
             If no API key is provided and none is found in environment variables.
         """
-        # Get API key from parameter or environment variable
-        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
-        
-        if not self.api_key:
-            raise ValueError("API key is required. Provide it directly or set OPENAI_API_KEY environment variable.")
-        
         # Initialize components
-        self.stt_processor = STTProcessor(api_key=self.api_key, model_id=stt_model_id)
-        self.llm_processor = LLMProcessor(api_key=self.api_key, model_id=llm_model_id)
+        self.stt_processor = STTProcessor(api_key=api_key, model_id=stt_model_id)
+        self.llm_processor = LLMProcessor(api_key=api_key, model_id=llm_model_id)
         
         # Processing state
         self.is_llm_processing_enabled = False
@@ -62,27 +56,6 @@ class STTLLMPipeline:
             Whether to enable LLM processing, by default True.
         """
         self.is_llm_processing_enabled = enabled
-    
-    def set_api_key(self, api_key: str) -> None:
-        """
-        Set a new API key for all processors.
-        
-        Parameters
-        ----------
-        api_key : str
-            New API key to use.
-            
-        Raises
-        ------
-        ValueError
-            If API key is empty.
-        """
-        if not api_key:
-            raise ValueError("API key cannot be empty")
-        
-        self.api_key = api_key
-        self.stt_processor.set_api_key(api_key)
-        self.llm_processor.set_api_key(api_key)
     
     # STT processor delegation methods
     def set_stt_model(self, model_id: str) -> None:
