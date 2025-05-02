@@ -105,15 +105,15 @@ class MainWindow(QMainWindow):
         # Initialize transcription processor if API key is available
         try:
             self.unified_processor = TranscriptionAndLLMProcessor(openai_api_key=self.api_key)
-            
-            # Apply settings from selected instruction set
-            self.apply_instruction_set_settings()
-                
         except ValueError:
             self.unified_processor = None
         
         # Set up UI
         self.init_ui()
+        
+        # Apply settings from selected instruction set - must be after UI initialization
+        if self.unified_processor:
+            self.apply_instruction_set_settings()
         
         # Set up ThreadManager signal connections
         self._setup_thread_manager_connections()
