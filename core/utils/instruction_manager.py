@@ -110,7 +110,23 @@ class InstructionManager:
             List of all instruction sets.
         """
         return list(self.sets.values())
-    
+
+    def find_set_by_name(self, name: str) -> Optional[InstructionSet]:
+        """
+        Find an instruction set by its name.
+        
+        Parameters
+        ----------
+        name : str
+            Name of the instruction set to find.
+            
+        Returns
+        -------
+        Optional[InstructionSet]
+            The instruction set with the given name, or None if not found.
+        """
+        return self.sets.get(name)
+
     def find_set_by_hotkey(self, hotkey: str) -> Optional[InstructionSet]:
         """
         Find an instruction set by its hotkey.
