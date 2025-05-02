@@ -8,7 +8,7 @@ import os
 import sys
 
 
-def getResourcePath(relative_path: str) -> str:
+def get_resource_path(relative_path: str) -> str:
     """
     Get the absolute path to a resource file.
     

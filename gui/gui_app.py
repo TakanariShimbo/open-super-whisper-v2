@@ -12,7 +12,7 @@ from PyQt6.QtGui import QIcon
 
 from gui.resources.config import AppConfig
 from gui.resources.labels import AppLabels
-from gui.utils.resource_helper import getResourcePath
+from gui.utils.resource_helper import get_resource_path
 from gui.dialogs.simple_message_dialog import SimpleMessageDialog
 from gui.windows import MainWindow
 
@@ -32,7 +32,7 @@ def start_application():
     app = QApplication(sys.argv)
     
     # Set application icon
-    icon_path = getResourcePath(AppConfig.ICON_PATH)
+    icon_path = get_resource_path(AppConfig.ICON_PATH)
     
     if os.path.exists(icon_path):
         app.setWindowIcon(QIcon(icon_path))

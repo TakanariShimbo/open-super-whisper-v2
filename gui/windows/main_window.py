@@ -31,7 +31,7 @@ from gui.dialogs.instruction_sets_dialog import InstructionSetsDialog, GUIInstru
 from gui.dialogs.simple_message_dialog import SimpleMessageDialog
 from gui.components.widgets.status_indicator import StatusIndicatorWindow
 from gui.components.widgets.markdown_text_browser import MarkdownTextBrowser
-from gui.utils.resource_helper import getResourcePath
+from gui.utils.resource_helper import get_resource_path
 
 # Thread management imports
 from gui.thread_management.thread_manager import ThreadManager
@@ -251,7 +251,7 @@ class MainWindow(QMainWindow):
         self.setMinimumSize(700, 600)
         
         # Set application icon
-        icon_path = getResourcePath("assets/icon.png")
+        icon_path = get_resource_path(AppConfig.ICON_PATH)
         
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
@@ -1224,7 +1224,7 @@ class MainWindow(QMainWindow):
         if not self.enable_sound:
             return
         # Use sound file from assets
-        sound_path = getResourcePath(AppConfig.START_SOUND_PATH)
+        sound_path = get_resource_path(AppConfig.START_SOUND_PATH)
         self.start_player.setSource(QUrl.fromLocalFile(sound_path))
         self.start_audio_output.setVolume(0.5)
         self.start_player.play()
@@ -1238,7 +1238,7 @@ class MainWindow(QMainWindow):
         if not self.enable_sound:
             return
         # Use sound file from assets
-        sound_path = getResourcePath(AppConfig.STOP_SOUND_PATH)
+        sound_path = get_resource_path(AppConfig.STOP_SOUND_PATH)
         self.stop_player.setSource(QUrl.fromLocalFile(sound_path))
         self.stop_audio_output.setVolume(0.5)
         self.stop_player.play()
@@ -1252,7 +1252,7 @@ class MainWindow(QMainWindow):
         if not self.enable_sound:
             return
         # Use sound file from assets
-        sound_path = getResourcePath(AppConfig.COMPLETE_SOUND_PATH)
+        sound_path = get_resource_path(AppConfig.COMPLETE_SOUND_PATH)
         self.complete_player.setSource(QUrl.fromLocalFile(sound_path))
         self.complete_audio_output.setVolume(0.5)
         self.complete_player.play()
@@ -1266,7 +1266,7 @@ class MainWindow(QMainWindow):
         recording, and exit the application.
         """
         # Get icon file path
-        icon_path = getResourcePath("assets/icon.png")
+        icon_path = get_resource_path(AppConfig.ICON_PATH)
         
         if os.path.exists(icon_path):
             self.tray_icon = QSystemTrayIcon(QIcon(icon_path), self)
