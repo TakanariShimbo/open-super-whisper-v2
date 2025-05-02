@@ -21,7 +21,7 @@ from gui.thread_management.hotkey_bridge import HotkeyBridge
 from core.utils.instruction_set import InstructionSet
 from core.utils.instruction_manager import InstructionManager
 
-from old_core.models.language import LanguageManager
+from core.stt.stt_lang_model_manager import STTLangModelManager
 from core.stt.stt_model_manager import STTModelManager
 from core.llm.llm_model_manager import LLMModelManager
 
@@ -60,12 +60,12 @@ class GUIInstructionSetManager:
         """Get all instruction sets."""
         return self.core_manager.get_all_sets()
     
-    def create_set(self, name, vocabulary=None, instructions=None, language=None, model=None,
+    def create_set(self, name, vocabulary=None, instructions=None, stt_language=None, stt_model=None,
                   llm_enabled=False, llm_model=None, llm_instructions=None, 
                   llm_clipboard_text_enabled=False, llm_clipboard_image_enabled=False, hotkey=""):
         """Create a new instruction set."""
         instruction_set = InstructionSet(
-            name, vocabulary, instructions, language, model,
+            name, vocabulary, instructions, stt_language, stt_model,
             llm_enabled, llm_model, llm_instructions, 
             llm_clipboard_text_enabled, llm_clipboard_image_enabled, hotkey
         )
@@ -73,7 +73,7 @@ class GUIInstructionSetManager:
         self.save_to_settings()
         return result
     
-    def update_set(self, name, vocabulary=None, instructions=None, language=None, model=None,
+    def update_set(self, name, vocabulary=None, instructions=None, stt_language=None, stt_model=None,
                   llm_enabled=None, llm_model=None, llm_instructions=None, 
                   llm_clipboard_text_enabled=None, llm_clipboard_image_enabled=None, hotkey=None):
         """Update an existing instruction set."""
@@ -81,7 +81,7 @@ class GUIInstructionSetManager:
         if not instruction_set:
             return False
         instruction_set.update(
-            vocabulary, instructions, language, model,
+            vocabulary, instructions, stt_language, stt_model,
             llm_enabled, llm_model, llm_instructions, llm_clipboard_text_enabled,
             llm_clipboard_image_enabled, hotkey
         )
@@ -420,39 +420,38 @@ class InstructionSetsDialog(QDialog):
         main_form = QWidget()
         main_layout = QFormLayout(main_form)
         
-        language_label = QLabel(AppLabels.INSTRUCTION_SETS_LANGUAGE_LABEL)
-        self.language_combo = QComboBox()
+        stt_language_label = QLabel(AppLabels.INSTRUCTION_SETS_LANGUAGE_LABEL)
+        self.stt_language_combo = QComboBox()
         
-        # Add language options from LanguageManager
-        languages = LanguageManager.get_languages()
-        for language in languages:
-            self.language_combo.addItem(language.name, language.code)
-            # Add tooltip with native name if available
-            if language.native_name and language.native_name != language.name:
-                self.language_combo.setItemData(
-                    self.language_combo.count() - 1,
-                    f"{language.name} ({language.native_name})",
-                    Qt.ItemDataRole.ToolTipRole
-                )
-        
-        main_layout.addRow(language_label, self.language_combo)
-        
-        # Model selection
-        model_label = QLabel(AppLabels.INSTRUCTION_SETS_MODEL_LABEL)
-        self.model_combo = QComboBox()
-        
-        # Add model options from WhisperModelManager
-        models = STTModelManager.get_available_models()
-        for model in models:
-            self.model_combo.addItem(model.name, model.id)
+        # Add language options from STTLangModelManager
+        stt_languages = STTLangModelManager.get_available_languages()
+        for stt_language in stt_languages:
+            self.stt_language_combo.addItem(stt_language.name, stt_language.code)
             # Add tooltip
-            self.model_combo.setItemData(
-                self.model_combo.count() - 1,
-                model.description,
+            self.stt_language_combo.setItemData(
+                self.stt_language_combo.count() - 1,
+                f"{stt_language.name} ({stt_language.code})",
                 Qt.ItemDataRole.ToolTipRole
             )
         
-        main_layout.addRow(model_label, self.model_combo)
+        main_layout.addRow(stt_language_label, self.stt_language_combo)
+        
+        # Model selection
+        stt_model_label = QLabel(AppLabels.INSTRUCTION_SETS_MODEL_LABEL)
+        self.stt_model_combo = QComboBox()
+        
+        # Add model options from WhisperModelManager
+        stt_models = STTModelManager.get_available_models()
+        for stt_model in stt_models:
+            self.stt_model_combo.addItem(stt_model.name, stt_model.id)
+            # Add tooltip
+            self.stt_model_combo.setItemData(
+                self.stt_model_combo.count() - 1,
+                stt_model.description,
+                Qt.ItemDataRole.ToolTipRole
+            )
+        
+        main_layout.addRow(stt_model_label, self.stt_model_combo)
         
         # Add hotkey selection
         hotkey_label = QLabel(AppLabels.INSTRUCTION_SETS_HOTKEY_LABEL)
@@ -626,19 +625,19 @@ class InstructionSetsDialog(QDialog):
             # Update language selection
             language_index = 0  # Default to auto-detect
             if instruction_set.stt_language:
-                for i in range(self.language_combo.count()):
-                    if self.language_combo.itemData(i) == instruction_set.stt_language:
+                for i in range(self.stt_language_combo.count()):
+                    if self.stt_language_combo.itemData(i) == instruction_set.stt_language:
                         language_index = i
                         break
-            self.language_combo.setCurrentIndex(language_index)
+            self.stt_language_combo.setCurrentIndex(language_index)
             
             # Update model selection
             model_index = 0  # Default to first model
-            for i in range(self.model_combo.count()):
-                if self.model_combo.itemData(i) == instruction_set.stt_model:
+            for i in range(self.stt_model_combo.count()):
+                if self.stt_model_combo.itemData(i) == instruction_set.stt_model:
                     model_index = i
                     break
-            self.model_combo.setCurrentIndex(model_index)
+            self.stt_model_combo.setCurrentIndex(model_index)
             
             # Update LLM settings
             is_llm_enabled = instruction_set.llm_enabled
@@ -757,8 +756,8 @@ class InstructionSetsDialog(QDialog):
         self.hotkey_input.clear()  # Explicitly clear hotkey field to fix the inheritance issue
         
         # Reset comboboxes to their default values
-        self.language_combo.setCurrentIndex(0)  # First option (usually "Auto-detect")
-        self.model_combo.setCurrentIndex(0)     # First option (default model)
+        self.stt_language_combo.setCurrentIndex(0)  # First option (usually "Auto-detect")
+        self.stt_model_combo.setCurrentIndex(0)     # First option (default model)
         self.llm_model_combo.setCurrentIndex(0) # First option (default LLM model)
         
         # Set initial state of LLM UI components (disabled by default for new sets)
@@ -1061,8 +1060,8 @@ class InstructionSetsDialog(QDialog):
         instructions = [i for i in instructions if i]
         
         # Get language and model settings
-        language = self.language_combo.currentData()
-        model = self.model_combo.currentData()
+        stt_language = self.stt_language_combo.currentData()
+        stt_model = self.stt_model_combo.currentData()
         
         # Get LLM settings
         llm_enabled = self.llm_enabled_checkbox.isChecked()
@@ -1079,7 +1078,7 @@ class InstructionSetsDialog(QDialog):
         def save_operation():
             # Update set
             return self.manager.update_set(
-                name, vocabulary, instructions, language, model,
+                name, vocabulary, instructions, stt_language, stt_model,
                 llm_enabled, llm_model, llm_instructions, llm_clipboard_text_enabled,
                 llm_clipboard_image_enabled, hotkey
             )
