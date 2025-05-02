@@ -15,7 +15,7 @@ from .pipeline_result import PipelineResult
 
 class STTLLMPipeline:
     """
-    Unified pipeline for speech-to-text and LLM processing.
+    Unified pipeline for STT and LLM processing.
     
     This class combines STTProcessor and LLMProcessor to provide
     a seamless processing pipeline, with optional LLM processing.
@@ -30,7 +30,7 @@ class STTLLMPipeline:
         api_key : str
             API key.
         stt_model_id : str, optional
-            Speech-to-text model to use, by default "gpt-4o-transcribe".
+            STT model to use, by default "gpt-4o-transcribe".
         llm_model_id : str, optional
             LLM model to use, by default "gpt-4o".
             
@@ -64,7 +64,7 @@ class STTLLMPipeline:
     
     def set_custom_vocabulary(self, vocabulary: str) -> None:
         """
-        Set custom vocabulary for transcription.
+        Set custom vocabulary for speech-to-text.
         
         Parameters
         ----------
@@ -74,21 +74,21 @@ class STTLLMPipeline:
         self.stt_processor.set_custom_vocabulary(vocabulary)
     
     def clear_custom_vocabulary(self) -> None:
-        """Clear custom vocabulary for transcription."""
+        """Clear custom vocabulary for speech-to-text."""
         self.stt_processor.clear_custom_vocabulary()
     
-    def set_transcription_instruction(self, instruction: str) -> None:
+    def set_stt_instruction(self, instruction: str) -> None:
         """
-        Set system instruction for transcription.
+        Set system instruction for speech-to-text.
         
         Parameters
         ----------
         instruction : str
-            Instruction for transcription.
+            Instruction for speech-to-text.
         """
         self.stt_processor.set_system_instruction(instruction)
     
-    def clear_transcription_instruction(self) -> None:
+    def clear_stt_instruction(self) -> None:
         """Clear system instruction for transcription."""
         self.stt_processor.clear_system_instruction()
     

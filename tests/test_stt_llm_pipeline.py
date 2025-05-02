@@ -82,7 +82,7 @@ def test_pipeline(audio_file_path: str, api_key: str = None,
         stt_instruction = "Transcribe accurately with proper punctuation."
         llm_instruction = "You are an assistant that analyzes transcribed audio. Keep your responses brief and focused."
         
-        pipeline.set_transcription_instruction(stt_instruction)
+        pipeline.set_stt_instruction(stt_instruction)
         pipeline.set_llm_instruction(llm_instruction)
         
         print(f"Set STT instruction: '{stt_instruction}'")
