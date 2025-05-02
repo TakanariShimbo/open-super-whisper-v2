@@ -1055,10 +1055,6 @@ class InstructionSetsDialog(QDialog):
         vocabulary = self.vocabulary_edit.toPlainText()
         instructions = self.instructions_edit.toPlainText()
         
-        # Filter empty lines
-        vocabulary = [v for v in vocabulary if v]
-        instructions = [i for i in instructions if i]
-        
         # Get language and model settings
         stt_language = self.stt_language_combo.currentData()
         stt_model = self.stt_model_combo.currentData()
