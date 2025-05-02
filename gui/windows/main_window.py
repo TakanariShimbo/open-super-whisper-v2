@@ -102,7 +102,7 @@ class MainWindow(QMainWindow):
         
         # Initialize transcription processor if API key is available
         try:
-            self.unified_processor = STTLLMPipeline(openai_api_key=self.api_key)
+            self.unified_processor = STTLLMPipeline(api_key=self.api_key)
         except ValueError:
             self.unified_processor = None
         
@@ -484,7 +484,7 @@ class MainWindow(QMainWindow):
             
             # Reinitialize processor with new API key
             try:
-                self.unified_processor = STTLLMPipeline(openai_api_key=self.api_key)
+                self.unified_processor = STTLLMPipeline(api_key=self.api_key)
                 self.apply_instruction_set_settings()
                 self.status_bar.showMessage(AppLabels.STATUS_API_KEY_SAVED, 3000)
             except ValueError as e:
