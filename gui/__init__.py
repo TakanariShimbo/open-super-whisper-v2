@@ -5,9 +5,7 @@ This package provides the graphical user interface for the Whisper transcription
 """
 
 from gui.windows import MainWindow
-from old_core.hotkeys import HotkeyManager
 
 __all__ = [
     'MainWindow',
-    'HotkeyManager'
 ]
