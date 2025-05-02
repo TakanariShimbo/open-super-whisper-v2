@@ -56,12 +56,12 @@ class LLMProcessor:
         Raises
         ------
         ValueError
-            If no API key is provided and none is found in environment variables.
+            If API key is invalid.
         """
         # Set API key
         is_valid = self.set_api_key(api_key)
         if not is_valid:
-            raise ValueError("API key is required. Provide it directly or set OPENAI_API_KEY environment variable.")
+            raise ValueError("Invalid API key. Please provide a valid API key.")
         
         # Initialize OpenAI client
         self.client = openai.OpenAI(api_key=self.api_key)
