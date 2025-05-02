@@ -77,10 +77,10 @@ class STTProcessor:
         api_key : str
             New API key to use.
             
-        Raises
-        ------
-        ValueError
-            If API key is empty.
+        Returns
+        -------
+        bool
+            True if the API key is valid, False otherwise.
         """
         client = openai.OpenAI(api_key=api_key)
         try:
