@@ -756,7 +756,7 @@ class MainWindow(QMainWindow):
         
         # Get language from selected instruction set
         selected_set = self.get_current_instruction_set()
-        selected_language = selected_set.language if selected_set else None
+        selected_language = selected_set.stt_language if selected_set else None
         
         # Get clipboard content (text and/or image) if LLM clipboard option is enabled
         clipboard_text, clipboard_image = self.get_clipboard_content()
