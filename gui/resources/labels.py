@@ -89,8 +89,8 @@ class AppLabels:
     STATUS_SOUND_DISABLED = "Notification sounds disabled"
     STATUS_INDICATOR_SHOWN = "Status indicator enabled"
     STATUS_INDICATOR_HIDDEN = "Status indicator disabled"
-    STATUS_INSTRUCTION_SET_ACTIVE = "Instruction set '{}' activated"
-    STATUS_INSTRUCTION_SET_ACTIVATED_BY_HOTKEY = "Instruction set '{}' activated and recording started"
+    STATUS_INSTRUCTION_SET_ACTIVE = "Instruction set '{}' selected"
+    STATUS_INSTRUCTION_SET_ACTIVATED_BY_HOTKEY = "Instruction set '{}' selected and recording started"
     STATUS_RECORDING_INDICATOR_RECORDING = "●REC"
     STATUS_RECORDING_INDICATOR_STOPPED = "■STOP"
     STATUS_TIMER_INITIAL = "00:00"
@@ -112,7 +112,8 @@ class AppLabels:
     INSTRUCTION_SETS_ADD_BUTTON = "New"
     INSTRUCTION_SETS_RENAME_BUTTON = "Rename"
     INSTRUCTION_SETS_DELETE_BUTTON = "Delete"
-    INSTRUCTION_SETS_ACTIVATE_BUTTON = "Activate"
+    INSTRUCTION_SETS_ACTIVATE_BUTTON = "Select"
+    INSTRUCTION_SETS_SELECT_BUTTON = "Set as Selected"
     INSTRUCTION_SETS_SAVE_BUTTON = "Save"
       
     ## Vocabulary Tab
@@ -131,7 +132,7 @@ class AppLabels:
     
     ## Settings Tab
     INSTRUCTION_SETS_SETTINGS_TAB_NAME = "Settings"
-    INSTRUCTION_SETS_SETTINGS_HELP = "Configure language and model settings for this instruction set. These settings will be used when this instruction set is active.\n\nYou can assign a hotkey to start and stop recording with this instruction set. Press the assigned hotkey once to activate the set and start recording, then press the same hotkey again to stop recording."
+    INSTRUCTION_SETS_SETTINGS_HELP = "Configure language and model settings for this instruction set. These settings will be used when this instruction set is selected.\n\nYou can assign a hotkey to start and stop recording with this instruction set. Press the assigned hotkey once to select the set and start recording, then press the same hotkey again to stop recording."
     INSTRUCTION_SETS_LANGUAGE_LABEL = "Language:"
     INSTRUCTION_SETS_MODEL_LABEL = "Transcription Model:"
     INSTRUCTION_SETS_LLM_TOGGLE_LABEL = "LLM Processing:"
@@ -163,8 +164,11 @@ class AppLabels:
     INSTRUCTION_SETS_CHANGES_SAVED_TITLE = "Changes Saved"
     INSTRUCTION_SETS_CHANGES_SAVED_MESSAGE = "Changes to instruction set '{}' have been saved."
 
-    INSTRUCTION_SETS_SET_ACTIVATED_TITLE = "Set Activated"
-    INSTRUCTION_SETS_SET_ACTIVATED_MESSAGE = "Instruction set '{}' has been activated."
+    INSTRUCTION_SETS_SET_ACTIVATED_TITLE = "Set Selected"
+    INSTRUCTION_SETS_SET_ACTIVATED_MESSAGE = "Instruction set '{}' has been selected."
+    
+    INSTRUCTION_SETS_SET_SELECTED_TITLE = "Set Selected"
+    INSTRUCTION_SETS_SET_SELECTED_MESSAGE = "Instruction set '{}' has been selected."
     
     INSTRUCTION_SETS_LAST_SET_ERROR_TITLE = "Cannot Delete Last Set"
     INSTRUCTION_SETS_LAST_SET_ERROR_MESSAGE = "The last instruction set cannot be deleted. At least one set must remain."

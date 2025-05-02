@@ -106,9 +106,8 @@ class MainWindow(QMainWindow):
         try:
             self.unified_processor = TranscriptionAndLLMProcessor(openai_api_key=self.api_key)
             
-            # Apply settings from active instruction set
-            if self.instruction_set_manager.active_set:
-                self.apply_instruction_set_settings()
+            # Apply settings from selected instruction set
+            self.apply_instruction_set_settings()
                 
         except ValueError:
             self.unified_processor = None
@@ -188,11 +187,14 @@ class MainWindow(QMainWindow):
         )
     
     def apply_instruction_set_settings(self):
-        """Apply settings from the active instruction set to the transcription processor."""
-        if not self.unified_processor or not self.instruction_set_manager.active_set:
+        """Apply settings from the selected instruction set to the transcription processor."""
+        if not self.unified_processor:
             return
         
-        active_set = self.instruction_set_manager.active_set
+        # Get the selected instruction set from dropdown
+        selected_set = self.get_current_instruction_set()
+        if not selected_set:
+            return
         
         # Clear existing settings
         self.unified_processor.clear_custom_vocabulary()
@@ -200,24 +202,44 @@ class MainWindow(QMainWindow):
         self.unified_processor.clear_llm_instructions()
         
         # Apply vocabulary
-        self.unified_processor.add_custom_vocabulary(active_set.vocabulary)
+        self.unified_processor.add_custom_vocabulary(selected_set.vocabulary)
         
         # Apply transcription instructions
-        self.unified_processor.add_transcription_instruction(active_set.instructions)
+        self.unified_processor.add_transcription_instruction(selected_set.instructions)
         
         # Set whisper model
-        if active_set.model:
-            self.unified_processor.set_whisper_model(active_set.model)
+        if selected_set.model:
+            self.unified_processor.set_whisper_model(selected_set.model)
         
         # LLM settings
-        self.unified_processor.enable_llm_processing(active_set.llm_enabled)
+        self.unified_processor.enable_llm_processing(selected_set.llm_enabled)
         
         # Set LLM model
-        if active_set.llm_model:
-            self.unified_processor.set_llm_model(active_set.llm_model)
+        if selected_set.llm_model:
+            self.unified_processor.set_llm_model(selected_set.llm_model)
         
         # Apply LLM instructions
-        self.unified_processor.add_llm_instruction(active_set.llm_instructions)
+        self.unified_processor.add_llm_instruction(selected_set.llm_instructions)
+        
+    def get_current_instruction_set(self):
+        """
+        Get the currently selected instruction set from the dropdown.
+        
+        Returns
+        -------
+        InstructionSet or None
+            The selected instruction set, or None if not found
+        """
+        if self.instruction_set_combo.count() == 0:
+            return None
+            
+        selected_name = self.instruction_set_combo.currentText()
+        
+        # Save the selection in the instruction set manager for persistence
+        self.instruction_set_manager.set_selected(selected_name)
+        
+        # Get and return the instruction set
+        return self.instruction_set_manager.get_set_by_name(selected_name)
     
     def init_ui(self):
         """
@@ -483,10 +505,12 @@ class MainWindow(QMainWindow):
         if self.unified_processor:
             self.unified_processor.enable_llm_processing(enabled)
             
-            # Update active instruction set
-            if self.instruction_set_manager.active_set:
+            # Get the currently selected instruction set from the dropdown
+            selected_set = self.get_current_instruction_set()
+            if selected_set:
+                # Update the selected instruction set
                 self.instruction_set_manager.update_set(
-                    self.instruction_set_manager.active_set.name,
+                    selected_set.name,
                     llm_enabled=enabled
                 )
             
@@ -714,13 +738,16 @@ class MainWindow(QMainWindow):
             # Get the clipboard manager
             clipboard = QApplication.clipboard()
             
-            # Check if text clipboard option is enabled
-            if self.instruction_set_manager.get_active_llm_clipboard_text_enabled():
-                # Get clipboard text
-                clipboard_text = clipboard.text()
-            
-            # Check if image clipboard option is enabled
-            if self.instruction_set_manager.get_active_llm_clipboard_image_enabled():
+            # Get selected instruction set
+            selected_set = self.get_current_instruction_set()
+            if selected_set:
+                # Check if text clipboard option is enabled
+                if selected_set.llm_clipboard_text_enabled:
+                    # Get clipboard text
+                    clipboard_text = clipboard.text()
+                
+                # Check if image clipboard option is enabled
+                if selected_set.llm_clipboard_image_enabled:
                 # Check if clipboard has an image
                 image = clipboard.image()
                 if not image.isNull():
@@ -754,8 +781,9 @@ class MainWindow(QMainWindow):
             self.thread_manager.update_indicator(StatusIndicatorWindow.MODE_PROCESSING)
             self.status_indicator_window.show()
         
-        # Get language from active instruction set
-        selected_language = self.instruction_set_manager.get_active_language()
+        # Get language from selected instruction set
+        selected_set = self.get_current_instruction_set()
+        selected_language = selected_set.language if selected_set else None
         
         # Get clipboard content (text and/or image) if LLM clipboard option is enabled
         clipboard_text, clipboard_image = self.get_clipboard_content()
@@ -1010,19 +1038,29 @@ class MainWindow(QMainWindow):
                 else:
                     print(f"Failed to register hotkey '{instruction_set.hotkey}' for instruction set '{instruction_set.name}'")
     
-    def activate_instruction_set_by_name(self, name: str):
+    def select_instruction_set_by_name(self, name: str):
         """
-        Activate an instruction set by name.
+        Select an instruction set by name and apply its settings.
         
         Parameters
         ----------
         name : str
-            Name of the instruction set to activate.
+            Name of the instruction set to select.
         """
-        if self.instruction_set_manager.set_active(name):
+        if self.instruction_set_manager.set_selected(name):
+            # Update dropdown selection to match, blocking signals to avoid recursion
+            self.instruction_set_combo.blockSignals(True)
+            index = self.instruction_set_combo.findText(name)
+            if index >= 0:
+                self.instruction_set_combo.setCurrentIndex(index)
+            self.instruction_set_combo.blockSignals(False)
+            
+            # Apply settings
             self.apply_instruction_set_settings()
+            
+            # Show status message
             self.status_bar.showMessage(
-                AppLabels.STATUS_INSTRUCTION_SET_ACTIVATED_BY_HOTKEY.format(name),
+                AppLabels.STATUS_INSTRUCTION_SET_SELECTED_BY_HOTKEY.format(name),
                 3000
             )
     
@@ -1056,8 +1094,8 @@ class MainWindow(QMainWindow):
                 self.stop_recording()
             # Otherwise ignore the hotkey
         else:
-            # Activate the instruction set
-            self.activate_instruction_set_by_name(set_name)
+            # Select the instruction set
+            self.select_instruction_set_by_name(set_name)
             
             # Start recording
             self.start_recording(hotkey)
@@ -1084,6 +1122,17 @@ class MainWindow(QMainWindow):
         """
         # This is now a no-op
         pass
+        
+    def activate_instruction_set_by_name(self, name: str):
+        """
+        For backward compatibility - delegates to select_instruction_set_by_name.
+        
+        Parameters
+        ----------
+        name : str
+            Name of the instruction set to activate.
+        """
+        self.select_instruction_set_by_name(name)
     
     def show_instruction_sets_dialog(self):
         """
@@ -1113,7 +1162,7 @@ class MainWindow(QMainWindow):
             updated_manager = dialog.get_manager()
             self.instruction_set_manager = updated_manager
             
-            # Apply settings from active instruction set
+            # Apply settings from selected instruction set
             self.apply_instruction_set_settings()
             
             # Update UI to reflect LLM enabled state
@@ -1126,9 +1175,10 @@ class MainWindow(QMainWindow):
             self.populate_instruction_set_combo()
             
             # Show status message using ThreadManager for thread safety
-            if self.instruction_set_manager.active_set:
+            selected_set_name = self.instruction_set_manager.get_selected_set_name()
+            if selected_set_name:
                 self.thread_manager.update_status(
-                    AppLabels.STATUS_INSTRUCTION_SET_ACTIVE.format(self.instruction_set_manager.active_set.name),
+                    AppLabels.STATUS_INSTRUCTION_SET_SELECTED.format(selected_set_name),
                     3000
                 )
     
@@ -1355,7 +1405,7 @@ class MainWindow(QMainWindow):
         Populate the instruction set selection dropdown.
         
         This method adds all available instruction sets to the dropdown
-        and selects the active one.
+        and selects the currently selected one from the instruction set manager.
         """
         # Temporarily block signals to prevent triggering the change event
         self.instruction_set_combo.blockSignals(True)
@@ -1375,12 +1425,17 @@ class MainWindow(QMainWindow):
                     Qt.ItemDataRole.ToolTipRole
                 )
         
-        # Select the active set
-        active_set = self.instruction_set_manager.active_set
-        if active_set:
-            index = self.instruction_set_combo.findText(active_set.name)
+        # Select the currently selected set from manager
+        selected_set_name = self.instruction_set_manager.get_selected_set_name()
+        if selected_set_name:
+            index = self.instruction_set_combo.findText(selected_set_name)
             if index >= 0:
                 self.instruction_set_combo.setCurrentIndex(index)
+        elif self.instruction_set_combo.count() > 0:
+            # If no selected set but we have items, select the first one
+            self.instruction_set_combo.setCurrentIndex(0)
+            # Save this selection in the manager
+            self.instruction_set_manager.set_selected(self.instruction_set_combo.currentText())
         
         # Unblock signals
         self.instruction_set_combo.blockSignals(False)
@@ -1400,8 +1455,15 @@ class MainWindow(QMainWindow):
         # Get the selected instruction set name
         set_name = self.instruction_set_combo.itemText(index)
         
-        # Activate the instruction set
-        self.activate_instruction_set_by_name(set_name)
+        # Save the selection and apply settings
+        self.instruction_set_manager.set_selected(set_name)
+        self.apply_instruction_set_settings()
+        
+        # Show status message
+        self.status_bar.showMessage(
+            f"Selected instruction set: {set_name}",
+            3000
+        )
         
         # Update the UI
         if self.unified_processor:

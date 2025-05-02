@@ -54,30 +54,28 @@ class GUIInstructionSetManager:
         self.settings = settings
         self.core_manager = InstructionSetManager()
         self.thread_manager = thread_manager
+        self._selected_set_name = ""  # Tracks currently selected set name for dropdown
         self.load_from_settings()
-    
-    @property
-    def active_set(self):
-        """Get the active instruction set."""
-        return self.core_manager.get_active_set()
     
     def get_all_sets(self):
         """Get all instruction sets."""
         return self.core_manager.get_all_sets()
     
     def create_set(self, name, vocabulary=None, instructions=None, language=None, model=None,
-                  llm_enabled=False, llm_model=None, llm_instructions=None, hotkey=""):
+                  llm_enabled=False, llm_model=None, llm_instructions=None, 
+                  llm_clipboard_text_enabled=False, llm_clipboard_image_enabled=False, hotkey=""):
         """Create a new instruction set."""
         result = self.core_manager.create_set(
             name, vocabulary, instructions, language, model,
-            llm_enabled, llm_model, llm_instructions, hotkey
+            llm_enabled, llm_model, llm_instructions, 
+            llm_clipboard_text_enabled, llm_clipboard_image_enabled, hotkey
         )
         self.save_to_settings()
         return result
     
     def update_set(self, name, vocabulary=None, instructions=None, language=None, model=None,
-                  llm_enabled=None, llm_model=None, llm_instructions=None, llm_clipboard_text_enabled=None,
-                  llm_clipboard_image_enabled=None, hotkey=None):
+                  llm_enabled=None, llm_model=None, llm_instructions=None, 
+                  llm_clipboard_text_enabled=None, llm_clipboard_image_enabled=None, hotkey=None):
         """Update an existing instruction set."""
         result = self.core_manager.update_set(
             name, vocabulary, instructions, language, model,
@@ -90,18 +88,74 @@ class GUIInstructionSetManager:
     def delete_set(self, name):
         """Delete an instruction set."""
         result = self.core_manager.delete_set(name)
+        
+        # If the deleted set was the selected set, clear the selection
+        if name == self._selected_set_name:
+            # Find a new set to select
+            sets = self.get_all_sets()
+            if sets:
+                self._selected_set_name = sets[0].name
+            else:
+                self._selected_set_name = ""
+        
         self.save_to_settings()
         return result
     
-    def set_active(self, name):
-        """Set the active instruction set."""
-        result = self.core_manager.set_active(name)
+    def set_selected(self, name):
+        """
+        Set the selected instruction set for the dropdown.
+        
+        Parameters
+        ----------
+        name : str
+            Name of the instruction set to select.
+            
+        Returns
+        -------
+        bool
+            True if successful, False if name doesn't exist.
+        """
+        # Check if set exists
+        if not self.core_manager.find_set_by_name(name):
+            return False
+        
+        # Set selected set name
+        self._selected_set_name = name
         self.save_to_settings()
-        return result
+        return True
+    
+    def get_selected_set_name(self):
+        """
+        Get the name of the currently selected instruction set.
+        
+        Returns
+        -------
+        str
+            Name of the selected instruction set, or empty string if none selected.
+        """
+        return self._selected_set_name
+    
+    def get_selected_set(self):
+        """
+        Get the currently selected instruction set object.
+        
+        Returns
+        -------
+        InstructionSet or None
+            The selected instruction set, or None if none selected.
+        """
+        if not self._selected_set_name:
+            return None
+        return self.core_manager.find_set_by_name(self._selected_set_name)
     
     def rename_set(self, old_name, new_name):
         """Rename an instruction set."""
         result = self.core_manager.rename_set(old_name, new_name)
+        
+        # Update selected set name if it was renamed
+        if old_name == self._selected_set_name:
+            self._selected_set_name = new_name
+            
         self.save_to_settings()
         return result
     
@@ -129,46 +183,7 @@ class GUIInstructionSetManager:
         Optional[InstructionSet]
             The instruction set with the given name, or None if not found.
         """
-        for instruction_set in self.core_manager.get_all_sets():
-            if instruction_set.name == name:
-                return instruction_set
-        return None
-    
-    def get_active_vocabulary(self):
-        """Get vocabulary from the active set."""
-        return self.core_manager.get_active_vocabulary()
-    
-    def get_active_instructions(self):
-        """Get instructions from the active set."""
-        return self.core_manager.get_active_instructions()
-    
-    def get_active_language(self):
-        """Get language setting from the active set."""
-        return self.core_manager.get_active_language()
-    
-    def get_active_model(self):
-        """Get model setting from the active set."""
-        return self.core_manager.get_active_model()
-    
-    def get_active_llm_enabled(self):
-        """Get LLM enabled setting from the active set."""
-        return self.core_manager.get_active_llm_enabled()
-    
-    def get_active_llm_model(self):
-        """Get LLM model setting from the active set."""
-        return self.core_manager.get_active_llm_model()
-    
-    def get_active_llm_instructions(self):
-        """Get LLM instructions from the active set."""
-        return self.core_manager.get_active_llm_instructions()
-        
-    def get_active_llm_clipboard_text_enabled(self):
-        """Get LLM clipboard text enabled setting from the active set."""
-        return self.core_manager.get_active_llm_clipboard_text_enabled()
-        
-    def get_active_llm_clipboard_image_enabled(self):
-        """Get LLM clipboard image enabled setting from the active set."""
-        return self.core_manager.get_active_llm_clipboard_image_enabled()
+        return self.core_manager.find_set_by_name(name)
     
     def save_to_settings(self):
         """
@@ -186,8 +201,8 @@ class GUIInstructionSetManager:
             # Remove any existing sets first
             self.settings.remove("")
             
-            # Save active set
-            self.settings.setValue("ActiveSet", data["active_set"])
+            # Save selected set
+            self.settings.setValue("SelectedSet", self._selected_set_name)
             
             # Save sets
             self.settings.setValue("Sets", data["sets"])
@@ -216,8 +231,10 @@ class GUIInstructionSetManager:
             prefix = "InstructionSets"
             self.settings.beginGroup(prefix)
             
-            # Load active set
-            active_set = self.settings.value("ActiveSet", "")
+            # Load selected set
+            selected_set = self.settings.value("SelectedSet", "")
+            
+            # No longer need to check for old "ActiveSet" value
             
             # Load sets
             sets = self.settings.value("Sets", [])
@@ -226,16 +243,27 @@ class GUIInstructionSetManager:
             
             # Convert to dict for core manager
             data = {
-                "active_set": active_set,
                 "sets": sets
             }
             
-            # Load into core manager
-            return data
+            # Return data and selected set
+            return data, selected_set
             
-        def finish_loading(data):
+        def finish_loading(result):
+            # Unpack result
+            data, selected_set = result
+            
             # Load into core manager
             self.core_manager.import_from_dict(data)
+            
+            # Set selected set if it exists
+            if selected_set and self.core_manager.find_set_by_name(selected_set):
+                self._selected_set_name = selected_set
+            elif self.core_manager.get_all_sets():
+                # Default to first set if selected set doesn't exist
+                self._selected_set_name = self.core_manager.get_all_sets()[0].name
+            else:
+                self._selected_set_name = ""
         
         # Use thread manager if available
         if self.thread_manager:
@@ -246,8 +274,8 @@ class GUIInstructionSetManager:
             )
         else:
             # Synchronous load
-            data = load_operation()
-            finish_loading(data)
+            result = load_operation()
+            finish_loading(result)
 
 
 class InstructionSetsDialog(QDialog):
@@ -334,13 +362,9 @@ class InstructionSetsDialog(QDialog):
         self.delete_button = QPushButton(AppLabels.INSTRUCTION_SETS_DELETE_BUTTON)
         self.delete_button.clicked.connect(self.on_delete_set)
         
-        self.activate_button = QPushButton(AppLabels.INSTRUCTION_SETS_ACTIVATE_BUTTON)
-        self.activate_button.clicked.connect(self.on_activate_set)
-        
         buttons_layout.addWidget(self.add_button)
         buttons_layout.addWidget(self.rename_button)
         buttons_layout.addWidget(self.delete_button)
-        buttons_layout.addWidget(self.activate_button)
         left_layout.addLayout(buttons_layout)
         
         # Right side - Editor
@@ -550,11 +574,11 @@ class InstructionSetsDialog(QDialog):
             for instruction_set in self.manager.get_all_sets():
                 self.sets_list.addItem(instruction_set.name)
             
-            # Select active set
-            active_set = self.manager.get_active_set()
-            if active_set:
+            # Select the current set
+            selected_set_name = self.manager.get_selected_set_name()
+            if selected_set_name:
                 for i in range(self.sets_list.count()):
-                    if self.sets_list.item(i).text() == active_set.name:
+                    if self.sets_list.item(i).text() == selected_set_name:
                         self.sets_list.setCurrentRow(i)
                         break
         
@@ -913,11 +937,11 @@ class InstructionSetsDialog(QDialog):
                 next_row = min(row, self.sets_list.count() - 1)
                 self.sets_list.setCurrentRow(next_row)
                 
-                # Refresh the active set selection in UI
-                active_set = self.manager.get_active_set()
-                if active_set:
+                # Get the selected set name
+                selected_set_name = self.manager.get_selected_set_name()
+                if selected_set_name:
                     for i in range(self.sets_list.count()):
-                        if self.sets_list.item(i).text() == active_set.name:
+                        if self.sets_list.item(i).text() == selected_set_name:
                             if i != next_row:  # Only change if it's different
                                 self.sets_list.setCurrentRow(i)
                             break
@@ -1087,57 +1111,6 @@ class InstructionSetsDialog(QDialog):
             self,
             AppLabels.INSTRUCTION_SETS_CHANGES_SAVED_TITLE,
             AppLabels.INSTRUCTION_SETS_CHANGES_SAVED_MESSAGE.format(set_name),
-            SimpleMessageDialog.INFO,
-            self.thread_manager
-        )
-    
-    def on_activate_set(self):
-        """
-        Handle activating the selected instruction set.
-        
-        Uses thread_manager to ensure UI updates and I/O operations happen
-        safely if thread_manager is provided.
-        """
-        row = self.sets_list.currentRow()
-        if row < 0:
-            return
-        
-        name = self.sets_list.item(row).text()
-        
-        def activate_operation():
-            # Activate set
-            return self.manager.set_active(name)
-            
-        def on_activate_complete(result):
-            # Show confirmation
-            if result:
-                self._show_set_activated(name)
-        
-        # Use thread manager if available
-        if self.thread_manager:
-            self.thread_manager.run_in_worker_thread(
-                "activate_instruction_set",
-                activate_operation,
-                callback=on_activate_complete
-            )
-        else:
-            # Synchronous activation
-            result = activate_operation()
-            on_activate_complete(result)
-    
-    def _show_set_activated(self, set_name):
-        """
-        Show confirmation message that the instruction set was activated.
-        
-        Parameters
-        ----------
-        set_name : str
-            The name of the instruction set.
-        """
-        SimpleMessageDialog.show_message(
-            self,
-            AppLabels.INSTRUCTION_SETS_SET_ACTIVATED_TITLE,
-            AppLabels.INSTRUCTION_SETS_SET_ACTIVATED_MESSAGE.format(set_name),
             SimpleMessageDialog.INFO,
             self.thread_manager
         )
