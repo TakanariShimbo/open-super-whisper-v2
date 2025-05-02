@@ -87,7 +87,7 @@ class LLMProcessor:
         client = openai.OpenAI(api_key=api_key)
         try:
             client.models.list()
-        except openai.AuthenticationError:
+        except openai.APIConnectionError:
             return False
 
         self.api_key = api_key
