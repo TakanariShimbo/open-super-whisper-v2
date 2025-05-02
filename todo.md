@@ -13,7 +13,7 @@
 - [x] When recording starts via hotkey, it activates the instruction set associated with that hotkey
 - [x] The core InstructionSetManager in old_core/instructions.py has already been updated to remove the "active" concept
 
-## Remove "Active" Concept from Instruction Sets
+## Remove "Active" Concept from Instruction Sets (Completed)
 - [x] Check if any further modifications are needed in old_core/instructions.py
   - [x] Ensure no active set related methods remain (only docstring reference which was kept for clarity)
 - [x] Clean up GUIInstructionSetManager in gui/dialogs/instruction_sets_dialog.py
@@ -30,9 +30,13 @@
   - [x] Make sure instruction set hotkeys work correctly with selection
   - [x] Commit pending changes that are already in the git diff
 - [x] Update resource labels and references to "active" in labels.py
-  - [x] Commit pending changes that are already in the git diff
+  - [x] Change STATUS_INSTRUCTION_SET_ACTIVE to STATUS_INSTRUCTION_SET_SELECTED
+  - [x] Change STATUS_INSTRUCTION_SET_ACTIVATED_BY_HOTKEY to STATUS_INSTRUCTION_SET_SELECTED_BY_HOTKEY
+  - [x] Update INSTRUCTION_SETS_ACTIVATE_BUTTON to INSTRUCTION_SETS_SELECT_BUTTON
+  - [x] Remove duplicate INSTRUCTION_SETS_SET_ACTIVATED messages that are redundant with SET_SELECTED
+  - [x] Commit all label changes
 
-## Testing and Cleanup
+## Testing and Cleanup (Completed)
 - [x] Test GUI recording with dropdown selection
 - [x] Test recording via hotkeys
 - [x] Remove any unused code and clean up
@@ -44,6 +48,7 @@
 - [x] Updated references from "active" to "selected" in method names and comments
 - [x] Updated hotkey handler to use "select" terminology instead of "activate"
 - [x] Ensured all components now use the "selected" concept consistently
+- [x] Updated labels to use "selected" terminology consistently
 
 ## Conclusion
 - [x] All tasks have been completed successfully
