@@ -89,8 +89,8 @@ class AppLabels:
     STATUS_SOUND_DISABLED = "Notification sounds disabled"
     STATUS_INDICATOR_SHOWN = "Status indicator enabled"
     STATUS_INDICATOR_HIDDEN = "Status indicator disabled"
-    STATUS_INSTRUCTION_SET_ACTIVE = "Instruction set '{}' selected"
-    STATUS_INSTRUCTION_SET_ACTIVATED_BY_HOTKEY = "Instruction set '{}' selected and recording started"
+    STATUS_INSTRUCTION_SET_SELECTED = "Instruction set '{}' selected"
+    STATUS_INSTRUCTION_SET_SELECTED_BY_HOTKEY = "Instruction set '{}' selected and recording started"
     STATUS_RECORDING_INDICATOR_RECORDING = "●REC"
     STATUS_RECORDING_INDICATOR_STOPPED = "■STOP"
     STATUS_TIMER_INITIAL = "00:00"
@@ -112,8 +112,7 @@ class AppLabels:
     INSTRUCTION_SETS_ADD_BUTTON = "New"
     INSTRUCTION_SETS_RENAME_BUTTON = "Rename"
     INSTRUCTION_SETS_DELETE_BUTTON = "Delete"
-    INSTRUCTION_SETS_ACTIVATE_BUTTON = "Select"
-    INSTRUCTION_SETS_SELECT_BUTTON = "Set as Selected"
+    INSTRUCTION_SETS_SELECT_BUTTON = "Select"
     INSTRUCTION_SETS_SAVE_BUTTON = "Save"
       
     ## Vocabulary Tab
@@ -164,8 +163,7 @@ class AppLabels:
     INSTRUCTION_SETS_CHANGES_SAVED_TITLE = "Changes Saved"
     INSTRUCTION_SETS_CHANGES_SAVED_MESSAGE = "Changes to instruction set '{}' have been saved."
 
-    INSTRUCTION_SETS_SET_ACTIVATED_TITLE = "Set Selected"
-    INSTRUCTION_SETS_SET_ACTIVATED_MESSAGE = "Instruction set '{}' has been selected."
+    # This has been replaced by SET_SELECTED_TITLE and SET_SELECTED_MESSAGE
     
     INSTRUCTION_SETS_SET_SELECTED_TITLE = "Set Selected"
     INSTRUCTION_SETS_SET_SELECTED_MESSAGE = "Instruction set '{}' has been selected."
