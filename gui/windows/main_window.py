@@ -197,7 +197,7 @@ class MainWindow(QMainWindow):
         # Clear existing settings
         self.unified_processor.clear_custom_vocabulary()
         self.unified_processor.clear_stt_instruction()
-        self.unified_processor.clear_llm_instruction
+        self.unified_processor.clear_llm_instruction()
         
         # Apply vocabulary
         self.unified_processor.set_custom_vocabulary(selected_set.stt_vocabulary)
