@@ -5,27 +5,25 @@ This module provides the main application window and core functionality
 with integrated LLM processing support.
 """
 
-import io
 import os
-import sys
-import time
 
 from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+    QApplication, QMainWindow, QWidget, QVBoxLayout,
     QPushButton, QTextEdit, QLabel, QComboBox, QCheckBox,
-    QGridLayout, QFormLayout, QTabWidget, QSplitter,
-    QSystemTrayIcon, QMenu, QStyle, QStatusBar, QToolBar, QDialog
+    QGridLayout, QFormLayout, QTabWidget,
+    QSystemTrayIcon, QMenu, QStyle, QToolBar, QDialog
 )
 from PyQt6.QtCore import QBuffer, QIODevice
 
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QSettings, QUrl, QSize, QBuffer, QIODevice
-from PyQt6.QtGui import QIcon, QAction, QImage
+from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 
-from old_core.recorder import AudioInputRecorder, NoMicrophoneError, MicrophoneAccessError, MicrophoneError
-from old_core.transcription_and_llm_processor import TranscriptionAndLLMProcessor, TranscriptionAndLLMResult
+from core.recorder.audio_recorder import AudioRecorder
+from core.pipelines.stt_llm_pipeline import STTLLMPipeline
+from core.pipelines.pipeline_result import PipelineResult
 
-from old_core.hotkeys import HotkeyManager
+from core.ui.hot_key_manager import HotKeyManager
 from gui.resources.config import AppConfig
 from gui.resources.labels import AppLabels
 from gui.dialogs.api_key_dialog import APIKeyDialog
@@ -51,7 +49,7 @@ class MainWindow(QMainWindow):
     """
     
     # Custom signals
-    processing_complete = pyqtSignal(TranscriptionAndLLMResult)
+    processing_complete = pyqtSignal(PipelineResult)
     recording_status_changed = pyqtSignal(bool)
     
     def __init__(self):
@@ -71,7 +69,7 @@ class MainWindow(QMainWindow):
         self.thread_manager = ThreadManager()
         
         # Initialize hotkey manager
-        self.hotkey_manager = HotkeyManager()
+        self.hotkey_manager = HotKeyManager()
         
         # Initialize instruction set manager
         self.instruction_set_manager = GUIInstructionSetManager(self.settings)
@@ -96,7 +94,7 @@ class MainWindow(QMainWindow):
         self.setup_sound_players()
         
         # Initialize components
-        self.audio_recorder = AudioInputRecorder()
+        self.audio_recorder = AudioRecorder()
         
         # Status indicator window
         self.status_indicator_window = StatusIndicatorWindow()
@@ -104,7 +102,7 @@ class MainWindow(QMainWindow):
         
         # Initialize transcription processor if API key is available
         try:
-            self.unified_processor = TranscriptionAndLLMProcessor(openai_api_key=self.api_key)
+            self.unified_processor = STTLLMPipeline(openai_api_key=self.api_key)
         except ValueError:
             self.unified_processor = None
         
@@ -198,18 +196,18 @@ class MainWindow(QMainWindow):
         
         # Clear existing settings
         self.unified_processor.clear_custom_vocabulary()
-        self.unified_processor.clear_transcription_instructions()
-        self.unified_processor.clear_llm_instructions()
+        self.unified_processor.clear_stt_instruction()
+        self.unified_processor.clear_llm_instruction
         
         # Apply vocabulary
-        self.unified_processor.add_custom_vocabulary(selected_set.vocabulary)
+        self.unified_processor.set_custom_vocabulary(selected_set.stt_vocabulary)
         
         # Apply transcription instructions
-        self.unified_processor.add_transcription_instruction(selected_set.instructions)
+        self.unified_processor.set_stt_instruction(selected_set.stt_instructions)
         
         # Set whisper model
-        if selected_set.model:
-            self.unified_processor.set_whisper_model(selected_set.model)
+        if selected_set.stt_model:
+            self.unified_processor.set_stt_model(selected_set.stt_model)
         
         # LLM settings
         self.unified_processor.enable_llm_processing(selected_set.llm_enabled)
@@ -219,7 +217,7 @@ class MainWindow(QMainWindow):
             self.unified_processor.set_llm_model(selected_set.llm_model)
         
         # Apply LLM instructions
-        self.unified_processor.add_llm_instruction(selected_set.llm_instructions)
+        self.unified_processor.set_llm_instruction(selected_set.llm_instructions)
         
     def get_current_instruction_set(self):
         """
@@ -486,7 +484,7 @@ class MainWindow(QMainWindow):
             
             # Reinitialize processor with new API key
             try:
-                self.unified_processor = TranscriptionAndLLMProcessor(openai_api_key=self.api_key)
+                self.unified_processor = STTLLMPipeline(openai_api_key=self.api_key)
                 self.apply_instruction_set_settings()
                 self.status_bar.showMessage(AppLabels.STATUS_API_KEY_SAVED, 3000)
             except ValueError as e:
@@ -591,28 +589,6 @@ class MainWindow(QMainWindow):
             # Play start sound
             self.play_start_sound()
             
-        except NoMicrophoneError as e:
-            # Handle no microphone error
-            self.record_button.setText(AppLabels.MAIN_WIN_RECORD_START_BUTTON)
-            SimpleMessageDialog.show_message(
-                self, 
-                AppLabels.MAIN_WIN_MIC_ERROR_TITLE, 
-                AppLabels.MAIN_WIN_NO_MIC_ERROR, 
-                SimpleMessageDialog.WARNING
-            )
-            self.thread_manager.update_status(str(e), 3000)
-            
-        except MicrophoneAccessError as e:
-            # Handle microphone access error
-            self.record_button.setText(AppLabels.MAIN_WIN_RECORD_START_BUTTON)
-            SimpleMessageDialog.show_message(
-                self, 
-                AppLabels.MAIN_WIN_MIC_ERROR_TITLE, 
-                AppLabels.MAIN_WIN_MIC_ACCESS_ERROR, 
-                SimpleMessageDialog.WARNING
-            )
-            self.thread_manager.update_status(str(e), 3000)
-            
         except Exception as e:
             # Handle other errors
             self.record_button.setText(AppLabels.MAIN_WIN_RECORD_START_BUTTON)
@@ -646,9 +622,6 @@ class MainWindow(QMainWindow):
         
         # Disable recording mode via HotkeyBridge to ensure thread safety
         HotkeyBridge.instance().set_recording_mode(False)
-        
-        # Re-enable instruction set hotkeys (for backward compatibility)
-        self.restore_instruction_set_hotkeys()
         
         if audio_file:
             # Update status using ThreadManager
@@ -826,7 +799,7 @@ class MainWindow(QMainWindow):
                 self.thread_manager.update_stream(chunk)
             
             # Process audio with optional clipboard content (text and/or image) and streaming
-            result = self.unified_processor.process_transcription_and_llm(
+            result = self.unified_processor.process(
                 audio_file, 
                 language, 
                 clipboard_text, 
@@ -843,7 +816,7 @@ class MainWindow(QMainWindow):
             print(error_msg)
             
             # Create error result
-            error_result = TranscriptionAndLLMResult(transcription=f"Error: {str(e)}")
+            error_result = PipelineResult(transcription=f"Error: {str(e)}")
             
             # Signal the error result
             self.processing_complete.emit(error_result)
@@ -891,7 +864,7 @@ class MainWindow(QMainWindow):
                 self.tab_widget.setCurrentIndex(i)
                 break
     
-    def on_processing_complete(self, result: TranscriptionAndLLMResult):
+    def on_processing_complete(self, result: PipelineResult):
         """
         Handle processing completion.
         
@@ -1099,29 +1072,6 @@ class MainWindow(QMainWindow):
             
             # Start recording
             self.start_recording(hotkey)
-    
-    def disable_instruction_set_hotkeys(self):
-        """
-        This method is kept for backward compatibility.
-        
-        In the new design, we don't disable the instruction set hotkeys anymore.
-        Instead, we filter which hotkeys are active during recording in the
-        HotkeyManager.set_recording_mode method. Only the active recording
-        hotkey is allowed to trigger during recording.
-        """
-        # This is now a no-op
-        pass
-    
-    def restore_instruction_set_hotkeys(self):
-        """
-        This method is kept for backward compatibility.
-        
-        In the new design, all hotkeys remain registered and we just filter
-        which ones are active during recording using the HotkeyManager.set_recording_mode
-        method. When recording stops, all hotkeys automatically become active again.
-        """
-        # This is now a no-op
-        pass
         
     def activate_instruction_set_by_name(self, name: str):
         """
@@ -1236,7 +1186,7 @@ class MainWindow(QMainWindow):
         the application.
         """
         # Stop keyboard listener
-        self.hotkey_manager.stop_listener()
+        self.hotkey_manager.stop_listening()
             
         # Hide tray icon
         if hasattr(self, 'tray_icon'):

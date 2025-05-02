@@ -12,19 +12,18 @@ from PyQt6.QtWidgets import (
     QFormLayout, QComboBox, QCheckBox
 )
 from PyQt6.QtCore import Qt, QSettings, pyqtSlot
-from PyQt6.QtGui import QIcon
 
 from gui.resources.labels import AppLabels
-from gui.resources.config import AppConfig
 from gui.dialogs.simple_message_dialog import SimpleMessageDialog
 from gui.dialogs.hotkey_dialog import HotkeyDialog
 from gui.thread_management.hotkey_bridge import HotkeyBridge
 
-from old_core.instructions import InstructionSetManager, InstructionSet
+from core.utils.instruction_set import InstructionSet
+from core.utils.instruction_manager import InstructionManager
 
 from old_core.models.language import LanguageManager
-from old_core.models.whisper import OpenAIWhisperModelManager
-from old_core.models.llm import OpenAILLMModelManager
+from core.stt.stt_model_manager import STTModelManager
+from core.llm.llm_model_manager import LLMModelManager
 
 
 class GUIInstructionSetManager:
@@ -52,7 +51,7 @@ class GUIInstructionSetManager:
             Thread manager for thread-safe operations
         """
         self.settings = settings
-        self.core_manager = InstructionSetManager()
+        self.core_manager = InstructionManager()
         self.thread_manager = thread_manager
         self._selected_set_name = ""  # Tracks currently selected set name for dropdown
         self.load_from_settings()
@@ -65,11 +64,12 @@ class GUIInstructionSetManager:
                   llm_enabled=False, llm_model=None, llm_instructions=None, 
                   llm_clipboard_text_enabled=False, llm_clipboard_image_enabled=False, hotkey=""):
         """Create a new instruction set."""
-        result = self.core_manager.create_set(
+        instruction_set = InstructionSet(
             name, vocabulary, instructions, language, model,
             llm_enabled, llm_model, llm_instructions, 
             llm_clipboard_text_enabled, llm_clipboard_image_enabled, hotkey
         )
+        result = self.core_manager.add_set(instruction_set)
         self.save_to_settings()
         return result
     
@@ -77,13 +77,16 @@ class GUIInstructionSetManager:
                   llm_enabled=None, llm_model=None, llm_instructions=None, 
                   llm_clipboard_text_enabled=None, llm_clipboard_image_enabled=None, hotkey=None):
         """Update an existing instruction set."""
-        result = self.core_manager.update_set(
-            name, vocabulary, instructions, language, model,
+        instruction_set = self.core_manager.find_set_by_name(name)
+        if not instruction_set:
+            return False
+        instruction_set.update(
+            vocabulary, instructions, language, model,
             llm_enabled, llm_model, llm_instructions, llm_clipboard_text_enabled,
             llm_clipboard_image_enabled, hotkey
         )
         self.save_to_settings()
-        return result
+        return True
     
     def delete_set(self, name):
         """Delete an instruction set."""
@@ -161,9 +164,12 @@ class GUIInstructionSetManager:
     
     def update_set_hotkey(self, name, hotkey):
         """Update the hotkey for an instruction set."""
-        result = self.core_manager.update_set_hotkey(name, hotkey)
+        instruction_set = self.core_manager.find_set_by_name(name)
+        if not instruction_set:
+            return False
+        instruction_set.hotkey = hotkey
         self.save_to_settings()
-        return result
+        return True
     
     def get_set_by_hotkey(self, hotkey):
         """Get an instruction set by its hotkey."""
@@ -436,7 +442,7 @@ class InstructionSetsDialog(QDialog):
         self.model_combo = QComboBox()
         
         # Add model options from WhisperModelManager
-        models = OpenAIWhisperModelManager.get_available_models()
+        models = STTModelManager.get_available_models()
         for model in models:
             self.model_combo.addItem(model.name, model.id)
             # Add tooltip
@@ -474,7 +480,7 @@ class InstructionSetsDialog(QDialog):
         self.llm_model_combo = QComboBox()
         
         # Add model options from LLMModelManager
-        llm_models = OpenAILLMModelManager.get_available_models()
+        llm_models = LLMModelManager.get_available_models()
         for model in llm_models:
             self.llm_model_combo.addItem(model.name, model.id)
             # Add tooltip
@@ -614,14 +620,14 @@ class InstructionSetsDialog(QDialog):
         # Define UI update function
         def update_ui_with_set(instruction_set):
             # Update editors
-            self.vocabulary_edit.setPlainText("\n".join(instruction_set.vocabulary))
-            self.instructions_edit.setPlainText("\n".join(instruction_set.instructions))
+            self.vocabulary_edit.setPlainText("\n".join(instruction_set.stt_vocabulary))
+            self.instructions_edit.setPlainText("\n".join(instruction_set.stt_instructions))
             
             # Update language selection
             language_index = 0  # Default to auto-detect
-            if instruction_set.language:
+            if instruction_set.stt_language:
                 for i in range(self.language_combo.count()):
-                    if self.language_combo.itemData(i) == instruction_set.language:
+                    if self.language_combo.itemData(i) == instruction_set.stt_language:
                         language_index = i
                         break
             self.language_combo.setCurrentIndex(language_index)
@@ -629,7 +635,7 @@ class InstructionSetsDialog(QDialog):
             # Update model selection
             model_index = 0  # Default to first model
             for i in range(self.model_combo.count()):
-                if self.model_combo.itemData(i) == instruction_set.model:
+                if self.model_combo.itemData(i) == instruction_set.stt_model:
                     model_index = i
                     break
             self.model_combo.setCurrentIndex(model_index)
@@ -656,7 +662,7 @@ class InstructionSetsDialog(QDialog):
             # Check if model supports image input
             supports_image = False
             if instruction_set.llm_model:
-                supports_image = OpenAILLMModelManager.supports_image_input(instruction_set.llm_model)
+                supports_image = LLMModelManager.supports_image_input(instruction_set.llm_model)
             
             # Set enabled state for LLM-related UI components
             self.llm_model_combo.setEnabled(is_llm_enabled)
@@ -761,8 +767,8 @@ class InstructionSetsDialog(QDialog):
         self.llm_enabled_checkbox.setChecked(False)
         
         # Get default LLM model and check if it supports images
-        default_model_id = OpenAILLMModelManager.get_default_model().id
-        supports_image = OpenAILLMModelManager.supports_image_input(default_model_id)
+        default_model_id = LLMModelManager.get_default_model().id
+        supports_image = LLMModelManager.supports_image_input(default_model_id)
         
         # Reset checkboxes
         self.llm_clipboard_text_checkbox.setChecked(False)
@@ -1235,7 +1241,7 @@ class InstructionSetsDialog(QDialog):
         # Check if model supports image input
         supports_image = False
         if selected_model_id:
-            supports_image = OpenAILLMModelManager.supports_image_input(selected_model_id)
+            supports_image = LLMModelManager.supports_image_input(selected_model_id)
         
         # Update UI components
         def update_ui():
@@ -1274,7 +1280,7 @@ class InstructionSetsDialog(QDialog):
         # Check if model supports image input
         supports_image = False
         if selected_model_id:
-            supports_image = OpenAILLMModelManager.supports_image_input(selected_model_id)
+            supports_image = LLMModelManager.supports_image_input(selected_model_id)
         
         # Update UI components
         def update_ui():

@@ -6,12 +6,12 @@ with thread-safe implementation.
 """
 
 from PyQt6.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
+    QDialog, QVBoxLayout, QLabel, QLineEdit,
     QPushButton, QDialogButtonBox, QGridLayout
 )
-from PyQt6.QtCore import Qt, pyqtSlot
+from PyQt6.QtCore import Qt
 
-from old_core.transcriber import OpenAIWhisperTranscriber
+from core.pipelines.stt_llm_pipeline import STTLLMPipeline
 from gui.resources.labels import AppLabels
 from gui.dialogs.simple_message_dialog import SimpleMessageDialog
 
@@ -137,7 +137,7 @@ class APIKeyDialog(QDialog):
         def validation_worker():
             try:
                 # Try to create a transcriber with this key
-                transcriber = OpenAIWhisperTranscriber(api_key=key)
+                transcriber = STTLLMPipeline(api_key=key)
                 return True, None
             except Exception as e:
                 return False, str(e)

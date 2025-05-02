@@ -5,11 +5,10 @@ This module provides a bridge between the native hotkey system
 and Qt's thread model, ensuring thread-safe hotkey handling.
 """
 
-from PyQt6.QtCore import QObject, pyqtSignal, QThread, Qt
-from typing import Dict, Callable, Optional
-import threading
+from PyQt6.QtCore import QObject, pyqtSignal, Qt
+from typing import Callable, Optional
 
-from old_core.hotkeys import HotkeyManager
+from core.ui.hot_key_manager import HotKeyManager
 
 class HotkeyBridge(QObject):
     """
@@ -48,7 +47,7 @@ class HotkeyBridge(QObject):
         super().__init__()
         
         # Create local hotkey manager
-        self.hotkey_manager = HotkeyManager()
+        self.hotkey_manager = HotKeyManager()
         
         # Hotkey callback mapping
         self._hotkey_callbacks = {}
