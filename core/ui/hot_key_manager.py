@@ -143,7 +143,7 @@ class HotKeyManager:
         # Add the hotkey to our dictionary
         self._hotkeys[hotkey_combination] = callback
     
-    def unregister_hotkey(self, hotkey_string: str) -> None:
+    def unregister_hotkey(self, hotkey_string: str) -> bool:
         """
         Unregister a previously registered global hotkey.
         
@@ -154,14 +154,15 @@ class HotKeyManager:
             
         Returns
         -------
-        None
+        bool
+            True if the hotkey was successfully unregistered, False if it was not registered.
         
         Raises
         ------
         RuntimeError
             If the hotkey manager is currently listening and needs to be stopped first.
         ValueError
-            If the hotkey string is invalid or not registered.
+            If the hotkey string is invalid.
         """
         # Only allow unregistration if not listening
         if self.is_listening:
@@ -170,15 +171,18 @@ class HotKeyManager:
         # Parse hotkey string
         hotkey_combination = self.parse_hotkey_string(hotkey_string)
         
-        # Check if hotkey is registered
+        # Check if hotkey string is valid
         if not hotkey_combination:
             raise ValueError(f"Invalid hotkey string: {hotkey_string}")
-            
+        
+        # Check if hotkey is registered
         if hotkey_combination not in self._hotkeys:
-            raise ValueError(f"Hotkey not registered: {hotkey_string}")
+            print(f"Warning: unregister_hotkey called with hotkey not registered: {hotkey_string}")
+            return False
         
         # Remove hotkey from dictionary
         del self._hotkeys[hotkey_combination]
+        return True
     
     def enable_filtered_mode(self, active_hotkeys: Sequence[str]) -> None:
         """
@@ -201,6 +205,8 @@ class HotKeyManager:
         ------
         RuntimeError
             If the hotkey manager is currently listening and needs to be stopped first.
+        ValueError
+            If the hotkey string is invalid.
         """
         # Only allow mode change if not listening
         if self.is_listening:
@@ -290,7 +296,7 @@ class HotKeyManager:
         # Normal mode, use all hotkeys
         self._listener = keyboard.GlobalHotKeys(self._hotkeys)
     
-    def stop_listening(self) -> None:
+    def stop_listening(self) -> bool:
         """
         Stop the hotkey listener.
         
@@ -298,18 +304,16 @@ class HotKeyManager:
         
         Returns
         -------
-        None
-        
-        Raises
-        ------
-        RuntimeError
-            If the listener is not active.
+        bool
+            True if the listener was stopped, False if there was no active listener.
         """
         if not self.is_listening:
-            raise RuntimeError("No active listener to stop")
-            
+            print("Warning: stop_listening called but no active listener to stop.")
+            return False
+        
         self._listener.stop()
         self._listener = None
+        return True
     
     def clear_all_hotkeys(self) -> None:
         """
