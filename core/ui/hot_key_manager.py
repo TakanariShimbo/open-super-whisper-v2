@@ -177,7 +177,6 @@ class HotKeyManager:
         
         # Check if hotkey is registered
         if hotkey_combination not in self._hotkeys:
-            print(f"Warning: unregister_hotkey called with hotkey not registered: {hotkey_string}")
             return False
         
         # Remove hotkey from dictionary
@@ -308,7 +307,6 @@ class HotKeyManager:
             True if the listener was stopped, False if there was no active listener.
         """
         if not self.is_listening:
-            print("Warning: stop_listening called but no active listener to stop.")
             return False
         
         self._listener.stop()
