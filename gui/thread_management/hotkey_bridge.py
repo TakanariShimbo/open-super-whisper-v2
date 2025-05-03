@@ -78,12 +78,24 @@ class HotkeyBridge(QObject):
         # Save callback
         self._hotkey_callbacks[hotkey_str] = callback
         
-        # Register with HotkeyManager
-        # Use bridge function for registration
-        return self.hotkey_manager.register_hotkey(
-            hotkey_str,
-            lambda: self._safe_trigger_callback(hotkey_str)
-        )
+        try:
+            self.hotkey_manager.stop_listening()
+
+            self.hotkey_manager.register_hotkey(
+                hotkey_str,
+                lambda: self._safe_trigger_callback(hotkey_str)
+            )
+            
+            self.hotkey_manager.start_listening()    
+            return True
+        except Exception as e:
+            print(f"Error registering hotkey '{hotkey_str}': {e}")
+            
+            # Remove from callback dictionary if registration failed
+            if hotkey_str in self._hotkey_callbacks:
+                del self._hotkey_callbacks[hotkey_str]
+                
+            return False
     
     def unregister_hotkey(self, hotkey_str: str) -> bool:
         """
@@ -99,14 +111,21 @@ class HotkeyBridge(QObject):
         bool
             Whether unregistration was successful
         """
-        # Unregister from HotkeyManager
-        result = self.hotkey_manager.unregister_hotkey(hotkey_str)
-        
-        # Remove from callback dictionary
-        if hotkey_str in self._hotkey_callbacks:
-            del self._hotkey_callbacks[hotkey_str]
-        
-        return result
+        try:
+            self.hotkey_manager.stop_listening()
+
+            self.hotkey_manager.unregister_hotkey(hotkey_str)
+
+            self.hotkey_manager.start_listening()
+            
+            # Remove from callback dictionary
+            if hotkey_str in self._hotkey_callbacks:
+                del self._hotkey_callbacks[hotkey_str]
+                
+            return True
+        except Exception as e:
+            print(f"Error unregistering hotkey '{hotkey_str}': {e}")
+            return False
     
     # Signal is defined at class level
     
@@ -154,7 +173,25 @@ class HotkeyBridge(QObject):
         """
         self._is_recording = enabled
         self._active_recording_hotkey = recording_hotkey
-        self.hotkey_manager.enable_recording_mode(enabled, recording_hotkey)
+        
+        try:
+            self.hotkey_manager.stop_listening()
+            
+            # Use filtered mode in HotKeyManager to control which hotkeys are active
+            if enabled:
+                # In recording mode, only the active recording hotkey should work
+                # If recording_hotkey is None, this will create an empty list, effectively disabling all hotkeys
+                active_hotkeys = [recording_hotkey] if recording_hotkey else []
+                self.hotkey_manager.enable_filtered_mode(active_hotkeys)
+            else:
+                # When not in recording mode, disable filtered mode to allow all hotkeys
+                self.hotkey_manager.disable_filtered_mode()
+                
+            self.hotkey_manager.start_listening()
+                
+        except Exception as e:
+            print(f"Error setting recording mode: {e}")
+
     
     def is_recording(self) -> bool:
         """
@@ -187,6 +224,18 @@ class HotkeyBridge(QObject):
         bool
             Whether clearing was successful
         """
-        result = self.hotkey_manager.clear_all_hotkeys()
-        self._hotkey_callbacks.clear()
-        return result
+        try:
+            # Make sure the hotkey manager is not listening when clearing
+            self.hotkey_manager.stop_listening()
+                
+            # Clear all hotkeys
+            self.hotkey_manager.clear_all_hotkeys()
+            
+            # Clear local callbacks
+            self._hotkey_callbacks.clear()
+            
+            # No need to restart listening as there are no hotkeys
+            return True
+        except Exception as e:
+            print(f"Error clearing hotkeys: {e}")
+            return False

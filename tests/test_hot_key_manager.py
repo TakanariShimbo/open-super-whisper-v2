@@ -63,15 +63,15 @@ def test_hot_key_manager(test_duration: int = 10, verbose: bool = False):
             # Create a callback that closes over the hotkey name
             callback = lambda n=name: test_callback(n)
             
-            # Register the hotkey with just shortcut and callback
-            success = manager.register_hotkey(shortcut, callback)
-            
-            # Store the name for display purposes
-            if success:
+            try:
+                # Register the hotkey
+                manager.register_hotkey(shortcut, callback)
+                
+                # Store the name for display purposes
                 hotkey_names[shortcut] = name
                 print(f"Registered hotkey: {shortcut} -> {name}")
-            else:
-                print(f"Failed to register hotkey: {shortcut}")
+            except Exception as e:
+                print(f"Failed to register hotkey: {shortcut} - Error: {e}")
         
         # Start listening
         print("\nStarting hotkey listener thread...")
@@ -97,11 +97,11 @@ def test_hot_key_manager(test_duration: int = 10, verbose: bool = False):
             print("\nTest duration completed.")
         else:
             time.sleep(test_duration)
-        
+
         # Stop the listener
         print("Stopping hotkey listener...")
         manager.stop_listening()
-        
+                
         # Wait for thread to complete
         listener_thread.join(timeout=2)
         
