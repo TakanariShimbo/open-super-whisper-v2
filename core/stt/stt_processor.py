@@ -47,12 +47,12 @@ class STTProcessor:
 
     # Use model manager for available models
     AVAILABLE_MODELS = STTModelManager.to_api_format()
-    DEFAULT_MODEL_ID = "gpt-4o-transcribe"
+    DEFAULT_MODEL_ID = STTModelManager.get_default_model().id
     MAX_RETRIES = 2
     REQUEST_TIMEOUT = 60  # seconds
     CONTEXT_MAX_WORDS = 20  # Maximum words to include from previous context
     
-    def __init__(self, api_key: str, model_id: str = DEFAULT_MODEL_ID):
+    def __init__(self, api_key: str):
         """
         Initialize the STTProcessor.
         
@@ -60,8 +60,6 @@ class STTProcessor:
         ----------
         api_key : str
             API key.
-        model_id : str, optional
-            Model to use, by default "gpt-4o-transcribe".
             
         Raises
         ------
@@ -74,7 +72,7 @@ class STTProcessor:
             raise ValueError("Invalid API key. Please provide a valid API key.")
         
         # Set model and initialize custom vocabulary and instruction
-        self._model_id = model_id
+        self._model_id = self.DEFAULT_MODEL_ID
         self._custom_vocabulary: str = ""
         self._system_instruction: str = ""
     

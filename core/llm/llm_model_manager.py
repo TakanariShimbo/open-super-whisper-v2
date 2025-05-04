@@ -89,6 +89,26 @@ class LLMModelManager:
     def get_default_model(cls) -> LLMModel:
         """
         Get the default model.
+
+        Returns
+        -------
+        LLMModel
+            The default model.
+
+        Raises
+        ------
+        ValueError
+            If no default model is found.
+        """
+        for model in cls._SUPPORTED_LLM_MODELS:
+            if model.is_default:
+                return model
+        raise ValueError("No default model found")
+    
+    @classmethod
+    def get_default_model(cls) -> LLMModel:
+        """
+        Get the default model.
         
         Returns
         -------

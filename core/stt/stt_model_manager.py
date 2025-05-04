@@ -67,6 +67,26 @@ class STTModelManager:
         return cls._SUPPORTED_STT_MODELS.copy()
     
     @classmethod
+    def get_default_model(cls) -> STTModel:
+        """
+        Get the default model.
+
+        Returns
+        -------
+        STTModel
+            The default model.
+
+        Raises
+        ------
+        ValueError
+            If no default model is found.
+        """
+        for model in cls._SUPPORTED_STT_MODELS:
+            if model.is_default:
+                return model
+        raise ValueError("No default model found")
+    
+    @classmethod
     def to_api_format(cls) -> List[Dict[str, str]]:
         """
         Convert models to API format.

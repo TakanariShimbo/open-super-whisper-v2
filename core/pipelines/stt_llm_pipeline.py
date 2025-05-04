@@ -22,7 +22,7 @@ class STTLLMPipeline:
     a seamless processing pipeline, with optional LLM processing.
     """
     
-    def __init__(self, api_key, stt_model_id: str = "gpt-4o-transcribe", llm_model_id: str = "gpt-4o"):
+    def __init__(self, api_key):
         """
         Initialize the STTLLMPipeline.
         
@@ -30,10 +30,6 @@ class STTLLMPipeline:
         ----------
         api_key : str
             API key.
-        stt_model_id : str, optional
-            STT model to use, by default "gpt-4o-transcribe".
-        llm_model_id : str, optional
-            LLM model to use, by default "gpt-4o".
             
         Raises
         ------
@@ -41,8 +37,8 @@ class STTLLMPipeline:
             If no API key is provided and none is found in environment variables.
         """
         # Initialize components
-        self.stt_processor = STTProcessor(api_key=api_key, model_id=stt_model_id)
-        self.llm_processor = LLMProcessor(api_key=api_key, model_id=llm_model_id)
+        self.stt_processor = STTProcessor(api_key=api_key)
+        self.llm_processor = LLMProcessor(api_key=api_key)
         
         # Processing state
         self.is_llm_processing_enabled = False

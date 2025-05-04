@@ -72,7 +72,9 @@ def test_pipeline(audio_file_path: str, api_key: str = None,
     try:
         # Initialize pipeline
         print(f"Initializing pipeline with STT model: {stt_model}, LLM model: {llm_model}")
-        pipeline = STTLLMPipeline(api_key=api_key, stt_model_id=stt_model, llm_model_id=llm_model)
+        pipeline = STTLLMPipeline(api_key=api_key)
+        pipeline.set_stt_model(stt_model)
+        pipeline.set_llm_model(llm_model)
         
         # Set LLM processing
         pipeline.enable_llm_processing(llm_enabled)

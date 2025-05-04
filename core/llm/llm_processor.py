@@ -76,11 +76,11 @@ class LLMProcessor:
     
     # Use model manager for available models
     AVAILABLE_MODELS = LLMModelManager.to_api_format()
-    DEFAULT_MODEL_ID = "gpt-4o"
+    DEFAULT_MODEL_ID = LLMModelManager.get_default_model().id
     REQUEST_TIMEOUT = 60  # seconds
     MAX_RETRIES = 2
     
-    def __init__(self, api_key: str, model_id: str = DEFAULT_MODEL_ID):
+    def __init__(self, api_key: str):
         """
         Initialize the LLMProcessor.
         
@@ -88,8 +88,6 @@ class LLMProcessor:
         ----------
         api_key : str
             API key.
-        model_id : str, optional
-            LLM model to use, by default "gpt-4o".
             
         Raises
         ------
@@ -102,7 +100,7 @@ class LLMProcessor:
             raise ValueError("Invalid API key. Please provide a valid API key.")
         
         # Set model and initialize instruction
-        self._model_id = model_id
+        self._model_id = self.DEFAULT_MODEL_ID
         self._system_instruction: str = ""
         
     def set_api_key(self, api_key: str) -> bool:
