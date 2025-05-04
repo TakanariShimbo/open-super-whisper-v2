@@ -75,12 +75,12 @@ class AudioChunker:
         output_directory : Optional[str], optional
             Directory to store temporary chunks, defaults to None (system temp directory)
         """
-        self.max_chunk_size_in_mb = max_chunk_size_in_mb
-        self.output_directory = output_directory or tempfile.gettempdir()
-        self.chunk_dir = os.path.join(self.output_directory, "audio_chunks")
+        self._max_chunk_size_in_mb = max_chunk_size_in_mb
+        self._output_directory = output_directory or tempfile.gettempdir()
+        self._chunk_dir = os.path.join(self._output_directory, "audio_chunks")
         
         # Create chunk directory if it doesn't exist
-        os.makedirs(self.chunk_dir, exist_ok=True)
+        os.makedirs(self._chunk_dir, exist_ok=True)
     
     def _get_audio_duration(self, audio_file_path: str) -> float:
         """
@@ -150,7 +150,7 @@ class AudioChunker:
         file_size_mb = file_size / (1024 * 1024)
         
         # If file is already small enough, return it as is
-        if file_size_mb <= self.max_chunk_size_in_mb:
+        if file_size_mb <= self._max_chunk_size_in_mb:
             return [audio_file_path]
         
         try:
@@ -158,7 +158,7 @@ class AudioChunker:
             total_duration = self._get_audio_duration(audio_file_path)
             
             # Calculate number of chunks needed
-            num_chunks = math.ceil(file_size_mb / self.max_chunk_size_in_mb)
+            num_chunks = math.ceil(file_size_mb / self._max_chunk_size_in_mb)
             
             # Add a safety margin by increasing the number of chunks
             num_chunks = int(num_chunks * 1.5)  # Add 50% more chunks for safety
@@ -170,7 +170,7 @@ class AudioChunker:
             
             for i in range(int(num_chunks)):
                 start_time = i * chunk_duration
-                chunk_path = os.path.join(self.chunk_dir, f"{file_name}_chunk_{i:03d}.wav")
+                chunk_path = os.path.join(self._chunk_dir, f"{file_name}_chunk_{i:03d}.wav")
                 
                 # Extract chunk using ffmpeg
                 stream = ffmpeg.input(audio_file_path, ss=start_time, t=chunk_duration)
@@ -197,10 +197,10 @@ class AudioChunker:
         """
         removed_count = 0
         
-        if os.path.exists(self.chunk_dir):
+        if os.path.exists(self._chunk_dir):
             # Remove individual files
-            for file in os.listdir(self.chunk_dir):
-                file_path = os.path.join(self.chunk_dir, file)
+            for file in os.listdir(self._chunk_dir):
+                file_path = os.path.join(self._chunk_dir, file)
                 if os.path.isfile(file_path):
                     try:
                         os.remove(file_path)
@@ -211,7 +211,7 @@ class AudioChunker:
             
             # Try to remove the directory itself
             try:
-                os.rmdir(self.chunk_dir)
+                os.rmdir(self._chunk_dir)
             except OSError:
                 # Directory might not be empty, that's ok
                 pass
