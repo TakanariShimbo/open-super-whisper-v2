@@ -252,13 +252,6 @@ class MainWindow(QMainWindow):
         self.record_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.record_button.clicked.connect(self.toggle_recording)
         
-        # LLM Processing control
-        self.llm_enabled_checkbox = QCheckBox(AppLabels.MAIN_WIN_LLM_ENABLED)
-        self.llm_enabled_checkbox.setChecked(
-            self.unified_processor.is_llm_processing_enabled if self.unified_processor else False
-        )
-        self.llm_enabled_checkbox.toggled.connect(self.toggle_llm_processing)
-        
         # Control form
         control_form = QWidget()
         form_layout = QFormLayout(control_form)
@@ -463,33 +456,6 @@ class MainWindow(QMainWindow):
             except ValueError as e:
                 self.unified_processor = None
                 SimpleMessageDialog.show_message(self, AppLabels.MAIN_WIN_API_KEY_ERROR_TITLE, AppLabels.MAIN_WIN_API_KEY_ERROR_MISSING, SimpleMessageDialog.WARNING)
-    
-    def toggle_llm_processing(self, enabled):
-        """
-        Toggle LLM processing on/off.
-        
-        Parameters
-        ----------
-        enabled : bool
-            Whether to enable LLM processing.
-        """
-        if self.unified_processor:
-            self.unified_processor.enable_llm_processing(enabled)
-            
-            # Get the currently selected instruction set from the dropdown
-            selected_set = self.get_current_instruction_set()
-            if selected_set:
-                # Update the selected instruction set
-                self.instruction_set_manager.update_set(
-                    selected_set.name,
-                    llm_enabled=enabled
-                )
-            
-            # Update status bar via UIUpdater for thread safety
-            if enabled:
-                self.ui_updater.update_status(AppLabels.STATUS_LLM_ENABLED, 2000)
-            else:
-                self.ui_updater.update_status(AppLabels.STATUS_LLM_DISABLED, 2000)
     
     def toggle_recording(self):
         """
@@ -1088,9 +1054,6 @@ class MainWindow(QMainWindow):
             # Apply settings from selected instruction set
             self.apply_instruction_set_settings()
             
-            # Update UI to reflect LLM enabled state
-            self.llm_enabled_checkbox.setChecked(self.unified_processor.is_llm_processing_enabled)
-            
             # Re-register hotkeys
             self.setup_global_hotkey()
             
@@ -1387,7 +1350,4 @@ class MainWindow(QMainWindow):
             f"Selected instruction set: {set_name}",
             3000
         )
-        
-        # Update the UI
-        if self.unified_processor:
-            self.llm_enabled_checkbox.setChecked(self.unified_processor.is_llm_processing_enabled)
+

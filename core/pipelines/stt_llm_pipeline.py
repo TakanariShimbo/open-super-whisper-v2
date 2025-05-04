@@ -51,7 +51,7 @@ class STTLLMPipeline:
         """Check if the audio recorder is currently recording."""
         return self.audio_recorder.is_recording
     
-    def enable_llm_processing(self, enabled: bool = True) -> None:
+    def _set_llm_processing(self, enabled: bool = True) -> None:
         """
         Enable or disable LLM processing.
         
@@ -77,7 +77,7 @@ class STTLLMPipeline:
             self.stt_processor.set_model(selected_set.stt_model)
         
         # LLM settings
-        self.enable_llm_processing(selected_set.llm_enabled)
+        self._set_llm_processing(selected_set.llm_enabled)
         
         # Set LLM model
         if selected_set.llm_model:
