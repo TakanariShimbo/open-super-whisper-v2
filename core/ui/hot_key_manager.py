@@ -275,6 +275,7 @@ class HotKeyManager:
     def _start_filtered_listening(self) -> None:
         """
         Start listening with filtered mode active.
+
         Only the active hotkeys will be monitored.
         """
         # Create filtered hotkeys using dictionary comprehension
@@ -290,6 +291,7 @@ class HotKeyManager:
     def _start_normal_listening(self) -> None:
         """
         Start listening in normal mode.
+        
         All registered hotkeys will be monitored.
         """
         # Normal mode, use all hotkeys
