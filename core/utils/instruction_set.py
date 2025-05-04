@@ -21,6 +21,31 @@ class InstructionSet:
     
     The class also includes a hotkey setting that allows users to quickly switch
     between instruction sets using keyboard shortcuts.
+    
+    Attributes
+    ----------
+    name : str
+        Name of the instruction set.
+    stt_vocabulary : str
+        Custom vocabulary for speech-to-text, by default empty string.
+    stt_instructions : str
+        System instructions for speech-to-text, by default empty string.
+    stt_language : Optional[str]
+        Language code (e.g., "en", "ja"), None for auto-detection, by default None.
+    stt_model : str
+        Speech-to-text model ID, by default "gpt-4o-transcribe".
+    llm_enabled : bool
+        Whether LLM processing is enabled, by default False.
+    llm_model : str
+        LLM model ID to use, by default "gpt-4o".
+    llm_instructions : str
+        System instructions for LLM, by default empty string.
+    llm_clipboard_text_enabled : bool
+        Whether to include clipboard text in LLM input, by default False.
+    llm_clipboard_image_enabled : bool
+        Whether to include clipboard images in LLM input, by default False.
+    hotkey : str
+        Hotkey string for quick activation (e.g., "ctrl+shift+1"), by default empty string.
     """
     name: str
     stt_vocabulary: str = ""

@@ -41,9 +41,24 @@ class LLMModel:
     is_default: bool = False
     
     def __str__(self) -> str:
-        """Return the display name of the model."""
+        """
+        Return the display name of the model.
+        
+        Returns
+        -------
+        str
+            The display name of the model.
+        """
         return self.name
     
     def __repr__(self) -> str:
-        """Return a string representation of the model."""
+        """
+        Return a string representation of the model.
+        
+        Returns
+        -------
+        str
+            A string representation of the model in the format:
+            LLMModel(id='model_id', name='model_name')
+        """
         return f"LLMModel(id='{self.id}', name='{self.name}')"
