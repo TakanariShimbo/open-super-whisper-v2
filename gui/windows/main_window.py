@@ -19,7 +19,7 @@ from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QSettings, QUrl, QSize, QBuffer
 from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 
-from core.pipelines.stt_llm_pipeline import STTLLMPipeline
+from core.pipelines.stt_llm_pipeline import Pipeline
 from core.pipelines.pipeline_result import PipelineResult
 
 from core.ui.hot_key_manager import HotKeyManager
@@ -77,7 +77,7 @@ class MainWindow(QMainWindow):
         self.instruction_set_hotkeys = []
         
         # Initialize core components
-        self.unified_processor = None
+        self.pipeline = None
         
         # Recording state
         self.is_recording = False
@@ -97,15 +97,15 @@ class MainWindow(QMainWindow):
         
         # Initialize transcription processor if API key is available
         try:
-            self.unified_processor = STTLLMPipeline(api_key=self.api_key)
+            self.pipeline = Pipeline(api_key=self.api_key)
         except ValueError:
-            self.unified_processor = None
+            self.pipeline = None
         
         # Set up UI
         self.init_ui()
         
         # Apply settings from selected instruction set - must be after UI initialization
-        if self.unified_processor:
+        if self.pipeline:
             self.apply_instruction_set_settings()
         
         # Set up ThreadManager signal connections
@@ -181,7 +181,7 @@ class MainWindow(QMainWindow):
     
     def apply_instruction_set_settings(self):
         """Apply settings from the selected instruction set to the transcription processor."""
-        if not self.unified_processor:
+        if not self.pipeline:
             return
         
         # Get the selected instruction set from dropdown
@@ -190,7 +190,7 @@ class MainWindow(QMainWindow):
             return
         
         # Apply the instruction set to the pipeline
-        self.unified_processor.apply_instruction_set(selected_set)
+        self.pipeline.apply_instruction_set(selected_set)
         
     def get_current_instruction_set(self):
         """
@@ -450,11 +450,11 @@ class MainWindow(QMainWindow):
             
             # Reinitialize processor with new API key
             try:
-                self.unified_processor = STTLLMPipeline(api_key=self.api_key)
+                self.pipeline = Pipeline(api_key=self.api_key)
                 self.apply_instruction_set_settings()
                 self.status_bar.showMessage(AppLabels.STATUS_API_KEY_SAVED, 3000)
             except ValueError as e:
-                self.unified_processor = None
+                self.pipeline = None
                 SimpleMessageDialog.show_message(self, AppLabels.MAIN_WIN_API_KEY_ERROR_TITLE, AppLabels.MAIN_WIN_API_KEY_ERROR_MISSING, SimpleMessageDialog.WARNING)
     
     def toggle_recording(self):
@@ -474,7 +474,7 @@ class MainWindow(QMainWindow):
         This method checks the recording state and starts or stops
         recording accordingly.
         """
-        if self.unified_processor.is_recording:
+        if self.pipeline.is_recording:
             self.stop_recording()
         else:
             self.start_recording()
@@ -493,14 +493,14 @@ class MainWindow(QMainWindow):
             The hotkey that triggered recording, by default None
             If None, the main recording hotkey is used
         """
-        if not self.unified_processor:
+        if not self.pipeline:
             SimpleMessageDialog.show_message(self, AppLabels.MAIN_WIN_API_KEY_ERROR_TITLE, AppLabels.MAIN_WIN_API_KEY_ERROR_REQUIRED, SimpleMessageDialog.WARNING)
             return
         
         try:
             # Try to start recording, which will check for microphone availability
             self.record_button.setText(AppLabels.MAIN_WIN_RECORD_STOP_BUTTON)
-            self.unified_processor.start_recording()
+            self.pipeline.start_recording()
             
             # Use the provided instruction set hotkey
             active_hotkey = recording_hotkey if recording_hotkey else ""
@@ -551,7 +551,7 @@ class MainWindow(QMainWindow):
         # Use UIUpdater for button text update
         self.ui_updater.update_timer_label(AppLabels.STATUS_TIMER_INITIAL)
         self.record_button.setText(AppLabels.MAIN_WIN_RECORD_START_BUTTON)
-        audio_file = self.unified_processor.stop_recording()
+        audio_file = self.pipeline.stop_recording()
         
         # Signal recording status change through ThreadManager
         self.thread_manager.recordingStatusChanged.emit(False, "")
@@ -646,7 +646,7 @@ class MainWindow(QMainWindow):
         clipboard_image = None
         
         # Only proceed if LLM is enabled
-        if self.unified_processor and self.unified_processor.is_llm_processing_enabled:
+        if self.pipeline and self.pipeline.is_llm_processing_enabled:
             # Get the clipboard manager
             clipboard = QApplication.clipboard()
             
@@ -738,7 +738,7 @@ class MainWindow(QMainWindow):
                 self.thread_manager.update_stream(chunk)
             
             # Process audio with optional clipboard content (text and/or image) and streaming
-            result = self.unified_processor.process(
+            result = self.pipeline.process(
                 audio_file, 
                 language, 
                 clipboard_text, 
@@ -848,7 +848,7 @@ class MainWindow(QMainWindow):
         
         # Auto-copy if enabled
         if self.auto_copy:
-            if self.unified_processor.is_llm_processing_enabled and result.llm_processed and result.llm_response:
+            if self.pipeline.is_llm_processing_enabled and result.llm_processed and result.llm_response:
                 # Copy LLM output if LLM is enabled and result is available
                 self.copy_llm_to_clipboard()
             else:
@@ -1000,7 +1000,7 @@ class MainWindow(QMainWindow):
         hotkey = instruction_set.hotkey
         
         # Check if we're currently recording
-        if self.unified_processor.is_recording:
+        if self.pipeline.is_recording:
             # Only stop recording if this is the same hotkey that started recording
             if hotkey == hotkey_bridge.get_active_recording_hotkey():
                 self.stop_recording()
@@ -1033,7 +1033,7 @@ class MainWindow(QMainWindow):
         
         Note: Hotkeys are automatically disabled/re-enabled by the InstructionSetsDialog class.
         """
-        if not self.unified_processor:
+        if not self.pipeline:
             SimpleMessageDialog.show_message(
                 self,
                 AppLabels.MAIN_WIN_API_KEY_ERROR_TITLE,

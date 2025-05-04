@@ -16,7 +16,7 @@ from ..utils.instruction_set import InstructionSet
 from .pipeline_result import PipelineResult
 
 
-class STTLLMPipeline:
+class Pipeline:
     """
     Unified pipeline for STT and LLM processing.
     
