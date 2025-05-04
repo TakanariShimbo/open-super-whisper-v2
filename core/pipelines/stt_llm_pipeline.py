@@ -11,6 +11,8 @@ from typing import Optional, Callable
 # Local application imports
 from ..stt.stt_processor import STTProcessor
 from ..llm.llm_processor import LLMProcessor
+from ..recorder.audio_recorder import AudioRecorder
+from ..utils.instruction_set import InstructionSet
 from .pipeline_result import PipelineResult
 
 
@@ -39,9 +41,15 @@ class STTLLMPipeline:
         # Initialize components
         self.stt_processor = STTProcessor(api_key=api_key)
         self.llm_processor = LLMProcessor(api_key=api_key)
+        self.audio_recorder = AudioRecorder()
         
         # Processing state
         self.is_llm_processing_enabled = False
+    
+    @property
+    def is_recording(self) -> bool:
+        """Check if the audio recorder is currently recording."""
+        return self.audio_recorder.is_recording
     
     def enable_llm_processing(self, enabled: bool = True) -> None:
         """
@@ -53,81 +61,63 @@ class STTLLMPipeline:
             Whether to enable LLM processing, by default True.
         """
         self.is_llm_processing_enabled = enabled
-    
-    # STT processor delegation methods
-    def set_stt_model(self, model_id: str) -> None:
-        """Set the speech-to-text model."""
-        self.stt_processor.set_model(model_id)
-    
-    def set_custom_vocabulary(self, vocabulary: str) -> None:
-        """
-        Set custom vocabulary for speech-to-text.
-        
-        Parameters
-        ----------
-        vocabulary : str
-            Custom vocabulary words/phrases.
-        """
-        self.stt_processor.set_custom_vocabulary(vocabulary)
-    
-    def clear_custom_vocabulary(self) -> None:
-        """Clear custom vocabulary for speech-to-text."""
+
+    def apply_instruction_set(self, selected_set: InstructionSet) -> None:
+        """Apply an instruction set to the pipeline."""
+        # Apply vocabulary
         self.stt_processor.clear_custom_vocabulary()
-    
-    def set_stt_instruction(self, instruction: str) -> None:
-        """
-        Set system instruction for speech-to-text.
+        self.stt_processor.set_custom_vocabulary(selected_set.stt_vocabulary)
         
-        Parameters
-        ----------
-        instruction : str
-            Instruction for speech-to-text.
-        """
-        self.stt_processor.set_system_instruction(instruction)
-    
-    def clear_stt_instruction(self) -> None:
-        """Clear system instruction for transcription."""
+        # Apply transcription instructions
         self.stt_processor.clear_system_instruction()
-    
-    # LLM processor delegation methods
-    def set_llm_model(self, model_id: str) -> None:
-        """Set the LLM model."""
-        self.llm_processor.set_model(model_id)
-    
-    def set_llm_instruction(self, instruction: str) -> None:
-        """
-        Set system instruction for LLM processing.
+        self.stt_processor.set_system_instruction(selected_set.stt_instructions)
         
-        Parameters
-        ----------
-        instruction : str
-            Instruction for LLM.
-        """
-        self.llm_processor.set_system_instruction(instruction)
-    
-    def clear_llm_instruction(self) -> None:
-        """Clear system instruction for LLM processing."""
+        # Set whisper model
+        if selected_set.stt_model:
+            self.stt_processor.set_model(selected_set.stt_model)
+        
+        # LLM settings
+        self.enable_llm_processing(selected_set.llm_enabled)
+        
+        # Set LLM model
+        if selected_set.llm_model:
+            self.llm_processor.set_model(selected_set.llm_model)
+        
+        # Apply LLM instructions
         self.llm_processor.clear_system_instruction()
+        self.llm_processor.set_system_instruction(selected_set.llm_instructions)
+        
+    def start_recording(self) -> None:
+        """Start recording audio from the microphone."""
+        self.audio_recorder.start_recording()
+
+    def stop_recording(self) -> str:
+        """Stop recording and return the audio file path."""
+        return self.audio_recorder.stop_recording()
+        
+    def stop_recording_and_process(
+            self,
+            language: Optional[str] = None,
+            clipboard_text: Optional[str] = None,
+            clipboard_image: Optional[bytes] = None,
+            stream_callback: Optional[Callable[[str], None]] = None,
+        ) -> PipelineResult:
+        """Stop recording and immediately process the recorded audio."""
+        if not self.audio_recorder.is_recording:
+            raise RuntimeError("No recording is in progress.")
+        
+        # Stop recording and get the audio file path
+        audio_file = self.audio_recorder.stop_recording()
+        
+        if not audio_file:
+            raise RuntimeError("Failed to save recording.")
+        
+        # Process the audio file
+        return self.process(audio_file, language, clipboard_text, clipboard_image, stream_callback)
     
     def _prepare_prompt(self, transcription: str, clipboard_text: Optional[str] = None, 
                         clipboard_image: Optional[bytes] = None) -> str:
-        """
-        Prepare the prompt for LLM processing based on available inputs.
-        
-        Parameters
-        ----------
-        transcription : str
-            Transcribed text from audio.
-        clipboard_text : Optional[str], optional
-            Text from clipboard, by default None.
-        clipboard_image : Optional[bytes], optional
-            Image data from clipboard, by default None.
-            
-        Returns
-        -------
-        str
-            Formatted prompt for LLM.
-        """
+        """Prepare the prompt for LLM processing based on available inputs."""
         # Start with just the transcription
         prompt = transcription
         
@@ -147,23 +137,7 @@ class STTLLMPipeline:
     
     def _process_with_text(self, prompt: str, clipboard_image: Optional[bytes] = None,
                            stream_callback: Optional[Callable[[str], None]] = None) -> str:
-        """
-        Process text through LLM with appropriate method based on parameters.
-        
-        Parameters
-        ----------
-        prompt : str
-            Text prompt to process.
-        clipboard_image : Optional[bytes], optional
-            Image data to include in processing, by default None.
-        stream_callback : Optional[Callable[[str], None]], optional
-            Callback for streaming responses, by default None.
-            
-        Returns
-        -------
-        str
-            LLM response.
-        """
+        """Process text through LLM with appropriate method based on parameters."""
         # Determine if we're using streaming
         if stream_callback:
             if clipboard_image:
@@ -176,31 +150,15 @@ class STTLLMPipeline:
             else:
                 return self.llm_processor.process_text(prompt)
     
-    def process(self, audio_file_path: str, language: Optional[str] = None, 
-                clipboard_text: Optional[str] = None, clipboard_image: Optional[bytes] = None,
-                stream_callback: Optional[Callable[[str], None]] = None) -> PipelineResult:
-        """
-        Process an audio file with transcription and optional LLM processing.
-        
-        Parameters
-        ----------
-        audio_file_path : str
-            Path to the audio file to process.
-        language : Optional[str], optional
-            Language code (e.g., "en", "ja"), or None for auto-detection, by default None.
-        clipboard_text : Optional[str], optional
-            Text from clipboard to include in LLM input, by default None.
-        clipboard_image : Optional[bytes], optional
-            Image data from clipboard to include in LLM input, by default None.
-        stream_callback : Optional[Callable[[str], None]], optional
-            Callback function for streaming LLM responses, by default None.
-            If None, non-streaming API will be used.
-            
-        Returns
-        -------
-        PipelineResult
-            Processing result containing transcription and optional LLM response.
-        """
+    def process(
+        self, 
+        audio_file_path: str, 
+        language: Optional[str] = None, 
+        clipboard_text: Optional[str] = None, 
+        clipboard_image: Optional[bytes] = None,
+        stream_callback: Optional[Callable[[str], None]] = None,
+    ) -> PipelineResult:
+        """Process an audio file with transcription and optional LLM processing."""
         # Perform transcription
         transcription = self.stt_processor.transcribe_file_with_chunks(audio_file_path, language)
         

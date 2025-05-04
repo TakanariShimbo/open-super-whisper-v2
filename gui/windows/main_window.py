@@ -19,7 +19,6 @@ from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QSettings, QUrl, QSize, QBuffer
 from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 
-from core.recorder.audio_recorder import AudioRecorder
 from core.pipelines.stt_llm_pipeline import STTLLMPipeline
 from core.pipelines.pipeline_result import PipelineResult
 
@@ -78,7 +77,6 @@ class MainWindow(QMainWindow):
         self.instruction_set_hotkeys = []
         
         # Initialize core components
-        self.audio_recorder = None
         self.unified_processor = None
         
         # Recording state
@@ -92,9 +90,6 @@ class MainWindow(QMainWindow):
         
         # Initialize sound players
         self.setup_sound_players()
-        
-        # Initialize components
-        self.audio_recorder = AudioRecorder()
         
         # Status indicator window
         self.status_indicator_window = StatusIndicatorWindow()
@@ -194,30 +189,8 @@ class MainWindow(QMainWindow):
         if not selected_set:
             return
         
-        # Clear existing settings
-        self.unified_processor.clear_custom_vocabulary()
-        self.unified_processor.clear_stt_instruction()
-        self.unified_processor.clear_llm_instruction()
-        
-        # Apply vocabulary
-        self.unified_processor.set_custom_vocabulary(selected_set.stt_vocabulary)
-        
-        # Apply transcription instructions
-        self.unified_processor.set_stt_instruction(selected_set.stt_instructions)
-        
-        # Set whisper model
-        if selected_set.stt_model:
-            self.unified_processor.set_stt_model(selected_set.stt_model)
-        
-        # LLM settings
-        self.unified_processor.enable_llm_processing(selected_set.llm_enabled)
-        
-        # Set LLM model
-        if selected_set.llm_model:
-            self.unified_processor.set_llm_model(selected_set.llm_model)
-        
-        # Apply LLM instructions
-        self.unified_processor.set_llm_instruction(selected_set.llm_instructions)
+        # Apply the instruction set to the pipeline
+        self.unified_processor.apply_instruction_set(selected_set)
         
     def get_current_instruction_set(self):
         """
@@ -535,7 +508,7 @@ class MainWindow(QMainWindow):
         This method checks the recording state and starts or stops
         recording accordingly.
         """
-        if self.audio_recorder.is_recording:
+        if self.unified_processor.is_recording:
             self.stop_recording()
         else:
             self.start_recording()
@@ -561,7 +534,7 @@ class MainWindow(QMainWindow):
         try:
             # Try to start recording, which will check for microphone availability
             self.record_button.setText(AppLabels.MAIN_WIN_RECORD_STOP_BUTTON)
-            self.audio_recorder.start_recording()
+            self.unified_processor.start_recording()
             
             # Use the provided instruction set hotkey
             active_hotkey = recording_hotkey if recording_hotkey else ""
@@ -612,7 +585,7 @@ class MainWindow(QMainWindow):
         # Use UIUpdater for button text update
         self.ui_updater.update_timer_label(AppLabels.STATUS_TIMER_INITIAL)
         self.record_button.setText(AppLabels.MAIN_WIN_RECORD_START_BUTTON)
-        audio_file = self.audio_recorder.stop_recording()
+        audio_file = self.unified_processor.stop_recording()
         
         # Signal recording status change through ThreadManager
         self.thread_manager.recordingStatusChanged.emit(False, "")
@@ -1061,7 +1034,7 @@ class MainWindow(QMainWindow):
         hotkey = instruction_set.hotkey
         
         # Check if we're currently recording
-        if self.audio_recorder.is_recording:
+        if self.unified_processor.is_recording:
             # Only stop recording if this is the same hotkey that started recording
             if hotkey == hotkey_bridge.get_active_recording_hotkey():
                 self.stop_recording()
