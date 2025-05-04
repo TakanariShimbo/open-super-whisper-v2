@@ -535,7 +535,7 @@ class MainWindow(QMainWindow):
         This method checks the recording state and starts or stops
         recording accordingly.
         """
-        if self.audio_recorder.is_recording_active():
+        if self.audio_recorder.is_recording:
             self.stop_recording()
         else:
             self.start_recording()
@@ -1061,7 +1061,7 @@ class MainWindow(QMainWindow):
         hotkey = instruction_set.hotkey
         
         # Check if we're currently recording
-        if self.audio_recorder.is_recording_active():
+        if self.audio_recorder.is_recording:
             # Only stop recording if this is the same hotkey that started recording
             if hotkey == hotkey_bridge.get_active_recording_hotkey():
                 self.stop_recording()

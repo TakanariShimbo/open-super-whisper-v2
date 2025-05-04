@@ -100,7 +100,10 @@ def test_recorder(duration: int = 5, sample_rate: int = 16000, channels: int = 1
                 print()
         
         # Initialize recorder
-        recorder = AudioRecorder(sample_rate=sample_rate, channels=channels)
+        recorder = AudioRecorder()
+        
+        # Set recording parameters
+        recorder.set_recording_parameters(sample_rate=sample_rate, channels=channels)
         
         print(f"\nInitialized recorder with settings:")
         print(f"  Sample Rate: {sample_rate} Hz")
@@ -111,7 +114,7 @@ def test_recorder(duration: int = 5, sample_rate: int = 16000, channels: int = 1
         recorder.start_recording()
         
         # Check if recording is active
-        if recorder.is_recording_active():
+        if recorder.is_recording:
             print("Recording is now active!")
         else:
             print("Error: Recording failed to start")
@@ -164,7 +167,8 @@ def test_recorder_with_threading(duration: int = 5, sample_rate: int = 16000, ch
     
     def recording_thread():
         try:
-            recorder = AudioRecorder(sample_rate=sample_rate, channels=channels)
+            recorder = AudioRecorder()
+            recorder.set_recording_parameters(sample_rate=sample_rate, channels=channels)
             print("Recording thread started")
             
             recorder.start_recording()
