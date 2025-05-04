@@ -7,6 +7,7 @@ Includes support for processing large audio files by splitting them into smaller
 
 # Standard library imports
 import os
+import time
 from pathlib import Path
 from typing import List, Dict, Optional
 
@@ -25,25 +26,33 @@ class STTProcessor:
     This class provides methods to transcribe audio files using
     speech-to-text APIs, with support for custom vocabulary, transcription instructions,
     and language selection.
+        
+    Examples
+    --------
+    Basic transcription:
     
-    Attributes
-    ----------
-    api_key : str
-        The API key used for authentication
-    client : openai.OpenAI
-        The client instance used for API requests
-    model_id : str
-        The model to use for transcription
-    custom_vocabulary : str
-        Domain-specific vocabulary to improve transcription accuracy
-    system_instruction : str
-        Instruction to control transcription behavior
+    >>> processor = STTProcessor(api_key="your_api_key")
+    >>> transcription = processor.transcribe_file_with_chunks("recording.wav")
+    >>> print(transcription[:100])
+    Hello, welcome to the meeting. Today we'll be discussing the quarterly results...
+    
+    With language specification:
+    
+    Using custom vocabulary:
+    
+    >>> processor = STTProcessor(api_key="your_api_key")
+    >>> processor.set_custom_vocabulary("PyTorch, TensorFlow, scikit-learn, BERT")
+    >>> transcription = processor.transcribe_file_with_chunks("tech_talk.wav")
     """
 
     # Use model manager for available models
     AVAILABLE_MODELS = STTModelManager.to_api_format()
+    DEFAULT_MODEL_ID = "gpt-4o-transcribe"
+    MAX_RETRIES = 2
+    REQUEST_TIMEOUT = 60  # seconds
+    CONTEXT_MAX_WORDS = 20  # Maximum words to include from previous context
     
-    def __init__(self, api_key: str, model_id: str = "gpt-4o-transcribe"):
+    def __init__(self, api_key: str, model_id: str = DEFAULT_MODEL_ID):
         """
         Initialize the STTProcessor.
         
@@ -65,9 +74,9 @@ class STTProcessor:
             raise ValueError("Invalid API key. Please provide a valid API key.")
         
         # Set model and initialize custom vocabulary and instruction
-        self.model_id = model_id
-        self.custom_vocabulary: str = ""
-        self.system_instruction: str = ""
+        self._model_id = model_id
+        self._custom_vocabulary: str = ""
+        self._system_instruction: str = ""
     
     def set_api_key(self, api_key: str) -> bool:
         """
@@ -89,8 +98,8 @@ class STTProcessor:
         except openai.APIConnectionError:
             return False
 
-        self.api_key = api_key
-        self.client = client
+        self._api_key = api_key
+        self._client = client
         return True
     
     def set_model(self, model_id: str) -> None:
@@ -107,7 +116,13 @@ class STTProcessor:
         The model must be one of the supported models that can be obtained 
         from the STTModelManager.
         """
-        self.model_id = model_id
+        # Basic validation that model exists
+        available_models = [model["id"] for model in self.AVAILABLE_MODELS]
+        if model_id not in available_models:
+            available_model_names = ", ".join(available_models[:5]) + "..."
+            raise ValueError(f"Unknown model ID: {model_id}. Available models include: {available_model_names}")
+            
+        self._model_id = model_id
     
     def set_custom_vocabulary(self, vocabulary: str) -> None:
         """
@@ -123,7 +138,7 @@ class STTProcessor:
         This is particularly useful for domain-specific vocabulary, proper nouns,
         or technical terms that may not be properly recognized by default.
         """
-        self.custom_vocabulary = vocabulary
+        self._custom_vocabulary = vocabulary
     
     def clear_custom_vocabulary(self) -> None:
         """
@@ -131,7 +146,7 @@ class STTProcessor:
         
         This removes the previously set custom vocabulary from the processor.
         """
-        self.custom_vocabulary = ""
+        self._custom_vocabulary = ""
     
     def set_system_instruction(self, instruction: str) -> None:
         """
@@ -141,14 +156,8 @@ class STTProcessor:
         ----------
         instruction : str
             Instruction string.
-            
-        Notes
-        -----
-        This instruction guides the model on how to transcribe the audio.
-        Examples include formatting preferences, handling of specific content,
-        or guidance on transcription style.
         """
-        self.system_instruction = instruction
+        self._system_instruction = instruction
     
     def clear_system_instruction(self) -> None:
         """
@@ -156,7 +165,7 @@ class STTProcessor:
         
         This removes the previously set instruction from the processor.
         """
-        self.system_instruction = ""
+        self._system_instruction = ""
     
     def _create_system_prompt(self, context: Optional[str] = None) -> Optional[str]:
         """
@@ -175,12 +184,12 @@ class STTProcessor:
         prompt_parts = []
         
         # Add custom vocabulary
-        if self.custom_vocabulary:
-            prompt_parts.append(f"Vocabulary: {self.custom_vocabulary}")
+        if self._custom_vocabulary:
+            prompt_parts.append(f"Vocabulary: {self._custom_vocabulary}")
         
         # Add system instruction
-        if self.system_instruction:
-            prompt_parts.append(f"Instructions: {self.system_instruction}")
+        if self._system_instruction:
+            prompt_parts.append(f"Instructions: {self._system_instruction}")
             
         # Add context if provided
         if context:
@@ -208,7 +217,7 @@ class STTProcessor:
         """
         # Build base parameters
         params = {
-            "model": self.model_id,
+            "model": self._model_id,
             "response_format": "text",
         }
         
@@ -223,7 +232,8 @@ class STTProcessor:
             
         return params
     
-    def _transcribe_with_api(self, file_path: str, params: Dict[str, str]) -> str:
+    def _transcribe_with_api(self, file_path: str, params: Dict[str, str], 
+                           retry_count: int = 0) -> str:
         """
         Make API call to transcribe audio file.
         
@@ -233,21 +243,40 @@ class STTProcessor:
             Path to audio file
         params : Dict
             Parameters for API call
+        retry_count : int, optional
+            Current retry attempt, by default 0
             
         Returns
         -------
         str
             Transcription result
+            
+        Raises
+        ------
+        openai.APIError
+            If the API call fails after all retries
         """
-        with open(file_path, "rb") as audio_file:
-            response = self.client.audio.transcriptions.create(
-                file=audio_file,
-                **params
-            )
-        
-        return str(response)
+        try:
+            with open(file_path, "rb") as audio_file:
+                response = self._client.audio.transcriptions.create(
+                    file=audio_file,
+                    **params
+                )
+            
+            return str(response)
+            
+        except (openai.APIError, openai.APITimeoutError) as e:
+            # Handle retries
+            if retry_count < self.MAX_RETRIES:
+                # Exponential backoff
+                backoff_time = 2 ** retry_count
+                time.sleep(backoff_time)
+                return self._transcribe_with_api(file_path, params, retry_count + 1)
+            else:
+                # Reached max retries, re-raise the exception
+                raise
     
-    def _extract_context(self, transcription: str, max_words: int = 20) -> str:
+    def _extract_context(self, transcription: str, max_words: int = CONTEXT_MAX_WORDS) -> str:
         """
         Extract context from previous transcription.
         
@@ -309,9 +338,19 @@ class STTProcessor:
         -------
         str
             Transcribed text.
+            
+        Raises
+        ------
+        FileNotFoundError
+            If the audio file doesn't exist.
+        ValueError
+            If the file has an unsupported format.
         """
+        
         # Validate file
         path = Path(audio_file_path)
+        if not path.exists():
+            raise FileNotFoundError(f"Audio file not found: {audio_file_path}")
 
         # Get file size for logging only
         file_size_mb = os.path.getsize(audio_file_path) / (1024 * 1024)
@@ -319,28 +358,44 @@ class STTProcessor:
         
         # Chunk audio file
         chunker = AudioChunker()
-        chunks = chunker.chunk_audio_file(str(path))
-        print(f"Processing {len(chunks)} chunks...")
         
-        # Process all chunks
-        transcriptions = []
-        
-        for i, chunk_path in enumerate(chunks):            
-            print(f"Processing chunk {i+1}/{len(chunks)}...")
+        try:
+            # Split into chunks
+            chunks = chunker.chunk_audio_file(str(path))
+            print(f"Processing {len(chunks)} chunks...")
             
-            # Get context from previous chunk if available
-            context = None
-            if i > 0 and transcriptions:
-                context = self._extract_context(transcriptions[-1])
+            # Process all chunks
+            transcriptions = []
             
-            # Process chunk
-            params = self._build_transcription_params(language, context)
-            result = self._transcribe_with_api(chunk_path, params)
+            for i, chunk_path in enumerate(chunks):            
+                print(f"Processing chunk {i+1}/{len(chunks)}...")
+                
+                # Get context from previous chunk if available
+                context = None
+                if i > 0 and transcriptions:
+                    context = self._extract_context(transcriptions[-1])
+                
+                # Process chunk
+                params = self._build_transcription_params(language, context)
+                result = self._transcribe_with_api(chunk_path, params)
+                
+                # Store result
+                transcriptions.append(result)
             
-            # Store result
-            transcriptions.append(result)
-        
-        # Combine results
-        result = self._combine_chunk_transcriptions(transcriptions)
-        
-        return result
+            # Combine results
+            result = self._combine_chunk_transcriptions(transcriptions)
+            
+            # Clean up temporary files
+            chunker.remove_temp_chunks()
+            
+            return result
+            
+        except Exception as e:
+            # Clean up temporary files on error too
+            try:
+                chunker.remove_temp_chunks()
+            except:
+                pass
+            
+            # Re-raise the exception
+            raise

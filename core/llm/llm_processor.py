@@ -15,6 +15,7 @@ including authentication, request formatting, and response processing.
 
 # Standard library imports
 import base64
+import time
 from typing import List, Dict, Any, Optional, Callable
 
 # Third-party imports
@@ -39,12 +40,47 @@ class LLMProcessor:
     authentication, content formatting, and response processing. It provides both
     direct methods for immediate use and generator-based methods for more
     advanced integration scenarios.
+        
+    Examples
+    --------
+    Basic text processing:
+    
+    >>> processor = LLMProcessor(api_key="your_api_key")
+    >>> response = processor.process_text("Summarize the benefits of AI assistants.")
+    >>> print(response)
+    AI assistants offer several benefits: 1. 24/7 availability...
+    
+    With custom system instruction:
+    
+    >>> processor = LLMProcessor(api_key="your_api_key")
+    >>> processor.set_system_instruction("Respond in bullet points format.")
+    >>> response = processor.process_text("What are the key features of Python?")
+    >>> print(response)
+    • Dynamic typing
+    • Interpreted language
+    • Extensive standard library
+    • ...
+    
+    Streaming response with callback:
+    
+    >>> def print_chunk(chunk):
+    ...     print(chunk, end="", flush=True)
+    >>> 
+    >>> processor = LLMProcessor(api_key="your_api_key")
+    >>> processor.process_text_with_stream(
+    ...     "Explain quantum computing",
+    ...     callback=print_chunk
+    ... )
+    Quantum computing is a type of computing that...
     """
     
     # Use model manager for available models
     AVAILABLE_MODELS = LLMModelManager.to_api_format()
+    DEFAULT_MODEL_ID = "gpt-4o"
+    REQUEST_TIMEOUT = 60  # seconds
+    MAX_RETRIES = 2
     
-    def __init__(self, api_key: str, model_id: str = "gpt-4o"):
+    def __init__(self, api_key: str, model_id: str = DEFAULT_MODEL_ID):
         """
         Initialize the LLMProcessor.
         
@@ -65,13 +101,10 @@ class LLMProcessor:
         if not is_valid:
             raise ValueError("Invalid API key. Please provide a valid API key.")
         
-        # Initialize OpenAI client
-        self.client = openai.OpenAI(api_key=self.api_key)
-        
         # Set model and initialize instruction
-        self.model_id = model_id
-        self.system_instruction: str = ""
-    
+        self._model_id = model_id
+        self._system_instruction: str = ""
+        
     def set_api_key(self, api_key: str) -> bool:
         """
         Set a new API key.
@@ -92,8 +125,8 @@ class LLMProcessor:
         except openai.APIConnectionError:
             return False
 
-        self.api_key = api_key
-        self.client = client
+        self._api_key = api_key
+        self._client = client
         return True
     
     def set_model(self, model_id: str) -> None:
@@ -104,8 +137,19 @@ class LLMProcessor:
         ----------
         model_id : str
             Model ID to use for processing.
+            
+        Raises
+        ------
+        ValueError
+            If the model ID is not in the list of available models.
         """
-        self.model_id = model_id
+        # Basic validation that model exists
+        available_models = [model["id"] for model in self.AVAILABLE_MODELS]
+        if model_id not in available_models:
+            available_model_names = ", ".join(available_models[:5]) + "..."
+            raise ValueError(f"Unknown model ID: {model_id}. Available models include: {available_model_names}")
+            
+        self._model_id = model_id
     
     def set_system_instruction(self, instruction: str) -> None:
         """
@@ -116,11 +160,13 @@ class LLMProcessor:
         instruction : str
             Instruction string.
         """
-        self.system_instruction = instruction
+        self._system_instruction = instruction
     
     def clear_system_instruction(self) -> None:
-        """Clear the system instruction."""
-        self.system_instruction = ""
+        """
+        Clear the system instruction.
+        """
+        self._system_instruction = ""
     
     def _create_llm_system_message(self) -> str:
         """
@@ -131,10 +177,10 @@ class LLMProcessor:
         str
             System message, or a default message if no instruction exists.
         """
-        if not self.system_instruction:
+        if not self._system_instruction:
             return "You are a helpful assistant. Process the following transcribed text."
         
-        return self.system_instruction
+        return self._system_instruction
     
     def _format_user_content(self, text: str, image_data: Optional[bytes] = None) -> List[Dict[str, Any]]:
         """
@@ -194,7 +240,8 @@ class LLMProcessor:
             {"role": "user", "content": user_content}
         ]
     
-    def _make_api_call(self, messages: List[Dict[str, Any]], stream: bool = False) -> Any:
+    def _make_api_call(self, messages: List[Dict[str, Any]], stream: bool = False, 
+                      retry_count: int = 0) -> Any:
         """
         Make API call to the LLM service.
         
@@ -204,17 +251,38 @@ class LLMProcessor:
             Formatted messages for API call.
         stream : bool, optional
             Whether to stream the response, by default False.
+        retry_count : int, optional
+            Current retry attempt, by default 0.
             
         Returns
         -------
         Any
             API response object.
+            
+        Raises
+        ------
+        openai.APIError
+            If the API call fails after all retries.
         """
-        return self.client.chat.completions.create(
-            model=self.model_id,
-            messages=messages,
-            stream=stream
-        )
+        try:
+            # Make the API call
+            response = self._client.chat.completions.create(
+                model=self._model_id,
+                messages=messages,
+                stream=stream,
+                timeout=self.REQUEST_TIMEOUT
+            )            
+            return response
+            
+        except (openai.APIError, openai.APITimeoutError) as e:
+            # Handle retries
+            if retry_count < self.MAX_RETRIES:
+                # Exponential backoff
+                backoff_time = 2 ** retry_count
+                time.sleep(backoff_time)
+                return self._make_api_call(messages, stream, retry_count + 1)
+            else:
+                raise
     
     def _process_standard_response(self, response: Any) -> str:
         """
@@ -230,10 +298,12 @@ class LLMProcessor:
         str
             Extracted text content from response.
         """
+        result = ""
         if response.choices and len(response.choices) > 0:
-            return response.choices[0].message.content
+            result = response.choices[0].message.content
         else:
-            return "No response generated."
+            result = "No response generated."
+        return result
     
     def _process_streaming_response(self, response_stream: Any, 
                                     callback: Optional[Callable[[str], None]] = None) -> str:
@@ -294,8 +364,17 @@ class LLMProcessor:
         ValueError
             If the text input is empty or invalid.
         """
+        # Validate input
+        if not text or not isinstance(text, str):
+            raise ValueError("Text input must be a non-empty string.")
+            
+        # Create messages
         messages = self._create_api_messages(text, image_data)
+        
+        # Make API call
         response = self._make_api_call(messages)
+        
+        # Process response
         return self._process_standard_response(response)
     
     def process_text_with_stream(self, text: str, callback: Optional[Callable[[str], None]] = None, 
@@ -317,6 +396,15 @@ class LLMProcessor:
         str
             Complete LLM response (all chunks combined).
         """
+        # Validate input
+        if not text or not isinstance(text, str):
+            raise ValueError("Text input must be a non-empty string.")
+            
+        # Create messages
         messages = self._create_api_messages(text, image_data)
+        
+        # Make API call with streaming
         response_stream = self._make_api_call(messages, stream=True)
+        
+        # Process streaming response
         return self._process_streaming_response(response_stream, callback)

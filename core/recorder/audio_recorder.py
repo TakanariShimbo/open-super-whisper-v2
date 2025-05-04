@@ -74,12 +74,6 @@ class AudioRecorder:
     def __init__(self) -> None:
         """
         Initialize the AudioRecorder with default settings.
-        
-        Notes
-        -----
-        This initializes the recorder with default settings (16kHz, mono).
-        Call set_recording_parameters() to change recording parameters.
-        Call start_recording() to begin capturing audio.
         """
         # Internal state variables
         self._temporary_directory = tempfile.gettempdir()
@@ -92,7 +86,7 @@ class AudioRecorder:
         self._channels = self.CHANNEL_MODES['mono']        # 1 channel
         
         # Storage for recording data
-        self.recorded_audio_frames: List[np.ndarray] = []
+        self._recorded_audio_frames: List[np.ndarray] = []
     
     @property
     def is_recording(self) -> bool:
@@ -280,7 +274,7 @@ class AudioRecorder:
             raise RuntimeError("Cannot clear recorded data while recording is active.")
         
         # Clear the recorded frames
-        self.recorded_audio_frames = []
+        self._recorded_audio_frames = []
     
     def start_recording(self) -> None:
         """
@@ -303,7 +297,7 @@ class AudioRecorder:
             raise RuntimeError("Recording is already in progress.")
         
         # Reset audio data
-        self.recorded_audio_frames = []
+        self._recorded_audio_frames = []
         
         # Setup the recording path
         self._setup_recording_path()
@@ -368,7 +362,7 @@ class AudioRecorder:
         """
         # Only append data if we have an active stream
         if self._audio_stream is not None and self._audio_stream.active:
-            self.recorded_audio_frames.append(indata.copy())
+            self._recorded_audio_frames.append(indata.copy())
     
     def _setup_recording_path(self) -> None:
         """
@@ -397,12 +391,12 @@ class AudioRecorder:
             no audio data was recorded.
         """
         # Check if we have any recorded frames
-        if len(self.recorded_audio_frames) == 0:
+        if len(self._recorded_audio_frames) == 0:
             return None
         
         try:
             # Concatenate all audio chunks
-            audio_data = np.concatenate(self.recorded_audio_frames, axis=0)
+            audio_data = np.concatenate(self._recorded_audio_frames, axis=0)
             
             # Save to WAV file
             sf.write(self._current_recording_path, audio_data, self._sample_rate)
