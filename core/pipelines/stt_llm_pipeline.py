@@ -132,12 +132,16 @@ class STTLLMPipeline:
         prompt = transcription
         
         # Add clipboard text if provided
-        if clipboard_text:
+        if clipboard_text and not clipboard_image:
             prompt = f"Clipboard Content:\n{clipboard_text}\n\nTranscription:\n{transcription}"
         
         # Add image context if there's an image but no clipboard text
-        if clipboard_image and not clipboard_text:
-            prompt = f"Analyze this image along with the following transcription:\n\n{transcription}"
+        if not clipboard_text and clipboard_image:
+            prompt = f"Analyze this image along with the following.\n\nTranscription:\n{transcription}"
+
+        # Add both clipboard text and image context if both are provided
+        if clipboard_text and clipboard_image:
+            prompt = f"Analyze this image along with the following.\n\nClipboard Content:\n{clipboard_text}\n\nTranscription:\n{transcription}"
         
         return prompt
     
