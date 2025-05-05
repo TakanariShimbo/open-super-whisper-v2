@@ -1,5 +1,30 @@
 """
-Task worker for handling long-running operations in a separate thread.
+PyQt6 Task Worker Module
+
+This module provides a worker class for executing long-running tasks in 
+separate threads within PyQt6 applications. Using worker threads ensures 
+that the UI remains responsive while intensive operations are performed 
+in the background.
+
+The TaskWorker class simulates a time-consuming operation that reports
+progress and produces results. It demonstrates proper communication between
+threads using Qt's signal and slot mechanism, which is thread-safe and
+avoids common threading pitfalls.
+
+Examples
+--------
+Create and connect a worker:
+
+>>> worker = TaskWorker()
+>>> worker.progress_updated.connect(update_progress_bar)
+>>> worker.result_ready.connect(display_result)
+>>> worker.task_completed.connect(handle_completion)
+>>> # Move to thread and start with worker.execute_task()
+
+See Also
+--------
+app.controllers.app_controller : Uses TaskWorker for background operations
+app.models.thread_manager : Manages the thread for TaskWorker
 """
 import time
 import random
@@ -8,22 +33,60 @@ from PyQt6.QtCore import QObject, pyqtSignal
 class TaskWorker(QObject):
     """
     Worker class that performs a task in a separate thread.
-    Emits signals to communicate with the controller.
+    
+    This class is designed to be moved to a separate thread and performs
+    a simulated long-running task. It communicates with the controller
+    using Qt signals.
+    
+    Attributes
+    ----------
+    progress_updated : pyqtSignal
+        Signal emitted when the task progress updates (0-100%)
+    result_ready : pyqtSignal
+        Signal emitted when a result from the task is available
+    task_completed : pyqtSignal
+        Signal emitted when the task is fully completed
+    _is_running : bool
+        Internal flag to track if the task is currently running
     """
     # Define signals for communication
     progress_updated = pyqtSignal(int)
     result_ready = pyqtSignal(str)
     task_completed = pyqtSignal()
     
-    def __init__(self):
-        super().__init__()
-        # Initialize any worker-specific variables here
-        self._is_running = False
-    
-    def execute_task(self):
+    def __init__(self) -> None:
         """
-        Main worker method that executes the task in a separate thread.
-        Simulates a long-running task with progress updates.
+        Initialize the TaskWorker.
+        
+        Creates a new TaskWorker instance and initializes the running flag to False.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        None
+        """
+        super().__init__()
+        # Initialize worker-specific variables
+        self._is_running: bool = False
+    
+    def execute_task(self) -> None:
+        """
+        Execute the task in a separate thread.
+        
+        This method simulates a long-running task with progress updates.
+        It processes 10 steps, updates the progress after each step, and
+        emits results. The method is designed to be executed in a separate thread.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        None
         """
         self._is_running = True
         
@@ -57,6 +120,19 @@ class TaskWorker(QObject):
         self.task_completed.emit()
         self._is_running = False
     
-    def abort_current_task(self):
-        """Abort the currently running task immediately."""
+    def abort_current_task(self) -> None:
+        """
+        Abort the currently running task immediately.
+        
+        Sets the _is_running flag to False, which will cause the execute_task
+        method to exit its processing loop at the next iteration.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        None
+        """
         self._is_running = False

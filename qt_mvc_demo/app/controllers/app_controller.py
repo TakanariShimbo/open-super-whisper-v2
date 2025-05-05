@@ -1,6 +1,22 @@
 """
-Application controller - business logic layer separate from UI.
+PyQt6 MVC Application Controller
+
+This module contains the controller component of the MVC architecture.
+The AppController class acts as a mediator between the user interface (View)
+and the worker threads (Model), implementing the application's business logic.
+
+The controller receives user input from the view, processes it, and updates
+the view with results. It manages the creation and execution of background
+tasks in separate threads to ensure the UI remains responsive during
+long-running operations.
+
+See Also
+--------
+app.models.thread_manager : Manages worker threads
+app.models.task_worker : Implements the worker for background tasks
+app.views.main_window : Implements the main application window
 """
+from typing import Optional
 from PyQt6.QtCore import QObject, pyqtSignal
 
 from ..models.task_worker import TaskWorker
@@ -9,7 +25,25 @@ from ..models.thread_manager import ThreadManager
 class AppController(QObject):
     """
     Controller class that manages the application's business logic.
-    Serves as a mediator between UI and worker threads.
+    
+    This class serves as a mediator between the user interface and worker threads.
+    It handles the creation and management of background tasks, and communicates
+    with the UI through Qt signals.
+    
+    Attributes
+    ----------
+    task_progress : pyqtSignal
+        Signal emitted when task progress updates
+    task_result : pyqtSignal
+        Signal emitted when a task result is available
+    task_started : pyqtSignal
+        Signal emitted when a task starts
+    task_finished : pyqtSignal
+        Signal emitted when a task finishes
+    thread_manager : ThreadManager
+        Manager for worker threads
+    worker : Optional[TaskWorker]
+        The current task worker instance
     """
     # Signals to communicate with the UI
     task_progress = pyqtSignal(int)
@@ -17,17 +51,43 @@ class AppController(QObject):
     task_started = pyqtSignal()
     task_finished = pyqtSignal()
     
-    def __init__(self):
+    def __init__(self) -> None:
+        """
+        Initialize the AppController.
+        
+        Creates a thread manager instance and initializes the worker to None.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        None
+        """
         super().__init__()
         
         # Initialize thread manager
         self.thread_manager = ThreadManager()
         
         # Worker will be created when needed and destroyed when finished
-        self.worker = None
+        self.worker: Optional[TaskWorker] = None
     
-    def execute_background_task(self):
-        """Execute a task in a background thread."""
+    def execute_background_task(self) -> None:
+        """
+        Execute a task in a background thread.
+        
+        Creates a new TaskWorker instance, connects its signals to the controller's
+        signals, and starts the worker in a separate thread using the thread manager.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        None
+        """
         # Emit task started signal
         self.task_started.emit()
         
@@ -42,8 +102,21 @@ class AppController(QObject):
         # Start worker in a separate thread
         self.thread_manager.run_worker_in_thread(self.worker)
     
-    def handle_task_completion(self):
-        """Handle task completion and clean up resources."""
+    def handle_task_completion(self) -> None:
+        """
+        Handle task completion and clean up resources.
+        
+        This method is called when a task is completed. It emits the task_finished
+        signal and releases the thread resources.
+        
+        Parameters
+        ----------
+        None
+        
+        Returns
+        -------
+        None
+        """
         # Emit task finished signal
         self.task_finished.emit()
         
