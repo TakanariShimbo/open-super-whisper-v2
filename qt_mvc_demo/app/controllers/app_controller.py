@@ -3,8 +3,8 @@ Application controller - business logic layer separate from UI.
 """
 from PyQt6.QtCore import QObject, pyqtSignal
 
-from app.models.task_worker import TaskWorker
-from app.models.thread_manager import ThreadManager
+from ..models.task_worker import TaskWorker
+from ..models.thread_manager import ThreadManager
 
 class AppController(QObject):
     """

@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, pyqtSlot
 
-from app.controllers.app_controller import AppController
+from ..controllers.app_controller import AppController
 
 class MainWindow(QMainWindow):
     """Main application window with UI elements."""

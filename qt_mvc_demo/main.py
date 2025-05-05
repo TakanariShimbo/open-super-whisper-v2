@@ -4,7 +4,7 @@ Sample PyQt6 application demonstrating UI/logic separation and thread management
 """
 import sys
 from PyQt6.QtWidgets import QApplication
-from app.views.main_window import MainWindow
+from .app.views.main_window import MainWindow
 
 def main():
     """Main application entry point."""
