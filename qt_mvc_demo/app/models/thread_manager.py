@@ -13,9 +13,9 @@ class ThreadManager(QObject):
         super().__init__()
         self.thread = None
     
-    def start_worker(self, worker):
+    def run_worker_in_thread(self, worker):
         """
-        Start a worker in a new thread.
+        Run a worker object in a new thread.
         
         Args:
             worker: The worker object to be moved to the thread
@@ -26,8 +26,8 @@ class ThreadManager(QObject):
         # Move worker to thread
         worker.moveToThread(self.thread)
         
-        # Connect thread started signal to worker's run method
-        self.thread.started.connect(worker.run)
+        # Connect thread started signal to worker's execute_task method
+        self.thread.started.connect(worker.execute_task)
         
         # Connect worker's finished signal to thread's quit method
         worker.task_completed.connect(self.thread.quit)
@@ -35,9 +35,9 @@ class ThreadManager(QObject):
         # Start the thread
         self.thread.start()
     
-    def cleanup(self):
+    def release_thread_resources(self):
         """
-        Clean up thread resources.
+        Release thread resources and perform cleanup.
         Should be called when the thread is no longer needed.
         """
         if self.thread and self.thread.isRunning():
@@ -48,4 +48,4 @@ class ThreadManager(QObject):
     
     def __del__(self):
         """Ensure thread is cleaned up when manager is destroyed."""
-        self.cleanup()
+        self.release_thread_resources()

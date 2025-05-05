@@ -6,12 +6,12 @@ import sys
 from PyQt6.QtWidgets import QApplication
 from .app.views.main_window import MainWindow
 
-def main():
-    """Main application entry point."""
+def launch_qt_mvc_app():
+    """Main application entry point to launch the Qt MVC demo application."""
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
 
 if __name__ == "__main__":
-    main()
+    launch_qt_mvc_app()

@@ -26,8 +26,8 @@ class AppController(QObject):
         # Worker will be created when needed and destroyed when finished
         self.worker = None
     
-    def start_task(self):
-        """Start a background task in a separate thread."""
+    def execute_background_task(self):
+        """Execute a task in a background thread."""
         # Emit task started signal
         self.task_started.emit()
         
@@ -37,16 +37,16 @@ class AppController(QObject):
         # Connect worker signals to controller signals
         self.worker.progress_updated.connect(self.task_progress.emit)
         self.worker.result_ready.connect(self.task_result.emit)
-        self.worker.task_completed.connect(self._on_task_completed)
+        self.worker.task_completed.connect(self.handle_task_completion)
         
         # Start worker in a separate thread
-        self.thread_manager.start_worker(self.worker)
+        self.thread_manager.run_worker_in_thread(self.worker)
     
-    def _on_task_completed(self):
-        """Handle task completion."""
+    def handle_task_completion(self):
+        """Handle task completion and clean up resources."""
         # Emit task finished signal
         self.task_finished.emit()
         
         # Clean up thread and worker
-        self.thread_manager.cleanup()
+        self.thread_manager.release_thread_resources()
         self.worker = None

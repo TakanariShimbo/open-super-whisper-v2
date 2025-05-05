@@ -20,9 +20,9 @@ class TaskWorker(QObject):
         # Initialize any worker-specific variables here
         self._is_running = False
     
-    def run(self):
+    def execute_task(self):
         """
-        Main worker method that will be executed in a separate thread.
+        Main worker method that executes the task in a separate thread.
         Simulates a long-running task with progress updates.
         """
         self._is_running = True
@@ -57,6 +57,6 @@ class TaskWorker(QObject):
         self.task_completed.emit()
         self._is_running = False
     
-    def cancel(self):
-        """Cancel the running task."""
+    def abort_current_task(self):
+        """Abort the currently running task immediately."""
         self._is_running = False

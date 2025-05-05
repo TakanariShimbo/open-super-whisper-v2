@@ -19,5 +19,5 @@ if __name__ == "__main__":
     # Import our application components
     import qt_mvc_demo.main as qt_demo
     
-    # Run the main function from the module
-    qt_demo.main()
+    # Run the application launcher from the module
+    qt_demo.launch_qt_mvc_app()

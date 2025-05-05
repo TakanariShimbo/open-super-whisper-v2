@@ -16,19 +16,19 @@ class MainWindow(QMainWindow):
         super().__init__()
         
         # Initialize UI
-        self.init_ui()
+        self.setup_user_interface()
         
         # Initialize controller (business logic)
         self.controller = AppController()
         
         # Connect signals from controller to UI slots
-        self.controller.task_progress.connect(self.update_progress)
-        self.controller.task_result.connect(self.display_result)
-        self.controller.task_started.connect(self.on_task_started)
-        self.controller.task_finished.connect(self.on_task_finished)
+        self.controller.task_progress.connect(self.update_progress_indicator)
+        self.controller.task_result.connect(self.append_result_to_log)
+        self.controller.task_started.connect(self.handle_task_start_event)
+        self.controller.task_finished.connect(self.handle_task_completion_event)
         
-    def init_ui(self):
-        """Initialize the user interface."""
+    def setup_user_interface(self):
+        """Setup and initialize the user interface components."""
         # Set window properties
         self.setWindowTitle("PyQt6 Thread Demo")
         self.setMinimumSize(500, 400)
@@ -55,7 +55,7 @@ class MainWindow(QMainWindow):
         
         # Add start button
         self.start_button = QPushButton("Start Task")
-        self.start_button.clicked.connect(self.on_start_clicked)
+        self.start_button.clicked.connect(self.handle_start_button_click)
         layout.addWidget(self.start_button)
         
         # Add progress bar
@@ -75,30 +75,30 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.results_area)
     
     @pyqtSlot()
-    def on_start_clicked(self):
-        """Handle start button click."""
-        self.controller.start_task()
+    def handle_start_button_click(self):
+        """Handle when the start button is clicked by the user."""
+        self.controller.execute_background_task()
     
     @pyqtSlot(int)
-    def update_progress(self, value):
-        """Update progress bar with current progress value."""
+    def update_progress_indicator(self, value):
+        """Update the progress bar indicator with current task progress value."""
         self.progress_bar.setValue(value)
     
     @pyqtSlot(str)
-    def display_result(self, result):
-        """Display result in the results area."""
+    def append_result_to_log(self, result):
+        """Append the task result to the log display area."""
         self.results_area.append(result)
     
     @pyqtSlot()
-    def on_task_started(self):
-        """Handle task started event."""
+    def handle_task_start_event(self):
+        """Handle the event when a task is started."""
         self.start_button.setEnabled(False)
         self.status_label.setText("Task is running...")
         self.progress_bar.setValue(0)
     
     @pyqtSlot()
-    def on_task_finished(self):
-        """Handle task finished event."""
+    def handle_task_completion_event(self):
+        """Handle the event when a task is completed."""
         self.start_button.setEnabled(True)
         self.status_label.setText("Task completed")
         self.progress_bar.setValue(100)
