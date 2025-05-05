@@ -47,14 +47,6 @@ class ThreadManager(QObject):
         Initialize the ThreadManager.
         
         Creates a new ThreadManager instance with no active thread.
-        
-        Parameters
-        ----------
-        None
-        
-        Returns
-        -------
-        None
         """
         super().__init__()
         self.thread: Optional[QThread] = None
@@ -71,10 +63,6 @@ class ThreadManager(QObject):
         worker : QObject
             The worker object to be moved to the thread. Must have
             an execute_task method and a task_completed signal.
-            
-        Returns
-        -------
-        None
         """
         # Create a new thread
         self.thread = QThread()
@@ -98,14 +86,6 @@ class ThreadManager(QObject):
         This method should be called when the thread is no longer needed.
         It safely terminates the thread if it's running and sets the thread
         reference to None.
-        
-        Parameters
-        ----------
-        None
-        
-        Returns
-        -------
-        None
         """
         if self.thread and self.thread.isRunning():
             self.thread.quit()
@@ -119,13 +99,5 @@ class ThreadManager(QObject):
         
         This destructor ensures that thread resources are properly released
         when the ThreadManager instance is garbage collected.
-        
-        Parameters
-        ----------
-        None
-        
-        Returns
-        -------
-        None
         """
         self.release_thread_resources()

@@ -64,14 +64,6 @@ class MainWindow(QMainWindow):
         
         Sets up the user interface and connects signals from the controller
         to UI slots.
-        
-        Parameters
-        ----------
-        None
-        
-        Returns
-        -------
-        None
         """
         super().__init__()
         
@@ -93,14 +85,6 @@ class MainWindow(QMainWindow):
         
         Creates and configures all UI components including the window layout,
         title, buttons, progress bar, status label, and results area.
-        
-        Parameters
-        ----------
-        None
-        
-        Returns
-        -------
-        None
         """
         # Set window properties
         self.setWindowTitle("PyQt6 Thread Demo")
@@ -153,14 +137,6 @@ class MainWindow(QMainWindow):
         Handle when the start button is clicked by the user.
         
         Delegates to the controller to start the background task.
-        
-        Parameters
-        ----------
-        None
-        
-        Returns
-        -------
-        None
         """
         self.controller.execute_background_task()
     
@@ -173,10 +149,6 @@ class MainWindow(QMainWindow):
         ----------
         value : int
             The progress value (0-100) to display in the progress bar
-        
-        Returns
-        -------
-        None
         """
         self.progress_bar.setValue(value)
     
@@ -189,10 +161,6 @@ class MainWindow(QMainWindow):
         ----------
         result : str
             The text result to append to the log
-        
-        Returns
-        -------
-        None
         """
         self.results_area.append(result)
     
@@ -203,14 +171,6 @@ class MainWindow(QMainWindow):
         
         Updates the UI to reflect that a task is in progress by disabling
         the start button, updating the status label, and resetting the progress bar.
-        
-        Parameters
-        ----------
-        None
-        
-        Returns
-        -------
-        None
         """
         self.start_button.setEnabled(False)
         self.status_label.setText("Task is running...")
@@ -224,14 +184,6 @@ class MainWindow(QMainWindow):
         Updates the UI to reflect that a task is completed by enabling
         the start button, updating the status label, and setting the progress
         bar to 100%.
-        
-        Parameters
-        ----------
-        None
-        
-        Returns
-        -------
-        None
         """
         self.start_button.setEnabled(True)
         self.status_label.setText("Task completed")

@@ -56,14 +56,6 @@ class AppController(QObject):
         Initialize the AppController.
         
         Creates a thread manager instance and initializes the worker to None.
-        
-        Parameters
-        ----------
-        None
-        
-        Returns
-        -------
-        None
         """
         super().__init__()
         
@@ -79,14 +71,6 @@ class AppController(QObject):
         
         Creates a new TaskWorker instance, connects its signals to the controller's
         signals, and starts the worker in a separate thread using the thread manager.
-        
-        Parameters
-        ----------
-        None
-        
-        Returns
-        -------
-        None
         """
         # Emit task started signal
         self.task_started.emit()
@@ -108,14 +92,6 @@ class AppController(QObject):
         
         This method is called when a task is completed. It emits the task_finished
         signal and releases the thread resources.
-        
-        Parameters
-        ----------
-        None
-        
-        Returns
-        -------
-        None
         """
         # Emit task finished signal
         self.task_finished.emit()

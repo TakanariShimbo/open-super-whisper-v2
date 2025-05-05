@@ -32,16 +32,6 @@ def launch_qt_mvc_app() -> None:
     It initializes the QApplication, creates the main window, and starts the
     event loop.
     
-    Parameters
-    ----------
-    None
-    
-    Returns
-    -------
-    None
-        Although this function calls sys.exit(), it's marked as returning None for
-        simplicity in this educational demonstration.
-    
     Examples
     --------
     >>> launch_qt_mvc_app()

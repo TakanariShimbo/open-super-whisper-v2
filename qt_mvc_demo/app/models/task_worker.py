@@ -59,14 +59,6 @@ class TaskWorker(QObject):
         Initialize the TaskWorker.
         
         Creates a new TaskWorker instance and initializes the running flag to False.
-        
-        Parameters
-        ----------
-        None
-        
-        Returns
-        -------
-        None
         """
         super().__init__()
         # Initialize worker-specific variables
@@ -79,14 +71,6 @@ class TaskWorker(QObject):
         This method simulates a long-running task with progress updates.
         It processes 10 steps, updates the progress after each step, and
         emits results. The method is designed to be executed in a separate thread.
-        
-        Parameters
-        ----------
-        None
-        
-        Returns
-        -------
-        None
         """
         self._is_running = True
         
@@ -126,13 +110,5 @@ class TaskWorker(QObject):
         
         Sets the _is_running flag to False, which will cause the execute_task
         method to exit its processing loop at the next iteration.
-        
-        Parameters
-        ----------
-        None
-        
-        Returns
-        -------
-        None
         """
         self._is_running = False
