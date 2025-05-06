@@ -96,9 +96,6 @@ class MainWindow(QMainWindow):
         # Track if window is actually closing
         self._is_closing = False
         
-        # Flag to prevent button spamming and ensure operation atomicity
-        self._is_operation_in_progress = False
-        
     def _setup_user_interface(self) -> None:
         """
         Setup and initialize the user interface components.
@@ -222,14 +219,6 @@ class MainWindow(QMainWindow):
         debouncing to prevent rapid button clicking (button spamming) from
         causing unintended behavior.
         """
-        # Skip if an operation is already in progress
-        if self._is_operation_in_progress:
-            # Log message to inform user
-            self._append_result_to_log("Please wait, operation in progress...")
-            return
-            
-        # Set operation flag to prevent multiple rapid clicks
-        self._is_operation_in_progress = True
         
         # Disable button immediately to provide visual feedback
         self._task_button.setEnabled(False)
@@ -309,9 +298,6 @@ class MainWindow(QMainWindow):
         
         # Re-enable the button to allow for task abortion
         self._task_button.setEnabled(True)
-        
-        # Operation has transitioned to running state, so we reset the flag
-        self._is_operation_in_progress = False
     
     @pyqtSlot()
     def _handle_task_completion_event(self) -> None:
@@ -329,9 +315,6 @@ class MainWindow(QMainWindow):
         
         # Re-enable button for next operation
         self._task_button.setEnabled(True)
-        
-        # Reset operation flag to allow new operations
-        self._is_operation_in_progress = False
     
     @pyqtSlot()
     def _show_window(self) -> None:
