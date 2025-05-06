@@ -65,8 +65,6 @@ class MainWindow(QMainWindow):
         System tray icon for background operation
     _is_closing : bool
         Flag to track if the application is actually closing or just minimizing to tray
-    _is_operation_in_progress : bool
-        Flag to prevent button spamming and ensure operation atomicity
     """
     
     def __init__(self) -> None:
