@@ -1,0 +1,3 @@
+"""
+Recorder Application views package
+"""

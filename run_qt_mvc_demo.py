@@ -22,7 +22,7 @@ if __name__ == "__main__":
         sys.path.insert(0, current_dir)
     
     # Import our application components
-    import qt_mvc_demo.main as qt_demo
+    from qt_mvc_demo.main import launch_qt_mvc_app
     
     # Run the application launcher from the module
-    qt_demo.launch_qt_mvc_app()
+    launch_qt_mvc_app()
