@@ -12,21 +12,6 @@ contain business logic but delegates tasks to the controller.
 The window provides an interface for starting background tasks, displaying
 progress, and showing results from the task execution. It demonstrates
 proper UI/logic separation and thread management in PyQt6 applications.
-
-Examples
---------
-Creating and showing the main window:
-
->>> app = QApplication(sys.argv)
->>> window = MainWindow()
->>> window.show()
->>> sys.exit(app.exec())
-
-See Also
---------
-app.controllers.app_controller : The controller used by this view
-app.models.thread_manager : Manages the worker threads
-app.models.task_worker : Implements the background task
 """
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QPushButton, 

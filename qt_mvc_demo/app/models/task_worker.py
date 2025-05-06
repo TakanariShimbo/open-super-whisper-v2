@@ -10,21 +10,6 @@ The TaskWorker class simulates a time-consuming operation that reports
 progress and produces results. It demonstrates proper communication between
 threads using Qt's signal and slot mechanism, which is thread-safe and
 avoids common threading pitfalls.
-
-Examples
---------
-Create and connect a worker:
-
->>> worker = TaskWorker()
->>> worker.progress_updated.connect(update_progress_bar)
->>> worker.result_ready.connect(display_result)
->>> worker.task_completed.connect(handle_completion)
->>> # Move to thread and start with worker.execute_task()
-
-See Also
---------
-app.controllers.app_controller : Uses TaskWorker for background operations
-app.models.thread_manager : Manages the thread for TaskWorker
 """
 import time
 import random

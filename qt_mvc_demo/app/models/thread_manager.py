@@ -9,21 +9,6 @@ long-running operations in the background.
 The ThreadManager class ensures that worker objects are properly moved
 to separate threads and that thread resources are correctly released
 when no longer needed, preventing memory leaks and thread-related issues.
-
-Examples
---------
-Create a thread manager and run a worker in a thread:
-
->>> manager = ThreadManager()
->>> worker = MyWorker()  # A QObject subclass with an execute_task method
->>> manager.run_worker_in_thread(worker)
->>> # Later when done
->>> manager.release_thread_resources()
-
-See Also
---------
-app.controllers.app_controller : Uses ThreadManager to run tasks
-app.models.task_worker : Example worker class to be run in a thread
 """
 from typing import Optional
 from PyQt6.QtCore import QThread, QObject

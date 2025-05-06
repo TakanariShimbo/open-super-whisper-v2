@@ -8,18 +8,6 @@ manage background tasks using threads for responsive UI applications.
 
 The module serves as the main entry point for the demo application, initializing
 the QApplication and launching the main window.
-
-Examples
---------
-To run the demo application:
-    python main.py
-
-See Also
---------
-app.controllers.app_controller : Contains the application controller logic
-app.models.thread_manager : Manages worker threads
-app.models.task_worker : Implements the worker for background tasks
-app.views.main_window : Implements the main application window
 """
 import sys
 from PyQt6.QtWidgets import QApplication

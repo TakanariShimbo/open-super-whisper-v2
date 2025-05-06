@@ -9,12 +9,6 @@ The controller receives user input from the view, processes it, and updates
 the view with results. It manages the creation and execution of background
 tasks in separate threads to ensure the UI remains responsive during
 long-running operations.
-
-See Also
---------
-app.models.thread_manager : Manages worker threads
-app.models.task_worker : Implements the worker for background tasks
-app.views.main_window : Implements the main application window
 """
 from typing import Optional
 from PyQt6.QtCore import QObject, pyqtSignal
