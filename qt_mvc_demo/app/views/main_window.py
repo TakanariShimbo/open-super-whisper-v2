@@ -13,7 +13,17 @@ The window provides an interface for starting background tasks, displaying
 progress, and showing results from the task execution. It demonstrates
 proper UI/logic separation and thread management in PyQt6 applications.
 
-The window now supports minimizing to system tray, allowing the application
+The window features a unified task control button that changes its text and
+function based on the application state - showing "Start Task" when no task 
+is running and "Abort Task" during task execution. This approach simplifies 
+the UI while maintaining full functionality.
+
+The implementation includes protection against button spamming (rapid clicking)
+through a state management system that prevents multiple simultaneous requests
+from being processed. This ensures that task operations are atomic and prevents
+race conditions that could occur when clicking the button rapidly.
+
+The window also supports minimizing to system tray, allowing the application
 to run in the background while maintaining accessibility through the system tray.
 """
 
@@ -43,10 +53,8 @@ class MainWindow(QMainWindow):
     ----------
     controller : AppController
         The application controller that manages the business logic
-    start_button : QPushButton
-        Button to start the background task
-    abort_button : QPushButton
-        Button to abort the running background task
+    task_button : QPushButton
+        Unified button to start or abort the background task, changes text based on state
     progress_bar : QProgressBar
         Progress indicator for the background task
     status_label : QLabel
@@ -57,6 +65,8 @@ class MainWindow(QMainWindow):
         System tray icon for background operation
     is_closing : bool
         Flag to track if the application is actually closing or just minimizing to tray
+    is_operation_in_progress : bool
+        Flag to prevent button spamming and ensure operation atomicity
     """
     
     def __init__(self) -> None:
@@ -86,6 +96,9 @@ class MainWindow(QMainWindow):
         # Track if window is actually closing
         self.is_closing = False
         
+        # Flag to prevent button spamming and ensure operation atomicity
+        self.is_operation_in_progress = False
+        
     def setup_user_interface(self) -> None:
         """
         Setup and initialize the user interface components.
@@ -112,23 +125,18 @@ class MainWindow(QMainWindow):
         description = QLabel(
             "This demo shows how to manage threads in PyQt6 applications.\n"
             "Click 'Start Task' to run a simulated long-running process in a background thread.\n"
-            "You can click 'Abort Task' to cancel the running process at any time.\n"
+            "The button will change to 'Abort Task' when a task is running, allowing you to cancel it.\n"
+            "The application is protected against button spamming (rapid clicking).\n"
             "Closing the window will minimize to system tray."
         )
         description.setAlignment(Qt.AlignmentFlag.AlignCenter)
         description.setWordWrap(True)
         layout.addWidget(description)
         
-        # Add start button
-        self.start_button = QPushButton("Start Task")
-        self.start_button.clicked.connect(self.handle_start_button_click)
-        layout.addWidget(self.start_button)
-        
-        # Add abort button
-        self.abort_button = QPushButton("Abort Task")
-        self.abort_button.clicked.connect(self.handle_abort_button_click)
-        self.abort_button.setEnabled(False)  # Disabled initially
-        layout.addWidget(self.abort_button)
+        # Add unified task control button
+        self.task_button = QPushButton("Start Task")
+        self.task_button.clicked.connect(self.handle_task_button_click)
+        layout.addWidget(self.task_button)
         
         # Add quit button
         self.quit_button = QPushButton("Quit Application")
@@ -205,22 +213,40 @@ class MainWindow(QMainWindow):
             event.accept()
     
     @pyqtSlot()
-    def handle_start_button_click(self) -> None:
+    def handle_task_button_click(self) -> None:
         """
-        Handle when the start button is clicked by the user.
+        Handle when the task button is clicked by the user.
         
-        Delegates to the controller to start the background task.
+        Depending on the current state of the application, this will either
+        start a new task or abort the currently running task. Implements
+        debouncing to prevent rapid button clicking (button spamming) from
+        causing unintended behavior.
         """
-        self.controller.execute_background_task()
-    
-    @pyqtSlot()
-    def handle_abort_button_click(self) -> None:
-        """
-        Handle when the abort button is clicked by the user.
+        # Skip if an operation is already in progress
+        if self.is_operation_in_progress:
+            # Log message to inform user
+            self.append_result_to_log("Please wait, operation in progress...")
+            return
+            
+        # Set operation flag to prevent multiple rapid clicks
+        self.is_operation_in_progress = True
         
-        Delegates to the controller to abort the current background task.
-        """
-        self.controller.abort_background_task()
+        # Disable button immediately to provide visual feedback
+        self.task_button.setEnabled(False)
+        
+        # Get the current button text to determine what action to take
+        if self.task_button.text() == "Start Task":
+            # Update UI immediately for better responsiveness
+            self.status_label.setText("Starting task...")
+            
+            # If showing "Start Task", then start a new task
+            self.controller.execute_background_task()
+        else:
+            # Update UI immediately for better responsiveness
+            self.status_label.setText("Aborting task...")
+            
+            # If showing "Abort Task", then abort the current task
+            self.controller.abort_background_task()
     
     @pyqtSlot()
     def handle_quit_button_click(self) -> None:
@@ -272,28 +298,40 @@ class MainWindow(QMainWindow):
         """
         Handle the event when a task is started.
         
-        Updates the UI to reflect that a task is in progress by disabling
-        the start button, enabling the abort button, updating the status label,
-        and resetting the progress bar.
+        Updates the UI to reflect that a task is in progress by changing
+        the task button text to "Abort Task", updating the status label,
+        and resetting the progress bar. Re-enables the button to allow
+        abortion of the running task.
         """
-        self.start_button.setEnabled(False)
-        self.abort_button.setEnabled(True)  # Enable abort button when task starts
+        self.task_button.setText("Abort Task")
         self.status_label.setText("Task is running...")
         self.progress_bar.setValue(0)
+        
+        # Re-enable the button to allow for task abortion
+        self.task_button.setEnabled(True)
+        
+        # Operation has transitioned to running state, so we reset the flag
+        self.is_operation_in_progress = False
     
     @pyqtSlot()
     def handle_task_completion_event(self) -> None:
         """
         Handle the event when a task is completed.
         
-        Updates the UI to reflect that a task is completed by enabling
-        the start button, disabling the abort button, updating the status label,
-        and setting the progress bar to 100%.
+        Updates the UI to reflect that a task is completed by changing
+        the task button text to "Start Task", updating the status label,
+        and setting the progress bar to 100%. Re-enables the button and
+        resets operation flags.
         """
-        self.start_button.setEnabled(True)
-        self.abort_button.setEnabled(False)  # Disable abort button when task completes
+        self.task_button.setText("Start Task")
         self.status_label.setText("Task completed")
         self.progress_bar.setValue(100)
+        
+        # Re-enable button for next operation
+        self.task_button.setEnabled(True)
+        
+        # Reset operation flag to allow new operations
+        self.is_operation_in_progress = False
     
     @pyqtSlot()
     def show_window(self) -> None:
