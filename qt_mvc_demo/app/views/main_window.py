@@ -38,6 +38,7 @@ from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QCloseEvent
 
 from .tray.system_tray import SystemTray
+from .dialogs.hotkey_dialog import HotkeyDialog
 from ..controllers.app_controller import AppController
 
 
@@ -87,6 +88,7 @@ class MainWindow(QMainWindow):
         self._controller.task_result.connect(self._append_result_to_log)
         self._controller.task_started.connect(self._handle_task_start_event)
         self._controller.task_finished.connect(self._handle_task_completion_event)
+        self._controller.hotkey_changed.connect(self._update_hotkey_display)
         
         # Initialize system tray
         self._setup_system_tray()
@@ -132,6 +134,16 @@ class MainWindow(QMainWindow):
         self._task_button = QPushButton("Start Task")
         self._task_button.clicked.connect(self._handle_task_button_click)
         layout.addWidget(self._task_button)
+        
+        # Add hotkey setup button
+        self._hotkey_button = QPushButton("Configure Task Hotkey")
+        self._hotkey_button.clicked.connect(self._handle_hotkey_button_click)
+        layout.addWidget(self._hotkey_button)
+        
+        # Add hotkey status label
+        self._hotkey_label = QLabel("No hotkey configured")
+        self._hotkey_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self._hotkey_label)
         
         # Add quit button
         self._quit_button = QPushButton("Quit Application")
@@ -334,3 +346,45 @@ class MainWindow(QMainWindow):
         tray menu or closes the window.
         """
         self.hide()
+    
+    @pyqtSlot()
+    def _handle_hotkey_button_click(self) -> None:
+        """
+        Handle hotkey configuration button click.
+        
+        Opens a dialog for the user to configure a global hotkey
+        for starting and stopping tasks.
+        """
+        # Get the current hotkey
+        current_hotkey = self._controller.get_task_hotkey()
+        
+        # Create and show the hotkey dialog
+        dialog = HotkeyDialog(self, current_hotkey)
+        
+        # If dialog is accepted, update the hotkey
+        if dialog.exec():
+            new_hotkey = dialog.get_hotkey()
+            if new_hotkey:
+                # Set the hotkey in the controller
+                self._controller.set_task_hotkey(new_hotkey)
+                
+                # Log the change
+                self._append_result_to_log(f"Task hotkey set to: {new_hotkey}")
+    
+    @pyqtSlot(str)
+    def _update_hotkey_display(self, hotkey: str) -> None:
+        """
+        Update the hotkey display with the current hotkey.
+        
+        Parameters
+        ----------
+        hotkey : str
+            The hotkey string to display
+        """
+        if hotkey:
+            self._hotkey_label.setText(f"Task hotkey: {hotkey}")
+        else:
+            self._hotkey_label.setText("No hotkey configured")
+            
+        # Update the display immediately
+        self._hotkey_label.repaint()
