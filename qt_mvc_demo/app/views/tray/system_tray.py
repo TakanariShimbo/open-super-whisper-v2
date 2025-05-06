@@ -10,7 +10,7 @@ responsibility principle by handling only system tray related functionality.
 """
 from PyQt6.QtWidgets import QSystemTrayIcon, QMenu
 from PyQt6.QtGui import QIcon, QAction
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import pyqtSignal
 
 
 class SystemTray(QSystemTrayIcon):

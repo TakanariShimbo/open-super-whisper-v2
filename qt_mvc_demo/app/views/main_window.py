@@ -24,11 +24,12 @@ from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QPushButton, 
     QLabel, QProgressBar, QTextEdit, QMessageBox, QSystemTrayIcon
 )
-from PyQt6.QtCore import Qt, pyqtSlot, QEvent
+from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QCloseEvent
 
-from ..controllers.app_controller import AppController
 from .tray.system_tray import SystemTray
+from ..controllers.app_controller import AppController
+
 
 class MainWindow(QMainWindow):
     """

@@ -13,7 +13,9 @@ avoids common threading pitfalls.
 """
 import time
 import random
+
 from PyQt6.QtCore import QObject, pyqtSignal
+
 
 class TaskWorker(QObject):
     """

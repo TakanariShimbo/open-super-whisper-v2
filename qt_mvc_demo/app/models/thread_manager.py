@@ -11,7 +11,9 @@ to separate threads and that thread resources are correctly released
 when no longer needed, preventing memory leaks and thread-related issues.
 """
 from typing import Optional
+
 from PyQt6.QtCore import QThread, QObject
+
 
 class ThreadManager(QObject):
     """

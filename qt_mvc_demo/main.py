@@ -15,8 +15,11 @@ The module serves as the main entry point for the demo application, initializing
 the QApplication and launching the main window.
 """
 import sys
+
 from PyQt6.QtWidgets import QApplication
+
 from .app.views.main_window import MainWindow
+
 
 def launch_qt_mvc_app() -> None:
     """Launch the Qt MVC demo application.
@@ -34,6 +37,7 @@ def launch_qt_mvc_app() -> None:
     window = MainWindow()
     window.show()
     sys.exit(app.exec())
+
 
 if __name__ == "__main__":
     launch_qt_mvc_app()

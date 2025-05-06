@@ -16,6 +16,7 @@ from PyQt6.QtCore import QObject, pyqtSignal
 from ..models.task_worker import TaskWorker
 from ..models.thread_manager import ThreadManager
 
+
 class AppController(QObject):
     """
     Controller class that manages the application's business logic.
