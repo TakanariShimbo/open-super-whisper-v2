@@ -12,14 +12,23 @@ contain business logic but delegates tasks to the controller.
 The window provides an interface for starting background tasks, displaying
 progress, and showing results from the task execution. It demonstrates
 proper UI/logic separation and thread management in PyQt6 applications.
+
+The window now supports minimizing to system tray, allowing the application
+to run in the background while maintaining accessibility through the system tray.
 """
+
+import os
+import sys
+
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QPushButton, 
-    QLabel, QProgressBar, QTextEdit
+    QLabel, QProgressBar, QTextEdit, QMessageBox, QSystemTrayIcon
 )
-from PyQt6.QtCore import Qt, pyqtSlot
+from PyQt6.QtCore import Qt, pyqtSlot, QEvent
+from PyQt6.QtGui import QCloseEvent
 
 from ..controllers.app_controller import AppController
+from .tray.system_tray import SystemTray
 
 class MainWindow(QMainWindow):
     """
@@ -43,6 +52,10 @@ class MainWindow(QMainWindow):
         Label showing the current status of the application
     results_area : QTextEdit
         Text area to display task results
+    system_tray : SystemTray
+        System tray icon for background operation
+    is_closing : bool
+        Flag to track if the application is actually closing or just minimizing to tray
     """
     
     def __init__(self) -> None:
@@ -65,6 +78,12 @@ class MainWindow(QMainWindow):
         self.controller.task_result.connect(self.append_result_to_log)
         self.controller.task_started.connect(self.handle_task_start_event)
         self.controller.task_finished.connect(self.handle_task_completion_event)
+        
+        # Initialize system tray
+        self.setup_system_tray()
+        
+        # Track if window is actually closing
+        self.is_closing = False
         
     def setup_user_interface(self) -> None:
         """
@@ -92,7 +111,8 @@ class MainWindow(QMainWindow):
         description = QLabel(
             "This demo shows how to manage threads in PyQt6 applications.\n"
             "Click 'Start Task' to run a simulated long-running process in a background thread.\n"
-            "You can click 'Abort Task' to cancel the running process at any time."
+            "You can click 'Abort Task' to cancel the running process at any time.\n"
+            "Closing the window will minimize to system tray."
         )
         description.setAlignment(Qt.AlignmentFlag.AlignCenter)
         description.setWordWrap(True)
@@ -108,6 +128,11 @@ class MainWindow(QMainWindow):
         self.abort_button.clicked.connect(self.handle_abort_button_click)
         self.abort_button.setEnabled(False)  # Disabled initially
         layout.addWidget(self.abort_button)
+        
+        # Add quit button
+        self.quit_button = QPushButton("Quit Application")
+        self.quit_button.clicked.connect(self.handle_quit_button_click)
+        layout.addWidget(self.quit_button)
         
         # Add progress bar
         self.progress_bar = QProgressBar()
@@ -125,6 +150,59 @@ class MainWindow(QMainWindow):
         self.results_area.setReadOnly(True)
         layout.addWidget(self.results_area)
     
+    def setup_system_tray(self) -> None:
+        """
+        Setup the system tray icon.
+        
+        Creates the system tray icon and connects signals to slots for
+        showing/hiding the window and quitting the application.
+        """
+        # Get icon path
+        icon_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),
+            "assets", "icon.png"
+        )
+        
+        # Create system tray
+        self.system_tray = SystemTray(icon_path)
+        
+        # Connect signals
+        self.system_tray.show_window_signal.connect(self.show_window)
+        self.system_tray.hide_window_signal.connect(self.hide_window)
+        self.system_tray.quit_application_signal.connect(self.handle_quit_button_click)
+        
+        # Show system tray icon
+        self.system_tray.show()
+    
+    def closeEvent(self, event: QCloseEvent) -> None:
+        """
+        Handle the window close event.
+        
+        This method is called when the user attempts to close the window.
+        It intercepts the close event to minimize to system tray instead of
+        actually closing the application, unless explicitly quit.
+        
+        Parameters
+        ----------
+        event : QCloseEvent
+            The close event to handle
+        """
+        if not self.is_closing:
+            event.ignore()
+            self.hide_window()
+            
+            # Show a message the first time
+            self.system_tray.showMessage(
+                "Application Minimized",
+                "The application is still running in the background. "
+                "Click the tray icon to restore.",
+                QSystemTrayIcon.MessageIcon.NoIcon,
+                3000
+            )
+        else:
+            # Actually close
+            event.accept()
+    
     @pyqtSlot()
     def handle_start_button_click(self) -> None:
         """
@@ -133,7 +211,7 @@ class MainWindow(QMainWindow):
         Delegates to the controller to start the background task.
         """
         self.controller.execute_background_task()
-        
+    
     @pyqtSlot()
     def handle_abort_button_click(self) -> None:
         """
@@ -142,6 +220,27 @@ class MainWindow(QMainWindow):
         Delegates to the controller to abort the current background task.
         """
         self.controller.abort_background_task()
+    
+    @pyqtSlot()
+    def handle_quit_button_click(self) -> None:
+        """
+        Handle when the quit button is clicked by the user.
+        
+        Shows a confirmation dialog and if confirmed, sets the closing flag
+        and closes the application.
+        """
+        reply = QMessageBox.question(
+            self, 
+            'Quit Application',
+            'Are you sure you want to quit the application?',
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, 
+            QMessageBox.StandardButton.No
+        )
+        
+        if reply == QMessageBox.StandardButton.Yes:
+            self.is_closing = True
+            self.close()
+            sys.exit(0)
     
     @pyqtSlot(int)
     def update_progress_indicator(self, value: int) -> None:
@@ -194,3 +293,24 @@ class MainWindow(QMainWindow):
         self.abort_button.setEnabled(False)  # Disable abort button when task completes
         self.status_label.setText("Task completed")
         self.progress_bar.setValue(100)
+    
+    @pyqtSlot()
+    def show_window(self) -> None:
+        """
+        Show and activate the application window.
+        
+        This method is called when the user clicks the tray icon or selects
+        'Show Window' from the tray menu.
+        """
+        self.showNormal()
+        self.activateWindow()
+    
+    @pyqtSlot()
+    def hide_window(self) -> None:
+        """
+        Hide the application window.
+        
+        This method is called when the user selects 'Hide Window' from the
+        tray menu or closes the window.
+        """
+        self.hide()
