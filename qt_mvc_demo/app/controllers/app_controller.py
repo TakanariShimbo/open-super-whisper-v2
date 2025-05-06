@@ -35,9 +35,9 @@ class AppController(QObject):
         Signal emitted when a task starts
     task_finished : pyqtSignal
         Signal emitted when a task finishes
-    thread_manager : ThreadManager
+    _thread_manager : ThreadManager
         Manager for worker threads
-    worker : Optional[TaskWorker]
+    _worker : Optional[TaskWorker]
         The current task worker instance
     """
     # Signals to communicate with the UI
@@ -55,10 +55,10 @@ class AppController(QObject):
         super().__init__()
         
         # Initialize thread manager
-        self.thread_manager = ThreadManager()
+        self._thread_manager = ThreadManager()
         
         # Worker will be created when needed and destroyed when finished
-        self.worker: Optional[TaskWorker] = None
+        self._worker: Optional[TaskWorker] = None
     
     def execute_background_task(self) -> None:
         """
@@ -71,15 +71,15 @@ class AppController(QObject):
         self.task_started.emit()
         
         # Create worker
-        self.worker = TaskWorker()
+        self._worker = TaskWorker()
         
         # Connect worker signals to controller signals
-        self.worker.progress_updated.connect(self.task_progress.emit)
-        self.worker.result_ready.connect(self.task_result.emit)
-        self.worker.task_completed.connect(self.handle_task_completion)
+        self._worker.progress_updated.connect(self.task_progress.emit)
+        self._worker.result_ready.connect(self.task_result.emit)
+        self._worker.task_completed.connect(self.handle_task_completion)
         
         # Start worker in a separate thread
-        self.thread_manager.run_worker_in_thread(self.worker)
+        self._thread_manager.run_worker_in_thread(self._worker)
     
     def handle_task_completion(self) -> None:
         """
@@ -92,8 +92,8 @@ class AppController(QObject):
         self.task_finished.emit()
         
         # Clean up thread and worker
-        self.thread_manager.release_thread_resources()
-        self.worker = None
+        self._thread_manager.release_thread_resources()
+        self._worker = None
         
     def abort_background_task(self) -> None:
         """
@@ -103,6 +103,6 @@ class AppController(QObject):
         abort_current_task method to stop the task execution. The task
         will then clean up itself through the normal completion handling.
         """
-        if self.worker is not None:
-            self.worker.abort_current_task()
+        if self._worker is not None:
+            self._worker.abort_current_task()
             self.task_result.emit("Task aborted by user")

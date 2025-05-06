@@ -51,21 +51,21 @@ class MainWindow(QMainWindow):
     
     Attributes
     ----------
-    controller : AppController
+    _controller : AppController
         The application controller that manages the business logic
-    task_button : QPushButton
+    _task_button : QPushButton
         Unified button to start or abort the background task, changes text based on state
-    progress_bar : QProgressBar
+    _progress_bar : QProgressBar
         Progress indicator for the background task
-    status_label : QLabel
+    _status_label : QLabel
         Label showing the current status of the application
-    results_area : QTextEdit
+    _results_area : QTextEdit
         Text area to display task results
-    system_tray : SystemTray
+    _system_tray : SystemTray
         System tray icon for background operation
-    is_closing : bool
+    _is_closing : bool
         Flag to track if the application is actually closing or just minimizing to tray
-    is_operation_in_progress : bool
+    _is_operation_in_progress : bool
         Flag to prevent button spamming and ensure operation atomicity
     """
     
@@ -79,27 +79,27 @@ class MainWindow(QMainWindow):
         super().__init__()
         
         # Initialize UI
-        self.setup_user_interface()
+        self._setup_user_interface()
         
         # Initialize controller (business logic)
-        self.controller = AppController()
+        self._controller = AppController()
         
         # Connect signals from controller to UI slots
-        self.controller.task_progress.connect(self.update_progress_indicator)
-        self.controller.task_result.connect(self.append_result_to_log)
-        self.controller.task_started.connect(self.handle_task_start_event)
-        self.controller.task_finished.connect(self.handle_task_completion_event)
+        self._controller.task_progress.connect(self._update_progress_indicator)
+        self._controller.task_result.connect(self._append_result_to_log)
+        self._controller.task_started.connect(self._handle_task_start_event)
+        self._controller.task_finished.connect(self._handle_task_completion_event)
         
         # Initialize system tray
-        self.setup_system_tray()
+        self._setup_system_tray()
         
         # Track if window is actually closing
-        self.is_closing = False
+        self._is_closing = False
         
         # Flag to prevent button spamming and ensure operation atomicity
-        self.is_operation_in_progress = False
+        self._is_operation_in_progress = False
         
-    def setup_user_interface(self) -> None:
+    def _setup_user_interface(self) -> None:
         """
         Setup and initialize the user interface components.
         
@@ -134,32 +134,32 @@ class MainWindow(QMainWindow):
         layout.addWidget(description)
         
         # Add unified task control button
-        self.task_button = QPushButton("Start Task")
-        self.task_button.clicked.connect(self.handle_task_button_click)
-        layout.addWidget(self.task_button)
+        self._task_button = QPushButton("Start Task")
+        self._task_button.clicked.connect(self._handle_task_button_click)
+        layout.addWidget(self._task_button)
         
         # Add quit button
-        self.quit_button = QPushButton("Quit Application")
-        self.quit_button.clicked.connect(self.handle_quit_button_click)
-        layout.addWidget(self.quit_button)
+        self._quit_button = QPushButton("Quit Application")
+        self._quit_button.clicked.connect(self._handle_quit_button_click)
+        layout.addWidget(self._quit_button)
         
         # Add progress bar
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setRange(0, 100)
-        self.progress_bar.setValue(0)
-        layout.addWidget(self.progress_bar)
+        self._progress_bar = QProgressBar()
+        self._progress_bar.setRange(0, 100)
+        self._progress_bar.setValue(0)
+        layout.addWidget(self._progress_bar)
         
         # Add status label
-        self.status_label = QLabel("Ready")
-        self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.status_label)
+        self._status_label = QLabel("Ready")
+        self._status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self._status_label)
         
         # Add results area
-        self.results_area = QTextEdit()
-        self.results_area.setReadOnly(True)
-        layout.addWidget(self.results_area)
+        self._results_area = QTextEdit()
+        self._results_area.setReadOnly(True)
+        layout.addWidget(self._results_area)
     
-    def setup_system_tray(self) -> None:
+    def _setup_system_tray(self) -> None:
         """
         Setup the system tray icon.
         
@@ -173,15 +173,15 @@ class MainWindow(QMainWindow):
         )
         
         # Create system tray
-        self.system_tray = SystemTray(icon_path)
+        self._system_tray = SystemTray(icon_path)
         
         # Connect signals
-        self.system_tray.show_window_signal.connect(self.show_window)
-        self.system_tray.hide_window_signal.connect(self.hide_window)
-        self.system_tray.quit_application_signal.connect(self.handle_quit_button_click)
+        self._system_tray.show_window_signal.connect(self._show_window)
+        self._system_tray.hide_window_signal.connect(self._hide_window)
+        self._system_tray.quit_application_signal.connect(self._handle_quit_button_click)
         
         # Show system tray icon
-        self.system_tray.show()
+        self._system_tray.show()
     
     def closeEvent(self, event: QCloseEvent) -> None:
         """
@@ -196,12 +196,12 @@ class MainWindow(QMainWindow):
         event : QCloseEvent
             The close event to handle
         """
-        if not self.is_closing:
+        if not self._is_closing:
             event.ignore()
-            self.hide_window()
+            self._hide_window()
             
             # Show a message the first time
-            self.system_tray.showMessage(
+            self._system_tray.showMessage(
                 "Application Minimized",
                 "The application is still running in the background. "
                 "Click the tray icon to restore.",
@@ -213,7 +213,7 @@ class MainWindow(QMainWindow):
             event.accept()
     
     @pyqtSlot()
-    def handle_task_button_click(self) -> None:
+    def _handle_task_button_click(self) -> None:
         """
         Handle when the task button is clicked by the user.
         
@@ -223,33 +223,33 @@ class MainWindow(QMainWindow):
         causing unintended behavior.
         """
         # Skip if an operation is already in progress
-        if self.is_operation_in_progress:
+        if self._is_operation_in_progress:
             # Log message to inform user
-            self.append_result_to_log("Please wait, operation in progress...")
+            self._append_result_to_log("Please wait, operation in progress...")
             return
             
         # Set operation flag to prevent multiple rapid clicks
-        self.is_operation_in_progress = True
+        self._is_operation_in_progress = True
         
         # Disable button immediately to provide visual feedback
-        self.task_button.setEnabled(False)
+        self._task_button.setEnabled(False)
         
         # Get the current button text to determine what action to take
-        if self.task_button.text() == "Start Task":
+        if self._task_button.text() == "Start Task":
             # Update UI immediately for better responsiveness
-            self.status_label.setText("Starting task...")
+            self._status_label.setText("Starting task...")
             
             # If showing "Start Task", then start a new task
-            self.controller.execute_background_task()
+            self._controller.execute_background_task()
         else:
             # Update UI immediately for better responsiveness
-            self.status_label.setText("Aborting task...")
+            self._status_label.setText("Aborting task...")
             
             # If showing "Abort Task", then abort the current task
-            self.controller.abort_background_task()
+            self._controller.abort_background_task()
     
     @pyqtSlot()
-    def handle_quit_button_click(self) -> None:
+    def _handle_quit_button_click(self) -> None:
         """
         Handle when the quit button is clicked by the user.
         
@@ -265,12 +265,12 @@ class MainWindow(QMainWindow):
         )
         
         if reply == QMessageBox.StandardButton.Yes:
-            self.is_closing = True
+            self._is_closing = True
             self.close()
             sys.exit(0)
     
     @pyqtSlot(int)
-    def update_progress_indicator(self, value: int) -> None:
+    def _update_progress_indicator(self, value: int) -> None:
         """
         Update the progress bar indicator with current task progress value.
         
@@ -279,10 +279,10 @@ class MainWindow(QMainWindow):
         value : int
             The progress value (0-100) to display in the progress bar
         """
-        self.progress_bar.setValue(value)
+        self._progress_bar.setValue(value)
     
     @pyqtSlot(str)
-    def append_result_to_log(self, result: str) -> None:
+    def _append_result_to_log(self, result: str) -> None:
         """
         Append the task result to the log display area.
         
@@ -291,10 +291,10 @@ class MainWindow(QMainWindow):
         result : str
             The text result to append to the log
         """
-        self.results_area.append(result)
+        self._results_area.append(result)
     
     @pyqtSlot()
-    def handle_task_start_event(self) -> None:
+    def _handle_task_start_event(self) -> None:
         """
         Handle the event when a task is started.
         
@@ -303,18 +303,18 @@ class MainWindow(QMainWindow):
         and resetting the progress bar. Re-enables the button to allow
         abortion of the running task.
         """
-        self.task_button.setText("Abort Task")
-        self.status_label.setText("Task is running...")
-        self.progress_bar.setValue(0)
+        self._task_button.setText("Abort Task")
+        self._status_label.setText("Task is running...")
+        self._progress_bar.setValue(0)
         
         # Re-enable the button to allow for task abortion
-        self.task_button.setEnabled(True)
+        self._task_button.setEnabled(True)
         
         # Operation has transitioned to running state, so we reset the flag
-        self.is_operation_in_progress = False
+        self._is_operation_in_progress = False
     
     @pyqtSlot()
-    def handle_task_completion_event(self) -> None:
+    def _handle_task_completion_event(self) -> None:
         """
         Handle the event when a task is completed.
         
@@ -323,18 +323,18 @@ class MainWindow(QMainWindow):
         and setting the progress bar to 100%. Re-enables the button and
         resets operation flags.
         """
-        self.task_button.setText("Start Task")
-        self.status_label.setText("Task completed")
-        self.progress_bar.setValue(100)
+        self._task_button.setText("Start Task")
+        self._status_label.setText("Task completed")
+        self._progress_bar.setValue(100)
         
         # Re-enable button for next operation
-        self.task_button.setEnabled(True)
+        self._task_button.setEnabled(True)
         
         # Reset operation flag to allow new operations
-        self.is_operation_in_progress = False
+        self._is_operation_in_progress = False
     
     @pyqtSlot()
-    def show_window(self) -> None:
+    def _show_window(self) -> None:
         """
         Show and activate the application window.
         
@@ -345,7 +345,7 @@ class MainWindow(QMainWindow):
         self.activateWindow()
     
     @pyqtSlot()
-    def hide_window(self) -> None:
+    def _hide_window(self) -> None:
         """
         Hide the application window.
         

@@ -66,26 +66,26 @@ class SystemTray(QSystemTrayIcon):
         window and for quitting the application.
         """
         # Create the menu
-        self.tray_menu = QMenu()
+        self._tray_menu = QMenu()
         
         # Create actions
-        self.show_action = QAction("Show Window")
-        self.hide_action = QAction("Hide Window")
-        self.quit_action = QAction("Quit")
+        self._show_action = QAction("Show Window")
+        self._hide_action = QAction("Hide Window")
+        self._quit_action = QAction("Quit")
         
         # Connect action signals
-        self.show_action.triggered.connect(self._on_show_window)
-        self.hide_action.triggered.connect(self._on_hide_window)
-        self.quit_action.triggered.connect(self._on_quit_application)
+        self._show_action.triggered.connect(self._on_show_window)
+        self._hide_action.triggered.connect(self._on_hide_window)
+        self._quit_action.triggered.connect(self._on_quit_application)
         
         # Add actions to menu
-        self.tray_menu.addAction(self.show_action)
-        self.tray_menu.addAction(self.hide_action)
-        self.tray_menu.addSeparator()
-        self.tray_menu.addAction(self.quit_action)
+        self._tray_menu.addAction(self._show_action)
+        self._tray_menu.addAction(self._hide_action)
+        self._tray_menu.addSeparator()
+        self._tray_menu.addAction(self._quit_action)
         
         # Set the menu
-        self.setContextMenu(self.tray_menu)
+        self.setContextMenu(self._tray_menu)
     
     def _on_show_window(self) -> None:
         """Handle show window action."""

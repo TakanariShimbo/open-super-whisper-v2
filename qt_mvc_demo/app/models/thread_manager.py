@@ -25,7 +25,7 @@ class ThreadManager(QObject):
     
     Attributes
     ----------
-    thread : Optional[QThread]
+    _thread : Optional[QThread]
         The managed QThread instance
     """
     
@@ -36,7 +36,7 @@ class ThreadManager(QObject):
         Creates a new ThreadManager instance with no active thread.
         """
         super().__init__()
-        self.thread: Optional[QThread] = None
+        self._thread: Optional[QThread] = None
     
     def run_worker_in_thread(self, worker: QObject) -> None:
         """
@@ -52,19 +52,19 @@ class ThreadManager(QObject):
             an execute_task method and a task_completed signal.
         """
         # Create a new thread
-        self.thread = QThread()
+        self._thread = QThread()
         
         # Move worker to thread
-        worker.moveToThread(self.thread)
+        worker.moveToThread(self._thread)
         
         # Connect thread started signal to worker's execute_task method
-        self.thread.started.connect(worker.execute_task)
+        self._thread.started.connect(worker.execute_task)
         
         # Connect worker's finished signal to thread's quit method
-        worker.task_completed.connect(self.thread.quit)
+        worker.task_completed.connect(self._thread.quit)
         
         # Start the thread
-        self.thread.start()
+        self._thread.start()
     
     def release_thread_resources(self) -> None:
         """
@@ -74,11 +74,11 @@ class ThreadManager(QObject):
         It safely terminates the thread if it's running and sets the thread
         reference to None.
         """
-        if self.thread and self.thread.isRunning():
-            self.thread.quit()
-            self.thread.wait()
+        if self._thread and self._thread.isRunning():
+            self._thread.quit()
+            self._thread.wait()
         
-        self.thread = None
+        self._thread = None
     
     def __del__(self) -> None:
         """
