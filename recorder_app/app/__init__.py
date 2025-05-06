@@ -1,3 +1,0 @@
-"""
-Recorder Application app package
-"""
