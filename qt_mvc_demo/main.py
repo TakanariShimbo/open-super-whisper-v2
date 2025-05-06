@@ -19,11 +19,6 @@ def launch_qt_mvc_app() -> None:
     This function serves as the main entry point for the Qt MVC demo application.
     It initializes the QApplication, creates the main window, and starts the
     event loop.
-    
-    Examples
-    --------
-    >>> launch_qt_mvc_app()
-    # Starts the application and enters the Qt event loop
     """
     app = QApplication(sys.argv)
     window = MainWindow()
