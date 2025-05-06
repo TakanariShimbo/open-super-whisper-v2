@@ -99,3 +99,15 @@ class AppController(QObject):
         # Clean up thread and worker
         self.thread_manager.release_thread_resources()
         self.worker = None
+        
+    def abort_background_task(self) -> None:
+        """
+        Abort the currently running task.
+        
+        If a worker is currently active, this method calls the worker's
+        abort_current_task method to stop the task execution. The task
+        will then clean up itself through the normal completion handling.
+        """
+        if self.worker is not None:
+            self.worker.abort_current_task()
+            self.task_result.emit("Task aborted by user")

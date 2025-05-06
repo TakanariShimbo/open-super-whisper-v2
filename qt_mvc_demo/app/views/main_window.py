@@ -50,6 +50,8 @@ class MainWindow(QMainWindow):
         The application controller that manages the business logic
     start_button : QPushButton
         Button to start the background task
+    abort_button : QPushButton
+        Button to abort the running background task
     progress_bar : QProgressBar
         Progress indicator for the background task
     status_label : QLabel
@@ -104,7 +106,8 @@ class MainWindow(QMainWindow):
         # Add description
         description = QLabel(
             "This demo shows how to manage threads in PyQt6 applications.\n"
-            "Click 'Start Task' to run a simulated long-running process in a background thread."
+            "Click 'Start Task' to run a simulated long-running process in a background thread.\n"
+            "You can click 'Abort Task' to cancel the running process at any time."
         )
         description.setAlignment(Qt.AlignmentFlag.AlignCenter)
         description.setWordWrap(True)
@@ -114,6 +117,12 @@ class MainWindow(QMainWindow):
         self.start_button = QPushButton("Start Task")
         self.start_button.clicked.connect(self.handle_start_button_click)
         layout.addWidget(self.start_button)
+        
+        # Add abort button
+        self.abort_button = QPushButton("Abort Task")
+        self.abort_button.clicked.connect(self.handle_abort_button_click)
+        self.abort_button.setEnabled(False)  # Disabled initially
+        layout.addWidget(self.abort_button)
         
         # Add progress bar
         self.progress_bar = QProgressBar()
@@ -139,6 +148,15 @@ class MainWindow(QMainWindow):
         Delegates to the controller to start the background task.
         """
         self.controller.execute_background_task()
+        
+    @pyqtSlot()
+    def handle_abort_button_click(self) -> None:
+        """
+        Handle when the abort button is clicked by the user.
+        
+        Delegates to the controller to abort the current background task.
+        """
+        self.controller.abort_background_task()
     
     @pyqtSlot(int)
     def update_progress_indicator(self, value: int) -> None:
@@ -170,9 +188,11 @@ class MainWindow(QMainWindow):
         Handle the event when a task is started.
         
         Updates the UI to reflect that a task is in progress by disabling
-        the start button, updating the status label, and resetting the progress bar.
+        the start button, enabling the abort button, updating the status label,
+        and resetting the progress bar.
         """
         self.start_button.setEnabled(False)
+        self.abort_button.setEnabled(True)  # Enable abort button when task starts
         self.status_label.setText("Task is running...")
         self.progress_bar.setValue(0)
     
@@ -182,9 +202,10 @@ class MainWindow(QMainWindow):
         Handle the event when a task is completed.
         
         Updates the UI to reflect that a task is completed by enabling
-        the start button, updating the status label, and setting the progress
-        bar to 100%.
+        the start button, disabling the abort button, updating the status label,
+        and setting the progress bar to 100%.
         """
         self.start_button.setEnabled(True)
+        self.abort_button.setEnabled(False)  # Disable abort button when task completes
         self.status_label.setText("Task completed")
         self.progress_bar.setValue(100)
