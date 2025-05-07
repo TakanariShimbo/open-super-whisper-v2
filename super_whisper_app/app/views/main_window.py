@@ -295,22 +295,21 @@ class MainWindow(QMainWindow):
     def show_api_key_dialog(self):
         """
         Show dialog for API key entry.
-        """
-        # A very simple dialog for API key entry
-        api_key, ok = QInputDialog.getText(
-            self, "API Key", "Enter your API key:",
-            QLineEdit.EchoMode.Password, self.api_key
-        )
         
-        if ok and api_key:
-            # Initialize pipeline with API key
-            if self.controller.initialize_with_api_key(api_key):
-                self.api_key = api_key
-                self.status_bar.showMessage("API key saved successfully", 3000)
-            else:
-                QMessageBox.warning(
-                    self, "API Key Error", 
-                    "The provided API key appears to be invalid."
+        This method uses the API key controller to show a user-friendly dialog
+        for entering and validating an API key.
+        """
+        # Use the controller's API key settings method
+        if self.controller.show_api_key_settings(self):
+            # Update the stored API key
+            self.api_key = self.settings.value("api_key", "")
+        else:
+            # If initializing with a new API key failed
+            if not self.api_key:
+                # If we still don't have an API key, show a message
+                QMessageBox.critical(
+                    self, "API Key Required", 
+                    "A valid API key is required to use this application."
                 )
     
     @pyqtSlot()

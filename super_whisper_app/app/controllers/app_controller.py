@@ -77,12 +77,27 @@ class AppController(QObject):
     def _init_models(self):
         """
         Initialize the application models.
+        
+        Note: The APIKeyController has already validated the API key, so we can assume
+        it's valid here. However, we still check initialization status to be safe.
         """
         # Get API key from settings
         api_key = self._settings.value("api_key", "")
         
         # Initialize models
         self._pipeline_model = PipelineModel(api_key)
+        
+        # Verify that pipeline was initialized successfully
+        if not self._pipeline_model.is_initialized:
+            from PyQt6.QtWidgets import QMessageBox
+            QMessageBox.critical(
+                None,
+                "Initialization Error",
+                "Failed to initialize pipeline with the provided API key. The application will now exit."
+            )
+            import sys
+            sys.exit(1)
+            
         self._instruction_set_model = InstructionSetModel(self._settings)
         self._hotkey_model = HotkeyModel()
     
@@ -430,3 +445,44 @@ class AppController(QObject):
         if self._instruction_set_model.get_set_by_name(old_name):
             # Rename the set
             self._instruction_set_model.rename_set(old_name, new_name)
+    
+    def show_api_key_settings(self, parent=None):
+        """
+        Show the API key settings dialog.
+        
+        This method creates and displays an API key settings dialog,
+        allowing the user to update their API key.
+        
+        Parameters
+        ----------
+        parent : QWidget, optional
+            Parent widget for the dialog, by default None
+            
+        Returns
+        -------
+        bool
+            True if the API key was successfully updated, False otherwise
+        """
+        # Create API key controller
+        from ..controllers.dialogs.api_key_controller import APIKeyController
+        api_key_controller = APIKeyController(self._settings)
+        
+        # Connect signals for status updates
+        api_key_controller.api_key_validated.connect(
+            lambda key: self.status_update.emit("API key updated successfully", 3000)
+        )
+        
+        # Get current API key to pre-fill the dialog
+        current_api_key = self._settings.value("api_key", "")
+        
+        # Show the API key dialog in settings mode
+        initial_message = "Update your API key or enter a new one if needed."
+        if api_key_controller.prompt_for_api_key(parent, initial_message, True):
+            # Get the new API key
+            api_key = self._settings.value("api_key", "")
+            
+            # Reinitialize pipeline with the new API key
+            if self.initialize_with_api_key(api_key):
+                return True
+            
+        return False
