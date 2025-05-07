@@ -15,8 +15,8 @@ import tempfile
 # Add parent directory to path so we can import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.utils.instruction_manager import InstructionManager
-from core.utils.instruction_set import InstructionSet
+from core.pipelines.instruction_manager import InstructionManager
+from core.pipelines.instruction_set import InstructionSet
 
 
 def test_instruction_manager(use_temp_file: bool = True, file_path: str = None, verbose: bool = False):

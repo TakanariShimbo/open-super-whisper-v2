@@ -12,7 +12,7 @@ from typing import Optional, Callable
 from ..stt.stt_processor import STTProcessor
 from ..llm.llm_processor import LLMProcessor
 from ..recorder.audio_recorder import AudioRecorder
-from ..utils.instruction_set import InstructionSet
+from .instruction_set import InstructionSet
 from .pipeline_result import PipelineResult
 
 

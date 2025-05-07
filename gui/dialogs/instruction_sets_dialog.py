@@ -18,8 +18,8 @@ from gui.dialogs.simple_message_dialog import SimpleMessageDialog
 from gui.dialogs.hotkey_dialog import HotkeyDialog
 from gui.thread_management.hotkey_bridge import HotkeyBridge
 
-from core.utils.instruction_set import InstructionSet
-from core.utils.instruction_manager import InstructionManager
+from core.pipelines.instruction_set import InstructionSet
+from core.pipelines.instruction_manager import InstructionManager
 
 from core.stt.stt_lang_model_manager import STTLangModelManager
 from core.stt.stt_model_manager import STTModelManager
