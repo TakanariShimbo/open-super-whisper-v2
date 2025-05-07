@@ -262,11 +262,23 @@ class InstructionDialog(QDialog):
         
         right_layout.addWidget(self._tab_widget)
         
-        # Save changes button - style consistent with other buttons
+        # Save and Discard buttons layout
+        save_buttons_layout = QHBoxLayout()
+        
+        # Save changes button
         self._save_button = QPushButton("Save Changes")
         self._save_button.clicked.connect(self._on_save_changes)
         self._save_button.setEnabled(False)  # Initially disabled until changes are made
-        right_layout.addWidget(self._save_button)
+        save_buttons_layout.addWidget(self._save_button)
+        
+        # Discard changes button
+        self._discard_button = QPushButton("Discard Changes")
+        self._discard_button.clicked.connect(self._on_discard_changes)
+        self._discard_button.setEnabled(False)  # Initially disabled until changes are made
+        save_buttons_layout.addWidget(self._discard_button)
+        
+        # Add buttons layout to main layout
+        right_layout.addLayout(save_buttons_layout)
 
         # Add widgets to splitter
         splitter.addWidget(left_widget)
@@ -430,6 +442,7 @@ class InstructionDialog(QDialog):
         # Reset changes flag
         self._changes_made = False
         self._save_button.setEnabled(False)
+        self._discard_button.setEnabled(False)
         
         # Update operation buttons based on save state
         self._update_operation_buttons()
@@ -533,8 +546,9 @@ class InstructionDialog(QDialog):
             # Set changes flag
             self._changes_made = True
             
-            # Enable save button
+            # Enable save and discard buttons
             self._save_button.setEnabled(True)
+            self._discard_button.setEnabled(True)
             
             # Update operation buttons
             self._update_operation_buttons()
@@ -743,9 +757,116 @@ class InstructionDialog(QDialog):
         # Reset changes flag
         self._changes_made = False
         self._save_button.setEnabled(False)
+        self._discard_button.setEnabled(False)
         
         # Update operation buttons - enable after save
         self._update_operation_buttons()
+    
+    def _on_discard_changes(self):
+        """Handle discarding changes to the current instruction set."""
+        row = self._sets_list.currentRow()
+        if row < 0:
+            return
+        
+        # Get selected set name
+        set_name = self._sets_list.item(row).text()
+        
+        # Get the instruction set from the controller
+        instruction_set = self._controller.get_set_by_name(set_name)
+        if not instruction_set:
+            return
+        
+        # Block signals to prevent _on_form_changed from being triggered
+        self._vocabulary_edit.blockSignals(True)
+        self._instructions_edit.blockSignals(True)
+        self._llm_instructions_edit.blockSignals(True)
+        self._stt_language_combo.blockSignals(True)
+        self._stt_model_combo.blockSignals(True)
+        self._llm_enabled_checkbox.blockSignals(True)
+        self._llm_model_combo.blockSignals(True)
+        self._llm_clipboard_text_checkbox.blockSignals(True)
+        self._llm_clipboard_image_checkbox.blockSignals(True)
+        
+        # Reset values to the current instruction set values
+        self._vocabulary_edit.setPlainText(instruction_set.stt_vocabulary)
+        self._instructions_edit.setPlainText(instruction_set.stt_instructions)
+        
+        # Update language selection
+        language_index = 0  # Default to auto-detect
+        if instruction_set.stt_language:
+            for i in range(self._stt_language_combo.count()):
+                if self._stt_language_combo.itemData(i) == instruction_set.stt_language:
+                    language_index = i
+                    break
+        self._stt_language_combo.setCurrentIndex(language_index)
+        
+        # Update STT model selection
+        model_index = 0  # Default to first model
+        for i in range(self._stt_model_combo.count()):
+            if self._stt_model_combo.itemData(i) == instruction_set.stt_model:
+                model_index = i
+                break
+        self._stt_model_combo.setCurrentIndex(model_index)
+        
+        # Update LLM settings
+        is_llm_enabled = instruction_set.llm_enabled
+        self._llm_enabled_checkbox.setChecked(is_llm_enabled)
+        
+        # Update LLM model selection
+        llm_model_index = 0  # Default to first model
+        for i in range(self._llm_model_combo.count()):
+            if self._llm_model_combo.itemData(i) == instruction_set.llm_model:
+                llm_model_index = i
+                break
+        self._llm_model_combo.setCurrentIndex(llm_model_index)
+        
+        # Update LLM clipboard options
+        self._llm_clipboard_text_checkbox.setChecked(instruction_set.llm_clipboard_text_enabled)
+        self._llm_clipboard_image_checkbox.setChecked(instruction_set.llm_clipboard_image_enabled)
+        
+        # Update LLM instructions
+        self._llm_instructions_edit.setPlainText(instruction_set.llm_instructions)
+        
+        # Update hotkey field
+        self._hotkey_input.setText(instruction_set.hotkey)
+        
+        # Check if model supports image input
+        supports_image = False
+        if instruction_set.llm_model:
+            supports_image = self._controller.supports_image_input(instruction_set.llm_model)
+        
+        # Set enabled state for LLM-related UI components
+        self._llm_model_combo.setEnabled(is_llm_enabled)
+        self._llm_clipboard_text_checkbox.setEnabled(is_llm_enabled)
+        self._llm_clipboard_image_checkbox.setEnabled(is_llm_enabled and supports_image)
+        self._llm_instructions_edit.setEnabled(is_llm_enabled)
+        
+        # Unblock signals
+        self._vocabulary_edit.blockSignals(False)
+        self._instructions_edit.blockSignals(False)
+        self._llm_instructions_edit.blockSignals(False)
+        self._stt_language_combo.blockSignals(False)
+        self._stt_model_combo.blockSignals(False)
+        self._llm_enabled_checkbox.blockSignals(False)
+        self._llm_model_combo.blockSignals(False)
+        self._llm_clipboard_text_checkbox.blockSignals(False)
+        self._llm_clipboard_image_checkbox.blockSignals(False)
+        
+        # Reset changes flag
+        self._changes_made = False
+        self._save_button.setEnabled(False)
+        self._discard_button.setEnabled(False)
+        
+        # Update operation buttons
+        self._update_operation_buttons()
+        
+        # Show a message to inform the user
+        QMessageBox.information(
+            self,
+            "Changes Discarded",
+            "Changes have been discarded.",
+            QMessageBox.StandardButton.Ok
+        )
     
     @pyqtSlot(InstructionSet)
     def _on_instruction_set_updated(self, instruction_set):
@@ -915,6 +1036,7 @@ class InstructionDialog(QDialog):
         # Ensure initial state is "saved" to enable operation buttons
         self._changes_made = False
         self._save_button.setEnabled(False)
+        self._discard_button.setEnabled(False)
         self._update_operation_buttons()
     
     def closeEvent(self, event):
