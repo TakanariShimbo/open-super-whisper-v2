@@ -9,6 +9,7 @@ both speech-to-text transcription and LLM processing in a seamless way.
 from typing import Optional, Callable
 
 # Local application imports
+from core.api.api_client_factory import APIClientFactory
 from ..stt.stt_processor import STTProcessor
 from ..llm.llm_processor import LLMProcessor
 from ..recorder.audio_recorder import AudioRecorder
@@ -38,9 +39,14 @@ class Pipeline:
         ValueError
             If no API key is provided and none is found in environment variables.
         """
+        # Verify api key and create client
+        is_successful, client = APIClientFactory.create_client(api_key)
+        if not is_successful:
+            raise ValueError("Invalid API key. Please provide a valid API key.")
+
         # Initialize components
-        self._stt_processor = STTProcessor(api_key=api_key)
-        self._llm_processor = LLMProcessor(api_key=api_key)
+        self._stt_processor = STTProcessor(client)
+        self._llm_processor = LLMProcessor(client)
         self._audio_recorder = AudioRecorder()
         
         # Processing state flag

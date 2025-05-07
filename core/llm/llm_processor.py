@@ -45,14 +45,18 @@ class LLMProcessor:
     --------
     Basic text processing:
     
-    >>> processor = LLMProcessor(api_key="your_api_key")
+    >>> from core.api.api_client_factory import APIClientFactory
+    >>> is_successful, client = APIClientFactory.create_client("your_api_key")
+    >>> processor = LLMProcessor(client)
     >>> response = processor.process_text("Summarize the benefits of AI assistants.")
     >>> print(response)
     AI assistants offer several benefits: 1. 24/7 availability...
     
     With custom system instruction:
     
-    >>> processor = LLMProcessor(api_key="your_api_key")
+    >>> from core.api.api_client_factory import APIClientFactory
+    >>> is_successful, client = APIClientFactory.create_client("your_api_key")
+    >>> processor = LLMProcessor(client)
     >>> processor.set_system_instruction("Respond in bullet points format.")
     >>> response = processor.process_text("What are the key features of Python?")
     >>> print(response)
@@ -66,7 +70,9 @@ class LLMProcessor:
     >>> def print_chunk(chunk):
     ...     print(chunk, end="", flush=True)
     >>> 
-    >>> processor = LLMProcessor(api_key="your_api_key")
+    >>> from core.api.api_client_factory import APIClientFactory
+    >>> is_successful, client = APIClientFactory.create_client("your_api_key")
+    >>> processor = LLMProcessor(client)
     >>> processor.process_text_with_stream(
     ...     "Explain quantum computing",
     ...     callback=print_chunk
@@ -80,52 +86,18 @@ class LLMProcessor:
     REQUEST_TIMEOUT = 60  # seconds
     MAX_RETRIES = 2
     
-    def __init__(self, api_key: str):
+    def __init__(self, client: openai.OpenAI):
         """
         Initialize the LLMProcessor.
         
         Parameters
         ----------
-        api_key : str
-            API key.
-            
-        Raises
-        ------
-        ValueError
-            If API key is invalid.
+        client : openai.OpenAI
+            API client to use.
         """
-        # Set API key
-        is_valid = self.set_api_key(api_key)
-        if not is_valid:
-            raise ValueError("Invalid API key. Please provide a valid API key.")
-        
-        # Set model and initialize instruction
+        self._client = client
         self._model_id = self.DEFAULT_MODEL_ID
         self._system_instruction: str = ""
-        
-    def set_api_key(self, api_key: str) -> bool:
-        """
-        Set a new API key.
-        
-        Parameters
-        ----------
-        api_key : str
-            New API key to use.
-            
-        Returns
-        -------
-        bool
-            True if the API key is valid, False otherwise.
-        """
-        client = openai.OpenAI(api_key=api_key)
-        try:
-            client.models.list()
-        except openai.APIConnectionError:
-            return False
-
-        self._api_key = api_key
-        self._client = client
-        return True
     
     def set_model(self, model_id: str) -> None:
         """

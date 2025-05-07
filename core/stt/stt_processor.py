@@ -9,7 +9,7 @@ Includes support for processing large audio files by splitting them into smaller
 import os
 import time
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 
 # Third-party imports
 import openai
@@ -31,16 +31,18 @@ class STTProcessor:
     --------
     Basic transcription:
     
-    >>> processor = STTProcessor(api_key="your_api_key")
+    >>> from core.api.api_client_factory import APIClientFactory
+    >>> is_successful, client = APIClientFactory.create_client("your_api_key")
+    >>> processor = STTProcessor(client)
     >>> transcription = processor.transcribe_file_with_chunks("recording.wav")
     >>> print(transcription[:100])
     Hello, welcome to the meeting. Today we'll be discussing the quarterly results...
     
-    With language specification:
-    
     Using custom vocabulary:
     
-    >>> processor = STTProcessor(api_key="your_api_key")
+    >>> from core.api.api_client_factory import APIClientFactory
+    >>> is_successful, client = APIClientFactory.create_client("your_api_key")
+    >>> processor = STTProcessor(client)
     >>> processor.set_custom_vocabulary("PyTorch, TensorFlow, scikit-learn, BERT")
     >>> transcription = processor.transcribe_file_with_chunks("tech_talk.wav")
     """
@@ -52,53 +54,19 @@ class STTProcessor:
     REQUEST_TIMEOUT = 60  # seconds
     CONTEXT_MAX_WORDS = 20  # Maximum words to include from previous context
     
-    def __init__(self, api_key: str):
+    def __init__(self, client: openai.OpenAI):
         """
         Initialize the STTProcessor.
         
         Parameters
         ----------
-        api_key : str
-            API key.
-            
-        Raises
-        ------
-        ValueError
-            If API key is invalid.
+        client : openai.OpenAI
+            API client to use.
         """
-        # Set API key
-        is_valid = self.set_api_key(api_key)
-        if not is_valid:
-            raise ValueError("Invalid API key. Please provide a valid API key.")
-        
-        # Set model and initialize custom vocabulary and instruction
+        self._client = client
         self._model_id = self.DEFAULT_MODEL_ID
         self._custom_vocabulary: str = ""
         self._system_instruction: str = ""
-    
-    def set_api_key(self, api_key: str) -> bool:
-        """
-        Set a new API key.
-        
-        Parameters
-        ----------
-        api_key : str
-            New API key to use.
-            
-        Returns
-        -------
-        bool
-            True if the API key is valid, False otherwise.
-        """
-        client = openai.OpenAI(api_key=api_key)
-        try:
-            client.models.list()
-        except openai.APIConnectionError:
-            return False
-
-        self._api_key = api_key
-        self._client = client
-        return True
     
     def set_model(self, model_id: str) -> None:
         """
