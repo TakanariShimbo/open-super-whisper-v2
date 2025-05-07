@@ -9,10 +9,10 @@ from typing import List, Optional, Dict, Any
 from PyQt6.QtCore import QObject, pyqtSignal, QSettings
 
 from core.pipelines.instruction_set import InstructionSet
-from core.pipelines.instruction_manager import InstructionManager
 from core.stt.stt_lang_model_manager import STTLangModelManager
 from core.stt.stt_model_manager import STTModelManager
 from core.llm.llm_model_manager import LLMModelManager
+from ...models.instruction_set_model import InstructionSetModel
 
 class InstructionDialogModel(QObject):
     """
@@ -20,7 +20,7 @@ class InstructionDialogModel(QObject):
     
     This class encapsulates the data management for the instruction dialog,
     providing methods to manipulate instruction sets and their properties.
-    It uses the core InstructionManager to handle the actual instruction set operations.
+    It relies on InstructionSetModel for managing the actual instruction sets.
     
     Attributes
     ----------
@@ -43,55 +43,22 @@ class InstructionDialogModel(QObject):
     instruction_set_renamed = pyqtSignal(str, str)  # Old name, new name
     hotkey_updated = pyqtSignal(str, str)  # Set name, hotkey
     
-    def __init__(self, settings: Optional[QSettings] = None):
+    def __init__(self, instruction_set_model: InstructionSetModel):
         """
         Initialize the InstructionDialogModel.
         
         Parameters
         ----------
-        settings : QSettings, optional
-            QSettings object for storing instruction sets, by default None
+        instruction_set_model : InstructionSetModel
+            The main model for managing instruction sets
         """
         super().__init__()
         
-        # Initialize instruction manager
-        self._instruction_manager = InstructionManager()
+        # Store instruction set model
+        self._instruction_set_model = instruction_set_model
         
-        # Store settings for persistence
-        self._settings = settings
-        
-        # Load instruction sets from settings if available
-        self._load_from_settings()
-    
-    def _load_from_settings(self):
-        """
-        Load instruction sets from QSettings.
-        """
-        if not self._settings:
-            return
-            
-        # Try to load instruction sets
-        serialized_data = self._settings.value("instruction_sets")
-        if serialized_data:
-            try:
-                self._instruction_manager.import_from_dict(serialized_data)
-            except Exception:
-                # If loading fails, we'll start with an empty manager
-                pass
-    
-    def _save_to_settings(self):
-        """
-        Save instruction sets to QSettings.
-        """
-        if not self._settings:
-            return
-            
-        # Save instruction sets
-        serialized_data = self._instruction_manager.export_to_dict()
-        self._settings.setValue("instruction_sets", serialized_data)
-        
-        # Sync settings to disk
-        self._settings.sync()
+        # Get instruction manager from the model
+        self._instruction_manager = instruction_set_model._instruction_manager
     
     def get_all_sets(self) -> List[InstructionSet]:
         """
@@ -199,11 +166,14 @@ class InstructionDialogModel(QObject):
         result = self._instruction_manager.add_set(instruction_set)
         
         if result:
-            # Save to settings
-            self._save_to_settings()
+            # Save changes through the main model
+            self._instruction_set_model.save_to_settings()
             
             # Emit signal
             self.instruction_set_added.emit(instruction_set)
+            
+            # Notify the main model
+            self._instruction_set_model.instruction_sets_changed.emit()
         
         return result
     
@@ -270,8 +240,8 @@ class InstructionDialogModel(QObject):
             hotkey=hotkey
         )
         
-        # Save to settings
-        self._save_to_settings()
+        # Save changes through the main model
+        self._instruction_set_model.save_to_settings()
         
         # Emit hotkey updated signal if hotkey was updated
         if hotkey is not None:
@@ -279,6 +249,9 @@ class InstructionDialogModel(QObject):
         
         # Emit signal
         self.instruction_set_updated.emit(instruction_set)
+        
+        # Notify the main model
+        self._instruction_set_model.instruction_sets_changed.emit()
         
         return True
     
@@ -300,11 +273,14 @@ class InstructionDialogModel(QObject):
         result = self._instruction_manager.delete_set(name)
         
         if result:
-            # Save to settings
-            self._save_to_settings()
+            # Save changes through the main model
+            self._instruction_set_model.save_to_settings()
             
             # Emit signal
             self.instruction_set_deleted.emit(name)
+            
+            # Notify the main model
+            self._instruction_set_model.instruction_sets_changed.emit()
         
         return result
     
@@ -328,11 +304,14 @@ class InstructionDialogModel(QObject):
         result = self._instruction_manager.rename_set(old_name, new_name)
         
         if result:
-            # Save to settings
-            self._save_to_settings()
+            # Save changes through the main model
+            self._instruction_set_model.save_to_settings()
             
             # Emit signal
             self.instruction_set_renamed.emit(old_name, new_name)
+            
+            # Notify the main model
+            self._instruction_set_model.instruction_sets_changed.emit()
         
         return result
     

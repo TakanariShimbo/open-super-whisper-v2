@@ -50,18 +50,17 @@ class InstructionSetModel(QObject):
         # Track selected instruction set
         self._selected_set_name = ""
         
-        # Load instruction sets from settings if available
-        self._load_from_settings()
+        # Load data and ensure valid state
+        self.load_from_settings()
         
-        # Add default instruction set if none exist
-        if not self._instruction_manager.get_all_sets():
-            default_set = InstructionSet(name="Default")
-            self._instruction_manager.add_set(default_set)
-            self._selected_set_name = "Default"
+        # Save settings after initialization to ensure persistence
+        self.save_to_settings()
     
-    def _load_from_settings(self):
+    def _load_data_from_settings(self):
         """
-        Load instruction sets from QSettings.
+        Load instruction sets data from QSettings.
+        
+        This method loads raw data from settings without enforcing state validity.
         """
         if not self._settings:
             return
@@ -71,26 +70,41 @@ class InstructionSetModel(QObject):
         if serialized_data:
             try:
                 self._instruction_manager.import_from_dict(serialized_data)
-            except Exception:
-                # If loading fails, we'll start with an empty manager
-                pass
+            except Exception as e:
+                print(f"Failed to load instruction sets from settings: {e}")
                 
-        # Load selected set name
+        # Load selected set name without validation
         self._selected_set_name = self._settings.value("selected_instruction_set", "")
+    
+    def _ensure_valid_state(self):
+        """
+        Ensure the model is in a valid state.
         
-        # Ensure selected set exists
-        if self._selected_set_name:
-            if not self._instruction_manager.find_set_by_name(self._selected_set_name):
-                # Selected set doesn't exist, reset to first available
-                sets = self._instruction_manager.get_all_sets()
-                if sets:
-                    self._selected_set_name = sets[0].name
-                else:
-                    self._selected_set_name = ""
+        This method ensures:
+        1. At least one instruction set exists (creates Default if needed)
+        2. A valid selection is made
+        """
+        # Get current instruction sets
+        instruction_sets = self._instruction_manager.get_all_sets()
+        
+        # Create default set if none exist
+        if not instruction_sets:
+            default_set = InstructionSet(name="Default")
+            self._instruction_manager.add_set(default_set)
+            instruction_sets = [default_set]
+        
+        # Ensure a valid selection
+        valid_selection = (self._selected_set_name and 
+                          self._instruction_manager.find_set_by_name(self._selected_set_name))
+                          
+        if not valid_selection:
+            self._selected_set_name = instruction_sets[0].name
     
     def _save_to_settings(self):
         """
         Save instruction sets to QSettings.
+        
+        This is an internal method that persists the model's state to settings.
         """
         if not self._settings:
             return
@@ -104,6 +118,23 @@ class InstructionSetModel(QObject):
         
         # Sync settings to disk
         self._settings.sync()
+        
+    def save_to_settings(self):
+        """
+        Save instruction sets to QSettings.
+        
+        Public method for backward compatibility.
+        """
+        self._save_to_settings()
+        
+    def load_from_settings(self):
+        """
+        Load instruction sets from QSettings.
+        
+        Public method for backward compatibility.
+        """
+        self._load_data_from_settings()
+        self._ensure_valid_state()
     
     def get_all_sets(self) -> List[InstructionSet]:
         """

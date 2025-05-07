@@ -372,8 +372,8 @@ class AppController(QObject):
         """
         Create and return an instruction dialog.
         
-        This method creates an instruction dialog with its own model and controller,
-        but connected to the app's instruction set model and hotkey model.
+        This method creates an instruction dialog with its own controller,
+        but connected to the app's instruction set model.
         
         Parameters
         ----------
@@ -385,8 +385,8 @@ class AppController(QObject):
         InstructionDialog
             The created instruction dialog
         """
-        # Create instruction dialog model
-        dialog_model = InstructionDialogModel(self._settings)
+        # Create instruction dialog model passing the app's instruction set model
+        dialog_model = InstructionDialogModel(self._instruction_set_model)
         
         # Create instruction dialog controller
         dialog_controller = InstructionDialogController(
