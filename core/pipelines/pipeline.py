@@ -94,26 +94,6 @@ class Pipeline:
     def stop_recording(self) -> str:
         """Stop recording and return the audio file path."""
         return self._audio_recorder.stop_recording()
-        
-    def stop_recording_and_process(
-            self,
-            language: Optional[str] = None,
-            clipboard_text: Optional[str] = None,
-            clipboard_image: Optional[bytes] = None,
-            stream_callback: Optional[Callable[[str], None]] = None,
-        ) -> PipelineResult:
-        """Stop recording and immediately process the recorded audio."""
-        if not self._audio_recorder.is_recording:
-            raise RuntimeError("No recording is in progress.")
-        
-        # Stop recording and get the audio file path
-        audio_file = self._audio_recorder.stop_recording()
-        
-        if not audio_file:
-            raise RuntimeError("Failed to save recording.")
-        
-        # Process the audio file
-        return self.process(audio_file, language, clipboard_text, clipboard_image, stream_callback)
     
     def _prepare_prompt(self, transcription: str, clipboard_text: Optional[str] = None, 
                         clipboard_image: Optional[bytes] = None) -> str:
