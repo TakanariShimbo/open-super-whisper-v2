@@ -18,6 +18,7 @@ from ...controllers.dialogs.instruction_dialog_controller import InstructionDial
 from core.pipelines.instruction_set import InstructionSet
 from gui.dialogs.hotkey_dialog import HotkeyDialog
 
+
 class InstructionDialog(QDialog):
     """
     Dialog for managing instruction sets.

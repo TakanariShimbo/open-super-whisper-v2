@@ -10,9 +10,11 @@ from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 from core.stt.stt_lang_model import STTLangModel
 from core.stt.stt_model import STTModel
 from core.llm.llm_model import LLMModel
+from core.pipelines.instruction_set import InstructionSet
+
 from ...models.dialogs.instruction_dialog_model import InstructionDialogModel
 from ...models.hotkey_model import HotkeyModel
-from core.pipelines.instruction_set import InstructionSet
+
 
 class InstructionDialogController(QObject):
     """

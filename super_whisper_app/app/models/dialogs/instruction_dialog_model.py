@@ -14,7 +14,9 @@ from core.llm.llm_model import LLMModel
 from core.stt.stt_lang_model_manager import STTLangModelManager
 from core.stt.stt_model_manager import STTModelManager
 from core.llm.llm_model_manager import LLMModelManager
+
 from ...models.instruction_set_model import InstructionSetModel
+
 
 class InstructionDialogModel(QObject):
     """

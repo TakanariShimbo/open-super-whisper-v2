@@ -6,12 +6,12 @@ in the Super Whisper application.
 """
 
 from PyQt6.QtCore import QObject, pyqtSignal
-from typing import Optional
 
 from core.pipelines.pipeline import Pipeline
 from core.pipelines.pipeline_result import PipelineResult
 from core.pipelines.instruction_set import InstructionSet
 from gui.thread_management.thread_manager import ThreadManager
+
 
 class PipelineModel(QObject):
     """
@@ -190,8 +190,8 @@ class PipelineModel(QObject):
             self.processing_error.emit(f"Error stopping recording: {str(e)}")
             return None
     
-    def _process_audio_task(self, audio_file_path: str, language: Optional[str] = None,
-                           clipboard_text: Optional[str] = None, clipboard_image: Optional[bytes] = None) -> PipelineResult:
+    def _process_audio_task(self, audio_file_path: str, language: str | None = None,
+                           clipboard_text: str | None = None, clipboard_image: bytes | None = None) -> PipelineResult:
         """
         Task function to process audio in a worker thread.
         
@@ -199,11 +199,11 @@ class PipelineModel(QObject):
         ----------
         audio_file_path : str
             Path to the audio file to process
-        language : Optional[str], optional
+        language : str | None, optional
             Language code for transcription, by default None
-        clipboard_text : Optional[str], optional
+        clipboard_text : str | None, optional
             Text from clipboard to include in LLM context, by default None
-        clipboard_image : Optional[bytes], optional
+        clipboard_image : bytes | None, optional
             Image data from clipboard to include in LLM context, by default None
             
         Returns
@@ -230,8 +230,8 @@ class PipelineModel(QObject):
             stream_callback=stream_callback
         )
     
-    def process_audio(self, audio_file_path: str, language: Optional[str] = None,
-                     clipboard_text: Optional[str] = None, clipboard_image: Optional[bytes] = None) -> bool:
+    def process_audio(self, audio_file_path: str, language: str | None = None,
+                     clipboard_text: str | None = None, clipboard_image: bytes | None = None) -> bool:
         """
         Process an audio file through the pipeline asynchronously.
         
@@ -239,11 +239,11 @@ class PipelineModel(QObject):
         ----------
         audio_file_path : str
             Path to the audio file to process
-        language : Optional[str], optional
+        language : str | None, optional
             Language code for transcription, by default None
-        clipboard_text : Optional[str], optional
+        clipboard_text : str | None, optional
             Text from clipboard to include in LLM context, by default None
-        clipboard_image : Optional[bytes], optional
+        clipboard_image : bytes | None, optional
             Image data from clipboard to include in LLM context, by default None
             
         Returns

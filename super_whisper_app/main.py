@@ -14,6 +14,7 @@ from super_whisper_app.app.controllers.dialogs.api_key_controller import APIKeyC
 from super_whisper_app.app.views.main_window import MainWindow
 from super_whisper_app.app.utils.icon_manager import IconManager
 
+
 def main() -> int:
     """
     Main entry point for the Super Whisper app.

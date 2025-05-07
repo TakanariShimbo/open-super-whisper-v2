@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import QMessageBox, QWidget
 from ...models.dialogs.api_key_model import APIKeyModel
 from ...views.dialogs.api_key_dialog import APIKeyDialog
 
+
 class APIKeyController(QObject):
     """
     Controller for API key management.

@@ -5,7 +5,6 @@ This module provides the main application window for the Super Whisper applicati
 implementing the view component of the MVC architecture.
 """
 
-import os
 import sys
 
 from PyQt6.QtWidgets import (

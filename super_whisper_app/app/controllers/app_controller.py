@@ -6,8 +6,12 @@ coordinating between models and views.
 """
 
 import sys
+
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QSettings
 from PyQt6.QtWidgets import QMessageBox
+
+from core.pipelines.pipeline_result import PipelineResult
+from core.pipelines.instruction_set import InstructionSet
 
 from ..models.pipeline_model import PipelineModel
 from ..models.instruction_set_model import InstructionSetModel
@@ -17,8 +21,7 @@ from ..controllers.dialogs.instruction_dialog_controller import InstructionDialo
 from ..controllers.dialogs.api_key_controller import APIKeyController
 from ..views.dialogs.instruction_dialog import InstructionDialog
 from ..utils.clipboard_utils import get_clipboard_content
-from core.pipelines.pipeline_result import PipelineResult
-from core.pipelines.instruction_set import InstructionSet
+
 
 class AppController(QObject):
     """

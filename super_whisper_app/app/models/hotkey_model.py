@@ -10,6 +10,7 @@ from PyQt6.QtCore import QObject, pyqtSignal
 
 from core.hotkey.hotkey_manager import HotkeyManager
 
+
 class HotkeyModel(QObject):
     """
     Model for managing global hotkeys.

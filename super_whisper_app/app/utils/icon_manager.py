@@ -6,7 +6,7 @@ in a centralized way, following the Single Responsibility Principle.
 """
 
 import os
-from typing import Optional
+
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QStyle, QApplication
 
@@ -45,7 +45,7 @@ class IconManager:
         # Load the main application icon
         self._load_app_icon()
     
-    def _get_icon_path(self, icon_name: str) -> Optional[str]:
+    def _get_icon_path(self, icon_name: str) -> str | None:
         """
         Get the full path to an icon file.
         
@@ -56,7 +56,7 @@ class IconManager:
             
         Returns
         -------
-        Optional[str]
+        str | None
             The full path to the icon file, or None if it doesn't exist
         """
         # Try multiple possible locations for the assets directory
@@ -114,7 +114,7 @@ class IconManager:
         """
         return self._app_icon
     
-    def get_icon_path(self, icon_name: str) -> Optional[str]:
+    def get_icon_path(self, icon_name: str) -> str | None:
         """
         Get the path to a named icon.
         
@@ -125,7 +125,7 @@ class IconManager:
             
         Returns
         -------
-        Optional[str]
+        str | None
             The path to the icon, or None if it doesn't exist
         """
         if icon_name in self._icon_paths:

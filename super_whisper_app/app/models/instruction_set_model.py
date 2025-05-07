@@ -10,6 +10,7 @@ from PyQt6.QtCore import QObject, pyqtSignal, QSettings
 from core.pipelines.instruction_set import InstructionSet
 from core.pipelines.instruction_manager import InstructionManager
 
+
 class InstructionSetModel(QObject):
     """
     Model for managing instruction sets.

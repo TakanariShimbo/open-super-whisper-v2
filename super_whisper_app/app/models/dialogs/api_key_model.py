@@ -8,6 +8,7 @@ from PyQt6.QtCore import QSettings
 
 from core.api.api_client_factory import APIClientFactory
 
+
 class APIKeyModel:
     """
     Model for API key management.

@@ -8,6 +8,7 @@ It follows the single responsibility principle by focusing only on clipboard ope
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtCore import QBuffer, QIODevice
 
+
 def extract_clipboard_text() -> str | None:
     """
     Extract text from the clipboard.

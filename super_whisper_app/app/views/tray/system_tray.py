@@ -4,12 +4,15 @@ System Tray Module
 This module implements a system tray icon for the Super Whisper application,
 allowing it to run in the background while maintaining accessibility.
 """
+
 import os
+
 from PyQt6.QtWidgets import QSystemTrayIcon, QMenu, QStyle, QApplication
 from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtCore import pyqtSignal
 
 from ...utils.icon_manager import IconManager
+
 
 class SystemTray(QSystemTrayIcon):
     """
