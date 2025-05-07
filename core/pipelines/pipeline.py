@@ -39,17 +39,17 @@ class Pipeline:
             If no API key is provided and none is found in environment variables.
         """
         # Initialize components
-        self.stt_processor = STTProcessor(api_key=api_key)
-        self.llm_processor = LLMProcessor(api_key=api_key)
-        self.audio_recorder = AudioRecorder()
+        self._stt_processor = STTProcessor(api_key=api_key)
+        self._llm_processor = LLMProcessor(api_key=api_key)
+        self._audio_recorder = AudioRecorder()
         
-        # Processing state
-        self.is_llm_processing_enabled = False
+        # Processing state flag
+        self._is_llm_processing_enabled = False
     
     @property
     def is_recording(self) -> bool:
         """Check if the audio recorder is currently recording."""
-        return self.audio_recorder.is_recording
+        return self._audio_recorder.is_recording
     
     def _set_llm_processing(self, enabled: bool = True) -> None:
         """
@@ -60,40 +60,40 @@ class Pipeline:
         enabled : bool, optional
             Whether to enable LLM processing, by default True.
         """
-        self.is_llm_processing_enabled = enabled
+        self._is_llm_processing_enabled = enabled
 
     def apply_instruction_set(self, selected_set: InstructionSet) -> None:
         """Apply an instruction set to the pipeline."""
         # Apply vocabulary
-        self.stt_processor.clear_custom_vocabulary()
-        self.stt_processor.set_custom_vocabulary(selected_set.stt_vocabulary)
+        self._stt_processor.clear_custom_vocabulary()
+        self._stt_processor.set_custom_vocabulary(selected_set.stt_vocabulary)
         
         # Apply transcription instructions
-        self.stt_processor.clear_system_instruction()
-        self.stt_processor.set_system_instruction(selected_set.stt_instructions)
+        self._stt_processor.clear_system_instruction()
+        self._stt_processor.set_system_instruction(selected_set.stt_instructions)
         
         # Set whisper model
         if selected_set.stt_model:
-            self.stt_processor.set_model(selected_set.stt_model)
+            self._stt_processor.set_model(selected_set.stt_model)
         
         # LLM settings
         self._set_llm_processing(selected_set.llm_enabled)
         
         # Set LLM model
         if selected_set.llm_model:
-            self.llm_processor.set_model(selected_set.llm_model)
+            self._llm_processor.set_model(selected_set.llm_model)
         
         # Apply LLM instructions
-        self.llm_processor.clear_system_instruction()
-        self.llm_processor.set_system_instruction(selected_set.llm_instructions)
+        self._llm_processor.clear_system_instruction()
+        self._llm_processor.set_system_instruction(selected_set.llm_instructions)
         
     def start_recording(self) -> None:
         """Start recording audio from the microphone."""
-        self.audio_recorder.start_recording()
+        self._audio_recorder.start_recording()
 
     def stop_recording(self) -> str:
         """Stop recording and return the audio file path."""
-        return self.audio_recorder.stop_recording()
+        return self._audio_recorder.stop_recording()
         
     def stop_recording_and_process(
             self,
@@ -103,11 +103,11 @@ class Pipeline:
             stream_callback: Optional[Callable[[str], None]] = None,
         ) -> PipelineResult:
         """Stop recording and immediately process the recorded audio."""
-        if not self.audio_recorder.is_recording:
+        if not self._audio_recorder.is_recording:
             raise RuntimeError("No recording is in progress.")
         
         # Stop recording and get the audio file path
-        audio_file = self.audio_recorder.stop_recording()
+        audio_file = self._audio_recorder.stop_recording()
         
         if not audio_file:
             raise RuntimeError("Failed to save recording.")
@@ -141,14 +141,14 @@ class Pipeline:
         # Determine if we're using streaming
         if stream_callback:
             if clipboard_image:
-                return self.llm_processor.process_text_with_stream(prompt, stream_callback, clipboard_image)
+                return self._llm_processor.process_text_with_stream(prompt, stream_callback, clipboard_image)
             else:
-                return self.llm_processor.process_text_with_stream(prompt, stream_callback)
+                return self._llm_processor.process_text_with_stream(prompt, stream_callback)
         else:
             if clipboard_image:
-                return self.llm_processor.process_text(prompt, clipboard_image)
+                return self._llm_processor.process_text(prompt, clipboard_image)
             else:
-                return self.llm_processor.process_text(prompt)
+                return self._llm_processor.process_text(prompt)
     
     def process(
         self, 
@@ -160,13 +160,13 @@ class Pipeline:
     ) -> PipelineResult:
         """Process an audio file with transcription and optional LLM processing."""
         # Perform transcription
-        transcription = self.stt_processor.transcribe_file_with_chunks(audio_file_path, language)
+        transcription = self._stt_processor.transcribe_file_with_chunks(audio_file_path, language)
         
         # Create result object
         result = PipelineResult(transcription=transcription)
         
         # If LLM is enabled, process the transcription
-        if self.is_llm_processing_enabled:
+        if self._is_llm_processing_enabled:
             # Prepare the prompt
             prompt = self._prepare_prompt(transcription, clipboard_text, clipboard_image)
             

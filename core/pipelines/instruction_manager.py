@@ -24,7 +24,7 @@ class InstructionManager:
         """
         Initialize the InstructionManager.
         """
-        self.sets: Dict[str, InstructionSet] = {}
+        self._sets: Dict[str, InstructionSet] = {}
         
     def add_set(self, instruction_set: InstructionSet) -> bool:
         """
@@ -40,10 +40,10 @@ class InstructionManager:
         bool
             True if set was added, False if a set with the same name already exists.
         """
-        if instruction_set.name in self.sets:
+        if instruction_set.name in self._sets:
             return False
         
-        self.sets[instruction_set.name] = instruction_set
+        self._sets[instruction_set.name] = instruction_set
         return True
         
     def delete_set(self, name: str) -> bool:
@@ -61,15 +61,15 @@ class InstructionManager:
             True if set was deleted, False if name doesn't exist or if it's the last set.
         """
         # Check if the set exists
-        if name not in self.sets:
+        if name not in self._sets:
             return False
         
         # Don't allow deleting the last set
-        if len(self.sets) <= 1:
+        if len(self._sets) <= 1:
             return False
                 
         # delete the set
-        del self.sets[name]
+        del self._sets[name]
         return True
     
     def rename_set(self, old_name: str, new_name: str) -> bool:
@@ -89,11 +89,11 @@ class InstructionManager:
             True if set was renamed, False if old name doesn't
             exist or new name already exists.
         """
-        if old_name not in self.sets or new_name in self.sets:
+        if old_name not in self._sets or new_name in self._sets:
             return False
         
         # Create a new entry with the same contents but different name
-        instruction_set_dict = self.sets[old_name].to_dict()
+        instruction_set_dict = self._sets[old_name].to_dict()
         instruction_set_dict["name"] = new_name
         self.add_set(InstructionSet.from_dict(instruction_set_dict))
         
@@ -111,7 +111,7 @@ class InstructionManager:
         List[InstructionSet]
             List of all instruction sets.
         """
-        return list(self.sets.values())
+        return list(self._sets.values())
 
     def find_set_by_name(self, name: str) -> Optional[InstructionSet]:
         """
@@ -127,7 +127,7 @@ class InstructionManager:
         Optional[InstructionSet]
             The instruction set with the given name, or None if not found.
         """
-        return self.sets.get(name)
+        return self._sets.get(name)
 
     def find_set_by_hotkey(self, hotkey: str) -> Optional[InstructionSet]:
         """
@@ -143,7 +143,7 @@ class InstructionManager:
         Optional[InstructionSet]
             The instruction set with the given hotkey, or None if not found.
         """
-        for instruction_set in self.sets.values():
+        for instruction_set in self._sets.values():
             if instruction_set.hotkey == hotkey:
                 return instruction_set
         return None
@@ -161,7 +161,7 @@ class InstructionManager:
             Dictionary containing serialized instruction sets.
         """           
         # Clear existing sets
-        self.sets.clear()
+        self._sets.clear()
         
         # Import sets
         sets_data = data.get("sets", [])
@@ -172,10 +172,10 @@ class InstructionManager:
                 
             name = set_data.get("name", "")
             if name:
-                self.sets[name] = InstructionSet.from_dict(set_data)
+                self._sets[name] = InstructionSet.from_dict(set_data)
     
         # If no sets were loaded, create a default set
-        if not self.sets:
+        if not self._sets:
             self.add_set(InstructionSet(name= "Default"))
     
     def export_to_dict(self) -> Dict[str, Any]:
@@ -190,7 +190,7 @@ class InstructionManager:
         Dict[str, Any]
             Dictionary containing serialized instruction sets.
         """
-        sets_data = [instruction_set.to_dict() for instruction_set in self.sets.values()]
+        sets_data = [instruction_set.to_dict() for instruction_set in self._sets.values()]
         
         return {
             "sets": sets_data
