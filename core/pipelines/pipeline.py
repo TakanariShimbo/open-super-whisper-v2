@@ -26,7 +26,7 @@ class Pipeline:
     
     def __init__(self, api_key):
         """
-        Initialize the STTLLMPipeline.
+        Initialize the Pipeline.
         
         Parameters
         ----------

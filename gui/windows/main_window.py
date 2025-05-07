@@ -19,7 +19,7 @@ from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QSettings, QUrl, QSize, QBuffer
 from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 
-from core.pipelines.stt_llm_pipeline import Pipeline
+from core.pipelines.pipeline import Pipeline
 from core.pipelines.pipeline_result import PipelineResult
 
 from core.hotkey.hotkey_manager import HotkeyManager

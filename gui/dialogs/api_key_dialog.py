@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt
 
-from core.pipelines.stt_llm_pipeline import Pipeline
+from core.pipelines.pipeline import Pipeline
 from gui.resources.labels import AppLabels
 from gui.dialogs.simple_message_dialog import SimpleMessageDialog
 

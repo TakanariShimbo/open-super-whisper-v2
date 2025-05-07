@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Command-line test for STTLLMPipeline
+Command-line test for Pipeline
 
-This test verifies the functionality of the STTLLMPipeline class
+This test verifies the functionality of the Pipeline class
 from the core.pipelines module.
 """
 
@@ -14,7 +14,7 @@ import time
 # Add parent directory to path so we can import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.pipelines.stt_llm_pipeline import STTLLMPipeline
+from core.pipelines.pipeline import Pipeline
 
 
 def stream_callback(chunk: str) -> None:
@@ -35,7 +35,7 @@ def test_pipeline(audio_file_path: str, api_key: str = None,
                  llm_enabled: bool = True, with_image: bool = False,
                  image_file_path: str = None):
     """
-    Test STTLLMPipeline functionality
+    Test Pipeline functionality
     
     Parameters
     ----------
@@ -58,7 +58,7 @@ def test_pipeline(audio_file_path: str, api_key: str = None,
     image_file_path : str, optional
         Path to an image file to include in the LLM context, by default None
     """
-    print(f"Testing STTLLMPipeline with file: {audio_file_path}")
+    print(f"Testing Pipeline with file: {audio_file_path}")
     
     # Check if file exists
     if not os.path.exists(audio_file_path):
@@ -72,7 +72,7 @@ def test_pipeline(audio_file_path: str, api_key: str = None,
     try:
         # Initialize pipeline
         print(f"Initializing pipeline with STT model: {stt_model}, LLM model: {llm_model}")
-        pipeline = STTLLMPipeline(api_key=api_key)
+        pipeline = Pipeline(api_key=api_key)
         pipeline.set_stt_model(stt_model)
         pipeline.set_llm_model(llm_model)
         
@@ -157,7 +157,7 @@ def test_pipeline(audio_file_path: str, api_key: str = None,
 
 if __name__ == "__main__":
     # Set up command line arguments
-    parser = argparse.ArgumentParser(description="Test STTLLMPipeline functionality")
+    parser = argparse.ArgumentParser(description="Test Pipeline functionality")
     
     parser.add_argument(
         "audio_file", 
