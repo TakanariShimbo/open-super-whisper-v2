@@ -6,7 +6,7 @@ coordinating between models and views.
 """
 
 import sys
-from typing import Optional, Callable
+from typing import Optional
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QSettings
 from PyQt6.QtWidgets import QMessageBox
 
@@ -398,54 +398,7 @@ class AppController(QObject):
         # Create instruction dialog view
         dialog = InstructionDialog(dialog_controller, parent)
         
-        # Connect dialog controller signals to app controller methods
-        dialog_controller.instruction_set_added.connect(self._on_instruction_set_changed)
-        dialog_controller.instruction_set_updated.connect(self._on_instruction_set_changed)
-        dialog_controller.instruction_set_deleted.connect(self._on_instruction_set_changed)
-        dialog_controller.instruction_set_renamed.connect(self._on_instruction_set_renamed)
-        
         return dialog
-    
-    def _on_instruction_set_changed(self, instruction_set):
-        """
-        Handle instruction set change events from the dialog.
-        
-        This method updates the app's instruction set model with changes
-        made in the instruction dialog.
-        
-        Parameters
-        ----------
-        instruction_set : InstructionSet
-            The changed instruction set
-        """
-        # Find if this set exists in the main model
-        existing_set = self._instruction_set_model.get_set_by_name(instruction_set.name)
-        
-        if existing_set:
-            # Update existing set
-            self._instruction_set_model.update_set(instruction_set.name, instruction_set)
-        else:
-            # Add new set
-            self._instruction_set_model.add_set(instruction_set)
-    
-    def _on_instruction_set_renamed(self, old_name, new_name):
-        """
-        Handle instruction set rename events from the dialog.
-        
-        This method updates the app's instruction set model when a set is renamed
-        in the instruction dialog.
-        
-        Parameters
-        ----------
-        old_name : str
-            The old name of the instruction set
-        new_name : str
-            The new name of the instruction set
-        """
-        # Check if the old name exists in the main model
-        if self._instruction_set_model.get_set_by_name(old_name):
-            # Rename the set
-            self._instruction_set_model.rename_set(old_name, new_name)
     
     def show_api_key_settings(self, parent=None):
         """
@@ -471,9 +424,6 @@ class AppController(QObject):
         api_key_controller.api_key_validated.connect(
             lambda key: self.status_update.emit("API key updated successfully", 3000)
         )
-        
-        # Get current API key to pre-fill the dialog
-        current_api_key = self._settings.value("api_key", "")
         
         # Show the API key dialog in settings mode
         initial_message = "Update your API key or enter a new one if needed."

@@ -5,7 +5,7 @@ This module provides the model component for managing instruction sets
 in the Super Whisper application.
 """
 
-from typing import List, Optional, Dict, Any
+from typing import List, Optional
 from PyQt6.QtCore import QObject, pyqtSignal, QSettings
 
 from core.pipelines.instruction_set import InstructionSet
@@ -122,16 +122,12 @@ class InstructionSetModel(QObject):
     def save_to_settings(self):
         """
         Save instruction sets to QSettings.
-        
-        Public method for backward compatibility.
         """
         self._save_to_settings()
         
     def load_from_settings(self):
         """
         Load instruction sets from QSettings.
-        
-        Public method for backward compatibility.
         """
         self._load_data_from_settings()
         self._ensure_valid_state()
@@ -229,150 +225,3 @@ class InstructionSetModel(QObject):
         self.selected_set_changed.emit(instruction_set)
         
         return True
-    
-    def add_set(self, instruction_set: InstructionSet) -> bool:
-        """
-        Add a new instruction set.
-        
-        Parameters
-        ----------
-        instruction_set : InstructionSet
-            The instruction set to add
-            
-        Returns
-        -------
-        bool
-            True if successful, False if a set with the same name already exists
-        """
-        result = self._instruction_manager.add_set(instruction_set)
-        if result:
-            self._save_to_settings()
-            self.instruction_sets_changed.emit()
-            
-        return result
-    
-    def update_set(self, name: str, updated_set: InstructionSet) -> bool:
-        """
-        Update an existing instruction set.
-        
-        Parameters
-        ----------
-        name : str
-            Name of the instruction set to update
-        updated_set : InstructionSet
-            New instruction set data
-            
-        Returns
-        -------
-        bool
-            True if successful, False if the set doesn't exist
-        """
-        # This is a bit of a workaround since InstructionManager doesn't have an update method
-        # We delete the existing set and add the updated one
-        existing_set = self._instruction_manager.find_set_by_name(name)
-        if not existing_set:
-            return False
-            
-        # Don't allow deleting if it's the last set
-        sets = self._instruction_manager.get_all_sets()
-        if len(sets) <= 1:
-            return False
-            
-        # Delete old set first (the manager prohibits two sets with the same name)
-        self._instruction_manager.delete_set(name)
-        
-        # Add updated set
-        result = self._instruction_manager.add_set(updated_set)
-        
-        # Update selected set name if it was updated
-        if result and self._selected_set_name == name:
-            self._selected_set_name = updated_set.name
-            
-        self._save_to_settings()
-        self.instruction_sets_changed.emit()
-        
-        # If this was the selected set, emit the change signal
-        if result and (self._selected_set_name == updated_set.name):
-            self.selected_set_changed.emit(updated_set)
-            
-        return result
-    
-    def delete_set(self, name: str) -> bool:
-        """
-        Delete an instruction set.
-        
-        Parameters
-        ----------
-        name : str
-            Name of the instruction set to delete
-            
-        Returns
-        -------
-        bool
-            True if successful, False if the set doesn't exist or is the last one
-        """
-        # Check if the set exists
-        existing_set = self._instruction_manager.find_set_by_name(name)
-        if not existing_set:
-            return False
-            
-        # Get all sets first to potentially select another one
-        sets = self._instruction_manager.get_all_sets()
-        
-        # Don't allow deleting if it's the last set 
-        # (although InstructionManager already prevents this)
-        if len(sets) <= 1:
-            return False
-            
-        # Delete the set
-        result = self._instruction_manager.delete_set(name)
-        
-        if result:
-            # If we deleted the selected set, select another one
-            if self._selected_set_name == name:
-                # Find a different set to select
-                remaining_sets = self._instruction_manager.get_all_sets()
-                if remaining_sets:
-                    self._selected_set_name = remaining_sets[0].name
-                    self.selected_set_changed.emit(remaining_sets[0])
-                else:
-                    self._selected_set_name = ""
-                    
-            self._save_to_settings()
-            self.instruction_sets_changed.emit()
-            
-        return result
-    
-    def rename_set(self, old_name: str, new_name: str) -> bool:
-        """
-        Rename an instruction set.
-        
-        Parameters
-        ----------
-        old_name : str
-            Current name of the instruction set
-        new_name : str
-            New name for the instruction set
-            
-        Returns
-        -------
-        bool
-            True if successful, False otherwise
-        """
-        result = self._instruction_manager.rename_set(old_name, new_name)
-        
-        if result:
-            # Update selected set name if it was renamed
-            if self._selected_set_name == old_name:
-                self._selected_set_name = new_name
-                
-            self._save_to_settings()
-            self.instruction_sets_changed.emit()
-            
-            # If this was the selected set, emit the change signal
-            if self._selected_set_name == new_name:
-                self.selected_set_changed.emit(
-                    self._instruction_manager.find_set_by_name(new_name)
-                )
-                
-        return result
