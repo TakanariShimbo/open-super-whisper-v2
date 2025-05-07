@@ -244,6 +244,8 @@ class MainWindow(QMainWindow):
         # Processing signals
         self.controller.processing_started.connect(self.on_processing_started)
         self.controller.processing_complete.connect(self.on_processing_complete)
+        self.controller.processing_cancelled.connect(self.on_processing_cancelled)
+        self.controller.processing_state_changed.connect(self.on_processing_state_changed)
         
         # Status update signal
         self.controller.status_update.connect(self.update_status)
@@ -334,7 +336,7 @@ class MainWindow(QMainWindow):
         """
         Handle the recording stopped event.
         """
-        self.record_button.setText("Start Recording")
+        # Don't update button text here since we might be going into processing state
         self.status_indicator.setText("Processing...")
         
         # Update system tray recording status
@@ -345,7 +347,43 @@ class MainWindow(QMainWindow):
         """
         Handle the processing started event.
         """
+        self.record_button.setText("Cancel Processing")
         self.status_indicator.setText("Processing...")
+        # Disable instruction set selection during processing
+        self.instruction_set_combo.setEnabled(False)
+    
+    @pyqtSlot(bool)
+    def on_processing_state_changed(self, is_processing: bool):
+        """
+        Handle changes in processing state.
+        
+        Parameters
+        ----------
+        is_processing : bool
+            Whether processing is currently active
+        """
+        if is_processing:
+            # Processing started
+            self.record_button.setText("Cancel Processing")
+            self.status_indicator.setText("Processing...")
+            # Disable instruction set selection during processing
+            self.instruction_set_combo.setEnabled(False)
+        else:
+            # Processing stopped
+            self.record_button.setText("Start Recording")
+            self.status_indicator.setText("Ready")
+            # Re-enable instruction set selection
+            self.instruction_set_combo.setEnabled(True)
+    
+    @pyqtSlot()
+    def on_processing_cancelled(self):
+        """
+        Handle processing cancelled event.
+        """
+        self.record_button.setText("Start Recording")
+        self.status_indicator.setText("Cancelled")
+        # Re-enable instruction set selection
+        self.instruction_set_combo.setEnabled(True)
     
     @pyqtSlot(PipelineResult)
     def on_processing_complete(self, result: PipelineResult):
@@ -368,7 +406,11 @@ class MainWindow(QMainWindow):
             self.llm_text.clear()
             self.tab_widget.setCurrentIndex(0)  # Switch to transcription tab
         
+        # Reset button state and status indicator
+        self.record_button.setText("Start Recording")
         self.status_indicator.setText("Ready")
+        # Re-enable instruction set selection
+        self.instruction_set_combo.setEnabled(True)
     
     @pyqtSlot(str, int)
     def update_status(self, message: str, timeout: int = 0):

@@ -38,6 +38,10 @@ class AppController(QObject):
         Signal emitted when audio processing starts
     processing_complete : pyqtSignal
         Signal emitted when processing completes with results
+    processing_cancelled : pyqtSignal
+        Signal emitted when processing is cancelled
+    processing_state_changed : pyqtSignal
+        Signal emitted when processing state changes (is_processing)
     status_update : pyqtSignal
         Signal emitted when there's a status update for the UI
     instruction_set_activated : pyqtSignal
@@ -51,6 +55,8 @@ class AppController(QObject):
     recording_stopped = pyqtSignal()
     processing_started = pyqtSignal()
     processing_complete = pyqtSignal(PipelineResult)
+    processing_cancelled = pyqtSignal()
+    processing_state_changed = pyqtSignal(bool)  # is_processing
     status_update = pyqtSignal(str, int)  # message, timeout
     instruction_set_activated = pyqtSignal(InstructionSet)
     hotkey_triggered = pyqtSignal(str)
@@ -77,6 +83,9 @@ class AppController(QObject):
         
         # For tracking recording state
         self._is_recording = False
+        
+        # For tracking processing state
+        self._is_processing = False
     
     def _init_models(self) -> None:
         """
@@ -110,6 +119,8 @@ class AppController(QObject):
         # Pipeline model connections
         self._pipeline_model.processing_started.connect(self.processing_started)
         self._pipeline_model.processing_complete.connect(self.processing_complete)
+        self._pipeline_model.processing_cancelled.connect(self.processing_cancelled)
+        self._pipeline_model.processing_state_changed.connect(self._handle_processing_state_change)
         self._pipeline_model.processing_error.connect(
             lambda error: self.status_update.emit(f"Error: {error}", 3000)
         )
@@ -121,6 +132,19 @@ class AppController(QObject):
         
         # Hotkey model connections
         self._hotkey_model.hotkey_triggered.connect(self._handle_hotkey_triggered)
+    
+    @pyqtSlot(bool)
+    def _handle_processing_state_change(self, is_processing: bool) -> None:
+        """
+        Handle changes in processing state.
+        
+        Parameters
+        ----------
+        is_processing : bool
+            Whether processing is currently active
+        """
+        self._is_processing = is_processing
+        self.processing_state_changed.emit(is_processing)
     
     @pyqtSlot(str)
     def _handle_hotkey_triggered(self, hotkey: str) -> None:
@@ -139,6 +163,11 @@ class AppController(QObject):
         instruction_set = self._instruction_set_model.get_set_by_hotkey(hotkey)
         
         if not instruction_set:
+            return
+            
+        # If we're in processing state, treat as cancel request
+        if self._is_processing:
+            self.cancel_processing()
             return
             
         # If we're recording, this might be a stop request
@@ -246,8 +275,14 @@ class AppController(QObject):
         Toggle recording state.
         
         If recording is in progress, it stops recording.
-        If not recording, it starts recording.
+        If processing is in progress, it cancels processing.
+        If not recording or processing, it starts recording.
         """
+        # If processing is active, cancel it
+        if self._is_processing:
+            return self.cancel_processing()
+            
+        # Otherwise toggle recording
         if self._is_recording:
             self.stop_recording()
         else:
@@ -262,7 +297,7 @@ class AppController(QObject):
         bool
             True if recording started successfully, False otherwise
         """
-        if self._is_recording:
+        if self._is_recording or self._is_processing:
             return False
             
         # Apply selected instruction set if available
@@ -298,12 +333,13 @@ class AppController(QObject):
         bool
             True if recording started successfully, False otherwise
         """
-        if self._is_recording:
+        if self._is_recording or self._is_processing:
             return False
             
         # Apply selected instruction set if available
-        selected_set = self._instruction_set_model.get_selected_set()
+        selected_set = self._instruction_set_model.get_set_by_hotkey(hotkey)
         if selected_set:
+            self._instruction_set_model.set_selected(selected_set.name)
             self._pipeline_model.apply_instruction_set(selected_set)
             
         # Start recording
@@ -363,10 +399,30 @@ class AppController(QObject):
                     print(f"Retrieved clipboard content: Text: {'Yes' if clipboard_text else 'No'}, " 
                           f"Image: {'Yes' if clipboard_image else 'No'}")
                 
-            # Process the audio with clipboard content
+            # Process the audio with clipboard content asynchronously
             self._pipeline_model.process_audio(audio_file, language, clipboard_text, clipboard_image)
             
         return True
+    
+    def cancel_processing(self) -> bool:
+        """
+        Cancel the current processing task if one is in progress.
+        
+        Returns
+        -------
+        bool
+            True if cancellation was initiated, False if no processing to cancel
+        """
+        if not self._is_processing:
+            return False
+            
+        # Cancel processing through pipeline model
+        result = self._pipeline_model.cancel_processing()
+        
+        if result:
+            self.status_update.emit("Processing cancelled", 3000)
+            
+        return result
     
     def shutdown(self) -> None:
         """
@@ -378,6 +434,10 @@ class AppController(QObject):
         # If still recording, stop it
         if self._is_recording:
             self.stop_recording()
+        
+        # If still processing, cancel it
+        if self._is_processing:
+            self.cancel_processing()
     
     def create_instruction_dialog(self, parent=None) -> InstructionDialog:
         """

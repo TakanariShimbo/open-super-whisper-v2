@@ -6,10 +6,12 @@ in the Super Whisper application.
 """
 
 from PyQt6.QtCore import QObject, pyqtSignal
+from typing import Optional
 
 from core.pipelines.pipeline import Pipeline
 from core.pipelines.pipeline_result import PipelineResult
 from core.pipelines.instruction_set import InstructionSet
+from gui.thread_management.thread_manager import ThreadManager
 
 class PipelineModel(QObject):
     """
@@ -26,12 +28,18 @@ class PipelineModel(QObject):
         Signal emitted when processing starts
     processing_complete : pyqtSignal
         Signal emitted when processing completes with results
+    processing_cancelled : pyqtSignal
+        Signal emitted when processing is cancelled
+    processing_state_changed : pyqtSignal
+        Signal emitted when processing state changes (bool: is_processing)
     """
     
     # Define signals
     processing_error = pyqtSignal(str)
     processing_started = pyqtSignal()
     processing_complete = pyqtSignal(PipelineResult)
+    processing_cancelled = pyqtSignal()
+    processing_state_changed = pyqtSignal(bool)  # is_processing
     
     def __init__(self, api_key: str = ""):
         """
@@ -49,6 +57,17 @@ class PipelineModel(QObject):
             self._pipeline = Pipeline(api_key=api_key) if api_key else None
         except ValueError:
             self._pipeline = None
+        
+        # Initialize the thread manager
+        self._thread_manager = ThreadManager()
+        
+        # Connect thread manager signals
+        self._thread_manager.taskCompleted.connect(self._on_task_completed)
+        self._thread_manager.taskFailed.connect(self._on_task_failed)
+        
+        # Processing state tracking
+        self._is_processing = False
+        self._current_task_id = None
             
     @property
     def is_initialized(self) -> bool:
@@ -73,6 +92,18 @@ class PipelineModel(QObject):
             True if recording is in progress, False otherwise
         """
         return self._pipeline.is_recording if self._pipeline else False
+    
+    @property
+    def is_processing(self) -> bool:
+        """
+        Check if audio processing is in progress.
+        
+        Returns
+        -------
+        bool
+            True if processing is in progress, False otherwise
+        """
+        return self._is_processing
     
     def initialize_pipeline(self, api_key: str) -> bool:
         """
@@ -159,20 +190,60 @@ class PipelineModel(QObject):
             self.processing_error.emit(f"Error stopping recording: {str(e)}")
             return None
     
-    def process_audio(self, audio_file_path: str, language: str | None = None, 
-                     clipboard_text: str | None = None, clipboard_image: bytes | None = None) -> bool:
+    def _process_audio_task(self, audio_file_path: str, language: Optional[str] = None,
+                           clipboard_text: Optional[str] = None, clipboard_image: Optional[bytes] = None) -> PipelineResult:
         """
-        Process an audio file through the pipeline.
+        Task function to process audio in a worker thread.
         
         Parameters
         ----------
         audio_file_path : str
             Path to the audio file to process
-        language : str, optional
+        language : Optional[str], optional
             Language code for transcription, by default None
-        clipboard_text : str, optional
+        clipboard_text : Optional[str], optional
             Text from clipboard to include in LLM context, by default None
-        clipboard_image : bytes, optional
+        clipboard_image : Optional[bytes], optional
+            Image data from clipboard to include in LLM context, by default None
+            
+        Returns
+        -------
+        PipelineResult
+            The result of the processing
+            
+        Raises
+        ------
+        Exception
+            If processing fails
+        """
+        # Define a streaming callback function (not used in this simplified version)
+        def stream_callback(chunk):
+            # Could use thread manager to update UI with streaming chunks
+            self._thread_manager.run_in_main_thread(lambda: print(f"Stream chunk: {chunk[:20]}..."))
+        
+        # Process the audio file
+        return self._pipeline.process(
+            audio_file_path,
+            language,
+            clipboard_text,
+            clipboard_image,
+            stream_callback=stream_callback
+        )
+    
+    def process_audio(self, audio_file_path: str, language: Optional[str] = None,
+                     clipboard_text: Optional[str] = None, clipboard_image: Optional[bytes] = None) -> bool:
+        """
+        Process an audio file through the pipeline asynchronously.
+        
+        Parameters
+        ----------
+        audio_file_path : str
+            Path to the audio file to process
+        language : Optional[str], optional
+            Language code for transcription, by default None
+        clipboard_text : Optional[str], optional
+            Text from clipboard to include in LLM context, by default None
+        clipboard_image : Optional[bytes], optional
             Image data from clipboard to include in LLM context, by default None
             
         Returns
@@ -183,30 +254,106 @@ class PipelineModel(QObject):
         if not self._pipeline:
             self.processing_error.emit("Pipeline not initialized")
             return False
+        
+        # Don't start a new processing task if one is already running
+        if self._is_processing:
+            self.processing_error.emit("Processing already in progress")
+            return False
             
         try:
             # Signal that processing has started
+            self._is_processing = True
+            self.processing_state_changed.emit(True)
             self.processing_started.emit()
             
-            # Define a streaming callback function 
-            # (not used in this simplified version)
-            def stream_callback(chunk):
-                # Could emit a chunk signal here if needed
-                pass
-            
-            # Process the audio file
-            result = self._pipeline.process(
+            # Run the processing task in a worker thread
+            self._current_task_id = self._thread_manager.run_in_worker_thread(
+                "audio_processing",
+                self._process_audio_task,
                 audio_file_path,
                 language,
                 clipboard_text,
-                clipboard_image,
-                stream_callback=stream_callback
+                clipboard_image
             )
             
-            # Signal that processing is complete
-            self.processing_complete.emit(result)
             return True
             
         except Exception as e:
+            self._is_processing = False
+            self.processing_state_changed.emit(False)
             self.processing_error.emit(f"Error processing audio: {str(e)}")
             return False
+    
+    def cancel_processing(self) -> bool:
+        """
+        Cancel the current processing task if one is running.
+        
+        Returns
+        -------
+        bool
+            True if cancellation was initiated, False if no task to cancel
+        """
+        if not self._is_processing or not self._current_task_id:
+            return False
+        
+        # Check if the task is still in the thread manager's task list
+        if self._current_task_id in self._thread_manager._current_tasks:
+            # Terminate the worker thread
+            worker = self._thread_manager._current_tasks[self._current_task_id]
+            worker.terminate()
+            
+            # Clean up
+            worker.deleteLater()
+            del self._thread_manager._current_tasks[self._current_task_id]
+            
+            # Update state
+            self._is_processing = False
+            self._current_task_id = None
+            self.processing_state_changed.emit(False)
+            
+            # Emit cancellation signal
+            self.processing_cancelled.emit()
+            
+            return True
+        
+        return False
+    
+    def _on_task_completed(self, task_id: str, result: PipelineResult) -> None:
+        """
+        Handle task completion.
+        
+        Parameters
+        ----------
+        task_id : str
+            Task ID
+        result : PipelineResult
+            Processing result
+        """
+        if task_id == self._current_task_id:
+            # Update state
+            self._is_processing = False
+            self._current_task_id = None
+            self.processing_state_changed.emit(False)
+            
+            # Emit completion signal
+            self.processing_complete.emit(result)
+    
+    def _on_task_failed(self, task_id: str, error: str) -> None:
+        """
+        Handle task failure.
+        
+        Parameters
+        ----------
+        task_id : str
+            Task ID
+        error : str
+            Error message
+        """
+        if task_id == self._current_task_id:
+            # Update state
+            self._is_processing = False
+            self._current_task_id = None
+            self.processing_state_changed.emit(False)
+            
+            # Emit error signal
+            self.processing_error.emit(f"Processing failed: {error}")
