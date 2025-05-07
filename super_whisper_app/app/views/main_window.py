@@ -15,12 +15,13 @@ from PyQt6.QtWidgets import (
     QMessageBox, QApplication, QSystemTrayIcon
 )
 from PyQt6.QtCore import Qt, pyqtSlot, QSettings, QTimer
-from PyQt6.QtGui import QIcon, QAction, QCloseEvent
+from PyQt6.QtGui import QAction, QCloseEvent
 
 from core.pipelines.pipeline_result import PipelineResult
 from core.pipelines.instruction_set import InstructionSet
 
 from ..controllers.app_controller import AppController
+from ..utils.icon_manager import IconManager
 from .tray.system_tray import SystemTray
 
 class MainWindow(QMainWindow):
@@ -55,6 +56,12 @@ class MainWindow(QMainWindow):
         
         # Get settings
         self.api_key = settings.value("api_key", "")
+        
+        # Initialize icon manager
+        self.icon_manager = IconManager()
+        
+        # Set application icon
+        self.setWindowIcon(self.icon_manager.get_app_icon())
         
         # Flag to track if the application is actually closing
         self._is_closing = False
@@ -168,25 +175,10 @@ class MainWindow(QMainWindow):
         """
         Set up the system tray icon.
         """
-        # Try to find the icon path
-        try:
-            # Try to locate the assets directory
-            root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
-            assets_dir = os.path.join(root_dir, "assets")
-            icon_path = os.path.join(assets_dir, "icon.png")
-            
-            # Log path for debugging
-            print(f"Looking for icon at: {icon_path}")
-            
-            # Check if the file exists
-            if not os.path.exists(icon_path):
-                print(f"Icon not found at {icon_path}")
-                icon_path = None
-        except Exception as e:
-            print(f"Error finding icon path: {e}")
-            icon_path = None
-            
-        # Create system tray
+        # Get the icon path from the icon manager
+        icon_path = self.icon_manager.get_icon_path("app")
+        
+        # Create system tray with the icon
         self.system_tray = SystemTray(icon_path)
         
         # Connect system tray signals

@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import QSystemTrayIcon, QMenu, QStyle, QApplication
 from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtCore import pyqtSignal
 
+from ...utils.icon_manager import IconManager
 
 class SystemTray(QSystemTrayIcon):
     """
@@ -81,7 +82,13 @@ class SystemTray(QSystemTrayIcon):
         if not icon or icon.isNull():
             print(f"Warning: Icon file not found: {icon_path}")
             print("Using standard system icon instead.")
-            icon = QApplication.style().standardIcon(QStyle.StandardPixmap.SP_MediaPlay)
+            
+            try:
+                icon_manager = IconManager()
+                icon = icon_manager.get_app_icon()
+            except Exception:
+                # Fallback to system icon if IconManager is not available
+                icon = QApplication.style().standardIcon(QStyle.StandardPixmap.SP_MediaPlay)
         
         self.setIcon(icon)
     

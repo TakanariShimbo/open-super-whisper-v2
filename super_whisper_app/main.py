@@ -12,6 +12,7 @@ from PyQt6.QtCore import QSettings
 from super_whisper_app.app.controllers.app_controller import AppController
 from super_whisper_app.app.controllers.dialogs.api_key_controller import APIKeyController
 from super_whisper_app.app.views.main_window import MainWindow
+from super_whisper_app.app.utils.icon_manager import IconManager
 
 def main() -> int:
     """
@@ -31,6 +32,10 @@ def main() -> int:
     app = QApplication(sys.argv)
     app.setApplicationName("OpenSuperWhisper")
     app.setOrganizationName("OpenSuperWhisper")
+    
+    # Set application icon using the IconManager
+    icon_manager = IconManager()
+    app.setWindowIcon(icon_manager.get_app_icon())
     
     # Initialize settings
     settings = QSettings()
