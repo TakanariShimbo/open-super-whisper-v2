@@ -6,7 +6,6 @@ coordinating between models and views.
 """
 
 import sys
-from typing import Optional
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QSettings
 from PyQt6.QtWidgets import QMessageBox
 
@@ -17,6 +16,7 @@ from ..models.dialogs.instruction_dialog_model import InstructionDialogModel
 from ..controllers.dialogs.instruction_dialog_controller import InstructionDialogController
 from ..controllers.dialogs.api_key_controller import APIKeyController
 from ..views.dialogs.instruction_dialog import InstructionDialog
+from ..utils.clipboard_utils import get_clipboard_content
 from core.pipelines.pipeline_result import PipelineResult
 from core.pipelines.instruction_set import InstructionSet
 
@@ -351,9 +351,20 @@ class AppController(QObject):
             selected_set = self._instruction_set_model.get_selected_set()
             if selected_set:
                 language = selected_set.stt_language
+            
+            # Get clipboard content (text and image)
+            clipboard_text, clipboard_image = None, None
+            if selected_set and selected_set.llm_enabled:
+                # Only get clipboard if LLM is enabled in the instruction set
+                clipboard_text, clipboard_image = get_clipboard_content()
                 
-            # Process the audio
-            self._pipeline_model.process_audio(audio_file, language)
+                # Log for debugging (remove in production)
+                if clipboard_text or clipboard_image:
+                    print(f"Retrieved clipboard content: Text: {'Yes' if clipboard_text else 'No'}, " 
+                          f"Image: {'Yes' if clipboard_image else 'No'}")
+                
+            # Process the audio with clipboard content
+            self._pipeline_model.process_audio(audio_file, language, clipboard_text, clipboard_image)
             
         return True
     
