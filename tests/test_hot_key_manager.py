@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Command-line test for HotKeyManager
+Command-line test for HotkeyManager
 
-This test verifies the functionality of the HotKeyManager class
+This test verifies the functionality of the HotkeyManager class
 from the core.ui module.
 """
 
@@ -15,7 +15,7 @@ import threading
 # Add parent directory to path so we can import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.ui.hot_key_manager import HotKeyManager
+from core.hotkey.hotkey_manager import HotkeyManager
 
 
 def test_callback(shortcut_name: str):
@@ -32,7 +32,7 @@ def test_callback(shortcut_name: str):
 
 def test_hot_key_manager(test_duration: int = 10, verbose: bool = False):
     """
-    Test HotKeyManager functionality
+    Test HotkeyManager functionality
     
     Parameters
     ----------
@@ -41,12 +41,12 @@ def test_hot_key_manager(test_duration: int = 10, verbose: bool = False):
     verbose : bool, optional
         Whether to output verbose logging, by default False
     """
-    print("Testing HotKeyManager")
+    print("Testing HotkeyManager")
     
     try:
         # Initialize hot key manager
-        manager = HotKeyManager()
-        print("Initialized HotKeyManager")
+        manager = HotkeyManager()
+        print("Initialized HotkeyManager")
         
         # Store hotkey names for reference
         hotkey_names = {}
@@ -115,7 +115,7 @@ def test_hot_key_manager(test_duration: int = 10, verbose: bool = False):
 
 if __name__ == "__main__":
     # Set up command line arguments
-    parser = argparse.ArgumentParser(description="Test HotKeyManager functionality")
+    parser = argparse.ArgumentParser(description="Test HotkeyManager functionality")
     
     parser.add_argument(
         "--duration", 

@@ -11,7 +11,7 @@ from typing import Callable, Optional, List, Sequence, Dict
 from pynput import keyboard
 
 
-class HotKeyManager:
+class HotkeyManager:
     """
     Implementation for managing global hotkeys.
     
@@ -23,7 +23,7 @@ class HotKeyManager:
     --------
     Basic usage:
     
-    >>> hotkey_manager = HotKeyManager()
+    >>> hotkey_manager = HotkeyManager()
     >>> # Register a hotkey for Ctrl+Shift+R
     >>> hotkey_manager.register_hotkey("ctrl+shift+r", lambda: print("Hotkey pressed!"))
     >>> # Unregister the hotkey when no longer needed
@@ -31,7 +31,7 @@ class HotKeyManager:
     
     Filtered mode example:
     
-    >>> hotkey_manager = HotKeyManager()
+    >>> hotkey_manager = HotkeyManager()
     >>> # Register multiple hotkeys
     >>> hotkey_manager.register_hotkey("ctrl+shift+r", lambda: print("Action R"))
     >>> hotkey_manager.register_hotkey("ctrl+shift+s", lambda: print("Action S"))
@@ -79,7 +79,7 @@ class HotKeyManager:
     
     def __init__(self):
         """
-        Initialize the HotKeyManager.
+        Initialize the HotkeyManager.
         """
         self._hotkeys: Dict[str, Callable] = {}  # Dictionary to store hotkey strings and their callbacks
         self._listener: Optional[keyboard.GlobalHotKeys] = None  # Will be set to a listener object when active
@@ -352,13 +352,13 @@ class HotKeyManager:
             
         Examples
         --------
-        >>> HotKeyManager.parse_hotkey_string("ctrl+shift+r")
+        >>> HotkeyManager.parse_hotkey_string("ctrl+shift+r")
         '<ctrl>+<shift>+r'
-        >>> HotKeyManager.parse_hotkey_string("alt+f4")
+        >>> HotkeyManager.parse_hotkey_string("alt+f4")
         '<alt>+<f4>'
-        >>> HotKeyManager.parse_hotkey_string("command+option+space")
+        >>> HotkeyManager.parse_hotkey_string("command+option+space")
         '<cmd>+<alt>+<space>'
-        >>> HotKeyManager.parse_hotkey_string("")
+        >>> HotkeyManager.parse_hotkey_string("")
         None
         """
         if not hotkey_string:

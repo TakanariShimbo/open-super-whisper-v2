@@ -2,21 +2,21 @@
 Hotkey Manager Model
 
 This module implements a model for managing hotkeys in the MVC architecture.
-It leverages the core HotKeyManager class to handle the actual hotkey registration
+It leverages the core HotkeyManager class to handle the actual hotkey registration
 and interaction with the operating system.
 """
 
 from typing import Optional, Callable
 from PyQt6.QtCore import QObject, pyqtSignal
 
-from core.ui.hot_key_manager import HotKeyManager
+from core.hotkey.hotkey_manager import HotkeyManager
 
 
 class HotkeyModel(QObject):
     """
     Model for managing application hotkeys.
     
-    This class serves as a wrapper around the core HotKeyManager class,
+    This class serves as a wrapper around the core HotkeyManager class,
     providing a safe interface for registering and handling hotkeys within
     the Qt MVC architecture.
     
@@ -24,7 +24,7 @@ class HotkeyModel(QObject):
     ----------
     hotkey_triggered : pyqtSignal
         Signal emitted when a registered hotkey is triggered
-    _hotkey_manager : HotKeyManager
+    _hotkey_manager : HotkeyManager
         The core hotkey manager instance
     _task_hotkey : Optional[str]
         The current task hotkey
@@ -37,13 +37,13 @@ class HotkeyModel(QObject):
         """
         Initialize the HotkeyModel.
         
-        Creates a new instance of the core HotKeyManager and sets up
+        Creates a new instance of the core HotkeyManager and sets up
         necessary internal state.
         """
         super().__init__()
         
         # Create the core hotkey manager
-        self._hotkey_manager = HotKeyManager()
+        self._hotkey_manager = HotkeyManager()
         
         # Store current task hotkey
         self._task_hotkey: Optional[str] = None
@@ -109,7 +109,7 @@ class HotkeyModel(QObject):
             )
             
             # Restart listening if possible
-            if self._hotkey_manager._hotkeys:  # Directly access HotKeyManager's hotkeys
+            if self._hotkey_manager._hotkeys:  # Directly access HotkeyManager's hotkeys
                 self._hotkey_manager.start_listening()
                 
             return True
@@ -140,7 +140,7 @@ class HotkeyModel(QObject):
             result = self._hotkey_manager.unregister_hotkey(hotkey_str)
             
             # Restart listening if there are remaining hotkeys
-            if self._hotkey_manager._hotkeys:  # Directly access HotKeyManager's hotkeys
+            if self._hotkey_manager._hotkeys:  # Directly access HotkeyManager's hotkeys
                 self._hotkey_manager.start_listening()
                 
             return result

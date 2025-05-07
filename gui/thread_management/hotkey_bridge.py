@@ -8,7 +8,7 @@ and Qt's thread model, ensuring thread-safe hotkey handling.
 from PyQt6.QtCore import QObject, pyqtSignal, Qt
 from typing import Callable, Optional
 
-from core.ui.hot_key_manager import HotKeyManager
+from core.hotkey.hotkey_manager import HotkeyManager
 
 class HotkeyBridge(QObject):
     """
@@ -47,7 +47,7 @@ class HotkeyBridge(QObject):
         super().__init__()
         
         # Create local hotkey manager
-        self.hotkey_manager = HotKeyManager()
+        self.hotkey_manager = HotkeyManager()
         
         # Hotkey callback mapping
         self._hotkey_callbacks = {}
@@ -177,7 +177,7 @@ class HotkeyBridge(QObject):
         try:
             self.hotkey_manager.stop_listening()
             
-            # Use filtered mode in HotKeyManager to control which hotkeys are active
+            # Use filtered mode in HotkeyManager to control which hotkeys are active
             if enabled:
                 # In recording mode, only the active recording hotkey should work
                 # If recording_hotkey is None, this will create an empty list, effectively disabling all hotkeys

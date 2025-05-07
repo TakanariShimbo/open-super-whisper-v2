@@ -22,7 +22,7 @@ from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 from core.pipelines.stt_llm_pipeline import Pipeline
 from core.pipelines.pipeline_result import PipelineResult
 
-from core.ui.hot_key_manager import HotKeyManager
+from core.hotkey.hotkey_manager import HotkeyManager
 from gui.resources.config import AppConfig
 from gui.resources.labels import AppLabels
 from gui.dialogs.api_key_dialog import APIKeyDialog
@@ -68,7 +68,7 @@ class MainWindow(QMainWindow):
         self.thread_manager = ThreadManager()
         
         # Initialize hotkey manager
-        self.hotkey_manager = HotKeyManager()
+        self.hotkey_manager = HotkeyManager()
         
         # Initialize instruction set manager
         self.instruction_set_manager = GUIInstructionSetManager(self.settings)
