@@ -11,6 +11,8 @@ from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QSettings
 from ..models.pipeline_model import PipelineModel
 from ..models.instruction_set_model import InstructionSetModel
 from ..models.hotkey_model import HotkeyModel
+from ..models.dialogs.instruction_dialog_model import InstructionDialogModel
+from ..controllers.dialogs.instruction_dialog_controller import InstructionDialogController
 from core.pipelines.pipeline_result import PipelineResult
 from core.pipelines.instruction_set import InstructionSet
 
@@ -348,3 +350,83 @@ class AppController(QObject):
         # If still recording, stop it
         if self._is_recording:
             self.stop_recording()
+    
+    def create_instruction_dialog(self, parent=None):
+        """
+        Create and return an instruction dialog.
+        
+        This method creates an instruction dialog with its own model and controller,
+        but connected to the app's instruction set model and hotkey model.
+        
+        Parameters
+        ----------
+        parent : QWidget, optional
+            Parent widget for the dialog, by default None
+            
+        Returns
+        -------
+        InstructionDialog
+            The created instruction dialog
+        """
+        # Create instruction dialog model
+        dialog_model = InstructionDialogModel(self._settings)
+        
+        # Create instruction dialog controller
+        dialog_controller = InstructionDialogController(
+            dialog_model=dialog_model,
+            hotkey_model=self._hotkey_model,
+            parent_controller=self
+        )
+        
+        # Create instruction dialog view
+        from ..views.dialogs.instruction_dialog import InstructionDialog
+        dialog = InstructionDialog(dialog_controller, parent)
+        
+        # Connect dialog controller signals to app controller methods
+        dialog_controller.instruction_set_added.connect(self._on_instruction_set_changed)
+        dialog_controller.instruction_set_updated.connect(self._on_instruction_set_changed)
+        dialog_controller.instruction_set_deleted.connect(self._on_instruction_set_changed)
+        dialog_controller.instruction_set_renamed.connect(self._on_instruction_set_renamed)
+        
+        return dialog
+    
+    def _on_instruction_set_changed(self, instruction_set):
+        """
+        Handle instruction set change events from the dialog.
+        
+        This method updates the app's instruction set model with changes
+        made in the instruction dialog.
+        
+        Parameters
+        ----------
+        instruction_set : InstructionSet
+            The changed instruction set
+        """
+        # Find if this set exists in the main model
+        existing_set = self._instruction_set_model.get_set_by_name(instruction_set.name)
+        
+        if existing_set:
+            # Update existing set
+            self._instruction_set_model.update_set(instruction_set.name, instruction_set)
+        else:
+            # Add new set
+            self._instruction_set_model.add_set(instruction_set)
+    
+    def _on_instruction_set_renamed(self, old_name, new_name):
+        """
+        Handle instruction set rename events from the dialog.
+        
+        This method updates the app's instruction set model when a set is renamed
+        in the instruction dialog.
+        
+        Parameters
+        ----------
+        old_name : str
+            The old name of the instruction set
+        new_name : str
+            The new name of the instruction set
+        """
+        # Check if the old name exists in the main model
+        if self._instruction_set_model.get_set_by_name(old_name):
+            # Rename the set
+            self._instruction_set_model.rename_set(old_name, new_name)

@@ -22,7 +22,7 @@ def main():
     """
     # Create the application
     app = QApplication(sys.argv)
-    app.setApplicationName("SuperWhisper")
+    app.setApplicationName("OpenSuperWhisper")
     app.setOrganizationName("OpenSuperWhisper")
     
     # Initialize settings

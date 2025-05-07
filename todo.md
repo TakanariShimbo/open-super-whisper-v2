@@ -36,17 +36,36 @@
 - [x] Add event handling for hotkeys
 - [x] Connect pipeline to UI components
 
-## 7. Testing
+## 7. Instruction Dialog Implementation
+- [x] Create Model for Instruction Dialog (InstructionDialogModel)
+  - [x] Define interface with the core InstructionManager
+  - [x] Implement methods for CRUD operations on instruction sets
+  - [x] Add persistence with QSettings
+- [x] Create Controller for Instruction Dialog (InstructionDialogController)
+  - [x] Define controller methods for updating instruction sets
+  - [x] Implement signal handling between model and view
+  - [x] Add methods for hotkey management
+- [x] Create View for Instruction Dialog (InstructionDialog)
+  - [x] Implement UI based on existing gui/dialogs/instruction_sets_dialog.py
+  - [x] Create form layout for instruction set properties
+  - [x] Add validation for user inputs
+- [x] Connect Instruction Dialog components to main application
+  - [x] Integrate with AppController
+  - [x] Add menu option in MainWindow for launching dialog
+  - [x] Ensure proper communication with existing models
+
+## 8. Testing
 - [ ] Test basic recording functionality 
 - [ ] Test transcription process
 - [ ] Test hotkey functionality
+- [ ] Test instruction dialog functionality
 - [ ] Integrate error handling and user feedback
 
-## 8. Main Application Entry
+## 9. Main Application Entry
 - [x] Create main.py for running the application
 - [ ] Resolve dependency and runtime issues
 
-## 9. Summary
+## 10. Summary
 
 We have successfully designed and implemented a Super Whisper app using the MVC architecture:
 
@@ -54,25 +73,30 @@ We have successfully designed and implemented a Super Whisper app using the MVC 
    - PipelineModel: Encapsulates the core Pipeline functionality for recording and transcription
    - InstructionSetModel: Manages instruction sets using the core InstructionManager
    - HotkeyModel: Manages global hotkeys using the core HotkeyManager
+   - InstructionDialogModel: Manages the data for the instruction sets dialog
 
-2. **Controller**:
+2. **Controllers**:
    - AppController: The main controller that coordinates between models and views
+   - InstructionDialogController: Mediates between the instruction dialog view and model
    - Handles user interactions, manages recording/transcription flow, and hotkey events
 
-3. **View**:
+3. **Views**:
    - MainWindow: The main application window with recording controls and output displays
+   - InstructionDialog: Dialog for managing instruction sets
    - Provides UI for transcription and LLM outputs, API key setting, and instruction set selection
 
 4. **Integration**:
    - Connected all components following the MVC pattern
    - Implemented communication between components using signals and slots
    - Added support for global hotkeys to start/stop recording with different instruction sets
+   - Created seamless integration between the main application and dialogs
 
-Current challenges:
-- We encountered runtime issues when trying to run the application
-- We need to further debug dependencies and potential import issues
+Current focus:
+- Testing the application functionality
+- Ensuring proper error handling and user feedback
 
 Next steps:
+- Test the instruction dialog functionality
 - Debug the application entry point
-- Potentially refactor import statements to fix package resolution
-- Test the application functionality once running
+- Complete the testing of all components
+

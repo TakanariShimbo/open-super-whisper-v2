@@ -211,6 +211,11 @@ class MainWindow(QMainWindow):
         api_action.triggered.connect(self.show_api_key_dialog)
         self.toolbar.addAction(api_action)
         
+        # Instruction sets action
+        instruction_sets_action = QAction("Manage Instruction Sets", self)
+        instruction_sets_action.triggered.connect(self.show_instruction_sets_dialog)
+        self.toolbar.addAction(instruction_sets_action)
+        
         self.toolbar.addSeparator()
         
         # Copy actions
@@ -446,6 +451,25 @@ class MainWindow(QMainWindow):
         """
         QApplication.clipboard().setText(self.llm_text.toPlainText())
         self.status_bar.showMessage("LLM output copied to clipboard", 2000)
+        
+    def show_instruction_sets_dialog(self):
+        """
+        Show the instruction sets management dialog.
+        
+        This method creates and shows the instruction sets dialog,
+        using the controller to create the dialog.
+        """
+        # Create dialog using controller
+        dialog = self.controller.create_instruction_dialog(self)
+        
+        # Show the dialog
+        dialog.exec()
+        
+        # After dialog is closed, refresh instruction sets combo
+        self.populate_instruction_set_combo()
+        
+        # Show status message
+        self.status_bar.showMessage("Instruction sets updated", 2000)
     
     @pyqtSlot()
     def show_window(self):
