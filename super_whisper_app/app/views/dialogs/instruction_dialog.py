@@ -72,17 +72,17 @@ class InstructionDialog(QDialog):
         # Store controller
         self._controller = controller
         
+        # Flag to track if changes were made - initialize before UI setup
+        self._changes_made = False
+        
+        # Flag to track if hotkeys were disabled
+        self._hotkeys_disabled = False
+        
         # Set up UI
         self._init_ui()
         
         # Connect controller signals
         self._connect_controller_signals()
-        
-        # Flag to track if changes were made
-        self._changes_made = False
-        
-        # Flag to track if hotkeys were disabled
-        self._hotkeys_disabled = False
         
         # Load instruction sets
         self._load_instruction_sets()
@@ -128,6 +128,9 @@ class InstructionDialog(QDialog):
         buttons_layout.addWidget(self._rename_button)
         buttons_layout.addWidget(self._delete_button)
         left_layout.addLayout(buttons_layout)
+        
+        # Initially disable operation buttons until saved
+        self._update_operation_buttons()
         
         # Right side - Editor
         right_widget = QWidget()
@@ -417,6 +420,9 @@ class InstructionDialog(QDialog):
         self._changes_made = False
         self._save_button.setEnabled(False)
         
+        # Update operation buttons based on save state
+        self._update_operation_buttons()
+        
         # Update editors
         self._vocabulary_edit.blockSignals(True)
         self._instructions_edit.blockSignals(True)
@@ -493,6 +499,27 @@ class InstructionDialog(QDialog):
         self._llm_clipboard_text_checkbox.blockSignals(False)
         self._llm_clipboard_image_checkbox.blockSignals(False)
     
+    def _update_operation_buttons(self):
+        """
+        Update the enabled state of operation buttons based on save state.
+        
+        This method controls whether buttons like Add, Rename, Delete, and
+        the instruction set list should be enabled based on whether the
+        current changes have been saved.
+        """
+        # If there are unsaved changes, disable operations
+        operations_enabled = not self._changes_made
+        
+        # Update button states
+        self._add_button.setEnabled(operations_enabled)
+        self._rename_button.setEnabled(operations_enabled)
+        self._delete_button.setEnabled(operations_enabled)
+        
+        # Control the list selection ability
+        # Note: We don't completely disable the list widget as it's needed to show selection
+        # Instead, we'll handle selection change attempts in the _on_set_selected method
+        self._sets_list.setEnabled(operations_enabled)
+    
     def _on_form_changed(self):
         """Handle form value changes."""
         # Set changes flag
@@ -500,6 +527,9 @@ class InstructionDialog(QDialog):
         
         # Enable save button
         self._save_button.setEnabled(True)
+        
+        # Update operation buttons
+        self._update_operation_buttons()
     
     def _on_add_set(self):
         """Handle adding a new instruction set."""
@@ -705,6 +735,9 @@ class InstructionDialog(QDialog):
         # Reset changes flag
         self._changes_made = False
         self._save_button.setEnabled(False)
+        
+        # Update operation buttons - enable after save
+        self._update_operation_buttons()
     
     @pyqtSlot(InstructionSet)
     def _on_instruction_set_updated(self, instruction_set):
