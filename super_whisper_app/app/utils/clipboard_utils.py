@@ -5,7 +5,6 @@ This module provides functions for extracting text and images from the clipboard
 It follows the single responsibility principle by focusing only on clipboard operations.
 """
 
-from PyQt6.QtGui import QImage
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtCore import QBuffer, QIODevice
 
