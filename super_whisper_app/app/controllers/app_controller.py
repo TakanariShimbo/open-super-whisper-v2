@@ -1,0 +1,350 @@
+"""
+App Controller
+
+This module provides the main controller component for the Super Whisper application,
+coordinating between models and views.
+"""
+
+from typing import Optional, Callable
+from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QSettings
+
+from ..models.pipeline_model import PipelineModel
+from ..models.instruction_set_model import InstructionSetModel
+from ..models.hotkey_model import HotkeyModel
+from core.pipelines.pipeline_result import PipelineResult
+from core.pipelines.instruction_set import InstructionSet
+
+class AppController(QObject):
+    """
+    Main application controller.
+    
+    This class serves as the central coordinator between the user interface (view)
+    and the application's models. It processes user input from the view, interacts
+    with the models, and updates the view with results.
+    
+    Attributes
+    ----------
+    recording_started : pyqtSignal
+        Signal emitted when recording starts
+    recording_stopped : pyqtSignal
+        Signal emitted when recording stops
+    processing_started : pyqtSignal
+        Signal emitted when audio processing starts
+    processing_complete : pyqtSignal
+        Signal emitted when processing completes with results
+    status_update : pyqtSignal
+        Signal emitted when there's a status update for the UI
+    instruction_set_activated : pyqtSignal
+        Signal emitted when an instruction set is activated
+    hotkey_triggered : pyqtSignal
+        Signal emitted when a hotkey is triggered
+    """
+    
+    # Define signals for view communication
+    recording_started = pyqtSignal()
+    recording_stopped = pyqtSignal()
+    processing_started = pyqtSignal()
+    processing_complete = pyqtSignal(PipelineResult)
+    status_update = pyqtSignal(str, int)  # message, timeout
+    instruction_set_activated = pyqtSignal(InstructionSet)
+    hotkey_triggered = pyqtSignal(str)
+    
+    def __init__(self, settings: QSettings):
+        """
+        Initialize the AppController.
+        
+        Parameters
+        ----------
+        settings : QSettings
+            Application settings object for persistence
+        """
+        super().__init__()
+        
+        # Store settings for model initialization
+        self._settings = settings
+        
+        # Initialize models
+        self._init_models()
+        
+        # Set up model connections
+        self._setup_model_connections()
+        
+        # For tracking recording state
+        self._is_recording = False
+    
+    def _init_models(self):
+        """
+        Initialize the application models.
+        """
+        # Get API key from settings
+        api_key = self._settings.value("api_key", "")
+        
+        # Initialize models
+        self._pipeline_model = PipelineModel(api_key)
+        self._instruction_set_model = InstructionSetModel(self._settings)
+        self._hotkey_model = HotkeyModel()
+    
+    def _setup_model_connections(self):
+        """
+        Set up connections between models and controller.
+        """
+        # Pipeline model connections
+        self._pipeline_model.processing_started.connect(self.processing_started)
+        self._pipeline_model.processing_complete.connect(self.processing_complete)
+        self._pipeline_model.processing_error.connect(
+            lambda error: self.status_update.emit(f"Error: {error}", 3000)
+        )
+        
+        # Instruction set model connections
+        self._instruction_set_model.selected_set_changed.connect(
+            self.instruction_set_activated
+        )
+        
+        # Hotkey model connections
+        self._hotkey_model.hotkey_triggered.connect(self._handle_hotkey_triggered)
+    
+    @pyqtSlot(str)
+    def _handle_hotkey_triggered(self, hotkey: str):
+        """
+        Handle hotkey trigger events.
+        
+        Parameters
+        ----------
+        hotkey : str
+            The hotkey that was triggered
+        """
+        # Emit the hotkey_triggered signal for view to handle
+        self.hotkey_triggered.emit(hotkey)
+        
+        # Get the instruction set associated with this hotkey
+        instruction_set = self._instruction_set_model.get_set_by_hotkey(hotkey)
+        
+        if not instruction_set:
+            return
+            
+        # If we're recording, this might be a stop request
+        if self._is_recording:
+            # If this is the same hotkey that started recording, stop recording
+            if hotkey == self._hotkey_model.get_active_recording_hotkey():
+                self.stop_recording()
+        else:
+            # Not recording, so this is a start request with the selected instruction set
+            self._instruction_set_model.set_selected(instruction_set.name)
+            self.start_recording_with_hotkey(hotkey)
+    
+    def initialize_with_api_key(self, api_key: str) -> bool:
+        """
+        Initialize or reinitialize the pipeline with an API key.
+        
+        Parameters
+        ----------
+        api_key : str
+            The API key to use
+            
+        Returns
+        -------
+        bool
+            True if initialization was successful, False otherwise
+        """
+        result = self._pipeline_model.initialize_pipeline(api_key)
+        
+        if result:
+            # Save API key to settings
+            self._settings.setValue("api_key", api_key)
+            self._settings.sync()
+            
+            # Apply the selected instruction set if available
+            selected_set = self._instruction_set_model.get_selected_set()
+            if selected_set:
+                self._pipeline_model.apply_instruction_set(selected_set)
+            
+        return result
+    
+    def get_instruction_sets(self):
+        """
+        Get all available instruction sets.
+        
+        Returns
+        -------
+        List[InstructionSet]
+            List of all instruction sets
+        """
+        return self._instruction_set_model.get_all_sets()
+    
+    def get_selected_instruction_set(self) -> Optional[InstructionSet]:
+        """
+        Get the currently selected instruction set.
+        
+        Returns
+        -------
+        Optional[InstructionSet]
+            The currently selected instruction set, or None if none selected
+        """
+        return self._instruction_set_model.get_selected_set()
+    
+    def select_instruction_set(self, name: str) -> bool:
+        """
+        Select an instruction set by name.
+        
+        Parameters
+        ----------
+        name : str
+            The name of the instruction set to select
+            
+        Returns
+        -------
+        bool
+            True if successful, False if the named set doesn't exist
+        """
+        return self._instruction_set_model.set_selected(name)
+    
+    def register_hotkey(self, hotkey: str, handler_id: str) -> bool:
+        """
+        Register a global hotkey.
+        
+        Parameters
+        ----------
+        hotkey : str
+            The hotkey string to register (e.g., "ctrl+shift+r")
+        handler_id : str
+            Unique ID for the hotkey handler
+            
+        Returns
+        -------
+        bool
+            True if registration was successful, False otherwise
+        """
+        result = self._hotkey_model.register_hotkey(hotkey, handler_id)
+        
+        # If successful and not already listening, start listening
+        if result and not self._hotkey_model.is_recording_mode_active:
+            self._hotkey_model.start_listening()
+            
+        return result
+    
+    def toggle_recording(self):
+        """
+        Toggle recording state.
+        
+        If recording is in progress, it stops recording.
+        If not recording, it starts recording.
+        """
+        if self._is_recording:
+            self.stop_recording()
+        else:
+            self.start_recording()
+    
+    def start_recording(self):
+        """
+        Start recording audio.
+        
+        Returns
+        -------
+        bool
+            True if recording started successfully, False otherwise
+        """
+        if self._is_recording:
+            return False
+            
+        # Apply selected instruction set if available
+        selected_set = self._instruction_set_model.get_selected_set()
+        if selected_set:
+            self._pipeline_model.apply_instruction_set(selected_set)
+            
+        # Start recording
+        if self._pipeline_model.start_recording():
+            self._is_recording = True
+            
+            # Set recording mode for hotkeys (no active hotkey in this case)
+            self._hotkey_model.set_recording_mode(True)
+            
+            # Emit recording started signal
+            self.recording_started.emit()
+            
+            return True
+        else:
+            return False
+    
+    def start_recording_with_hotkey(self, hotkey: str):
+        """
+        Start recording audio with a specific hotkey as the trigger.
+        
+        Parameters
+        ----------
+        hotkey : str
+            The hotkey that triggered recording
+            
+        Returns
+        -------
+        bool
+            True if recording started successfully, False otherwise
+        """
+        if self._is_recording:
+            return False
+            
+        # Apply selected instruction set if available
+        selected_set = self._instruction_set_model.get_selected_set()
+        if selected_set:
+            self._pipeline_model.apply_instruction_set(selected_set)
+            
+        # Start recording
+        if self._pipeline_model.start_recording():
+            self._is_recording = True
+            
+            # Set recording mode for hotkeys with the active hotkey
+            self._hotkey_model.set_recording_mode(True, hotkey)
+            
+            # Emit recording started signal
+            self.recording_started.emit()
+            
+            return True
+        else:
+            return False
+    
+    def stop_recording(self):
+        """
+        Stop recording audio and begin processing.
+        
+        Returns
+        -------
+        bool
+            True if recording was stopped successfully, False otherwise
+        """
+        if not self._is_recording:
+            return False
+            
+        # Stop recording
+        audio_file = self._pipeline_model.stop_recording()
+        
+        # Update state
+        self._is_recording = False
+        
+        # Disable recording mode for hotkeys
+        self._hotkey_model.set_recording_mode(False)
+        
+        # Emit recording stopped signal
+        self.recording_stopped.emit()
+        
+        # Process the audio if we have a file
+        if audio_file:
+            # Get language from selected instruction set
+            language = None
+            selected_set = self._instruction_set_model.get_selected_set()
+            if selected_set:
+                language = selected_set.stt_language
+                
+            # Process the audio
+            self._pipeline_model.process_audio(audio_file, language)
+            
+        return True
+    
+    def shutdown(self):
+        """
+        Clean up resources when the application is shutting down.
+        """
+        # Stop hotkey listening
+        self._hotkey_model.stop_listening()
+        
+        # If still recording, stop it
+        if self._is_recording:
+            self.stop_recording()
