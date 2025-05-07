@@ -59,14 +59,21 @@ class IconManager:
         Optional[str]
             The full path to the icon file, or None if it doesn't exist
         """
-        # Try to locate the assets directory
-        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-        assets_dir = os.path.join(root_dir, "assets")
-        icon_path = os.path.join(assets_dir, icon_name)
+        # Try multiple possible locations for the assets directory
+        possible_paths = []
         
-        # Check if the file exists
-        if os.path.exists(icon_path):
-            return icon_path
+        # Method 1: Using relative path from current file
+        path1 = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
+        possible_paths.append(os.path.join(path1, "assets", icon_name))
+        
+        # Method 2: Using the current working directory
+        path2 = os.path.join(os.getcwd(), "assets", icon_name)
+        possible_paths.append(path2)
+        
+        # Return the first path that exists
+        for path in possible_paths:
+            if os.path.exists(path):
+                return path
         
         return None
     

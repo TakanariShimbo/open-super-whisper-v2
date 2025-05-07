@@ -80,10 +80,8 @@ class SystemTray(QSystemTrayIcon):
         
         # If no valid icon, use a standard system icon
         if not icon or icon.isNull():
-            print(f"Warning: Icon file not found: {icon_path}")
-            print("Using standard system icon instead.")
-            
             try:
+                # Try to use IconManager as fallback
                 icon_manager = IconManager()
                 icon = icon_manager.get_app_icon()
             except Exception:
