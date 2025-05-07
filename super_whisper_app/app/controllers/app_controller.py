@@ -81,11 +81,31 @@ class AppController(QObject):
         # Set up model connections
         self._setup_model_connections()
         
-        # For tracking recording state
-        self._is_recording = False
+        # 状態変数は使用せず、PipelineModelのプロパティを利用する
+    
+    @property
+    def is_recording(self) -> bool:
+        """
+        Check if recording is in progress.
         
-        # For tracking processing state
-        self._is_processing = False
+        Returns
+        -------
+        bool
+            True if recording is in progress, False otherwise
+        """
+        return self._pipeline_model.is_recording if hasattr(self, '_pipeline_model') else False
+    
+    @property
+    def is_processing(self) -> bool:
+        """
+        Check if audio processing is in progress.
+        
+        Returns
+        -------
+        bool
+            True if processing is in progress, False otherwise
+        """
+        return self._pipeline_model.is_processing if hasattr(self, '_pipeline_model') else False
     
     def _init_models(self) -> None:
         """
@@ -143,7 +163,6 @@ class AppController(QObject):
         is_processing : bool
             Whether processing is currently active
         """
-        self._is_processing = is_processing
         self.processing_state_changed.emit(is_processing)
     
     @pyqtSlot(str)
@@ -166,12 +185,12 @@ class AppController(QObject):
             return
             
         # If we're in processing state, treat as cancel request
-        if self._is_processing:
+        if self.is_processing:
             self.cancel_processing()
             return
             
         # If we're recording, this might be a stop request
-        if self._is_recording:
+        if self.is_recording:
             # If this is the same hotkey that started recording, stop recording
             if hotkey == self._hotkey_model.get_active_recording_hotkey():
                 self.stop_recording()
@@ -279,11 +298,11 @@ class AppController(QObject):
         If not recording or processing, it starts recording.
         """
         # If processing is active, cancel it
-        if self._is_processing:
+        if self.is_processing:
             return self.cancel_processing()
             
         # Otherwise toggle recording
-        if self._is_recording:
+        if self.is_recording:
             self.stop_recording()
         else:
             self.start_recording()
@@ -297,7 +316,7 @@ class AppController(QObject):
         bool
             True if recording started successfully, False otherwise
         """
-        if self._is_recording or self._is_processing:
+        if self.is_recording or self.is_processing:
             return False
             
         # Apply selected instruction set if available
@@ -305,10 +324,7 @@ class AppController(QObject):
         if selected_set:
             self._pipeline_model.apply_instruction_set(selected_set)
             
-        # Start recording
         if self._pipeline_model.start_recording():
-            self._is_recording = True
-            
             # Set recording mode for hotkeys (no active hotkey in this case)
             self._hotkey_model.set_recording_mode(True)
             
@@ -333,7 +349,7 @@ class AppController(QObject):
         bool
             True if recording started successfully, False otherwise
         """
-        if self._is_recording or self._is_processing:
+        if self.is_recording or self.is_processing:
             return False
             
         # Apply selected instruction set if available
@@ -342,10 +358,7 @@ class AppController(QObject):
             self._instruction_set_model.set_selected(selected_set.name)
             self._pipeline_model.apply_instruction_set(selected_set)
             
-        # Start recording
         if self._pipeline_model.start_recording():
-            self._is_recording = True
-            
             # Set recording mode for hotkeys with the active hotkey
             self._hotkey_model.set_recording_mode(True, hotkey)
             
@@ -365,14 +378,11 @@ class AppController(QObject):
         bool
             True if recording was stopped successfully, False otherwise
         """
-        if not self._is_recording:
+        if not self.is_recording:
             return False
             
         # Stop recording
         audio_file = self._pipeline_model.stop_recording()
-        
-        # Update state
-        self._is_recording = False
         
         # Disable recording mode for hotkeys
         self._hotkey_model.set_recording_mode(False)
@@ -413,7 +423,7 @@ class AppController(QObject):
         bool
             True if cancellation was initiated, False if no processing to cancel
         """
-        if not self._is_processing:
+        if not self.is_processing:
             return False
             
         # Cancel processing through pipeline model
@@ -432,11 +442,11 @@ class AppController(QObject):
         self._hotkey_model.stop_listening()
         
         # If still recording, stop it
-        if self._is_recording:
+        if self.is_recording:
             self.stop_recording()
         
         # If still processing, cancel it
-        if self._is_processing:
+        if self.is_processing:
             self.cancel_processing()
     
     def create_instruction_dialog(self, parent=None) -> InstructionDialog:
