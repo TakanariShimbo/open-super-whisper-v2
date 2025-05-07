@@ -106,27 +106,6 @@ class LLMModelManager:
         raise ValueError("No default model found")
     
     @classmethod
-    def get_default_model(cls) -> LLMModel:
-        """
-        Get the default model.
-        
-        Returns
-        -------
-        LLMModel
-            Default model object.
-            
-        Notes
-        -----
-        Returns the first model flagged as default. If no model is flagged as default,
-        returns the first model in the list.
-        """
-        for model in cls._SUPPORTED_LLM_MODELS:
-            if model.is_default:
-                return model
-        # Fallback to first model if no default is marked
-        return cls._SUPPORTED_LLM_MODELS[0]
-    
-    @classmethod
     def supports_image_input(cls, model_id: str) -> bool:
         """
         Check if a model supports image input.
