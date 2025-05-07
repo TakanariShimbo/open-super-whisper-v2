@@ -16,6 +16,7 @@ from PyQt6.QtCore import Qt, pyqtSlot, QEvent
 
 from ...controllers.dialogs.instruction_dialog_controller import InstructionDialogController
 from core.pipelines.instruction_set import InstructionSet
+from gui.dialogs.hotkey_dialog import HotkeyDialog
 
 class InstructionDialog(QDialog):
     """
@@ -621,7 +622,6 @@ class InstructionDialog(QDialog):
         set_name = self._sets_list.item(row).text()
         
         # Show hotkey dialog
-        from gui.dialogs.hotkey_dialog import HotkeyDialog
         
         # Get current hotkey
         current_hotkey = self._hotkey_input.text()

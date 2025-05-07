@@ -5,14 +5,18 @@ This module provides the main controller component for the Super Whisper applica
 coordinating between models and views.
 """
 
+import sys
 from typing import Optional, Callable
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QSettings
+from PyQt6.QtWidgets import QMessageBox
 
 from ..models.pipeline_model import PipelineModel
 from ..models.instruction_set_model import InstructionSetModel
 from ..models.hotkey_model import HotkeyModel
 from ..models.dialogs.instruction_dialog_model import InstructionDialogModel
 from ..controllers.dialogs.instruction_dialog_controller import InstructionDialogController
+from ..controllers.dialogs.api_key_controller import APIKeyController
+from ..views.dialogs.instruction_dialog import InstructionDialog
 from core.pipelines.pipeline_result import PipelineResult
 from core.pipelines.instruction_set import InstructionSet
 
@@ -89,13 +93,11 @@ class AppController(QObject):
         
         # Verify that pipeline was initialized successfully
         if not self._pipeline_model.is_initialized:
-            from PyQt6.QtWidgets import QMessageBox
             QMessageBox.critical(
                 None,
                 "Initialization Error",
                 "Failed to initialize pipeline with the provided API key. The application will now exit."
             )
-            import sys
             sys.exit(1)
             
         self._instruction_set_model = InstructionSetModel(self._settings)
@@ -394,7 +396,6 @@ class AppController(QObject):
         )
         
         # Create instruction dialog view
-        from ..views.dialogs.instruction_dialog import InstructionDialog
         dialog = InstructionDialog(dialog_controller, parent)
         
         # Connect dialog controller signals to app controller methods
@@ -464,7 +465,6 @@ class AppController(QObject):
             True if the API key was successfully updated, False otherwise
         """
         # Create API key controller
-        from ..controllers.dialogs.api_key_controller import APIKeyController
         api_key_controller = APIKeyController(self._settings)
         
         # Connect signals for status updates
