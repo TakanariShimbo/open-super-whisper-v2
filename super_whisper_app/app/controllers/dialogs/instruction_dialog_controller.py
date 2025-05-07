@@ -5,9 +5,11 @@ This module provides the controller component for the instruction dialog in the 
 It mediates between the instruction dialog view and model.
 """
 
-from typing import Optional, List, Callable
-from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QSettings
+from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 
+from core.stt.stt_lang_model import STTLangModel
+from core.stt.stt_model import STTModel
+from core.llm.llm_model import LLMModel
 from ...models.dialogs.instruction_dialog_model import InstructionDialogModel
 from ...models.hotkey_model import HotkeyModel
 from core.pipelines.instruction_set import InstructionSet
@@ -48,8 +50,8 @@ class InstructionDialogController(QObject):
     
     def __init__(self, 
                  dialog_model: InstructionDialogModel,
-                 hotkey_model: Optional[HotkeyModel] = None,
-                 parent_controller = None):
+                 hotkey_model: HotkeyModel | None = None,
+                 parent_controller: QObject | None = None):
         """
         Initialize the InstructionDialogController.
         
@@ -57,7 +59,7 @@ class InstructionDialogController(QObject):
         ----------
         dialog_model : InstructionDialogModel
             The model for the instruction dialog
-        hotkey_model : Optional[HotkeyModel], optional
+        hotkey_model : HotkeyModel | None, optional
             The model for hotkey management, by default None
         parent_controller : QObject, optional
             The parent controller, typically AppController
@@ -75,7 +77,7 @@ class InstructionDialogController(QObject):
         # Currently selected set name
         self._selected_set_name = ""
     
-    def _connect_model_signals(self):
+    def _connect_model_signals(self) -> None:
         """
         Connect signals from the models.
         """
@@ -87,7 +89,7 @@ class InstructionDialogController(QObject):
         self._dialog_model.hotkey_updated.connect(self._on_hotkey_updated)
     
     @pyqtSlot(InstructionSet)
-    def _on_instruction_set_added(self, instruction_set: InstructionSet):
+    def _on_instruction_set_added(self, instruction_set: InstructionSet) -> None:
         """
         Handle instruction set added event.
         
@@ -106,7 +108,7 @@ class InstructionDialogController(QObject):
                 self.hotkey_conflict.emit(instruction_set.hotkey, "")
     
     @pyqtSlot(InstructionSet)
-    def _on_instruction_set_updated(self, instruction_set: InstructionSet):
+    def _on_instruction_set_updated(self, instruction_set: InstructionSet) -> None:
         """
         Handle instruction set updated event.
         
@@ -119,7 +121,7 @@ class InstructionDialogController(QObject):
         self.instruction_set_updated.emit(instruction_set)
     
     @pyqtSlot(str)
-    def _on_instruction_set_deleted(self, name: str):
+    def _on_instruction_set_deleted(self, name: str) -> None:
         """
         Handle instruction set deleted event.
         
@@ -136,7 +138,7 @@ class InstructionDialogController(QObject):
             self._selected_set_name = ""
     
     @pyqtSlot(str, str)
-    def _on_instruction_set_renamed(self, old_name: str, new_name: str):
+    def _on_instruction_set_renamed(self, old_name: str, new_name: str) -> None:
         """
         Handle instruction set renamed event.
         
@@ -155,7 +157,7 @@ class InstructionDialogController(QObject):
             self._selected_set_name = new_name
     
     @pyqtSlot(str, str)
-    def _on_hotkey_updated(self, set_name: str, hotkey: str):
+    def _on_hotkey_updated(self, set_name: str, hotkey: str) -> None:
         """
         Handle hotkey updated event.
         
@@ -178,18 +180,18 @@ class InstructionDialogController(QObject):
             # Register the hotkey
             self._hotkey_model.register_hotkey(hotkey, f"instruction_set_{set_name}")
     
-    def get_all_sets(self) -> List[InstructionSet]:
+    def get_all_sets(self) -> list[InstructionSet]:
         """
         Get all instruction sets.
         
         Returns
         -------
-        List[InstructionSet]
+        list[InstructionSet]
             List of all instruction sets
         """
         return self._dialog_model.get_all_sets()
     
-    def get_set_by_name(self, name: str) -> Optional[InstructionSet]:
+    def get_set_by_name(self, name: str) -> InstructionSet | None:
         """
         Get an instruction set by name.
         
@@ -200,7 +202,7 @@ class InstructionDialogController(QObject):
             
         Returns
         -------
-        Optional[InstructionSet]
+        InstructionSet | None
             The instruction set with the specified name, or None if not found
         """
         return self._dialog_model.get_set_by_name(name)
@@ -227,13 +229,13 @@ class InstructionDialogController(QObject):
         self.instruction_set_selected.emit(instruction_set)
         return True
     
-    def get_selected_set(self) -> Optional[InstructionSet]:
+    def get_selected_set(self) -> InstructionSet | None:
         """
         Get the currently selected instruction set.
         
         Returns
         -------
-        Optional[InstructionSet]
+        InstructionSet | None
             The currently selected instruction set, or None if none selected
         """
         if not self._selected_set_name:
@@ -412,35 +414,35 @@ class InstructionDialogController(QObject):
         
         return result
     
-    def get_available_languages(self):
+    def get_available_languages(self) -> list[STTLangModel]:
         """
         Get available languages for speech recognition.
         
         Returns
         -------
-        List
+        list[STTLangModel]
             List of available language objects
         """
         return self._dialog_model.get_available_languages()
     
-    def get_available_stt_models(self):
+    def get_available_stt_models(self) -> list[STTModel]:
         """
         Get available speech recognition models.
         
         Returns
         -------
-        List
+        list[STTModel]
             List of available STT model objects
         """
         return self._dialog_model.get_available_stt_models()
     
-    def get_available_llm_models(self):
+    def get_available_llm_models(self) -> list[LLMModel]:
         """
         Get available LLM models.
         
         Returns
         -------
-        List
+        list[LLMModel]
             List of available LLM model objects
         """
         return self._dialog_model.get_available_llm_models()

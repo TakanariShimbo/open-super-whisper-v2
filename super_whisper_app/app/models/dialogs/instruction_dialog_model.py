@@ -5,10 +5,12 @@ This module provides the model component for the instruction dialog in the Super
 It handles the data management for instruction sets using the core InstructionManager.
 """
 
-from typing import List, Optional, Dict, Any
-from PyQt6.QtCore import QObject, pyqtSignal, QSettings
+from PyQt6.QtCore import QObject, pyqtSignal
 
 from core.pipelines.instruction_set import InstructionSet
+from core.stt.stt_lang_model import STTLangModel
+from core.stt.stt_model import STTModel
+from core.llm.llm_model import LLMModel
 from core.stt.stt_lang_model_manager import STTLangModelManager
 from core.stt.stt_model_manager import STTModelManager
 from core.llm.llm_model_manager import LLMModelManager
@@ -43,7 +45,7 @@ class InstructionDialogModel(QObject):
     instruction_set_renamed = pyqtSignal(str, str)  # Old name, new name
     hotkey_updated = pyqtSignal(str, str)  # Set name, hotkey
     
-    def __init__(self, instruction_set_model: InstructionSetModel):
+    def __init__(self, instruction_set_model: InstructionSetModel) -> None:
         """
         Initialize the InstructionDialogModel.
         
@@ -60,18 +62,18 @@ class InstructionDialogModel(QObject):
         # Get instruction manager from the model
         self._instruction_manager = instruction_set_model._instruction_manager
     
-    def get_all_sets(self) -> List[InstructionSet]:
+    def get_all_sets(self) -> list[InstructionSet]:
         """
         Get all instruction sets.
         
         Returns
         -------
-        List[InstructionSet]
+        list[InstructionSet]
             List of all instruction sets
         """
         return self._instruction_manager.get_all_sets()
     
-    def get_set_by_name(self, name: str) -> Optional[InstructionSet]:
+    def get_set_by_name(self, name: str) -> InstructionSet | None:
         """
         Get an instruction set by name.
         
@@ -82,12 +84,12 @@ class InstructionDialogModel(QObject):
             
         Returns
         -------
-        Optional[InstructionSet]
+        InstructionSet | None
             The instruction set with the specified name, or None if not found
         """
         return self._instruction_manager.find_set_by_name(name)
     
-    def get_set_by_hotkey(self, hotkey: str) -> Optional[InstructionSet]:
+    def get_set_by_hotkey(self, hotkey: str) -> InstructionSet | None:
         """
         Get an instruction set by hotkey.
         
@@ -98,7 +100,7 @@ class InstructionDialogModel(QObject):
             
         Returns
         -------
-        Optional[InstructionSet]
+        InstructionSet | None
             The instruction set with the specified hotkey, or None if not found
         """
         return self._instruction_manager.find_set_by_hotkey(hotkey)
@@ -106,7 +108,7 @@ class InstructionDialogModel(QObject):
     def add_set(self, name: str, 
                 stt_vocabulary: str = "", 
                 stt_instructions: str = "",
-                stt_language: Optional[str] = None,
+                stt_language: str | None = None,
                 stt_model: str = "gpt-4o-transcribe",
                 llm_enabled: bool = False,
                 llm_model: str = "gpt-4o",
@@ -125,7 +127,7 @@ class InstructionDialogModel(QObject):
             Custom vocabulary for speech recognition, by default ""
         stt_instructions : str, optional
             System instructions for speech recognition, by default ""
-        stt_language : Optional[str], optional
+        stt_language : str | None, optional
             Language code for speech recognition, by default None (auto-detect)
         stt_model : str, optional
             Model name for speech recognition, by default "gpt-4o-transcribe"
@@ -178,16 +180,16 @@ class InstructionDialogModel(QObject):
         return result
     
     def update_set(self, name: str, 
-                  stt_vocabulary: Optional[str] = None, 
-                  stt_instructions: Optional[str] = None,
-                  stt_language: Optional[str] = None,
-                  stt_model: Optional[str] = None,
-                  llm_enabled: Optional[bool] = None,
-                  llm_model: Optional[str] = None,
-                  llm_instructions: Optional[str] = None,
-                  llm_clipboard_text_enabled: Optional[bool] = None,
-                  llm_clipboard_image_enabled: Optional[bool] = None,
-                  hotkey: Optional[str] = None) -> bool:
+                  stt_vocabulary: str | None = None, 
+                  stt_instructions: str | None = None,
+                  stt_language: str | None = None,
+                  stt_model: str | None = None,
+                  llm_enabled: bool | None = None,
+                  llm_model: str | None = None,
+                  llm_instructions: str | None = None,
+                  llm_clipboard_text_enabled: bool | None = None,
+                  llm_clipboard_image_enabled: bool | None = None,
+                  hotkey: str | None = None) -> bool:
         """
         Update an existing instruction set.
         
@@ -195,25 +197,25 @@ class InstructionDialogModel(QObject):
         ----------
         name : str
             Name of the instruction set to update
-        stt_vocabulary : Optional[str], optional
+        stt_vocabulary : str | None, optional
             Custom vocabulary for speech recognition, by default None (unchanged)
-        stt_instructions : Optional[str], optional
+        stt_instructions : str | None, optional
             System instructions for speech recognition, by default None (unchanged)
-        stt_language : Optional[str], optional
+        stt_language : str | None, optional
             Language code for speech recognition, by default None (unchanged)
-        stt_model : Optional[str], optional
+        stt_model : str | None, optional
             Model name for speech recognition, by default None (unchanged)
-        llm_enabled : Optional[bool], optional
+        llm_enabled : bool | None, optional
             Whether LLM processing is enabled, by default None (unchanged)
-        llm_model : Optional[str], optional
+        llm_model : str | None, optional
             Model name for LLM processing, by default None (unchanged)
-        llm_instructions : Optional[str], optional
+        llm_instructions : str | None, optional
             System instructions for LLM, by default None (unchanged)
-        llm_clipboard_text_enabled : Optional[bool], optional
+        llm_clipboard_text_enabled : bool | None, optional
             Whether to include clipboard text in LLM input, by default None (unchanged)
-        llm_clipboard_image_enabled : Optional[bool], optional
+        llm_clipboard_image_enabled : bool | None, optional
             Whether to include clipboard images in LLM input, by default None (unchanged)
-        hotkey : Optional[str], optional
+        hotkey : str | None, optional
             Hotkey for quick activation, by default None (unchanged)
             
         Returns
@@ -315,35 +317,35 @@ class InstructionDialogModel(QObject):
         
         return result
     
-    def get_available_languages(self):
+    def get_available_languages(self) -> list[STTLangModel]:
         """
         Get available languages for speech recognition.
         
         Returns
         -------
-        List
+        list[STTLangModel]
             List of available language objects
         """
         return STTLangModelManager.get_available_languages()
     
-    def get_available_stt_models(self):
+    def get_available_stt_models(self) -> list[STTModel]:
         """
         Get available speech recognition models.
         
         Returns
         -------
-        List
+        list[STTModel]
             List of available STT model objects
         """
         return STTModelManager.get_available_models()
     
-    def get_available_llm_models(self):
+    def get_available_llm_models(self) -> list[LLMModel]:
         """
         Get available LLM models.
         
         Returns
         -------
-        List
+        list[LLMModel]
             List of available LLM model objects
         """
         return LLMModelManager.get_available_models()

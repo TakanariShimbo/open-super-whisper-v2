@@ -4,8 +4,8 @@ API Key Controller
 This module provides the controller component for API key management.
 """
 
-from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
-from PyQt6.QtWidgets import QMessageBox
+from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QSettings
+from PyQt6.QtWidgets import QMessageBox, QWidget
 
 from ...models.dialogs.api_key_model import APIKeyModel
 from ...views.dialogs.api_key_dialog import APIKeyDialog
@@ -29,7 +29,7 @@ class APIKeyController(QObject):
     api_key_validated = pyqtSignal(str)
     api_key_invalid = pyqtSignal(str)
     
-    def __init__(self, settings):
+    def __init__(self, settings: QSettings) -> None:
         """
         Initialize the API Key Controller.
         
@@ -43,7 +43,7 @@ class APIKeyController(QObject):
         # Initialize the model
         self._api_key_model = APIKeyModel(settings)
     
-    def ensure_valid_api_key(self, parent=None):
+    def ensure_valid_api_key(self, parent: QWidget | None = None) -> bool:
         """
         Ensure a valid API key is available, prompting the user if necessary.
         
@@ -86,7 +86,9 @@ class APIKeyController(QObject):
         # Prompt for API key
         return self.prompt_for_api_key(parent, initial_message)
     
-    def prompt_for_api_key(self, parent=None, initial_message=None, is_settings_mode=False):
+    def prompt_for_api_key(self, parent: QWidget | None = None, 
+                           initial_message: str | None = None, 
+                           is_settings_mode: bool = False) -> bool:
         """
         Prompt the user to enter an API key.
         
@@ -97,7 +99,7 @@ class APIKeyController(QObject):
         ----------
         parent : QWidget, optional
             Parent widget for the dialog, by default None
-        initial_message : str, optional
+        initial_message : str | None, optional
             Initial message to display in the dialog, by default None
         is_settings_mode : bool, optional
             Whether the dialog is being used in settings mode, by default False
@@ -143,7 +145,7 @@ class APIKeyController(QObject):
             initial_message = "Invalid API key. Please try again."
     
     @pyqtSlot(str)
-    def _on_api_key_entered(self, api_key):
+    def _on_api_key_entered(self, api_key: str) -> None:
         """
         Handle API key entered by the user.
         

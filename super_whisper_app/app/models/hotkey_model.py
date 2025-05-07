@@ -5,7 +5,7 @@ This module provides the model component for managing global hotkeys
 in the Super Whisper application.
 """
 
-from typing import Dict, Callable, List, Optional
+from typing import Callable
 from PyQt6.QtCore import QObject, pyqtSignal
 
 from core.hotkey.hotkey_manager import HotkeyManager
@@ -36,10 +36,10 @@ class HotkeyModel(QObject):
         self._hotkey_manager = HotkeyManager()
         
         # Dictionary to store registered hotkeys and their handlers
-        self._handlers: Dict[str, Callable] = {}
+        self._handlers: dict[str, Callable] = {}
         
         # Currently active recording hotkey (during recording)
-        self._active_recording_hotkey: Optional[str] = None
+        self._active_recording_hotkey: str | None = None
     
     @property
     def is_recording_mode_active(self) -> bool:
@@ -53,13 +53,13 @@ class HotkeyModel(QObject):
         """
         return self._active_recording_hotkey is not None
     
-    def get_active_recording_hotkey(self) -> Optional[str]:
+    def get_active_recording_hotkey(self) -> str | None:
         """
         Get the active recording hotkey.
         
         Returns
         -------
-        Optional[str]
+        str | None
             The active recording hotkey, or None if not in recording mode
         """
         return self._active_recording_hotkey
@@ -263,13 +263,13 @@ class HotkeyModel(QObject):
         # Clear manager hotkeys
         self._hotkey_manager.clear_all_hotkeys()
     
-    def get_all_registered_hotkeys(self) -> List[str]:
+    def get_all_registered_hotkeys(self) -> list[str]:
         """
         Get a list of all registered hotkeys.
         
         Returns
         -------
-        List[str]
+        list[str]
             List of registered hotkey strings
         """
         return list(self._handlers.keys())

@@ -5,7 +5,6 @@ Main entry point for the Super Whisper application.
 """
 
 import sys
-import os
 
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtCore import QSettings
@@ -14,7 +13,7 @@ from super_whisper_app.app.controllers.app_controller import AppController
 from super_whisper_app.app.controllers.dialogs.api_key_controller import APIKeyController
 from super_whisper_app.app.views.main_window import MainWindow
 
-def main():
+def main() -> int:
     """
     Main entry point for the Super Whisper app.
     
@@ -22,6 +21,11 @@ def main():
     creates the controller and view, and starts the application event loop.
     
     The application will only start if a valid API key is provided.
+
+    Returns
+    -------
+    int
+        The exit code of the application
     """
     # Create the application
     app = QApplication(sys.argv)

@@ -5,14 +5,14 @@ This module provides the view component for the instruction dialog in the Super 
 It provides the UI for managing instruction sets.
 """
 
-from typing import Optional, List, Dict, Any
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QTextEdit,
     QPushButton, QDialogButtonBox, QListWidget, QSplitter,
     QLineEdit, QInputDialog, QTabWidget, QWidget,
     QFormLayout, QComboBox, QCheckBox, QMessageBox
 )
-from PyQt6.QtCore import Qt, pyqtSlot, QEvent
+from PyQt6.QtCore import Qt, pyqtSlot
+from PyQt6.QtGui import QCloseEvent, QShowEvent
 
 from ...controllers.dialogs.instruction_dialog_controller import InstructionDialogController
 from core.pipelines.instruction_set import InstructionSet
@@ -405,7 +405,7 @@ class InstructionDialog(QDialog):
         self._controller.select_set(set_name)
     
     @pyqtSlot(InstructionSet)
-    def _on_instruction_set_selected(self, instruction_set):
+    def _on_instruction_set_selected(self, instruction_set: InstructionSet):
         """
         Handle the instruction set selected event from the controller.
         
@@ -567,7 +567,7 @@ class InstructionDialog(QDialog):
             self._controller.add_set(name)
     
     @pyqtSlot(InstructionSet)
-    def _on_instruction_set_added(self, instruction_set):
+    def _on_instruction_set_added(self, instruction_set: InstructionSet):
         """
         Handle instruction set added event from the controller.
         
@@ -607,7 +607,7 @@ class InstructionDialog(QDialog):
             self._controller.rename_set(old_name, new_name)
     
     @pyqtSlot(str, str)
-    def _on_instruction_set_renamed(self, old_name, new_name):
+    def _on_instruction_set_renamed(self, old_name: str, new_name: str):
         """
         Handle instruction set renamed event from the controller.
         
@@ -646,7 +646,7 @@ class InstructionDialog(QDialog):
             self._controller.delete_set(name)
     
     @pyqtSlot(str)
-    def _on_instruction_set_deleted(self, name):
+    def _on_instruction_set_deleted(self, name: str):
         """
         Handle instruction set deleted event from the controller.
         
@@ -692,7 +692,7 @@ class InstructionDialog(QDialog):
                 self._on_form_changed()
     
     @pyqtSlot(str, str)
-    def _on_hotkey_conflict(self, hotkey, conflict_set_name):
+    def _on_hotkey_conflict(self, hotkey: str, conflict_set_name: str):
         """
         Handle hotkey conflict event from the controller.
         
@@ -869,7 +869,7 @@ class InstructionDialog(QDialog):
         )
     
     @pyqtSlot(InstructionSet)
-    def _on_instruction_set_updated(self, instruction_set):
+    def _on_instruction_set_updated(self, instruction_set: InstructionSet):
         """
         Handle instruction set updated event from the controller.
         
@@ -883,7 +883,7 @@ class InstructionDialog(QDialog):
         pass
     
     @pyqtSlot(bool, str)
-    def _on_operation_result(self, success, message):
+    def _on_operation_result(self, success: bool, message: str):
         """
         Handle operation result event from the controller.
         
@@ -910,7 +910,7 @@ class InstructionDialog(QDialog):
             )
     
     @pyqtSlot(int)
-    def _on_llm_enabled_changed(self, state):
+    def _on_llm_enabled_changed(self, state: int):
         """
         Handle changes to the LLM enabled checkbox.
         
@@ -946,7 +946,7 @@ class InstructionDialog(QDialog):
         self._llm_instructions_edit.setEnabled(is_enabled)
     
     @pyqtSlot(int)
-    def _on_llm_model_changed(self, index):
+    def _on_llm_model_changed(self, index: int):
         """
         Handle changes to the LLM model selection.
         
@@ -1012,7 +1012,7 @@ class InstructionDialog(QDialog):
         # Close the dialog
         self.accept()
     
-    def showEvent(self, event):
+    def showEvent(self, event: QShowEvent):
         """
         Handle dialog show event.
         
@@ -1039,7 +1039,7 @@ class InstructionDialog(QDialog):
         self._discard_button.setEnabled(False)
         self._update_operation_buttons()
     
-    def closeEvent(self, event):
+    def closeEvent(self, event: QCloseEvent):
         """
         Handle window close event.
         

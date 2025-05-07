@@ -55,7 +55,7 @@ class AppController(QObject):
     instruction_set_activated = pyqtSignal(InstructionSet)
     hotkey_triggered = pyqtSignal(str)
     
-    def __init__(self, settings: QSettings):
+    def __init__(self, settings: QSettings) -> None:
         """
         Initialize the AppController.
         
@@ -78,7 +78,7 @@ class AppController(QObject):
         # For tracking recording state
         self._is_recording = False
     
-    def _init_models(self):
+    def _init_models(self) -> None:
         """
         Initialize the application models.
         
@@ -103,7 +103,7 @@ class AppController(QObject):
         self._instruction_set_model = InstructionSetModel(self._settings)
         self._hotkey_model = HotkeyModel()
     
-    def _setup_model_connections(self):
+    def _setup_model_connections(self) -> None:
         """
         Set up connections between models and controller.
         """
@@ -123,7 +123,7 @@ class AppController(QObject):
         self._hotkey_model.hotkey_triggered.connect(self._handle_hotkey_triggered)
     
     @pyqtSlot(str)
-    def _handle_hotkey_triggered(self, hotkey: str):
+    def _handle_hotkey_triggered(self, hotkey: str) -> None:
         """
         Handle hotkey trigger events.
         
@@ -179,24 +179,24 @@ class AppController(QObject):
             
         return result
     
-    def get_instruction_sets(self):
+    def get_instruction_sets(self) -> list[InstructionSet]:
         """
         Get all available instruction sets.
         
         Returns
         -------
-        List[InstructionSet]
+        list[InstructionSet]
             List of all instruction sets
         """
         return self._instruction_set_model.get_all_sets()
     
-    def get_selected_instruction_set(self) -> Optional[InstructionSet]:
+    def get_selected_instruction_set(self) -> InstructionSet | None:
         """
         Get the currently selected instruction set.
         
         Returns
         -------
-        Optional[InstructionSet]
+        InstructionSet | None
             The currently selected instruction set, or None if none selected
         """
         return self._instruction_set_model.get_selected_set()
@@ -241,7 +241,7 @@ class AppController(QObject):
             
         return result
     
-    def toggle_recording(self):
+    def toggle_recording(self) -> bool:
         """
         Toggle recording state.
         
@@ -253,7 +253,7 @@ class AppController(QObject):
         else:
             self.start_recording()
     
-    def start_recording(self):
+    def start_recording(self) -> bool:
         """
         Start recording audio.
         
@@ -284,7 +284,7 @@ class AppController(QObject):
         else:
             return False
     
-    def start_recording_with_hotkey(self, hotkey: str):
+    def start_recording_with_hotkey(self, hotkey: str) -> bool:
         """
         Start recording audio with a specific hotkey as the trigger.
         
@@ -320,7 +320,7 @@ class AppController(QObject):
         else:
             return False
     
-    def stop_recording(self):
+    def stop_recording(self) -> bool:
         """
         Stop recording audio and begin processing.
         
@@ -357,7 +357,7 @@ class AppController(QObject):
             
         return True
     
-    def shutdown(self):
+    def shutdown(self) -> None:
         """
         Clean up resources when the application is shutting down.
         """
@@ -368,7 +368,7 @@ class AppController(QObject):
         if self._is_recording:
             self.stop_recording()
     
-    def create_instruction_dialog(self, parent=None):
+    def create_instruction_dialog(self, parent=None) -> InstructionDialog:
         """
         Create and return an instruction dialog.
         
@@ -400,7 +400,7 @@ class AppController(QObject):
         
         return dialog
     
-    def show_api_key_settings(self, parent=None):
+    def show_api_key_settings(self, parent=None) -> bool:
         """
         Show the API key settings dialog.
         

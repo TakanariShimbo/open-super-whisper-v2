@@ -10,10 +10,9 @@ import sys
 
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QPushButton, 
-    QLabel, QProgressBar, QTextEdit, QComboBox,
+    QLabel, QTextEdit, QComboBox,
     QGridLayout, QFormLayout, QTabWidget, QStatusBar,
-    QMessageBox, QDialog, QInputDialog, QLineEdit,
-    QApplication, QSystemTrayIcon
+    QMessageBox, QApplication, QSystemTrayIcon
 )
 from PyQt6.QtCore import Qt, pyqtSlot, QSettings, QTimer
 from PyQt6.QtGui import QIcon, QAction, QCloseEvent

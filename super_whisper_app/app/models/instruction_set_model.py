@@ -5,7 +5,6 @@ This module provides the model component for managing instruction sets
 in the Super Whisper application.
 """
 
-from typing import List, Optional
 from PyQt6.QtCore import QObject, pyqtSignal, QSettings
 
 from core.pipelines.instruction_set import InstructionSet
@@ -30,7 +29,7 @@ class InstructionSetModel(QObject):
     instruction_sets_changed = pyqtSignal()
     selected_set_changed = pyqtSignal(InstructionSet)
     
-    def __init__(self, settings: Optional[QSettings] = None):
+    def __init__(self, settings: QSettings | None = None):
         """
         Initialize the InstructionSetModel.
         
@@ -56,7 +55,7 @@ class InstructionSetModel(QObject):
         # Save settings after initialization to ensure persistence
         self.save_to_settings()
     
-    def _load_data_from_settings(self):
+    def _load_data_from_settings(self) -> None:
         """
         Load instruction sets data from QSettings.
         
@@ -76,7 +75,7 @@ class InstructionSetModel(QObject):
         # Load selected set name without validation
         self._selected_set_name = self._settings.value("selected_instruction_set", "")
     
-    def _ensure_valid_state(self):
+    def _ensure_valid_state(self) -> None:
         """
         Ensure the model is in a valid state.
         
@@ -100,7 +99,7 @@ class InstructionSetModel(QObject):
         if not valid_selection:
             self._selected_set_name = instruction_sets[0].name
     
-    def _save_to_settings(self):
+    def _save_to_settings(self) -> None:
         """
         Save instruction sets to QSettings.
         
@@ -119,31 +118,31 @@ class InstructionSetModel(QObject):
         # Sync settings to disk
         self._settings.sync()
         
-    def save_to_settings(self):
+    def save_to_settings(self) -> None:
         """
         Save instruction sets to QSettings.
         """
         self._save_to_settings()
         
-    def load_from_settings(self):
+    def load_from_settings(self) -> None:
         """
         Load instruction sets from QSettings.
         """
         self._load_data_from_settings()
         self._ensure_valid_state()
     
-    def get_all_sets(self) -> List[InstructionSet]:
+    def get_all_sets(self) -> list[InstructionSet]:
         """
         Get all instruction sets.
         
         Returns
         -------
-        List[InstructionSet]
+        list[InstructionSet]
             List of all instruction sets
         """
         return self._instruction_manager.get_all_sets()
     
-    def get_set_by_name(self, name: str) -> Optional[InstructionSet]:
+    def get_set_by_name(self, name: str) -> InstructionSet | None:
         """
         Get an instruction set by name.
         
@@ -154,12 +153,12 @@ class InstructionSetModel(QObject):
             
         Returns
         -------
-        Optional[InstructionSet]
+        InstructionSet | None
             The instruction set with the specified name, or None if not found
         """
         return self._instruction_manager.find_set_by_name(name)
     
-    def get_set_by_hotkey(self, hotkey: str) -> Optional[InstructionSet]:
+    def get_set_by_hotkey(self, hotkey: str) -> InstructionSet | None:
         """
         Get an instruction set by hotkey.
         
@@ -170,18 +169,18 @@ class InstructionSetModel(QObject):
             
         Returns
         -------
-        Optional[InstructionSet]
+        InstructionSet | None
             The instruction set with the specified hotkey, or None if not found
         """
         return self._instruction_manager.find_set_by_hotkey(hotkey)
     
-    def get_selected_set(self) -> Optional[InstructionSet]:
+    def get_selected_set(self) -> InstructionSet | None:
         """
         Get the currently selected instruction set.
         
         Returns
         -------
-        Optional[InstructionSet]
+        InstructionSet | None
             The currently selected instruction set, or None if none selected
         """
         if not self._selected_set_name:

@@ -33,7 +33,7 @@ class PipelineModel(QObject):
     processing_started = pyqtSignal()
     processing_complete = pyqtSignal(PipelineResult)
     
-    def __init__(self, api_key=""):
+    def __init__(self, api_key: str = ""):
         """
         Initialize the PipelineModel.
         
@@ -51,7 +51,7 @@ class PipelineModel(QObject):
             self._pipeline = None
             
     @property
-    def is_initialized(self):
+    def is_initialized(self) -> bool:
         """
         Check if the pipeline is properly initialized.
         
@@ -63,7 +63,7 @@ class PipelineModel(QObject):
         return self._pipeline is not None
     
     @property
-    def is_recording(self):
+    def is_recording(self) -> bool:
         """
         Check if recording is in progress.
         
@@ -74,7 +74,7 @@ class PipelineModel(QObject):
         """
         return self._pipeline.is_recording if self._pipeline else False
     
-    def initialize_pipeline(self, api_key):
+    def initialize_pipeline(self, api_key: str) -> bool:
         """
         Initialize or reinitialize the pipeline with a new API key.
         
@@ -96,7 +96,7 @@ class PipelineModel(QObject):
             self.processing_error.emit("Invalid API key")
             return False
     
-    def apply_instruction_set(self, instruction_set):
+    def apply_instruction_set(self, instruction_set: InstructionSet) -> bool:
         """
         Apply an instruction set to the pipeline.
         
@@ -121,7 +121,7 @@ class PipelineModel(QObject):
             self.processing_error.emit(f"Error applying instruction set: {str(e)}")
             return False
     
-    def start_recording(self):
+    def start_recording(self) -> bool:
         """
         Start recording audio.
         
@@ -141,7 +141,7 @@ class PipelineModel(QObject):
             self.processing_error.emit(f"Error starting recording: {str(e)}")
             return False
     
-    def stop_recording(self):
+    def stop_recording(self) -> str | None:
         """
         Stop recording audio.
         
@@ -159,8 +159,8 @@ class PipelineModel(QObject):
             self.processing_error.emit(f"Error stopping recording: {str(e)}")
             return None
     
-    def process_audio(self, audio_file_path, language=None, 
-                     clipboard_text=None, clipboard_image=None):
+    def process_audio(self, audio_file_path: str, language: str | None = None, 
+                     clipboard_text: str | None = None, clipboard_image: bytes | None = None) -> bool:
         """
         Process an audio file through the pipeline.
         

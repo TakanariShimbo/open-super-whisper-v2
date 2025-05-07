@@ -5,7 +5,7 @@ This module provides the view component for API key input dialog.
 """
 
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import pyqtSignal
 
 class APIKeyDialog(QDialog):
     """
