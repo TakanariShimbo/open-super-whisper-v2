@@ -416,14 +416,7 @@ class InstructionDialog(QDialog):
                 # Save changes before switching
                 self._on_save_changes()
         
-        # Reset changes flag
-        self._changes_made = False
-        self._save_button.setEnabled(False)
-        
-        # Update operation buttons based on save state
-        self._update_operation_buttons()
-        
-        # Update editors
+        # Block signals before setting values to prevent _on_form_changed from being triggered
         self._vocabulary_edit.blockSignals(True)
         self._instructions_edit.blockSignals(True)
         self._llm_instructions_edit.blockSignals(True)
@@ -433,6 +426,13 @@ class InstructionDialog(QDialog):
         self._llm_model_combo.blockSignals(True)
         self._llm_clipboard_text_checkbox.blockSignals(True)
         self._llm_clipboard_image_checkbox.blockSignals(True)
+        
+        # Reset changes flag
+        self._changes_made = False
+        self._save_button.setEnabled(False)
+        
+        # Update operation buttons based on save state
+        self._update_operation_buttons()
         
         # Update vocabulary and instructions
         self._vocabulary_edit.setPlainText(instruction_set.stt_vocabulary)
@@ -521,15 +521,23 @@ class InstructionDialog(QDialog):
         self._sets_list.setEnabled(operations_enabled)
     
     def _on_form_changed(self):
-        """Handle form value changes."""
-        # Set changes flag
-        self._changes_made = True
+        """
+        Handle form value changes.
         
-        # Enable save button
-        self._save_button.setEnabled(True)
-        
-        # Update operation buttons
-        self._update_operation_buttons()
+        This method is called when any form element changes its value.
+        It marks the form as having unsaved changes and updates the UI accordingly.
+        """
+        # During initialization, the dialog might still be in setup phase
+        # Only mark changes if the window is fully visible
+        if self.isVisible():
+            # Set changes flag
+            self._changes_made = True
+            
+            # Enable save button
+            self._save_button.setEnabled(True)
+            
+            # Update operation buttons
+            self._update_operation_buttons()
     
     def _on_add_set(self):
         """Handle adding a new instruction set."""
@@ -889,6 +897,7 @@ class InstructionDialog(QDialog):
         
         This method is called when the dialog is shown. It disables all hotkeys
         to prevent them from being triggered while the dialog is open.
+        It also ensures the initial state is "saved" to enable operation buttons.
         
         Parameters
         ----------
@@ -902,6 +911,11 @@ class InstructionDialog(QDialog):
         if self._controller._hotkey_model:
             self._controller._hotkey_model.stop_listening()
             self._hotkeys_disabled = True
+            
+        # Ensure initial state is "saved" to enable operation buttons
+        self._changes_made = False
+        self._save_button.setEnabled(False)
+        self._update_operation_buttons()
     
     def closeEvent(self, event):
         """
