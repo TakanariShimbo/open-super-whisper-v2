@@ -20,7 +20,7 @@ from ..models.dialogs.instruction_dialog_model import InstructionDialogModel
 from ..controllers.dialogs.instruction_dialog_controller import InstructionDialogController
 from ..controllers.dialogs.api_key_controller import APIKeyController
 from ..views.dialogs.instruction_dialog import InstructionDialog
-from ..utils.clipboard_utils import get_clipboard_content
+from ..utils.clipboard_utils import ClipboardUtils
 
 
 class AppController(QObject):
@@ -405,7 +405,7 @@ class AppController(QObject):
             clipboard_text, clipboard_image = None, None
             if selected_set and selected_set.llm_enabled:
                 # Only get clipboard if LLM is enabled in the instruction set
-                clipboard_text, clipboard_image = get_clipboard_content()
+                clipboard_text, clipboard_image = ClipboardUtils.get_content()
                 
                 # Log for debugging (remove in production)
                 if clipboard_text or clipboard_image:

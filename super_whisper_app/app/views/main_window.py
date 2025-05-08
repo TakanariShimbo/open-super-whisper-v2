@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QPushButton, 
     QLabel, QTextEdit, QComboBox,
     QGridLayout, QFormLayout, QTabWidget, QStatusBar,
-    QMessageBox, QApplication, QSystemTrayIcon
+    QMessageBox, QSystemTrayIcon
 )
 from PyQt6.QtCore import Qt, pyqtSlot, QSettings, QTimer
 from PyQt6.QtGui import QAction, QCloseEvent
@@ -21,6 +21,7 @@ from core.pipelines.instruction_set import InstructionSet
 
 from ..controllers.app_controller import AppController
 from ..utils.icon_manager import IconManager
+from ..utils.clipboard_utils import ClipboardUtils
 from .tray.system_tray import SystemTray
 
 class MainWindow(QMainWindow):
@@ -473,14 +474,14 @@ class MainWindow(QMainWindow):
         """
         Copy the transcription text to the clipboard.
         """
-        QApplication.clipboard().setText(self.transcription_text.toPlainText())
+        ClipboardUtils.set_text(self.transcription_text.toPlainText())
         self.status_bar.showMessage("Transcription copied to clipboard", 2000)
     
     def copy_llm(self):
         """
         Copy the LLM output text to the clipboard.
         """
-        QApplication.clipboard().setText(self.llm_text.toPlainText())
+        ClipboardUtils.set_text(self.llm_text.toPlainText())
         self.status_bar.showMessage("LLM output copied to clipboard", 2000)
         
     def show_instruction_sets_dialog(self):
