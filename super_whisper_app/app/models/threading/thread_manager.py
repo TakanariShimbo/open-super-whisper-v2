@@ -6,7 +6,6 @@ safely communicating between threads in a Qt application.
 """
 
 from typing import Callable, Any
-import time
 import uuid
 
 from PyQt6.QtCore import QObject, pyqtSignal, Qt, QTimer
