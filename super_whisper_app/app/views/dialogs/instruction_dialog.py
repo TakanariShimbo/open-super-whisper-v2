@@ -343,14 +343,14 @@ class InstructionDialog(QDialog):
         # Clear combo box
         self._stt_language_combo.clear()
         
-        # Add auto-detect option
-        self._stt_language_combo.addItem("Auto-detect", None)
-        
         # Add languages
         languages = self._controller.get_available_languages()
         for lang in languages:
-            self._stt_language_combo.addItem(f"{lang.name} ({lang.code})", lang.code)
-    
+            if lang.code:
+                self._stt_language_combo.addItem(f"{lang.name} ({lang.code})", lang.code)
+            else:
+                self._stt_language_combo.addItem(lang.name, lang.code)
+
     def _load_stt_models(self) -> None:
         """Load available STT models into the model combo box."""
         # Clear combo box
