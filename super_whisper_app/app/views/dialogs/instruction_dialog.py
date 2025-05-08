@@ -14,9 +14,10 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QCloseEvent, QShowEvent
 
-from ...controllers.dialogs.instruction_dialog_controller import InstructionDialogController
 from core.pipelines.instruction_set import InstructionSet
-from gui.dialogs.hotkey_dialog import HotkeyDialog
+
+from ...controllers.dialogs.instruction_dialog_controller import InstructionDialogController
+from .hotkey_dialog import HotkeyDialog
 
 
 class InstructionDialog(QDialog):
@@ -57,7 +58,7 @@ class InstructionDialog(QDialog):
         Widget for displaying and setting hotkeys
     """
     
-    def __init__(self, controller: InstructionDialogController, parent=None):
+    def __init__(self, controller: InstructionDialogController, parent=None) -> None:
         """
         Initialize the InstructionDialog.
         
@@ -88,7 +89,7 @@ class InstructionDialog(QDialog):
         # Load instruction sets
         self._load_instruction_sets()
     
-    def _init_ui(self):
+    def _init_ui(self) -> None:
         """Initialize the user interface."""
         # Set dialog properties
         self.setWindowTitle("Instruction Sets")
@@ -304,7 +305,7 @@ class InstructionDialog(QDialog):
         self._llm_clipboard_image_checkbox.setEnabled(False)
         # LLM tab's contents will be enabled/disabled when a set is selected
     
-    def _connect_controller_signals(self):
+    def _connect_controller_signals(self) -> None:
         """Connect signals from the controller."""
         # Connect controller signals to local methods
         self._controller.instruction_set_added.connect(self._on_instruction_set_added)
@@ -315,7 +316,7 @@ class InstructionDialog(QDialog):
         self._controller.hotkey_conflict.connect(self._on_hotkey_conflict)
         self._controller.operation_result.connect(self._on_operation_result)
         
-    def _load_instruction_sets(self):
+    def _load_instruction_sets(self) -> None:
         """Load instruction sets into the UI."""
         # Clear list
         self._sets_list.clear()
@@ -337,7 +338,7 @@ class InstructionDialog(QDialog):
         # Load available LLM models
         self._load_llm_models()
     
-    def _load_languages(self):
+    def _load_languages(self) -> None:
         """Load available languages into the language combo box."""
         # Clear combo box
         self._stt_language_combo.clear()
@@ -350,7 +351,7 @@ class InstructionDialog(QDialog):
         for lang in languages:
             self._stt_language_combo.addItem(f"{lang.name} ({lang.code})", lang.code)
     
-    def _load_stt_models(self):
+    def _load_stt_models(self) -> None:
         """Load available STT models into the model combo box."""
         # Clear combo box
         self._stt_model_combo.clear()
@@ -365,7 +366,7 @@ class InstructionDialog(QDialog):
                 Qt.ItemDataRole.ToolTipRole
             )
     
-    def _load_llm_models(self):
+    def _load_llm_models(self) -> None:
         """Load available LLM models into the model combo box."""
         # Clear combo box
         self._llm_model_combo.clear()
@@ -381,7 +382,7 @@ class InstructionDialog(QDialog):
             )
     
     @pyqtSlot(int)
-    def _on_set_selected(self, row):
+    def _on_set_selected(self, row: int) -> None:
         """
         Handle selection of an instruction set.
         
@@ -406,7 +407,7 @@ class InstructionDialog(QDialog):
         self._controller.select_set(set_name)
     
     @pyqtSlot(InstructionSet)
-    def _on_instruction_set_selected(self, instruction_set: InstructionSet):
+    def _on_instruction_set_selected(self, instruction_set: InstructionSet) -> None:
         """
         Handle the instruction set selected event from the controller.
         
@@ -513,7 +514,7 @@ class InstructionDialog(QDialog):
         self._llm_clipboard_text_checkbox.blockSignals(False)
         self._llm_clipboard_image_checkbox.blockSignals(False)
     
-    def _update_operation_buttons(self):
+    def _update_operation_buttons(self) -> None:
         """
         Update the enabled state of operation buttons based on save state.
         
@@ -534,7 +535,7 @@ class InstructionDialog(QDialog):
         # Instead, we'll handle selection change attempts in the _on_set_selected method
         self._sets_list.setEnabled(operations_enabled)
     
-    def _on_form_changed(self):
+    def _on_form_changed(self) -> None:
         """
         Handle form value changes.
         
@@ -554,7 +555,7 @@ class InstructionDialog(QDialog):
             # Update operation buttons
             self._update_operation_buttons()
     
-    def _on_add_set(self):
+    def _on_add_set(self) -> None:
         """Handle adding a new instruction set."""
         # Show input dialog
         name, ok = QInputDialog.getText(
@@ -568,7 +569,7 @@ class InstructionDialog(QDialog):
             self._controller.add_set(name)
     
     @pyqtSlot(InstructionSet)
-    def _on_instruction_set_added(self, instruction_set: InstructionSet):
+    def _on_instruction_set_added(self, instruction_set: InstructionSet) -> None:
         """
         Handle instruction set added event from the controller.
         
@@ -586,7 +587,7 @@ class InstructionDialog(QDialog):
                 self._sets_list.setCurrentRow(i)
                 break
     
-    def _on_rename_set(self):
+    def _on_rename_set(self) -> None:
         """Handle renaming an instruction set."""
         row = self._sets_list.currentRow()
         if row < 0:
@@ -608,7 +609,7 @@ class InstructionDialog(QDialog):
             self._controller.rename_set(old_name, new_name)
     
     @pyqtSlot(str, str)
-    def _on_instruction_set_renamed(self, old_name: str, new_name: str):
+    def _on_instruction_set_renamed(self, old_name: str, new_name: str) -> None:
         """
         Handle instruction set renamed event from the controller.
         
@@ -625,7 +626,7 @@ class InstructionDialog(QDialog):
                 self._sets_list.item(i).setText(new_name)
                 break
     
-    def _on_delete_set(self):
+    def _on_delete_set(self) -> None:
         """Handle deleting an instruction set."""
         row = self._sets_list.currentRow()
         if row < 0:
@@ -647,7 +648,7 @@ class InstructionDialog(QDialog):
             self._controller.delete_set(name)
     
     @pyqtSlot(str)
-    def _on_instruction_set_deleted(self, name: str):
+    def _on_instruction_set_deleted(self, name: str) -> None:
         """
         Handle instruction set deleted event from the controller.
         
@@ -666,7 +667,7 @@ class InstructionDialog(QDialog):
         if self._sets_list.count() > 0:
             self._sets_list.setCurrentRow(min(i, self._sets_list.count() - 1))
     
-    def _on_set_hotkey(self):
+    def _on_set_hotkey(self) -> None:
         """Handle setting a hotkey for the selected instruction set."""
         row = self._sets_list.currentRow()
         if row < 0:
@@ -679,7 +680,7 @@ class InstructionDialog(QDialog):
         # Get current hotkey
         current_hotkey = self._hotkey_input.text()
         
-        dialog = HotkeyDialog(self, current_hotkey)
+        dialog = HotkeyDialog(self, current_hotkey, self._controller._hotkey_model)
         result = dialog.exec()
         
         if result:
@@ -693,7 +694,7 @@ class InstructionDialog(QDialog):
                 self._on_form_changed()
     
     @pyqtSlot(str, str)
-    def _on_hotkey_conflict(self, hotkey: str, conflict_set_name: str):
+    def _on_hotkey_conflict(self, hotkey: str, conflict_set_name: str) -> None:
         """
         Handle hotkey conflict event from the controller.
         
@@ -719,7 +720,7 @@ class InstructionDialog(QDialog):
                 QMessageBox.StandardButton.Ok
             )
     
-    def _on_save_changes(self):
+    def _on_save_changes(self) -> None:
         """Handle saving changes to the current instruction set."""
         row = self._sets_list.currentRow()
         if row < 0:
@@ -763,7 +764,7 @@ class InstructionDialog(QDialog):
         # Update operation buttons - enable after save
         self._update_operation_buttons()
     
-    def _on_discard_changes(self):
+    def _on_discard_changes(self) -> None:
         """Handle discarding changes to the current instruction set."""
         row = self._sets_list.currentRow()
         if row < 0:
@@ -870,7 +871,7 @@ class InstructionDialog(QDialog):
         )
     
     @pyqtSlot(InstructionSet)
-    def _on_instruction_set_updated(self, instruction_set: InstructionSet):
+    def _on_instruction_set_updated(self, instruction_set: InstructionSet) -> None:
         """
         Handle instruction set updated event from the controller.
         
@@ -884,7 +885,7 @@ class InstructionDialog(QDialog):
         pass
     
     @pyqtSlot(bool, str)
-    def _on_operation_result(self, success: bool, message: str):
+    def _on_operation_result(self, success: bool, message: str) -> None:
         """
         Handle operation result event from the controller.
         
@@ -911,7 +912,7 @@ class InstructionDialog(QDialog):
             )
     
     @pyqtSlot(int)
-    def _on_llm_enabled_changed(self, state: int):
+    def _on_llm_enabled_changed(self, state: int) -> None:
         """
         Handle changes to the LLM enabled checkbox.
         
@@ -947,7 +948,7 @@ class InstructionDialog(QDialog):
         self._llm_instructions_edit.setEnabled(is_enabled)
     
     @pyqtSlot(int)
-    def _on_llm_model_changed(self, index: int):
+    def _on_llm_model_changed(self, index: int) -> None:
         """
         Handle changes to the LLM model selection.
         
@@ -978,7 +979,7 @@ class InstructionDialog(QDialog):
         if not supports_image:
             self._llm_clipboard_image_checkbox.setChecked(False)
     
-    def _show_unsaved_changes_dialog(self):
+    def _show_unsaved_changes_dialog(self) -> QMessageBox.StandardButton:
         """
         Show a dialog asking if unsaved changes should be saved.
         
@@ -997,7 +998,7 @@ class InstructionDialog(QDialog):
             QMessageBox.StandardButton.Save
         )
     
-    def on_close(self):
+    def on_close(self) -> None:
         """Handle dialog close event."""
         # Check if there are unsaved changes
         if self._changes_made:
@@ -1013,7 +1014,7 @@ class InstructionDialog(QDialog):
         # Close the dialog
         self.accept()
     
-    def showEvent(self, event: QShowEvent):
+    def showEvent(self, event: QShowEvent) -> None:
         """
         Handle dialog show event.
         
@@ -1040,7 +1041,7 @@ class InstructionDialog(QDialog):
         self._discard_button.setEnabled(False)
         self._update_operation_buttons()
     
-    def closeEvent(self, event: QCloseEvent):
+    def closeEvent(self, event: QCloseEvent) -> None:
         """
         Handle window close event.
         
@@ -1064,7 +1065,7 @@ class InstructionDialog(QDialog):
         # Accept the event to close the dialog
         event.accept()
     
-    def accept(self):
+    def accept(self) -> None:
         """
         Handle dialog acceptance.
         
@@ -1077,7 +1078,7 @@ class InstructionDialog(QDialog):
         # Call parent class method
         super().accept()
     
-    def reject(self):
+    def reject(self) -> None:
         """
         Handle dialog rejection.
         
@@ -1090,7 +1091,7 @@ class InstructionDialog(QDialog):
         # Call parent class method
         super().reject()
     
-    def _restore_hotkeys(self):
+    def _restore_hotkeys(self) -> None:
         """
         Restore hotkeys that were disabled.
         
