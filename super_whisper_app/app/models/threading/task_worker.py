@@ -6,8 +6,10 @@ in a separate thread, with proper signal handling for task completion
 and failures.
 """
 
-from PyQt6.QtCore import QObject, QThread, pyqtSignal
-from typing import Callable, Dict, Any, Tuple
+from typing import Callable, Any
+
+from PyQt6.QtCore import QThread, pyqtSignal
+
 
 class TaskWorker(QThread):
     """
@@ -21,7 +23,7 @@ class TaskWorker(QThread):
     taskCompleted = pyqtSignal(str, object)  # task_id, result
     taskFailed = pyqtSignal(str, str)       # task_id, error_message
     
-    def __init__(self, task_id: str, func: Callable, args: Tuple, kwargs: Dict[str, Any]):
+    def __init__(self, task_id: str, func: Callable, args: tuple, kwargs: dict[str, Any]) -> None:
         """
         Initialize TaskWorker
         

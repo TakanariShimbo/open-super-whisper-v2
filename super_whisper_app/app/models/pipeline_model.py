@@ -10,7 +10,8 @@ from PyQt6.QtCore import QObject, pyqtSignal
 from core.pipelines.pipeline import Pipeline
 from core.pipelines.pipeline_result import PipelineResult
 from core.pipelines.instruction_set import InstructionSet
-from super_whisper_app.app.models.threading.thread_manager import ThreadManager
+
+from .threading.thread_manager import ThreadManager
 
 
 class PipelineModel(QObject):

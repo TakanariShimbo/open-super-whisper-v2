@@ -5,12 +5,14 @@ This module provides a central thread management system for
 safely communicating between threads in a Qt application.
 """
 
-from PyQt6.QtCore import QObject, pyqtSignal, QMetaObject, Qt, QTimer
-from typing import Callable, Any, Dict, Optional
+from typing import Callable, Any
 import time
 import uuid
 
+from PyQt6.QtCore import QObject, pyqtSignal, Qt, QTimer
+
 from .task_worker import TaskWorker
+
 
 class ThreadManager(QObject):
     """
@@ -31,7 +33,7 @@ class ThreadManager(QObject):
     # Internal signals
     _execute_in_main_thread = pyqtSignal(object, tuple, dict)  # func, args, kwargs
     
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initialize the ThreadManager
         """
@@ -47,7 +49,7 @@ class ThreadManager(QObject):
         # Internal signal connections
         self._setup_internal_connections()
     
-    def _setup_internal_connections(self):
+    def _setup_internal_connections(self) -> None:
         """
         Set up internal signal/slot connections
         """
