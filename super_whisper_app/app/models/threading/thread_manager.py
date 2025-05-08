@@ -188,61 +188,61 @@ class ThreadManager(QObject):
             self._current_tasks[task_id].deleteLater()
             del self._current_tasks[task_id]
     
-    def update_status(self, message: str, timeout: int = 0) -> None:
-        """
-        Safely update the status bar
+    # def update_status(self, message: str, timeout: int = 0) -> None:
+    #     """
+    #     Safely update the status bar
         
-        Parameters
-        ----------
-        message : str
-            Message to display
-        timeout : int, optional
-            Display time (milliseconds), 0 for persistent display
-        """
-        # Emit status update signal
-        self.statusUpdate.emit(message, timeout)
+    #     Parameters
+    #     ----------
+    #     message : str
+    #         Message to display
+    #     timeout : int, optional
+    #         Display time (milliseconds), 0 for persistent display
+    #     """
+    #     # Emit status update signal
+    #     self.statusUpdate.emit(message, timeout)
     
-    def start_recording_timer(self) -> None:
-        """
-        Start the recording timer
-        """
-        self._recording_start_time = time.time()
+    # def start_recording_timer(self) -> None:
+    #     """
+    #     Start the recording timer
+    #     """
+    #     self._recording_start_time = time.time()
         
-        # Create timer if it doesn't exist
-        if not self._recording_timer:
-            self._recording_timer = QTimer(self)
-            self._recording_timer.timeout.connect(self._update_recording_time)
+    #     # Create timer if it doesn't exist
+    #     if not self._recording_timer:
+    #         self._recording_timer = QTimer(self)
+    #         self._recording_timer.timeout.connect(self._update_recording_time)
         
-        # Start timer
-        self._recording_timer.start(1000)  # Update every second
+    #     # Start timer
+    #     self._recording_timer.start(1000)  # Update every second
 
-    def stop_recording_timer(self) -> None:
-        """
-        Stop the recording timer
-        """
-        if self._recording_timer and self._recording_timer.isActive():
-            self._recording_timer.stop()
+    # def stop_recording_timer(self) -> None:
+    #     """
+    #     Stop the recording timer
+    #     """
+    #     if self._recording_timer and self._recording_timer.isActive():
+    #         self._recording_timer.stop()
     
-    def _update_recording_time(self) -> None:
-        """
-        Update recording time
-        """
-        # Calculate and display elapsed time
-        elapsed = int(time.time() - self._recording_start_time)
-        minutes = elapsed // 60
-        seconds = elapsed % 60
-        time_str = f"{minutes:02d}:{seconds:02d}"
+    # def _update_recording_time(self) -> None:
+    #     """
+    #     Update recording time
+    #     """
+    #     # Calculate and display elapsed time
+    #     elapsed = int(time.time() - self._recording_start_time)
+    #     minutes = elapsed // 60
+    #     seconds = elapsed % 60
+    #     time_str = f"{minutes:02d}:{seconds:02d}"
         
-        # Emit timer update signal
-        self.timerUpdate.emit(time_str)
+    #     # Emit timer update signal
+    #     self.timerUpdate.emit(time_str)
         
-    def update_stream(self, chunk: str) -> None:
-        """
-        Send an LLM streaming update
+    # def update_stream(self, chunk: str) -> None:
+    #     """
+    #     Send an LLM streaming update
         
-        Parameters
-        ----------
-        chunk : str
-            Text chunk from LLM streaming response
-        """
-        self.streamUpdate.emit(chunk)
+    #     Parameters
+    #     ----------
+    #     chunk : str
+    #         Text chunk from LLM streaming response
+    #     """
+    #     self.streamUpdate.emit(chunk)
