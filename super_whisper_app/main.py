@@ -9,10 +9,10 @@ import sys
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtCore import QSettings
 
-from super_whisper_app.app.controllers.app_controller import AppController
-from super_whisper_app.app.controllers.dialogs.api_key_controller import APIKeyController
-from super_whisper_app.app.views.main_window import MainWindow
-from super_whisper_app.app.utils.icon_manager import IconManager
+from .app.controllers.app_controller import AppController
+from .app.controllers.dialogs.api_key_controller import APIKeyController
+from .app.views.main_window import MainWindow
+from .app.utils.icon_manager import IconManager
 
 
 def main() -> int:
