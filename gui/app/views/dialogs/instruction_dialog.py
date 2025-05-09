@@ -324,10 +324,6 @@ class InstructionDialog(QDialog):
         # Add sets
         for instruction_set in self._controller.get_all_sets():
             self._sets_list.addItem(instruction_set.name)
-        
-        # Select first item if available
-        if self._sets_list.count() > 0:
-            self._sets_list.setCurrentRow(0)
             
         # Load available languages
         self._load_languages()
@@ -337,6 +333,17 @@ class InstructionDialog(QDialog):
         
         # Load available LLM models
         self._load_llm_models()
+        
+        # Select first item if available
+        # This is moved after loading all data to ensure proper UI updates
+        if self._sets_list.count() > 0:
+            # Explicitly select the first set and force data display
+            set_name = self._sets_list.item(0).text()
+            instruction_set = self._controller.get_set_by_name(set_name)
+            if instruction_set:
+                self._sets_list.setCurrentRow(0)
+                # Explicitly call to update UI with the selected instruction set
+                self._on_instruction_set_selected(instruction_set)
     
     def _load_languages(self) -> None:
         """Load available languages into the language combo box."""
@@ -1046,6 +1053,16 @@ class InstructionDialog(QDialog):
         self._save_button.setEnabled(False)
         self._discard_button.setEnabled(False)
         self._update_operation_buttons()
+        
+        # Ensure UI is fully updated with the selected instruction set data
+        # This is needed because sometimes the UI might not reflect the data on dialog opening
+        row = self._sets_list.currentRow()
+        if row >= 0:
+            set_name = self._sets_list.item(row).text()
+            instruction_set = self._controller.get_set_by_name(set_name)
+            if instruction_set:
+                # Force refresh of UI with the selected instruction set
+                self._on_instruction_set_selected(instruction_set)
     
     def closeEvent(self, event: QCloseEvent) -> None:
         """
