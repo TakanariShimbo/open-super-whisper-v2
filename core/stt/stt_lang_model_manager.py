@@ -6,10 +6,8 @@ speech-to-text processing, including language selection, validation,
 and information retrieval.
 """
 
-# Standard library imports
-from typing import List, Dict, ClassVar
+from typing import ClassVar
 
-# Local application imports
 from .stt_lang_model import STTLangModel
 
 
@@ -24,7 +22,7 @@ class STTLangModelManager:
     
     # Define supported languages
     # This list includes commonly supported languages by transcription services
-    _SUPPORTED_LANGUAGES: ClassVar[List[STTLangModel]] = [
+    _SUPPORTED_LANGUAGES: ClassVar[list[STTLangModel]] = [
         STTLangModel(code="", name="Auto-detect"),
         STTLangModel(code="af", name="Afrikaans"),
         STTLangModel(code="ar", name="Arabic"),
@@ -86,18 +84,18 @@ class STTLangModelManager:
     ]
     
     # Create a lookup dictionary for efficient access by code
-    _LANGUAGE_CODE_MAP: ClassVar[Dict[str, STTLangModel]] = {
+    _LANGUAGE_CODE_MAP: ClassVar[dict[str, STTLangModel]] = {
         lang.code: lang for lang in _SUPPORTED_LANGUAGES
     }
     
     @classmethod
-    def get_available_languages(cls) -> List[STTLangModel]:
+    def get_available_languages(cls) -> list[STTLangModel]:
         """
         Get all supported languages.
         
         Returns
         -------
-        List[STTLangModel]
+        list[STTLangModel]
             List of all supported language objects.
             The first element is always the auto-detect option.
         """
@@ -122,13 +120,13 @@ class STTLangModelManager:
         return cls._LANGUAGE_CODE_MAP.get(code, cls._SUPPORTED_LANGUAGES[0])
     
     @classmethod
-    def to_api_format(cls) -> List[Dict[str, str]]:
+    def to_api_format(cls) -> list[dict[str, str]]:
         """
         Convert languages to API format.
         
         Returns
         -------
-        List[Dict[str, str]]
+        list[dict[str, str]]
             List of dictionaries with language information (code, name).
         """
         return [

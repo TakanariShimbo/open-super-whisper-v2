@@ -4,9 +4,7 @@ Pipeline Result Model
 This module provides a data container for pipeline processing results.
 """
 
-# Standard library imports
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
@@ -27,7 +25,7 @@ class PipelineResult:
         Whether LLM processing was performed.
     """
     stt_output: str
-    llm_output: Optional[str] = None
+    llm_output: str | None = None
     is_llm_processed: bool = False
     
     def get_combined_output(self) -> str:

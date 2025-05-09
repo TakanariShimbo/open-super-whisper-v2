@@ -13,15 +13,12 @@ The primary class (LLMProcessor) handles all communication with the LLM API,
 including authentication, request formatting, and response processing.
 """
 
-# Standard library imports
 import base64
 import time
-from typing import List, Dict, Any, Optional, Callable
+from typing import Any, Callable
 
-# Third-party imports
 import openai
 
-# Local application imports
 from .llm_model_manager import LLMModelManager
 
 
@@ -86,7 +83,7 @@ class LLMProcessor:
     REQUEST_TIMEOUT = 60  # seconds
     MAX_RETRIES = 2
     
-    def __init__(self, client: openai.OpenAI):
+    def __init__(self, client: openai.OpenAI) -> None:
         """
         Initialize the LLMProcessor.
         
@@ -152,7 +149,7 @@ class LLMProcessor:
         
         return self._system_instruction
     
-    def _format_user_content(self, text: str, image_data: Optional[bytes] = None) -> List[Dict[str, Any]]:
+    def _format_user_content(self, text: str, image_data: bytes | None = None) -> list[dict[str, Any]]:
         """
         Format user content into the structure required by the API, including optional image data.
         
@@ -160,12 +157,12 @@ class LLMProcessor:
         ----------
         text : str
             Text to process.
-        image_data : bytes, optional
+        image_data : bytes | None, optional
             Image data in bytes format, by default None.
             
         Returns
         -------
-        List[Dict[str, Any]]
+        list[dict[str, Any]]
             Formatted user content for the API.
         """
         if image_data is not None:
@@ -186,7 +183,7 @@ class LLMProcessor:
             # Text-only content can also use the array format for consistency
             return [{"type": "text", "text": text}]
     
-    def _create_api_messages(self, text: str, image_data: Optional[bytes] = None) -> List[Dict[str, Any]]:
+    def _create_api_messages(self, text: str, image_data: bytes | None = None) -> list[dict[str, Any]]:
         """
         Create formatted messages for API call.
         
@@ -194,12 +191,12 @@ class LLMProcessor:
         ----------
         text : str
             Text to process.
-        image_data : Optional[bytes], optional
+        image_data : bytes | None, optional
             Image data in bytes format, by default None.
             
         Returns
         -------
-        List[Dict[str, Any]]
+        list[dict[str, Any]]
             Formatted messages for API call.
         """
         system_message = self._create_llm_system_message()
@@ -210,14 +207,14 @@ class LLMProcessor:
             {"role": "user", "content": user_content}
         ]
     
-    def _make_api_call(self, messages: List[Dict[str, Any]], stream: bool = False, 
+    def _make_api_call(self, messages: list[dict[str, Any]], stream: bool = False, 
                       retry_count: int = 0) -> Any:
         """
         Make API call to the LLM service.
         
         Parameters
         ----------
-        messages : List[Dict[str, Any]]
+        messages : list[dict[str, Any]]
             Formatted messages for API call.
         stream : bool, optional
             Whether to stream the response, by default False.
@@ -276,7 +273,7 @@ class LLMProcessor:
         return result
     
     def _process_streaming_response(self, response_stream: Any, 
-                                    callback: Optional[Callable[[str], None]] = None) -> str:
+                                    callback: Callable[[str], None] | None = None) -> str:
         """
         Process streaming API response.
         
@@ -284,7 +281,7 @@ class LLMProcessor:
         ----------
         response_stream : Any
             Streaming API response.
-        callback : Optional[Callable[[str], None]], optional
+        callback : Callable[[str], None] | None, optional
             Function to call with each response chunk, by default None.
             
         Returns
@@ -347,8 +344,8 @@ class LLMProcessor:
         # Process response
         return self._process_standard_response(response)
     
-    def process_text_with_stream(self, text: str, callback: Optional[Callable[[str], None]] = None, 
-                            image_data: Optional[bytes] = None) -> str:
+    def process_text_with_stream(self, text: str, callback: Callable[[str], None] | None = None, 
+                            image_data: bytes | None = None) -> str:
         """
         Process text through the LLM with streaming responses, optionally with an image.
         
@@ -356,9 +353,9 @@ class LLMProcessor:
         ----------
         text : str
             Text to process.
-        callback : Optional[Callable[[str], None]], optional
+        callback : Callable[[str], None] | None, optional
             Function to call with each response chunk, by default None.
-        image_data : bytes, optional
+        image_data : bytes | None, optional
             Image data in bytes format, by default None.
             
         Returns

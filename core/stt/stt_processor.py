@@ -5,16 +5,12 @@ This module provides a complete implementation for speech-to-text processing.
 Includes support for processing large audio files by splitting them into smaller chunks.
 """
 
-# Standard library imports
 import os
 import time
 from pathlib import Path
-from typing import List, Dict, Optional, Any
 
-# Third-party imports
 import openai
 
-# Local application imports
 from .stt_model_manager import STTModelManager
 from .audio_chunker import AudioChunker
 
@@ -133,7 +129,7 @@ class STTProcessor:
         """
         self._system_instruction = ""
     
-    def _create_system_prompt(self, context: Optional[str] = None) -> Optional[str]:
+    def _create_system_prompt(self, context: str | None = None) -> str | None:
         """
         Create a system prompt with vocabulary, instruction, and optional context.
         
@@ -144,7 +140,7 @@ class STTProcessor:
         
         Returns
         -------
-        Optional[str]
+        str | None
             Combined prompt string, or None if no parts exist.
         """
         prompt_parts = []
@@ -164,21 +160,21 @@ class STTProcessor:
         # Return None if no parts, otherwise join with space
         return None if not prompt_parts else " ".join(prompt_parts)
     
-    def _build_transcription_params(self, language: Optional[str] = None, 
-                                    context: Optional[str] = None) -> Dict[str, str]:
+    def _build_transcription_params(self, language: str | None = None, 
+                                    context: str | None = None) -> dict[str, str]:
         """
         Build parameters for transcription API call.
         
         Parameters
         ----------
-        language : Optional[str], optional
+        language : str | None, optional
             Language code, by default None
-        context : Optional[str], optional
+        context : str | None, optional
             Context from previous chunk, by default None
             
         Returns
         -------
-        Dict
+        dict[str, str]
             Dictionary of parameters for API call
         """
         # Build base parameters
@@ -198,7 +194,7 @@ class STTProcessor:
             
         return params
     
-    def _transcribe_with_api(self, file_path: str, params: Dict[str, str], 
+    def _transcribe_with_api(self, file_path: str, params: dict[str, str], 
                            retry_count: int = 0) -> str:
         """
         Make API call to transcribe audio file.
@@ -207,7 +203,7 @@ class STTProcessor:
         ----------
         file_path : str
             Path to audio file
-        params : Dict
+        params : dict[str, str]
             Parameters for API call
         retry_count : int, optional
             Current retry attempt, by default 0
@@ -261,13 +257,13 @@ class STTProcessor:
         words = transcription.split()
         return " ".join(words[-max_words:]) if len(words) > max_words else transcription
     
-    def _combine_chunk_transcriptions(self, transcriptions: List[str]) -> str:
+    def _combine_chunk_transcriptions(self, transcriptions: list[str]) -> str:
         """
         Combine multiple chunk transcriptions into a single coherent text.
         
         Parameters
         ----------
-        transcriptions : List[str]
+        transcriptions : list[str]
             List of transcription results from individual chunks
             
         Returns
@@ -286,7 +282,7 @@ class STTProcessor:
         
         return merged_text    
     
-    def transcribe_file_with_chunks(self, audio_file_path: str, language: Optional[str] = None) -> str:
+    def transcribe_file_with_chunks(self, audio_file_path: str, language: str | None = None) -> str:
         """
         Transcribe an audio file.
         
@@ -297,7 +293,7 @@ class STTProcessor:
         ----------
         audio_file_path : str
             Path to the audio file to transcribe.
-        language : Optional[str], optional
+        language : str | None, optional
             Language code (e.g., "en", "ja"), or None for auto-detection.
             
         Returns

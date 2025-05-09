@@ -6,10 +6,6 @@ It centralizes the client creation logic to avoid code duplication across
 different components that need to interact with external APIs.
 """
 
-# Standard library imports
-from typing import Optional, Tuple, Any
-
-# Third-party imports
 import openai
 
 
@@ -33,7 +29,7 @@ class APIClientFactory:
     """
     
     @staticmethod
-    def create_client(api_key: str) -> Tuple[bool, Optional[Any]]:
+    def create_client(api_key: str) -> tuple[bool, openai.OpenAI | None]:
         """
         Create an API client with the provided API key.
         
@@ -44,7 +40,7 @@ class APIClientFactory:
             
         Returns
         -------
-        Tuple[bool, Optional[Any]]
+        Tuple[bool, openai.OpenAI | None]
             A tuple containing:
             - Boolean indicating if the client was created successfully
             - Client object if successful, None otherwise

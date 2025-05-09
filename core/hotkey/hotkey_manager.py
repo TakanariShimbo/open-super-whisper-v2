@@ -4,10 +4,8 @@ Hotkey Manager Implementation
 This module provides a platform-independent implementation for registering and managing global hotkeys.
 """
 
-# Standard library imports
-from typing import Callable, Optional, List, Sequence, Dict
+from typing import Callable
 
-# Third-party imports
 from pynput import keyboard
 
 
@@ -42,7 +40,7 @@ class HotkeyManager:
     """
     
     # Class constants for key mappings
-    MODIFIER_KEYS: Dict[str, str] = {
+    MODIFIER_KEYS: dict[str, str] = {
         'ctrl': '<ctrl>',
         'control': '<ctrl>',
         'alt': '<alt>',
@@ -55,7 +53,7 @@ class HotkeyManager:
         'meta': '<cmd>'
     }
     
-    SPECIAL_KEYS: Dict[str, str] = {
+    SPECIAL_KEYS: dict[str, str] = {
         'f1': '<f1>', 'f2': '<f2>', 'f3': '<f3>', 'f4': '<f4>',
         'f5': '<f5>', 'f6': '<f6>', 'f7': '<f7>', 'f8': '<f8>',
         'f9': '<f9>', 'f10': '<f10>', 'f11': '<f11>', 'f12': '<f12>',
@@ -81,9 +79,9 @@ class HotkeyManager:
         """
         Initialize the HotkeyManager.
         """
-        self._hotkeys: Dict[str, Callable] = {}  # Dictionary to store hotkey strings and their callbacks
-        self._listener: Optional[keyboard.GlobalHotKeys] = None  # Will be set to a listener object when active
-        self._active_hotkeys: Optional[List[str]] = None  # None = filter mode off, list = filter mode on (even empty list)
+        self._hotkeys: dict[str, Callable] = {}  # Dictionary to store hotkey strings and their callbacks
+        self._listener: keyboard.GlobalHotKeys | None = None  # Will be set to a listener object when active
+        self._active_hotkeys: list[str] | None = None  # None = filter mode off, list = filter mode on (even empty list)
     
     @property
     def is_listening(self) -> bool:
@@ -183,7 +181,7 @@ class HotkeyManager:
         del self._hotkeys[hotkey_combination]
         return True
     
-    def enable_filtered_mode(self, active_hotkeys: Sequence[str]) -> None:
+    def enable_filtered_mode(self, active_hotkeys: list[str]) -> None:
         """
         Enable filtered mode to allow only specific hotkeys to work.
         
@@ -192,8 +190,8 @@ class HotkeyManager:
         
         Parameters
         ----------
-        active_hotkeys : Sequence[str]
-            Sequence of hotkey strings that should remain active when filtered mode is enabled.
+        active_hotkeys : list[str]
+            List of hotkey strings that should remain active when filtered mode is enabled.
             Must not be empty.
             
         Returns
@@ -336,7 +334,7 @@ class HotkeyManager:
         self._hotkeys.clear()
     
     @classmethod
-    def parse_hotkey_string(cls, hotkey_string: str) -> Optional[str]:
+    def parse_hotkey_string(cls, hotkey_string: str) -> str | None:
         """
         Convert a user-friendly hotkey string to the format pynput expects.
         
@@ -347,7 +345,7 @@ class HotkeyManager:
             
         Returns
         -------
-        Optional[str]
+        str | None
             Pynput format hotkey string (e.g., "<ctrl>+<shift>+r"), or None if invalid.
             
         Examples

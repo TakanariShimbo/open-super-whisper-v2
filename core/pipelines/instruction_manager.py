@@ -5,10 +5,8 @@ This module provides functionality for managing instruction sets
 used in speech-to-text and LLM processing.
 """
 
-# Standard library imports
-from typing import List, Optional, Dict, Any
+from typing import Any
 
-# Local application imports
 from .instruction_set import InstructionSet
 
 
@@ -24,7 +22,7 @@ class InstructionManager:
         """
         Initialize the InstructionManager.
         """
-        self._sets: Dict[str, InstructionSet] = {}
+        self._sets: dict[str, InstructionSet] = {}
         
     def add_set(self, instruction_set: InstructionSet) -> bool:
         """
@@ -102,18 +100,18 @@ class InstructionManager:
         
         return True
     
-    def get_all_sets(self) -> List[InstructionSet]:
+    def get_all_sets(self) -> list[InstructionSet]:
         """
         Get all instruction sets.
         
         Returns
         -------
-        List[InstructionSet]
+        list[InstructionSet]
             List of all instruction sets.
         """
         return list(self._sets.values())
 
-    def find_set_by_name(self, name: str) -> Optional[InstructionSet]:
+    def find_set_by_name(self, name: str) -> InstructionSet | None:
         """
         Find an instruction set by its name.
         
@@ -124,12 +122,12 @@ class InstructionManager:
             
         Returns
         -------
-        Optional[InstructionSet]
+        InstructionSet | None
             The instruction set with the given name, or None if not found.
         """
         return self._sets.get(name)
 
-    def find_set_by_hotkey(self, hotkey: str) -> Optional[InstructionSet]:
+    def find_set_by_hotkey(self, hotkey: str) -> InstructionSet | None:
         """
         Find an instruction set by its hotkey.
         
@@ -140,7 +138,7 @@ class InstructionManager:
             
         Returns
         -------
-        Optional[InstructionSet]
+        InstructionSet | None
             The instruction set with the given hotkey, or None if not found.
         """
         for instruction_set in self._sets.values():
@@ -148,7 +146,7 @@ class InstructionManager:
                 return instruction_set
         return None
     
-    def import_from_dict(self, data: Dict[str, Any]) -> None:
+    def import_from_dict(self, data: dict[str, Any]) -> None:
         """
         Import instruction sets from an external dictionary.
         
@@ -157,7 +155,7 @@ class InstructionManager:
         
         Parameters
         ----------
-        data : Dict[str, Any]
+        data : dict[str, Any]
             Dictionary containing serialized instruction sets.
         """           
         # Clear existing sets
@@ -178,7 +176,7 @@ class InstructionManager:
         if not self._sets:
             self.add_set(InstructionSet(name= "Default"))
     
-    def export_to_dict(self) -> Dict[str, Any]:
+    def export_to_dict(self) -> dict[str, Any]:
         """
         Export instruction sets to a dictionary for external serialization.
         
@@ -187,7 +185,7 @@ class InstructionManager:
         
         Returns
         -------
-        Dict[str, Any]
+        dict[str, Any]
             Dictionary containing serialized instruction sets.
         """
         sets_data = [instruction_set.to_dict() for instruction_set in self._sets.values()]

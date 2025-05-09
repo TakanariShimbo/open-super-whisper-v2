@@ -5,10 +5,8 @@ This module provides functionality for managing LLM model information,
 including model selection, validation, and information retrieval.
 """
 
-# Standard library imports
-from typing import List, Optional, Dict, ClassVar
+from typing import ClassVar
 
-# Local application imports
 from .llm_model import LLMModel
 
 
@@ -24,7 +22,7 @@ class LLMModelManager:
     # Define supported models
     # This list represents models that are currently available through the API
     # Last updated: April 2025
-    _SUPPORTED_LLM_MODELS: ClassVar[List[LLMModel]] = [
+    _SUPPORTED_LLM_MODELS: ClassVar[list[LLMModel]] = [
         # GPT-4 Series
         LLMModel(
             id="gpt-4.1",
@@ -52,24 +50,24 @@ class LLMModelManager:
     ]
     
     # Create a lookup dictionary for efficient access by ID
-    _LLM_MODEL_ID_MAP: ClassVar[Dict[str, LLMModel]] = {
+    _LLM_MODEL_ID_MAP: ClassVar[dict[str, LLMModel]] = {
         model.id: model for model in _SUPPORTED_LLM_MODELS
     }
     
     @classmethod
-    def get_available_models(cls) -> List[LLMModel]:
+    def get_available_models(cls) -> list[LLMModel]:
         """
         Get all available supported models.
         
         Returns
         -------
-        List[LLMModel]
+        list[LLMModel]
             List of all supported models that are currently available.
         """
         return cls._SUPPORTED_LLM_MODELS.copy()
     
     @classmethod
-    def find_model_by_id(cls, model_id: str) -> Optional[LLMModel]:
+    def find_model_by_id(cls, model_id: str) -> LLMModel | None:
         """
         Find a model by its ID.
         
@@ -80,7 +78,7 @@ class LLMModelManager:
             
         Returns
         -------
-        Optional[LLMModel]
+        LLMModel | None
             Model object if found, None otherwise.
         """
         return cls._LLM_MODEL_ID_MAP.get(model_id)
@@ -124,13 +122,13 @@ class LLMModelManager:
         return model.supports_image if model else False
     
     @classmethod
-    def to_api_format(cls) -> List[Dict[str, str]]:
+    def to_api_format(cls) -> list[dict[str, str]]:
         """
         Convert models to API format.
         
         Returns
         -------
-        List[Dict[str, str]]
+        list[dict[str, str]]
             List of dictionaries with model information (id, name, description).
             
         Examples

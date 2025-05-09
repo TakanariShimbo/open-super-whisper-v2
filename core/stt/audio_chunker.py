@@ -5,14 +5,11 @@ This module provides functionality to split large audio files into smaller chunk
 to work around file size limitations for speech-to-text processing.
 """
 
-# Standard library imports
 import os
 import tempfile
 import math
 from pathlib import Path
-from typing import List, Optional
 
-# Third-party imports
 import ffmpeg
 
 
@@ -64,7 +61,7 @@ class AudioChunker:
     DEFAULT_AUDIO_CODEC: str = 'pcm_s16le'
     
     def __init__(self, max_chunk_size_in_mb: float = DEFAULT_MAX_CHUNK_SIZE_MB, 
-                 output_directory: Optional[str] = None):
+                 output_directory: str | None = None):
         """
         Initialize the AudioChunker.
         
@@ -72,7 +69,7 @@ class AudioChunker:
         ----------
         max_chunk_size_in_mb : float, optional
             Maximum size of each chunk in MB, defaults to 20.0
-        output_directory : Optional[str], optional
+        output_directory : str | None, optional
             Directory to store temporary chunks, defaults to None (system temp directory)
         """
         self._max_chunk_size_in_mb = max_chunk_size_in_mb
@@ -113,7 +110,7 @@ class AudioChunker:
         except ffmpeg.Error as e:
             raise ValueError(f"Error probing audio file: {str(e)}")
     
-    def chunk_audio_file(self, audio_file_path: str) -> List[str]:
+    def chunk_audio_file(self, audio_file_path: str) -> list[str]:
         """
         Chunk an audio file into smaller pieces smaller than max_chunk_size_in_mb.
         
@@ -124,7 +121,7 @@ class AudioChunker:
             
         Returns
         -------
-        List[str]
+        list[str]
             List of paths to the generated chunks
             
         Raises

@@ -5,10 +5,8 @@ This module provides functionality for managing speech-to-text model information
 including model selection, validation, and information retrieval.
 """
 
-# Standard library imports
-from typing import List, Dict, ClassVar
+from typing import ClassVar
 
-# Local application imports
 from .stt_model import STTModel
 
 
@@ -27,7 +25,7 @@ class STTModelManager:
     
     # Define supported models
     # This list represents models that are currently available through the API
-    _SUPPORTED_STT_MODELS: ClassVar[List[STTModel]] = [
+    _SUPPORTED_STT_MODELS: ClassVar[list[STTModel]] = [
         STTModel(
             id="gpt-4o-transcribe",
             name="GPT-4o Transcribe",
@@ -50,18 +48,18 @@ class STTModelManager:
     ]
     
     # Create a lookup dictionary for efficient access by ID
-    _STT_MODEL_ID_MAP: ClassVar[Dict[str, STTModel]] = {
+    _STT_MODEL_ID_MAP: ClassVar[dict[str, STTModel]] = {
         model.id: model for model in _SUPPORTED_STT_MODELS
     }
     
     @classmethod
-    def get_available_models(cls) -> List[STTModel]:
+    def get_available_models(cls) -> list[STTModel]:
         """
         Get all supported speech-to-text models.
         
         Returns
         -------
-        List[STTModel]
+        list[STTModel]
             List of all supported models.
         """
         return cls._SUPPORTED_STT_MODELS.copy()
@@ -87,13 +85,13 @@ class STTModelManager:
         raise ValueError("No default model found")
     
     @classmethod
-    def to_api_format(cls) -> List[Dict[str, str]]:
+    def to_api_format(cls) -> list[dict[str, str]]:
         """
         Convert models to API format.
         
         Returns
         -------
-        List[Dict[str, str]]
+        list[dict[str, str]]
             List of dictionaries with model information (id, name, description).
         """
         return [

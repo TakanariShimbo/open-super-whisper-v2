@@ -5,9 +5,8 @@ This module provides functionality for managing instruction sets
 used in speech-to-text and LLM processing.
 """
 
-# Standard library imports
 from dataclasses import dataclass
-from typing import Optional, Dict, Any
+from typing import Any
 
 
 @dataclass
@@ -50,7 +49,7 @@ class InstructionSet:
     name: str
     stt_vocabulary: str = ""
     stt_instructions: str = ""
-    stt_language: Optional[str] = None  # Language code (e.g., "en", "ja"), None for auto-detection
+    stt_language: str | None = None  # Language code (e.g., "en", "ja"), None for auto-detection
     stt_model: str = "gpt-4o-transcribe"
     
     # LLM settings
@@ -64,13 +63,13 @@ class InstructionSet:
     hotkey: str = ""  # Hotkey string (e.g., "ctrl+shift+1", "alt+f1")
     
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'InstructionSet':
+    def from_dict(cls, data: dict[str, Any]) -> 'InstructionSet':
         """
         Create an InstructionSet instance from a dictionary.
         
         Parameters
         ----------
-        data : Dict[str, Any]
+        data : dict[str, Any]
             Dictionary containing instruction set data.
             
         Returns
@@ -92,13 +91,13 @@ class InstructionSet:
             hotkey=data.get("hotkey", "")
         )
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """
         Convert this InstructionSet instance to a dictionary.
         
         Returns
         -------
-        Dict[str, Any]
+        dict[str, Any]
             Dictionary representation of this instruction set.
         """
         return {
@@ -115,11 +114,11 @@ class InstructionSet:
             "hotkey": self.hotkey
         }
     
-    def update(self, stt_vocabulary: Optional[str] = None, stt_instructions: Optional[str] = None,
-              stt_language: Optional[str] = None, stt_model: Optional[str] = None,
-              llm_enabled: Optional[bool] = None, llm_model: Optional[str] = None,
-              llm_instructions: Optional[str] = None, llm_clipboard_text_enabled: Optional[bool] = None,
-              llm_clipboard_image_enabled: Optional[bool] = None, hotkey: Optional[str] = None) -> None:
+    def update(self, stt_vocabulary: str | None = None, stt_instructions: str | None = None,
+              stt_language: str | None = None, stt_model: str | None = None,
+              llm_enabled: bool | None = None, llm_model: str | None = None,
+              llm_instructions: str | None = None, llm_clipboard_text_enabled: bool | None = None,
+              llm_clipboard_image_enabled: bool | None = None, hotkey: str | None = None) -> None:
         """
         Update this instruction set with new values.
         
@@ -129,7 +128,7 @@ class InstructionSet:
             New vocabulary string, by default None (unchanged).
         stt_instructions : str, optional
             New instructions string, by default None (unchanged).
-        stt_language : Optional[str], optional
+        stt_language : str | None, optional
             Language code (e.g., "en", "ja"), by default None (unchanged).
         stt_model : str, optional
             STT model ID to use, by default None (unchanged).

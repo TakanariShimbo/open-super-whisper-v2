@@ -4,13 +4,11 @@ Audio Recorder Module
 This module provides implementation for recording audio from the microphone.
 """
 
-# Standard library imports
 import os
 import tempfile
 from datetime import datetime
-from typing import Optional, List, Dict, Any
+from typing import Any
 
-# Third-party imports
 import numpy as np
 import sounddevice as sd
 import soundfile as sf
@@ -56,13 +54,13 @@ class AudioRecorder:
     """
     
     # Class constants for commonly used settings
-    CHANNEL_MODES: Dict[str, int] = {
+    CHANNEL_MODES: dict[str, int] = {
         'mono': 1,
         'stereo': 2,
         'quad': 4
     }
     
-    SAMPLE_RATES: Dict[str, int] = {
+    SAMPLE_RATES: dict[str, int] = {
         'low': 8000,
         'standard': 16000,
         'medium': 22050,
@@ -77,16 +75,16 @@ class AudioRecorder:
         """
         # Internal state variables
         self._temporary_directory = tempfile.gettempdir()
-        self._current_recording_path: Optional[str] = None
-        self._audio_stream: Optional[sd.InputStream] = None
-        self._device_id: Optional[int] = None
+        self._current_recording_path: str | None = None
+        self._audio_stream: sd.InputStream | None = None
+        self._device_id: int | None = None
         
         # Recording parameters with default values
         self._sample_rate = self.SAMPLE_RATES['standard']  # 16000 Hz
         self._channels = self.CHANNEL_MODES['mono']        # 1 channel
         
         # Storage for recording data
-        self._recorded_audio_frames: List[np.ndarray] = []
+        self._recorded_audio_frames: list[np.ndarray] = []
     
     @property
     def is_recording(self) -> bool:
@@ -101,25 +99,25 @@ class AudioRecorder:
         return self._audio_stream is not None and self._audio_stream.active
         
     @property
-    def current_recording_path(self) -> Optional[str]:
+    def current_recording_path(self) -> str | None:
         """
         Get the path of the current or most recent recording.
         
         Returns
         -------
-        Optional[str]
+        str | None
             Path to the recording file, or None if no recording has been made.
         """
         return self._current_recording_path
     
     @property
-    def current_device(self) -> Optional[Dict[str, Any]]:
+    def current_device(self) -> dict[str, Any] | None:
         """
         Get information about the currently selected recording device.
         
         Returns
         -------
-        Optional[Dict[str, Any]]
+        dict[str, Any] | None
             Dictionary with device information, or None if using the default device.
         """
         if self._device_id is None:
@@ -153,13 +151,13 @@ class AudioRecorder:
         return False
             
     @staticmethod
-    def get_available_microphones() -> List[Dict[str, Any]]:
+    def get_available_microphones() -> list[dict[str, Any]]:
         """
         Get all available microphone devices on the system.
         
         Returns
         -------
-        List[Dict[str, Any]]
+        list[dict[str, Any]]
             List of microphone devices with their details
         
         Examples
@@ -214,13 +212,13 @@ class AudioRecorder:
         self._sample_rate = sample_rate
         self._channels = channels
     
-    def set_recording_device(self, device_id: Optional[int]) -> bool:
+    def set_recording_device(self, device_id: int | None) -> bool:
         """
         Set the device to use for recording.
         
         Parameters
         ----------
-        device_id : Optional[int]
+        device_id : int | None
             Device ID to use for recording, or None to use the default device.
             
         Returns
@@ -315,13 +313,13 @@ class AudioRecorder:
             self._audio_stream = None
             raise RuntimeError(f"Failed to start recording: {str(e)}")
     
-    def stop_recording(self) -> Optional[str]:
+    def stop_recording(self) -> str | None:
         """
         Stop recording audio and return the path to the recorded file.
         
         Returns
         -------
-        Optional[str]
+        str | None
             Path to the recorded audio file, or None if no recording was in progress
             or if saving the recording failed.
         """
@@ -342,7 +340,7 @@ class AudioRecorder:
         return self._save_recording()
     
     def _audio_callback(self, indata: np.ndarray, frames: int, 
-                      time_info: Dict[str, float], status: int) -> None:
+                      time_info: dict[str, float], status: int) -> None:
         """
         Callback function for the InputStream.
         
@@ -355,7 +353,7 @@ class AudioRecorder:
             The recorded audio data as a NumPy array
         frames : int
             Number of frames in this chunk
-        time_info : Dict[str, float]
+        time_info : dict[str, float]
             Dictionary with timing information
         status : int
             Status flag indicating potential errors
@@ -377,7 +375,7 @@ class AudioRecorder:
             self._temporary_directory, f"recording_{timestamp}.wav"
         )
     
-    def _save_recording(self) -> Optional[str]:
+    def _save_recording(self) -> str | None:
         """
         Save the recorded audio data to a file.
         
@@ -386,7 +384,7 @@ class AudioRecorder:
         
         Returns
         -------
-        Optional[str]
+        str | None
             Path to the saved audio file, or None if saving failed or
             no audio data was recorded.
         """
