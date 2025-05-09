@@ -152,11 +152,14 @@ class MarkdownTextBrowser(QWebEngineView):
         - $$...$$ for block/display math
         - \[...\] for block/display math (LaTeX standard)
         
-        Args:
-            text (str): The original markdown text with potential LaTeX expressions
+        Parameters
+        ----------
+        text : str
+            The markdown text to preserve
             
-        Returns:
-            str: Text with preserved LaTeX expressions
+        Returns
+        -------
+        str: Text with preserved LaTeX expressions
         """
         if not text:
             return text
@@ -182,11 +185,24 @@ class MarkdownTextBrowser(QWebEngineView):
         return text
     
     def markdown_text(self) -> str:
-        """Get the original markdown text."""
+        """
+        Get the original markdown text.
+        
+        Returns
+        -------
+        str: The original markdown text
+        """
         return self._markdown_text
     
     def set_markdown_text(self, text: str | None) -> None:
-        """Set the text content as Markdown and render as HTML with LaTeX."""
+        """
+        Set the text content as Markdown and render as HTML with LaTeX.
+        
+        Parameters
+        ----------
+        text : str | None
+            The markdown text to set
+        """
         if text is None:
             text = ""
             
@@ -210,12 +226,21 @@ class MarkdownTextBrowser(QWebEngineView):
         self.markdown_text_changed.emit(text)
     
     def clear(self) -> None:
-        """Clear both the displayed HTML and stored markdown text."""
+        """
+        Clear both the displayed HTML and stored markdown text.
+        """
         self._markdown_text = ""
         self._document.set_content("")
     
     def append_markdown(self, text: str) -> None:
-        """Append markdown text to the existing content."""
+        """
+        Append markdown text to the existing content.
+        
+        Parameters
+        ----------
+        text : str
+            The markdown text to append
+        """
         if not text:
             return
             
@@ -238,17 +263,23 @@ class MarkdownTextBrowser(QWebEngineView):
         self.page().runJavaScript("window.scrollTo(0, document.body.scrollHeight);")
     
     def setPlaceholderText(self, text: str) -> None:
-        """Set placeholder text for the browser."""
+        """
+        Set placeholder text for the browser.
+        """
         if not self._markdown_text:
             placeholder_html = f'<span class="placeholder">{text}</span>'
             self._document.set_content(placeholder_html)
     
     def sizeHint(self) -> QSize:
-        """Provide a default size."""
+        """
+        Provide a default size.
+        """
         return QSize(600, 400)
     
     def setOpenExternalLinks(self, open: bool) -> None:
-        """Set whether external links are opened in the default browser."""
+        """
+        Set whether external links are opened in the default browser.
+        """
         if open:
             self.page().linkClicked.connect(lambda url: QDesktopServices.openUrl(url))
 
