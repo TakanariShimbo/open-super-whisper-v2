@@ -39,49 +39,49 @@ class HotkeyModel(QObject):
         # Dictionary to store registered hotkeys and their handlers
         self._handlers: dict[str, Callable] = {}
         
-        # Currently active recording hotkey (during recording)
-        self._active_recording_hotkey: str | None = None
+        # Currently active hotkey (during filter mode)
+        self._active_hotkey: str | None = None
     
     @property
-    def is_recording_mode_active(self) -> bool:
+    def is_filter_mode(self) -> bool:
         """
-        Check if recording mode is active.
+        Check if filter mode is active.
         
         Returns
         -------
         bool
-            True if recording mode is active, False otherwise
+            True if filter mode is active, False otherwise
         """
-        return self._active_recording_hotkey is not None
+        return self._active_hotkey is not None
     
-    def get_active_recording_hotkey(self) -> str | None:
+    def get_active_hotkey(self) -> str | None:
         """
-        Get the active recording hotkey.
+        Get the active hotkey.
         
         Returns
         -------
         str | None
-            The active recording hotkey, or None if not in recording mode
+            The active hotkey, or None if not in filter mode
         """
-        return self._active_recording_hotkey
+        return self._active_hotkey
     
-    def set_recording_mode(self, active: bool, active_hotkey: str = "") -> None:
+    def change_filter_mode(self, active: bool, active_hotkey: str = "") -> None:
         """
-        Set recording mode active or inactive.
+        Change filter mode active or inactive.
         
-        In recording mode, only the active recording hotkey is enabled and
+        In filter mode, only the active hotkey is enabled and
         all other hotkeys are filtered out.
         
         Parameters
         ----------
         active : bool
-            True to enable recording mode, False to disable
+            True to enable filter mode, False to disable
         active_hotkey : str, optional
-            The hotkey that triggered recording, by default ""
+            The hotkey that triggered filter mode, by default ""
         """
         if active:
-            # Enable recording mode
-            self._active_recording_hotkey = active_hotkey
+            # Enable filter mode
+            self._active_hotkey = active_hotkey
             
             if self._hotkey_manager.is_listening:
                 self._hotkey_manager.stop_listening()
@@ -99,7 +99,7 @@ class HotkeyModel(QObject):
                 self._hotkey_manager.start_listening()
         else:
             # Disable recording mode
-            self._active_recording_hotkey = None
+            self._active_hotkey = None
             
             if self._hotkey_manager.is_listening:
                 self._hotkey_manager.stop_listening()

@@ -210,6 +210,9 @@ class AppController(QObject):
                 ClipboardUtils.set_text(result.stt_output)
                 self.status_update.emit("STT output copied to clipboard", 2000)
         
+        # Disable recording mode for hotkeys
+        self._hotkey_model.change_filter_mode(False)
+
         # Forward the signal to views
         self.processing_complete.emit(result)
         
@@ -242,19 +245,15 @@ class AppController(QObject):
         
         if not instruction_set:
             return
-            
-        # If we're in processing state, treat as cancel request
+        
         if self.is_processing:
+            # If we're processing, this might be a cancel request
             self.cancel_processing()
-            return
-            
-        # If we're recording, this might be a stop request
-        if self.is_recording:
-            # If this is the same hotkey that started recording, stop recording
-            if hotkey == self._hotkey_model.get_active_recording_hotkey():
-                self.stop_recording()
+        elif self.is_recording:
+            # If we're recording, this might be a stop request
+            self.stop_recording()
         else:
-            # Not recording, so this is a start request with the selected instruction set
+            # Not recording or processing, so this is a start request with the selected instruction set
             self._instruction_set_model.set_selected(instruction_set.name)
             self.start_recording_with_hotkey(hotkey)
     
@@ -342,7 +341,7 @@ class AppController(QObject):
         result = self._hotkey_model.register_hotkey(hotkey, handler_id)
         
         # If successful and not already listening, start listening
-        if result and not self._hotkey_model.is_recording_mode_active:
+        if result and not self._hotkey_model.is_filter_mode:
             self._hotkey_model.start_listening()
             
         return result
@@ -352,10 +351,10 @@ class AppController(QObject):
         Toggle recording state.
         
         If recording is in progress, it stops recording.
-        If processing is in progress, it cancels processing.
+        If processing is in progress, it cancels processing (only if initiated via UI, not via hotkey).
         If not recording or processing, it starts recording.
         """
-        # If processing is active, cancel it
+        # If processing is active, cancel it (this is from UI, not hotkey, so allowed)
         if self.is_processing:
             return self.cancel_processing()
             
@@ -384,7 +383,7 @@ class AppController(QObject):
             
         if self._pipeline_model.start_recording():
             # Set recording mode for hotkeys (no active hotkey in this case)
-            self._hotkey_model.set_recording_mode(True)
+            self._hotkey_model.change_filter_mode(True)
             
             # Start status indicator in recording mode
             self._status_indicator_controller.start_recording()
@@ -421,7 +420,7 @@ class AppController(QObject):
             
         if self._pipeline_model.start_recording():
             # Set recording mode for hotkeys with the active hotkey
-            self._hotkey_model.set_recording_mode(True, hotkey)
+            self._hotkey_model.change_filter_mode(True, hotkey)
             
             # Start status indicator in recording mode
             self._status_indicator_controller.start_recording()
@@ -447,9 +446,6 @@ class AppController(QObject):
             
         # Stop recording
         audio_file = self._pipeline_model.stop_recording()
-        
-        # Disable recording mode for hotkeys
-        self._hotkey_model.set_recording_mode(False)
         
         # Update status indicator to processing mode
         self._status_indicator_controller.start_processing()
@@ -504,6 +500,9 @@ class AppController(QObject):
             
             self.status_update.emit("Processing cancelled", 3000)
             
+        # Disable recording mode for hotkeys
+        self._hotkey_model.change_filter_mode(False)
+        
         return result
     
     def shutdown(self) -> None:
