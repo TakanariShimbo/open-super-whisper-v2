@@ -8,6 +8,8 @@ and business logic related to hotkey management.
 from PyQt6.QtCore import QObject, pyqtSignal
 from PyQt6.QtGui import QKeySequence
 
+from ...models.dialogs.instruction_dialog_model import InstructionDialogModel
+
 
 class HotkeyDialogModel(QObject):
     """
@@ -31,7 +33,7 @@ class HotkeyDialogModel(QObject):
     hotkey_valid = pyqtSignal(str)
     hotkey_invalid = pyqtSignal(str, str)  # hotkey, error_message
     
-    def __init__(self, current_hotkey: str = "") -> None:
+    def __init__(self, current_hotkey: str = "", hotkey_manager: InstructionDialogModel | None = None) -> None:
         """
         Initialize the HotkeyDialogModel.
         
@@ -39,12 +41,15 @@ class HotkeyDialogModel(QObject):
         ----------
         current_hotkey : str, optional
             Initial hotkey value, by default ""
+        hotkey_manager : InstructionDialogModel | None, optional
+            The instruction dialog model to check for hotkey conflicts
         """
         super().__init__()
         
         # Store the current and original hotkey values
         self._hotkey = current_hotkey
         self._original_hotkey = current_hotkey
+        self._hotkey_manager = hotkey_manager
     
     @property
     def hotkey(self) -> str:
@@ -121,6 +126,18 @@ class HotkeyDialogModel(QObject):
         except Exception as e:
             self.hotkey_invalid.emit(self._hotkey, f"Invalid hotkey format: {str(e)}")
             return False
+            
+        # Check for hotkey conflicts if manager is available
+        if self._hotkey_manager and hasattr(self._hotkey_manager, 'get_set_by_hotkey'):
+            # Check if this is a different hotkey than the original
+            if self._hotkey != self._original_hotkey:
+                conflicting_set = self._hotkey_manager.get_set_by_hotkey(self._hotkey)
+                if conflicting_set:
+                    self.hotkey_invalid.emit(
+                        self._hotkey, 
+                        f"The hotkey '{self._hotkey}' is already used by instruction set '{conflicting_set.name}'."
+                    )
+                    return False
         
         # Hotkey is valid
         self.hotkey_valid.emit(self._hotkey)

@@ -9,6 +9,7 @@ from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 from PyQt6.QtGui import QKeyEvent
 
 from ...models.dialogs.hotkey_dialog_model import HotkeyDialogModel
+from ...models.dialogs.instruction_dialog_model import InstructionDialogModel
 
 
 class HotkeyDialogController(QObject):
@@ -32,7 +33,8 @@ class HotkeyDialogController(QObject):
     
     def __init__(self, 
                  current_hotkey: str = "",
-                 parent_controller: QObject | None = None) -> None:
+                 parent_controller: QObject | None = None,
+                 hotkey_manager: InstructionDialogModel | None = None) -> None:
         """
         Initialize the HotkeyDialogController.
         
@@ -42,11 +44,13 @@ class HotkeyDialogController(QObject):
             Current hotkey string, by default ""
         parent_controller : QObject | None, optional
             The parent controller, by default None
+        hotkey_manager : InstructionDialogModel | None, optional
+            The instruction dialog model to check for hotkey conflicts
         """
         super().__init__()
         
         # Create model
-        self._dialog_model = HotkeyDialogModel(current_hotkey)
+        self._dialog_model = HotkeyDialogModel(current_hotkey, hotkey_manager)
         self._parent_controller = parent_controller
         
         # Connect model signals

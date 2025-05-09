@@ -13,6 +13,8 @@ from PyQt6.QtCore import Qt, QEvent, pyqtSlot, QObject
 from PyQt6.QtGui import QCloseEvent, QShowEvent
 
 from ...controllers.dialogs.hotkey_dialog_controller import HotkeyDialogController
+from ...models.hotkey_model import HotkeyModel
+from ...models.dialogs.instruction_dialog_model import InstructionDialogModel
 
 
 class HotkeyDialog(QDialog):
@@ -23,23 +25,31 @@ class HotkeyDialog(QDialog):
     for various actions in the application.
     """
     
-    def __init__(self, parent=None, current_hotkey="", hotkey_manager=None) -> None:
+    def __init__(self, parent: QDialog | None = None, 
+                 current_hotkey: str = "", 
+                 hotkey_manager: HotkeyModel | None = None, 
+                 instruction_dialog_model: InstructionDialogModel | None = None) -> None:
         """
         Initialize the HotkeyDialog.
         
         Parameters
         ----------
-        parent : QWidget, optional
+        parent : QDialog | None, optional
             Parent widget, by default None
         current_hotkey : str, optional
             Current hotkey string, by default ""
-        hotkey_manager : object, optional
-            An object that can manage hotkeys, should have enable_hotkeys() and disable_hotkeys() methods
+        hotkey_manager : HotkeyModel | None, optional
+            The hotkey manager for enabling/disabling hotkeys
+        instruction_dialog_model : InstructionDialogModel | None, optional
+            The model containing instruction sets for conflict checking
         """
         super().__init__(parent)
         
         # Create controller
-        self._controller = HotkeyDialogController(current_hotkey)
+        self._controller = HotkeyDialogController(
+            current_hotkey=current_hotkey,
+            hotkey_manager=instruction_dialog_model
+        )
         
         # Store hotkey manager
         self._hotkey_manager = hotkey_manager

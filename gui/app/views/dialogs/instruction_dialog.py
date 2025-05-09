@@ -680,7 +680,13 @@ class InstructionDialog(QDialog):
         # Get current hotkey
         current_hotkey = self._hotkey_input.text()
         
-        dialog = HotkeyDialog(self, current_hotkey, self._controller._hotkey_model)
+        # Pass the dialog model to check for hotkey conflicts
+        dialog = HotkeyDialog(
+            parent=self,
+            current_hotkey=current_hotkey,
+            hotkey_manager=self._controller._hotkey_model,
+            instruction_dialog_model=self._controller._dialog_model
+        )
         result = dialog.exec()
         
         if result:
