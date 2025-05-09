@@ -37,8 +37,23 @@ class Document(QObject):
 
 
 class MarkdownTextBrowser(QWebEngineView):
-    """
+    r"""
     A QWebEngineView for displaying Markdown content with LaTeX support.
+    
+    This widget renders Markdown text as HTML and uses MathJax to render
+    mathematical expressions written in LaTeX syntax. It supports both
+    inline and display math with the following delimiters:
+    
+    Inline math:
+    - $...$ (standard LaTeX inline math)
+    - \(...\) (LaTeX alternative syntax)
+    
+    Display math:
+    - $$...$$ (common display math)
+    - \[...\] (standard LaTeX display math)
+    
+    The class preserves the original Markdown text and provides methods
+    for setting and appending content, as well as clearing the display.
     """
     markdown_text_changed = pyqtSignal(str)
     
@@ -64,7 +79,15 @@ class MarkdownTextBrowser(QWebEngineView):
         self._initialize_html_template()
     
     def _initialize_html_template(self) -> None:
-        """Initialize the HTML template with MathJax support."""
+        r"""
+        Initialize the HTML template with MathJax support.
+        
+        The HTML template includes:
+        1. MathJax configuration for LaTeX rendering
+        2. Support for both inline math ($...$, \(...\)) and display math ($$...$$, \[...\])
+        3. JavaScript for handling content updates via Qt web channel
+        4. Basic styling for placeholder text
+        """
         self._html_template = """
         <!DOCTYPE html>
         <html>
@@ -75,8 +98,8 @@ class MarkdownTextBrowser(QWebEngineView):
             <script type="text/javascript">
                 window.MathJax = {
                     tex: {
-                        inlineMath: [['$', '$']],
-                        displayMath: [['$$', '$$']]
+                        inlineMath: [['$', '$'], ['\\(', '\\)']],
+                        displayMath: [['$$', '$$'], ['\\[', '\\]']]
                     },
                     svg: {
                         fontCache: 'global'
@@ -117,15 +140,44 @@ class MarkdownTextBrowser(QWebEngineView):
         self.setHtml(self._html_template)
     
     def _preserve_latex(self, text: str) -> str:
-        """Preserve LaTeX expressions in the markdown text."""
+        r"""
+        Preserve LaTeX expressions in the markdown text.
+        
+        This method prevents Markdown parser from interfering with LaTeX expressions
+        by temporarily preserving them during markdown processing.
+        
+        Supported LaTeX delimiters:
+        - $...$ for inline math
+        - \(...\) for inline math (LaTeX alternative syntax)
+        - $$...$$ for block/display math
+        - \[...\] for block/display math (LaTeX standard)
+        
+        Args:
+            text (str): The original markdown text with potential LaTeX expressions
+            
+        Returns:
+            str: Text with preserved LaTeX expressions
+        """
         if not text:
             return text
             
         # Preserve inline math: $...$
+        # Matches a single dollar sign followed by non-dollar content and ending with a dollar sign
         text = re.sub(r'(\$)([^\$]+?)(\$)', r'\1\2\3', text)
         
+        # Preserve inline math: \(...\)
+        # Matches inline math with parentheses delimiters
+        # with flags=re.DOTALL to allow matching across multiple lines
+        text = re.sub(r'(\\\\?\()(.*?)(\\\\?\))', r'\1\2\3', text, flags=re.DOTALL)
+        
         # Preserve display math: $$...$$
+        # Matches double dollar signs with content between them
         text = re.sub(r'(\$\$)([^\$]+?)(\$\$)', r'\1\2\3', text)
+        
+        # Preserve display math: \[...\]
+        # The pattern handles both escaped and non-escaped square brackets
+        # with flags=re.DOTALL to allow matching across multiple lines
+        text = re.sub(r'(\\\\?\[)(.*?)(\\\\?\])', r'\1\2\3', text, flags=re.DOTALL)
         
         return text
     
