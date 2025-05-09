@@ -25,6 +25,8 @@ from ..utils.clipboard_utils import ClipboardUtils
 from ..utils.audio_manager import AudioManager
 from ..utils.settings_manager import SettingsManager
 from .tray.system_tray import SystemTray
+from .widgets.markdown_text_browser import MarkdownTextBrowser
+
 
 class MainWindow(QMainWindow):
     """
@@ -149,9 +151,9 @@ class MainWindow(QMainWindow):
         llm_label = QLabel("LLM Output:")
         llm_layout.addWidget(llm_label)
         
-        self.llm_text = QTextEdit()
+        # Use our custom markdown browser instead of QTextEdit
+        self.llm_text = MarkdownTextBrowser()
         self.llm_text.setPlaceholderText("LLM processing output will appear here...")
-        self.llm_text.setReadOnly(False)  # Allow editing
         llm_layout.addWidget(self.llm_text)
         
         # Add tabs
@@ -411,9 +413,9 @@ class MainWindow(QMainWindow):
         # For LLM text, if streaming was used, the text is already in the UI
         # Only update if it's different from the streaming result
         if result.llm_processed and result.llm_response:
-            current_text = self.llm_text.toPlainText()
-            if current_text != result.llm_response:
-                self.llm_text.setText(result.llm_response)
+            current_markdown = self.llm_text.markdown_text()
+            if current_markdown != result.llm_response:
+                self.llm_text.set_markdown_text(result.llm_response)
             
             # Stay on or switch to LLM tab
             self.tab_widget.setCurrentIndex(1)
@@ -499,13 +501,8 @@ class MainWindow(QMainWindow):
             self.tab_widget.setCurrentIndex(1)
             
         # Append the new chunk to the LLM text
-        current_text = self.llm_text.toPlainText()
-        self.llm_text.setText(current_text + chunk)
-        
-        # Scroll to the bottom to show the latest content
-        cursor = self.llm_text.textCursor()
-        cursor.movePosition(cursor.MoveOperation.End)
-        self.llm_text.setTextCursor(cursor)
+        # We use append_markdown to properly render the content
+        self.llm_text.append_markdown(chunk)
         
         # Update status indicator to show streaming progress
         self.status_indicator.setText("LLM Streaming...")
@@ -542,8 +539,10 @@ class MainWindow(QMainWindow):
     def copy_llm(self):
         """
         Copy the LLM output text to the clipboard.
+        
+        This method copies the original markdown text, not the rendered HTML.
         """
-        ClipboardUtils.set_text(self.llm_text.toPlainText())
+        ClipboardUtils.set_text(self.llm_text.markdown_text())
         self.status_bar.showMessage("LLM output copied to clipboard", 2000)
 
     def show_instruction_sets_dialog(self):
