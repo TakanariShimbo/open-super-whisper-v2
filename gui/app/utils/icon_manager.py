@@ -10,6 +10,8 @@ import os
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QStyle, QApplication
 
+from .pyinstaller_utils import PyInstallerUtils
+
 
 class IconManager:
     """
@@ -59,23 +61,15 @@ class IconManager:
         str | None
             The full path to the icon file, or None if it doesn't exist
         """
-        # Try multiple possible locations for the assets directory
-        possible_paths = []
+        relative_icon_path = os.path.join("assets", icon_name)
+        absolute_icon_path = PyInstallerUtils.get_resource_path(relative_icon_path)
         
-        # Method 1: Using relative path from current file
-        path1 = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
-        possible_paths.append(os.path.join(path1, "assets", icon_name))
-        
-        # Method 2: Using the current working directory
-        path2 = os.path.join(os.getcwd(), "assets", icon_name)
-        possible_paths.append(path2)
-        
-        # Return the first path that exists
-        for path in possible_paths:
-            if os.path.exists(path):
-                return path
-        
-        return None
+        # Check if the resolved path exists
+        if os.path.exists(absolute_icon_path):
+            return absolute_icon_path
+        else:
+            print(f"Icon file not found: {absolute_icon_path}")
+            return None
     
     def _load_app_icon(self) -> None:
         """
