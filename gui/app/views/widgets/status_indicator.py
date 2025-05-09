@@ -108,7 +108,7 @@ class StatusIndicatorWindow(QWidget):
             self.status_label.setStyleSheet("color: #ff5f5f; font-weight: bold;")
         elif self._current_mode == self.MODE_PROCESSING:
             self.status_label.setText("Processing...")
-            self.status_label.setStyleSheet("color: #999999; font-weight: bold;")
+            self.status_label.setStyleSheet("color: #bbbbbb; font-weight: bold;")
             self.timer_label.setText("")
         elif self._current_mode == self.MODE_COMPLETED:
             self.status_label.setText("Completed!")
@@ -116,7 +116,7 @@ class StatusIndicatorWindow(QWidget):
             self.timer_label.setText("")
         elif self._current_mode == self.MODE_CANCELLED:
             self.status_label.setText("Cancelled!")
-            self.status_label.setStyleSheet("color: #ff9f3f; font-weight: bold;")
+            self.status_label.setStyleSheet("color: #bbbbbb; font-weight: bold;")
             self.timer_label.setText("")
     
     @pyqtSlot(int)
