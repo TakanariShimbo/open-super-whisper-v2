@@ -148,7 +148,7 @@ class LLMProcessor:
             System message, or a default message if no instruction exists.
         """
         if not self._system_instruction:
-            return "You are a helpful assistant. Process the following transcribed text."
+            return "You are a helpful assistant."
         
         return self._system_instruction
     

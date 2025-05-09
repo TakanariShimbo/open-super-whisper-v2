@@ -157,19 +157,19 @@ class InstructionDialog(QDialog):
         vocab_layout.addWidget(self._vocabulary_edit)
         
         # Instructions tab
-        instr_tab = QWidget()
-        instr_layout = QVBoxLayout(instr_tab)
+        stt_tab = QWidget()
+        stt_layout = QVBoxLayout(stt_tab)
         
-        instr_label = QLabel("System Instructions")
-        instr_layout.addWidget(instr_label)
+        stt_label = QLabel("STT Instructions")
+        stt_layout.addWidget(stt_label)
         
-        instr_help = QLabel("Provide system instructions to guide the transcription process (formatting, focus areas, etc.)")
-        instr_help.setWordWrap(True)
-        instr_layout.addWidget(instr_help)
+        stt_help = QLabel("Provide system instructions to guide the transcription process (formatting, focus areas, etc.)")
+        stt_help.setWordWrap(True)
+        stt_layout.addWidget(stt_help)
         
-        self._instructions_edit = QTextEdit()
-        self._instructions_edit.textChanged.connect(self._on_form_changed)
-        instr_layout.addWidget(self._instructions_edit)
+        self._stt_instructions_edit = QTextEdit()
+        self._stt_instructions_edit.textChanged.connect(self._on_form_changed)
+        stt_layout.addWidget(self._stt_instructions_edit)
         
         # Settings tab for language and model
         settings_tab = QWidget()
@@ -183,7 +183,7 @@ class InstructionDialog(QDialog):
         main_form = QWidget()
         main_layout = QFormLayout(main_form)
         
-        stt_language_label = QLabel("Language")
+        stt_language_label = QLabel("STT Language")
         self._stt_language_combo = QComboBox()
         self._stt_language_combo.currentIndexChanged.connect(self._on_form_changed)
         
@@ -258,7 +258,7 @@ class InstructionDialog(QDialog):
         
         # Add tabs to the tab widget in specified order
         self._tab_widget.addTab(vocab_tab, "Vocabulary")
-        self._tab_widget.addTab(instr_tab, "Instructions")
+        self._tab_widget.addTab(stt_tab, "STT Instructions")
         self._tab_widget.addTab(llm_tab, "LLM Instructions")
         self._tab_widget.addTab(settings_tab, "Settings")
         
@@ -394,7 +394,7 @@ class InstructionDialog(QDialog):
         if row < 0:
             # Clear editors
             self._vocabulary_edit.clear()
-            self._instructions_edit.clear()
+            self._stt_instructions_edit.clear()
             self._llm_instructions_edit.clear()
             self._llm_enabled_checkbox.setChecked(False)
             self._hotkey_input.clear()
@@ -432,7 +432,7 @@ class InstructionDialog(QDialog):
         
         # Block signals before setting values to prevent _on_form_changed from being triggered
         self._vocabulary_edit.blockSignals(True)
-        self._instructions_edit.blockSignals(True)
+        self._stt_instructions_edit.blockSignals(True)
         self._llm_instructions_edit.blockSignals(True)
         self._stt_language_combo.blockSignals(True)
         self._stt_model_combo.blockSignals(True)
@@ -451,7 +451,7 @@ class InstructionDialog(QDialog):
         
         # Update vocabulary and instructions
         self._vocabulary_edit.setPlainText(instruction_set.stt_vocabulary)
-        self._instructions_edit.setPlainText(instruction_set.stt_instructions)
+        self._stt_instructions_edit.setPlainText(instruction_set.stt_instructions)
         
         # Update language selection
         language_index = 0  # Default to auto-detect
@@ -505,7 +505,7 @@ class InstructionDialog(QDialog):
         
         # Unblock signals
         self._vocabulary_edit.blockSignals(False)
-        self._instructions_edit.blockSignals(False)
+        self._stt_instructions_edit.blockSignals(False)
         self._llm_instructions_edit.blockSignals(False)
         self._stt_language_combo.blockSignals(False)
         self._stt_model_combo.blockSignals(False)
@@ -731,7 +731,7 @@ class InstructionDialog(QDialog):
         
         # Get values from UI
         stt_vocabulary = self._vocabulary_edit.toPlainText()
-        stt_instructions = self._instructions_edit.toPlainText()
+        stt_instructions = self._stt_instructions_edit.toPlainText()
         stt_language = self._stt_language_combo.currentData()
         stt_model = self._stt_model_combo.currentData()
         llm_enabled = self._llm_enabled_checkbox.isChecked()
@@ -780,7 +780,7 @@ class InstructionDialog(QDialog):
         
         # Block signals to prevent _on_form_changed from being triggered
         self._vocabulary_edit.blockSignals(True)
-        self._instructions_edit.blockSignals(True)
+        self._stt_instructions_edit.blockSignals(True)
         self._llm_instructions_edit.blockSignals(True)
         self._stt_language_combo.blockSignals(True)
         self._stt_model_combo.blockSignals(True)
@@ -791,7 +791,7 @@ class InstructionDialog(QDialog):
         
         # Reset values to the current instruction set values
         self._vocabulary_edit.setPlainText(instruction_set.stt_vocabulary)
-        self._instructions_edit.setPlainText(instruction_set.stt_instructions)
+        self._stt_instructions_edit.setPlainText(instruction_set.stt_instructions)
         
         # Update language selection
         language_index = 0  # Default to auto-detect
@@ -845,7 +845,7 @@ class InstructionDialog(QDialog):
         
         # Unblock signals
         self._vocabulary_edit.blockSignals(False)
-        self._instructions_edit.blockSignals(False)
+        self._stt_instructions_edit.blockSignals(False)
         self._llm_instructions_edit.blockSignals(False)
         self._stt_language_combo.blockSignals(False)
         self._stt_model_combo.blockSignals(False)

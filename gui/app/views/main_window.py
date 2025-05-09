@@ -32,7 +32,7 @@ class MainWindow(QMainWindow):
     Main application window.
     
     This class represents the main user interface for the Super Whisper application.
-    It presents the recording controls, transcription output, and application settings.
+    It presents the recording controls, STT output, and application settings.
     
     Attributes
     ----------
@@ -131,17 +131,17 @@ class MainWindow(QMainWindow):
         # Create tab widget for outputs
         self.tab_widget = QTabWidget()
         
-        # Transcription tab
-        transcription_tab = QWidget()
-        transcription_layout = QVBoxLayout(transcription_tab)
+        # STT output tab
+        stt_tab = QWidget()
+        stt_layout = QVBoxLayout(stt_tab)
         
-        transcription_label = QLabel("Transcription Output:")
-        transcription_layout.addWidget(transcription_label)
+        stt_label = QLabel("STT Output:")
+        stt_layout.addWidget(stt_label)
         
         # Use MarkdownTextBrowser instead of QTextEdit for consistency
-        self.transcription_text = MarkdownTextBrowser()
-        self.transcription_text.setPlaceholderText("Transcription will appear here...")
-        transcription_layout.addWidget(self.transcription_text)
+        self.stt_text = MarkdownTextBrowser()
+        self.stt_text.setPlaceholderText("STT output will appear here...")
+        stt_layout.addWidget(self.stt_text)
         
         # LLM output tab (if LLM is enabled in instruction set)
         llm_tab = QWidget()
@@ -152,11 +152,11 @@ class MainWindow(QMainWindow):
         
         # Use our custom markdown browser instead of QTextEdit
         self.llm_text = MarkdownTextBrowser()
-        self.llm_text.setPlaceholderText("LLM processing output will appear here...")
+        self.llm_text.setPlaceholderText("LLM output will appear here...")
         llm_layout.addWidget(self.llm_text)
         
         # Add tabs
-        self.tab_widget.addTab(transcription_tab, "Transcription")
+        self.tab_widget.addTab(stt_tab, "STT Output")
         self.tab_widget.addTab(llm_tab, "LLM Output")
         
         main_layout.addWidget(self.tab_widget, 1)
@@ -207,16 +207,16 @@ class MainWindow(QMainWindow):
         self.toolbar.addAction(api_action)
         
         # Instruction sets action
-        instruction_sets_action = QAction("Manage Instruction Sets", self)
+        instruction_sets_action = QAction("Instruction Sets", self)
         instruction_sets_action.triggered.connect(self.show_instruction_sets_dialog)
         self.toolbar.addAction(instruction_sets_action)
         
         self.toolbar.addSeparator()
         
         # Copy actions
-        copy_transcription_action = QAction("Copy Transcription", self)
-        copy_transcription_action.triggered.connect(self.copy_transcription)
-        self.toolbar.addAction(copy_transcription_action)
+        copy_stt_action = QAction("Copy STT Output", self)
+        copy_stt_action.triggered.connect(self.copy_stt)
+        self.toolbar.addAction(copy_stt_action)
         
         copy_llm_action = QAction("Copy LLM Output", self)
         copy_llm_action.triggered.connect(self.copy_llm)
@@ -406,22 +406,22 @@ class MainWindow(QMainWindow):
         result : PipelineResult
             The result of the processing
         """
-        # Update the transcription text using markdown text browser method
-        self.transcription_text.set_markdown_text(result.transcription)
+        # Update the STT output text using markdown text browser method
+        self.stt_text.set_markdown_text(result.stt_output)
         
         # For LLM text, if streaming was used, the text is already in the UI
         # Only update if it's different from the streaming result
-        if result.llm_processed and result.llm_response:
+        if result.is_llm_processed and result.llm_output:
             current_markdown = self.llm_text.markdown_text()
-            if current_markdown != result.llm_response:
-                self.llm_text.set_markdown_text(result.llm_response)
+            if current_markdown != result.llm_output:
+                self.llm_text.set_markdown_text(result.llm_output)
             
             # Stay on or switch to LLM tab
             self.tab_widget.setCurrentIndex(1)
         else:
             # No LLM processing, clear any existing text
             self.llm_text.clear()
-            self.tab_widget.setCurrentIndex(0)  # Switch to transcription tab
+            self.tab_widget.setCurrentIndex(0)  # Switch to STT output tab
         
         # Reset button state and status indicator
         self.record_button.setText("Start Recording")
@@ -528,15 +528,15 @@ class MainWindow(QMainWindow):
         # Set the selected instruction set
         self.controller.select_instruction_set(name)
     
-    def copy_transcription(self):
+    def copy_stt(self):
         """
-        Copy the transcription text to the clipboard.
+        Copy the STT output text to the clipboard.
         
         This method copies the original markdown text, not the rendered HTML,
         consistent with how we handle LLM output copying.
         """
-        ClipboardUtils.set_text(self.transcription_text.markdown_text())
-        self.status_bar.showMessage("Transcription copied to clipboard", 2000)
+        ClipboardUtils.set_text(self.stt_text.markdown_text())
+        self.status_bar.showMessage("STT output copied to clipboard", 2000)
     
     def copy_llm(self):
         """

@@ -29,22 +29,22 @@ def test_pipeline_result(verbose: bool = False):
     
     try:
         # Test initialization with transcription only
-        trans_result = PipelineResult(transcription="This is a test transcription.")
+        trans_result = PipelineResult(stt_output="This is a test transcription.")
         print(f"\nCreated result with transcription:")
-        print(f"  Transcription: '{trans_result.transcription}'")
-        print(f"  LLM Response: '{trans_result.llm_response}'")
-        print(f"  LLM Processed: {trans_result.llm_processed}")
+        print(f"  Transcription: '{trans_result.stt_output}'")
+        print(f"  LLM Response: '{trans_result.llm_output}'")
+        print(f"  LLM Processed: {trans_result.is_llm_processed}")
         
         # Test initialization with all fields
         full_result = PipelineResult(
-            transcription="This is a test transcription.",
-            llm_response="This is a test LLM response.",
-            llm_processed=True
+            stt_output="This is a test transcription.",
+            llm_output="This is a test LLM response.",
+            is_llm_processed=True
         )
         print(f"\nCreated result with all fields:")
-        print(f"  Transcription: '{full_result.transcription}'")
-        print(f"  LLM Response: '{full_result.llm_response}'")
-        print(f"  LLM Processed: {full_result.llm_processed}")
+        print(f"  Transcription: '{full_result.stt_output}'")
+        print(f"  LLM Response: '{full_result.llm_output}'")
+        print(f"  LLM Processed: {full_result.is_llm_processed}")
         
         # Test get_combined_output method
         combined_output = full_result.get_combined_output()
@@ -64,7 +64,7 @@ def test_pipeline_result(verbose: bool = False):
         
         # Test direct comparison
         print(f"\nTesting equality check:")
-        print(f"  Same content == Same content: {full_result == PipelineResult(transcription=full_result.transcription, llm_response=full_result.llm_response, llm_processed=full_result.llm_processed)}")
+        print(f"  Same content == Same content: {full_result == PipelineResult(stt_output=full_result.stt_output, llm_output=full_result.llm_output, is_llm_processed=full_result.is_llm_processed)}")
         print(f"  Full result == Transcription only: {full_result == trans_result}")
             
         print("\nTesting completed successfully")

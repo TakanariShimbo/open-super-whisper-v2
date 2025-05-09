@@ -74,7 +74,7 @@ class Pipeline:
         self._stt_processor.clear_custom_vocabulary()
         self._stt_processor.set_custom_vocabulary(selected_set.stt_vocabulary)
         
-        # Apply transcription instructions
+        # Apply STT instructions
         self._stt_processor.clear_system_instruction()
         self._stt_processor.set_system_instruction(selected_set.stt_instructions)
         
@@ -101,23 +101,23 @@ class Pipeline:
         """Stop recording and return the audio file path."""
         return self._audio_recorder.stop_recording()
     
-    def _prepare_prompt(self, transcription: str, clipboard_text: Optional[str] = None, 
+    def _prepare_prompt(self, stt_output: str, clipboard_text: Optional[str] = None, 
                         clipboard_image: Optional[bytes] = None) -> str:
         """Prepare the prompt for LLM processing based on available inputs."""
-        # Start with just the transcription
-        prompt = transcription
+        # Start with just the STT output
+        prompt = f"Transcription:\n{stt_output}"
         
         # Add clipboard text if provided
         if clipboard_text and not clipboard_image:
-            prompt = f"Clipboard Content:\n{clipboard_text}\n\nTranscription:\n{transcription}"
+            prompt = f"Clipboard Content:\n{clipboard_text}\n\nTranscription:\n{stt_output}"
         
         # Add image context if there's an image but no clipboard text
         if not clipboard_text and clipboard_image:
-            prompt = f"Analyze this image along with the following.\n\nTranscription:\n{transcription}"
+            prompt = f"Analyze this image along with the following.\n\nTranscription:\n{stt_output}"
 
         # Add both clipboard text and image context if both are provided
         if clipboard_text and clipboard_image:
-            prompt = f"Analyze this image along with the following.\n\nClipboard Content:\n{clipboard_text}\n\nTranscription:\n{transcription}"
+            prompt = f"Analyze this image along with the following.\n\nClipboard Content:\n{clipboard_text}\n\nTranscription:\n{stt_output}"
         
         return prompt
     
@@ -144,23 +144,23 @@ class Pipeline:
         clipboard_image: Optional[bytes] = None,
         stream_callback: Optional[Callable[[str], None]] = None,
     ) -> PipelineResult:
-        """Process an audio file with transcription and optional LLM processing."""
-        # Perform transcription
-        transcription = self._stt_processor.transcribe_file_with_chunks(audio_file_path, language)
+        """Process an audio file with STT output and optional LLM processing."""
+        # Perform STT
+        stt_output = self._stt_processor.transcribe_file_with_chunks(audio_file_path, language)
         
         # Create result object
-        result = PipelineResult(transcription=transcription)
+        result = PipelineResult(stt_output=stt_output)
         
-        # If LLM is enabled, process the transcription
+        # If LLM is enabled, process the STT output
         if self._is_llm_processing_enabled:
             # Prepare the prompt
-            prompt = self._prepare_prompt(transcription, clipboard_text, clipboard_image)
+            prompt = self._prepare_prompt(stt_output, clipboard_text, clipboard_image)
             
             # Process with LLM
-            llm_response = self._process_with_text(prompt, clipboard_image, stream_callback)
+            llm_output = self._process_with_text(prompt, clipboard_image, stream_callback)
             
             # Update result
-            result.llm_response = llm_response
-            result.llm_processed = True
+            result.llm_output = llm_output
+            result.is_llm_processed = True
         
         return result

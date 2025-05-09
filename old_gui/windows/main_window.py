@@ -755,7 +755,7 @@ class MainWindow(QMainWindow):
             print(error_msg)
             
             # Create error result
-            error_result = PipelineResult(transcription=f"Error: {str(e)}")
+            error_result = PipelineResult(stt_output=f"Error: {str(e)}")
             
             # Signal the error result
             self.processing_complete.emit(error_result)
@@ -824,16 +824,16 @@ class MainWindow(QMainWindow):
             )
         
         # Show transcription text
-        self.transcription_text.setText(result.transcription)
+        self.transcription_text.setText(result.stt_output)
         
         # Show LLM response if available (this may already be shown via streaming)
-        if result.llm_processed and result.llm_response:
+        if result.is_llm_processed and result.llm_output:
             # Only set the text if it's not already set by streaming
-            if self.llm_text.toPlainText() != result.llm_response:
-                self.llm_text.setText(result.llm_response)
+            if self.llm_text.toPlainText() != result.llm_output:
+                self.llm_text.setText(result.llm_output)
             
             # Update the Markdown view with the LLM response
-            self.markdown_browser.setMarkdownText(result.llm_response)
+            self.markdown_browser.setMarkdownText(result.llm_output)
             
             # Switch to Formatted LLM tab if LLM processing was performed
             self.tab_widget.setCurrentIndex(2)  # Formatted LLM tab
@@ -848,7 +848,7 @@ class MainWindow(QMainWindow):
         
         # Auto-copy if enabled
         if self.auto_copy:
-            if self.pipeline.is_llm_processing_enabled and result.llm_processed and result.llm_response:
+            if self.pipeline.is_llm_processing_enabled and result.is_llm_processed and result.llm_output:
                 # Copy LLM output if LLM is enabled and result is available
                 self.copy_llm_to_clipboard()
             else:

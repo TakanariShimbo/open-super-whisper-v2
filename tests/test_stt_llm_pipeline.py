@@ -132,20 +132,20 @@ def test_pipeline(audio_file_path: str, api_key: str = None,
         # Print results
         print("\nPipeline processing completed")
         print(f"Time taken: {elapsed_time:.2f} seconds")
-        print(f"Transcription length: {len(result.transcription)} characters")
+        print(f"Transcription length: {len(result.stt_output)} characters")
         
-        if result.llm_processed:
-            print(f"LLM response length: {len(result.llm_response)} characters")
+        if result.is_llm_processed:
+            print(f"LLM response length: {len(result.llm_output)} characters")
         
         print("\nTranscription result:")
         print("-" * 40)
-        print(result.transcription)
+        print(result.stt_output)
         print("-" * 40)
         
-        if result.llm_processed and not stream:
+        if result.is_llm_processed and not stream:
             print("\nLLM response:")
             print("-" * 40)
-            print(result.llm_response)
+            print(result.llm_output)
             print("-" * 40)
             
         return 0
