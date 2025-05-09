@@ -16,9 +16,11 @@ from core.pipelines.instruction_set import InstructionSet
 from ..models.pipeline_model import PipelineModel
 from ..models.instruction_set_model import InstructionSetModel
 from ..models.hotkey_model import HotkeyModel
+from ..models.status_indicator_model import StatusIndicatorModel
 from ..models.dialogs.instruction_dialog_model import InstructionDialogModel
 from ..controllers.dialogs.instruction_dialog_controller import InstructionDialogController
 from ..controllers.dialogs.api_key_controller import APIKeyController
+from ..controllers.status_indicator_controller import StatusIndicatorController
 from ..views.dialogs.instruction_dialog import InstructionDialog
 from ..utils.clipboard_utils import ClipboardUtils
 from ..utils.settings_manager import SettingsManager
@@ -128,6 +130,10 @@ class AppController(QObject):
             
         self._instruction_set_model = InstructionSetModel()
         self._hotkey_model = HotkeyModel()
+        
+        # Initialize status indicator model and controller
+        self._status_indicator_model = StatusIndicatorModel()
+        self._status_indicator_controller = StatusIndicatorController(self._status_indicator_model)
     
     def _setup_model_connections(self) -> None:
         """
@@ -135,8 +141,8 @@ class AppController(QObject):
         """
         # Pipeline model connections
         self._pipeline_model.processing_started.connect(self.processing_started)
-        self._pipeline_model.processing_complete.connect(self.processing_complete)
-        self._pipeline_model.processing_cancelled.connect(self.processing_cancelled)
+        self._pipeline_model.processing_complete.connect(self._handle_processing_complete)
+        self._pipeline_model.processing_cancelled.connect(self._handle_processing_cancelled)
         self._pipeline_model.processing_state_changed.connect(self._handle_processing_state_change)
         self._pipeline_model.processing_error.connect(
             lambda error: self.status_update.emit(f"Error: {error}", 3000)
@@ -161,6 +167,33 @@ class AppController(QObject):
             Whether processing is currently active
         """
         self.processing_state_changed.emit(is_processing)
+        
+    @pyqtSlot(PipelineResult)
+    def _handle_processing_complete(self, result: PipelineResult) -> None:
+        """
+        Handle processing completion.
+        
+        Parameters
+        ----------
+        result : PipelineResult
+            The result of the processing
+        """
+        # Set status indicator to complete mode
+        self._status_indicator_controller.complete_processing()
+        
+        # Forward the signal to views
+        self.processing_complete.emit(result)
+        
+    @pyqtSlot()
+    def _handle_processing_cancelled(self) -> None:
+        """
+        Handle processing cancellation.
+        """
+        # Set status indicator to cancelled mode
+        self._status_indicator_controller.cancel_processing()
+        
+        # Forward the signal to views
+        self.processing_cancelled.emit()
     
     @pyqtSlot(str)
     def _handle_hotkey_triggered(self, hotkey: str) -> None:
@@ -324,6 +357,9 @@ class AppController(QObject):
             # Set recording mode for hotkeys (no active hotkey in this case)
             self._hotkey_model.set_recording_mode(True)
             
+            # Start status indicator in recording mode
+            self._status_indicator_controller.start_recording()
+            
             # Emit recording started signal
             self.recording_started.emit()
             
@@ -358,6 +394,9 @@ class AppController(QObject):
             # Set recording mode for hotkeys with the active hotkey
             self._hotkey_model.set_recording_mode(True, hotkey)
             
+            # Start status indicator in recording mode
+            self._status_indicator_controller.start_recording()
+            
             # Emit recording started signal
             self.recording_started.emit()
             
@@ -382,6 +421,9 @@ class AppController(QObject):
         
         # Disable recording mode for hotkeys
         self._hotkey_model.set_recording_mode(False)
+        
+        # Update status indicator to processing mode
+        self._status_indicator_controller.start_processing()
         
         # Emit recording stopped signal
         self.recording_stopped.emit()
@@ -426,6 +468,9 @@ class AppController(QObject):
         result = self._pipeline_model.cancel_processing()
         
         if result:
+            # Show cancelled status in indicator
+            self._status_indicator_controller.cancel_processing()
+            
             self.status_update.emit("Processing cancelled", 3000)
             
         return result
