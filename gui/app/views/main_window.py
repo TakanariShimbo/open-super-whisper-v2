@@ -10,7 +10,8 @@ import sys
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QPushButton, 
     QLabel, QComboBox, QGridLayout, QFormLayout, 
-    QTabWidget, QStatusBar, QMessageBox, QSystemTrayIcon
+    QTabWidget, QStatusBar, QMessageBox, QSystemTrayIcon,
+    QSizePolicy
 )
 from PyQt6.QtCore import Qt, pyqtSlot, QTimer
 from PyQt6.QtGui import QAction, QCloseEvent
@@ -136,8 +137,18 @@ class MainWindow(QMainWindow):
         stt_tab = QWidget()
         stt_layout = QVBoxLayout(stt_tab)
         
+        # Create a header layout with label and copy button
+        stt_header_layout = QGridLayout()
         stt_label = QLabel("STT Output:")
-        stt_layout.addWidget(stt_label)
+        stt_header_layout.addWidget(stt_label, 0, 0)
+        
+        # Add copy button for STT output
+        self.stt_copy_button = QPushButton("Copy")
+        self.stt_copy_button.clicked.connect(self.copy_stt)
+        stt_header_layout.addWidget(self.stt_copy_button, 0, 1, Qt.AlignmentFlag.AlignRight)
+        
+        # Add the header layout to the main layout
+        stt_layout.addLayout(stt_header_layout)
         
         # Use MarkdownTextBrowser instead of QTextEdit for consistency
         self.stt_text = MarkdownTextBrowser()
@@ -148,8 +159,18 @@ class MainWindow(QMainWindow):
         llm_tab = QWidget()
         llm_layout = QVBoxLayout(llm_tab)
         
+        # Create a header layout with label and copy button
+        llm_header_layout = QGridLayout()
         llm_label = QLabel("LLM Output:")
-        llm_layout.addWidget(llm_label)
+        llm_header_layout.addWidget(llm_label, 0, 0)
+        
+        # Add copy button for LLM output
+        self.llm_copy_button = QPushButton("Copy")
+        self.llm_copy_button.clicked.connect(self.copy_llm)
+        llm_header_layout.addWidget(self.llm_copy_button, 0, 1, Qt.AlignmentFlag.AlignRight)
+        
+        # Add the header layout to the main layout
+        llm_layout.addLayout(llm_header_layout)
         
         # Use our custom markdown browser instead of QTextEdit
         self.llm_text = MarkdownTextBrowser()
@@ -202,15 +223,11 @@ class MainWindow(QMainWindow):
         self.toolbar = self.addToolBar("Main Toolbar")
         self.toolbar.setMovable(False)
         
-        # Copy STT and LLM actions
-        copy_stt_action = QAction("Copy STT Output", self)
-        copy_stt_action.triggered.connect(self.copy_stt)
-        self.toolbar.addAction(copy_stt_action)
-        self.toolbar.addSeparator()
-        
-        copy_llm_action = QAction("Copy LLM Output", self)
-        copy_llm_action.triggered.connect(self.copy_llm)
-        self.toolbar.addAction(copy_llm_action)
+        # Toolbar actions start with instruction sets
+        # API key action
+        api_action = QAction("API Key", self)
+        api_action.triggered.connect(self.show_api_key_dialog)
+        self.toolbar.addAction(api_action)
         self.toolbar.addSeparator()
 
         # Instruction sets action
@@ -218,20 +235,19 @@ class MainWindow(QMainWindow):
         instruction_sets_action.triggered.connect(self.show_instruction_sets_dialog)
         self.toolbar.addAction(instruction_sets_action)
         self.toolbar.addSeparator()
-
-        # API key action
-        api_action = QAction("API Key", self)
-        api_action.triggered.connect(self.show_api_key_dialog)
-        self.toolbar.addAction(api_action)
-        self.toolbar.addSeparator()
         
         # Settings action
         settings_action = QAction("Settings", self)
         settings_action.triggered.connect(self.show_settings_dialog)
         self.toolbar.addAction(settings_action)
         self.toolbar.addSeparator()
-
-        # Exit action
+        
+        # Add a spacer widget to push the exit button to the right
+        spacer = QWidget()
+        spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.toolbar.addWidget(spacer)
+        
+        # Exit action (right-aligned)
         exit_action = QAction("Exit", self)
         exit_action.triggered.connect(self.quit_application)
         self.toolbar.addAction(exit_action)
