@@ -246,6 +246,7 @@ class MainWindow(QMainWindow):
         spacer = QWidget()
         spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.toolbar.addWidget(spacer)
+        self.toolbar.addSeparator()
         
         # Exit action (right-aligned)
         exit_action = QAction("Exit", self)
