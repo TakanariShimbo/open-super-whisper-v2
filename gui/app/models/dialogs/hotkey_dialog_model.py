@@ -110,10 +110,10 @@ class HotkeyDialogModel(QObject):
         bool
             True if the hotkey is valid, False otherwise
         """
-        # Check if the hotkey is empty
+        # Empty hotkey is allowed (no hotkey assigned)
         if not self._hotkey:
-            self.hotkey_invalid.emit("", "Hotkey cannot be empty.")
-            return False
+            self.hotkey_valid.emit("")
+            return True
         
         # Check for valid key sequence (optional, can be extended)
         try:
