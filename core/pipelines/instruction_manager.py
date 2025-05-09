@@ -146,23 +146,23 @@ class InstructionManager:
                 return instruction_set
         return None
     
-    def import_from_dict(self, data: dict[str, Any]) -> None:
+    def import_from_dict(self, data: list[dict[str, Any]]) -> None:
         """
-        Import instruction sets from an external dictionary.
+        Import instruction sets from an external list.
         
         This method loads instruction set configurations from external
         data (e.g., from a JSON file) into the current manager instance.
         
         Parameters
         ----------
-        data : dict[str, Any]
-            Dictionary containing serialized instruction sets.
+        data : list[dict[str, Any]]
+            List containing serialized instruction sets.
         """           
         # Clear existing sets
         self._sets.clear()
         
         # Import sets
-        sets_data = data.get("sets", [])
+        sets_data = data if isinstance(data, list) else []
             
         for set_data in sets_data:
             if not isinstance(set_data, dict):
@@ -176,20 +176,16 @@ class InstructionManager:
         if not self._sets:
             self.add_set(InstructionSet(name= "Default"))
     
-    def export_to_dict(self) -> dict[str, Any]:
+    def export_to_dict(self) -> list[dict[str, Any]]:
         """
-        Export instruction sets to a dictionary for external serialization.
+        Export instruction sets to a list for external serialization.
         
         This method prepares the current instruction set configuration
         for saving to external storage (e.g., JSON file).
         
         Returns
         -------
-        dict[str, Any]
-            Dictionary containing serialized instruction sets.
+        list[dict[str, Any]]
+            List containing serialized instruction sets.
         """
-        sets_data = [instruction_set.to_dict() for instruction_set in self._sets.values()]
-        
-        return {
-            "sets": sets_data
-        }
+        return [instruction_set.to_dict() for instruction_set in self._sets.values()]
