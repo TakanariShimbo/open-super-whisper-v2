@@ -448,11 +448,6 @@ class InstructionDialog(QDialog):
         self._llm_clipboard_text_checkbox.blockSignals(True)
         self._llm_clipboard_image_checkbox.blockSignals(True)
         
-        # Reset changes flag
-        self._changes_made = False
-        self._save_button.setEnabled(False)
-        self._discard_button.setEnabled(False)
-        
         # Update operation buttons based on save state
         self._update_operation_buttons()
         
@@ -1047,12 +1042,6 @@ class InstructionDialog(QDialog):
         if self._controller._hotkey_model:
             self._controller._hotkey_model.stop_listening()
             self._hotkeys_disabled = True
-            
-        # Ensure initial state is "saved" to enable operation buttons
-        self._changes_made = False
-        self._save_button.setEnabled(False)
-        self._discard_button.setEnabled(False)
-        self._update_operation_buttons()
         
         # Ensure UI is fully updated with the selected instruction set data
         # This is needed because sometimes the UI might not reflect the data on dialog opening
