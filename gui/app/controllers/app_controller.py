@@ -458,11 +458,13 @@ class AppController(QObject):
             if selected_set and selected_set.llm_enabled:
                 # Only get clipboard if LLM is enabled in the instruction set
                 clipboard_text, clipboard_image = ClipboardUtils.get_content()
+            
+                if not selected_set.llm_clipboard_text_enabled:
+                    clipboard_text = None
+                if not selected_set.llm_clipboard_image_enabled:
+                    clipboard_image = None
                 
-                # Log for debugging (remove in production)
-                if clipboard_text or clipboard_image:
-                    print(f"Retrieved clipboard content: Text: {'Yes' if clipboard_text else 'No'}, " 
-                          f"Image: {'Yes' if clipboard_image else 'No'}")
+                print(f"Retrieved clipboard content: Text: {'Yes' if clipboard_text else 'No'}, " f"Image: {'Yes' if clipboard_image else 'No'}")
                 
             # Process the audio with clipboard content asynchronously
             self._pipeline_model.process_audio(audio_file, language, clipboard_text, clipboard_image)
