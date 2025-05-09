@@ -25,6 +25,7 @@ from ..utils.audio_manager import AudioManager
 from ..utils.settings_manager import SettingsManager
 from .tray.system_tray import SystemTray
 from .widgets.markdown_text_browser import MarkdownTextBrowser
+from .dialogs.settings_dialog import SettingsDialog
 
 
 class MainWindow(QMainWindow):
@@ -61,8 +62,8 @@ class MainWindow(QMainWindow):
         # Initialize icon manager
         self.icon_manager = IconManager()
         
-        # Initialize audio manager
-        self.audio_manager = AudioManager()
+        # Initialize audio manager (use singleton instance)
+        self.audio_manager = AudioManager.instance()
         
         # Set application icon
         self.setWindowIcon(self.icon_manager.get_app_icon())
@@ -201,29 +202,35 @@ class MainWindow(QMainWindow):
         self.toolbar = self.addToolBar("Main Toolbar")
         self.toolbar.setMovable(False)
         
-        # API key action
-        api_action = QAction("API Key Settings", self)
-        api_action.triggered.connect(self.show_api_key_dialog)
-        self.toolbar.addAction(api_action)
-        
-        # Instruction sets action
-        instruction_sets_action = QAction("Instruction Sets", self)
-        instruction_sets_action.triggered.connect(self.show_instruction_sets_dialog)
-        self.toolbar.addAction(instruction_sets_action)
-        
-        self.toolbar.addSeparator()
-        
-        # Copy actions
+        # Copy STT and LLM actions
         copy_stt_action = QAction("Copy STT Output", self)
         copy_stt_action.triggered.connect(self.copy_stt)
         self.toolbar.addAction(copy_stt_action)
+        self.toolbar.addSeparator()
         
         copy_llm_action = QAction("Copy LLM Output", self)
         copy_llm_action.triggered.connect(self.copy_llm)
         self.toolbar.addAction(copy_llm_action)
-        
+        self.toolbar.addSeparator()
+
+        # Instruction sets action
+        instruction_sets_action = QAction("Instruction Sets", self)
+        instruction_sets_action.triggered.connect(self.show_instruction_sets_dialog)
+        self.toolbar.addAction(instruction_sets_action)
+        self.toolbar.addSeparator()
+
+        # API key action
+        api_action = QAction("API Key", self)
+        api_action.triggered.connect(self.show_api_key_dialog)
+        self.toolbar.addAction(api_action)
         self.toolbar.addSeparator()
         
+        # Settings action
+        settings_action = QAction("Settings", self)
+        settings_action.triggered.connect(self.show_settings_dialog)
+        self.toolbar.addAction(settings_action)
+        self.toolbar.addSeparator()
+
         # Exit action
         exit_action = QAction("Exit", self)
         exit_action.triggered.connect(self.quit_application)
@@ -565,6 +572,21 @@ class MainWindow(QMainWindow):
         
         # Show status message
         self.status_bar.showMessage("Instruction sets updated", 2000)
+        
+    def show_settings_dialog(self):
+        """
+        Show the settings dialog.
+        
+        This method creates and shows the settings dialog for configuring
+        application preferences.
+        """        
+        # Create and show the settings dialog
+        dialog = SettingsDialog(self)
+        result = dialog.exec()
+        
+        # Show status message if settings were updated
+        if result == SettingsDialog.DialogCode.Accepted:
+            self.status_bar.showMessage("Settings updated", 2000)
     
     @pyqtSlot()
     def show_window(self):

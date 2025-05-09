@@ -36,10 +36,37 @@ class AudioManager(QObject):
         'cancel_processing': 'cancel_processing.wav'
     }
     
+    # Singleton instance
+    _instance = None
+    
+    @classmethod
+    def instance(cls) -> 'AudioManager':
+        """
+        Get the singleton instance of the AudioManager.
+        
+        Returns
+        -------
+        AudioManager
+            The singleton instance
+        """
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+    
     def __init__(self) -> None:
         """
         Initialize the AudioManager.
+        
+        Raises
+        ------
+        Exception
+            If the AudioManager is instantiated directly
         """
+        # Check if singleton already exists
+        if AudioManager._instance is not None:
+            # If this is not the first instantiation, don't reinitialize
+            raise Exception("AudioManager is a singleton class and cannot be instantiated directly.")
+            
         super().__init__()
         
         # Store settings manager

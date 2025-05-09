@@ -9,6 +9,7 @@ from PyQt6.QtCore import QObject, pyqtSlot
 
 from ..models.status_indicator_model import StatusIndicatorModel
 from ..views.widgets.status_indicator import StatusIndicatorWindow
+from ..utils.settings_manager import SettingsManager
 
 
 class StatusIndicatorController(QObject):
@@ -35,6 +36,9 @@ class StatusIndicatorController(QObject):
         
         # Store model reference
         self.model = model
+        
+        # Get settings manager
+        self.settings_manager = SettingsManager.instance()
         
         # Create view
         self.view = StatusIndicatorWindow()
@@ -78,7 +82,10 @@ class StatusIndicatorController(QObject):
         visible : bool
             Whether the indicator should be visible
         """
-        if visible:
+        # Only show indicator if settings allow it
+        indicator_visible_setting = self.settings_manager.get_indicator_visible()
+        
+        if visible and indicator_visible_setting:
             self.view.show()
         else:
             self.view.hide()

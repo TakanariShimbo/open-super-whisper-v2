@@ -23,21 +23,23 @@ class SettingsManager:
     # Define common setting keys as constants to avoid string duplication
     # and ensure consistency
     KEY_API_KEY = "api_key"
-    KEY_AUDIO_NOTIFICATIONS_ENABLED = "audio_notifications_enabled"
-    KEY_AUDIO_NOTIFICATIONS_VOLUME = "audio_notifications_volume"
     KEY_INSTRUCTION_SETS = "instruction_sets"
     KEY_SELECTED_INSTRUCTION_SET = "selected_instruction_set"
+    KEY_AUDIO_NOTIFICATIONS_ENABLED = "audio_notifications_enabled"
+    KEY_AUDIO_NOTIFICATIONS_VOLUME = "audio_notifications_volume"
+    KEY_INDICATOR_VISIBLE = "indicator_visible"
+    KEY_AUTO_CLIPBOARD = "auto_clipboard"
     
-    _settings_manager = None
+    _instance = None
 
     @classmethod    
     def instance(cls) -> 'SettingsManager':
         """
         Get the singleton instance of the SettingsManager.
         """
-        if cls._settings_manager is None:
-            cls._settings_manager = cls()
-        return cls._settings_manager
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
     
     def __init__(self) -> None:
         """
@@ -48,10 +50,10 @@ class SettingsManager:
         Exception
             If the SettingsManager is instantiated directly
         """
-        if self._settings_manager is not None:
+        if self._instance is not None:
             raise Exception("SettingsManager is a singleton class and cannot be instantiated directly.")
         
-        self._settings_manager = self
+        self._instance = self
         self._settings = QSettings()
     
     def get_api_key(self) -> str:
@@ -63,7 +65,7 @@ class SettingsManager:
         str
             The stored API key, or an empty string if none is stored
         """
-        return self._settings.value(self.KEY_API_KEY, "")
+        return self._settings.value(self.KEY_API_KEY, "", type=str)
     
     def set_api_key(self, api_key: str) -> None:
         """
@@ -95,7 +97,7 @@ class SettingsManager:
         bool
             True if notifications are enabled, False otherwise
         """
-        return self._settings.value(self.KEY_AUDIO_NOTIFICATIONS_ENABLED, True)
+        return self._settings.value(self.KEY_AUDIO_NOTIFICATIONS_ENABLED, True, type=bool)
     
     def set_audio_notifications_enabled(self, enabled: bool) -> None:
         """
@@ -118,7 +120,7 @@ class SettingsManager:
         float
             Volume level between 0.0 and 1.0
         """
-        return self._settings.value(self.KEY_AUDIO_NOTIFICATIONS_VOLUME, 0.7)
+        return self._settings.value(self.KEY_AUDIO_NOTIFICATIONS_VOLUME, 0.7, type=float)
     
     def set_audio_notifications_volume(self, volume: float) -> None:
         """
@@ -174,7 +176,7 @@ class SettingsManager:
         str
             The name of the selected instruction set, or an empty string if none selected
         """
-        return self._settings.value(self.KEY_SELECTED_INSTRUCTION_SET, "")
+        return self._settings.value(self.KEY_SELECTED_INSTRUCTION_SET, "", type=str)
     
     def set_selected_instruction_set(self, name: str) -> None:
         """
@@ -186,4 +188,54 @@ class SettingsManager:
             Name of the instruction set to select
         """
         self._settings.setValue(self.KEY_SELECTED_INSTRUCTION_SET, name)
+        self._settings.sync()
+        
+    # Status indicator visibility methods
+    
+    def get_indicator_visible(self) -> bool:
+        """
+        Check if status indicator should be visible.
+        
+        Returns
+        -------
+        bool
+            True if indicator should be visible, False otherwise
+        """
+        return self._settings.value(self.KEY_INDICATOR_VISIBLE, True, type=bool)
+    
+    def set_indicator_visible(self, visible: bool) -> None:
+        """
+        Set whether status indicator should be visible.
+        
+        Parameters
+        ----------
+        visible : bool
+            True to make indicator visible, False to hide
+        """
+        self._settings.setValue(self.KEY_INDICATOR_VISIBLE, visible)
+        self._settings.sync()
+    
+    # Auto clipboard methods
+    
+    def get_auto_clipboard(self) -> bool:
+        """
+        Check if results should be automatically copied to clipboard.
+        
+        Returns
+        -------
+        bool
+            True if auto-clipboard is enabled, False otherwise
+        """
+        return self._settings.value(self.KEY_AUTO_CLIPBOARD, False, type=bool)
+    
+    def set_auto_clipboard(self, enabled: bool) -> None:
+        """
+        Set whether results should be automatically copied to clipboard.
+        
+        Parameters
+        ----------
+        enabled : bool
+            True to enable auto-clipboard, False to disable
+        """
+        self._settings.setValue(self.KEY_AUTO_CLIPBOARD, enabled)
         self._settings.sync()

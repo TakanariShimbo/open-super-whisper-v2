@@ -198,6 +198,18 @@ class AppController(QObject):
         # Set status indicator to complete mode
         self._status_indicator_controller.complete_processing()
         
+        # Check if auto-clipboard is enabled and copy results if needed
+        if self._settings_manager.get_auto_clipboard():
+            # Copy the most appropriate output to clipboard
+            if result.is_llm_processed and result.llm_output:
+                # If LLM was processed, copy LLM output
+                ClipboardUtils.set_text(result.llm_output)
+                self.status_update.emit("LLM output copied to clipboard", 2000)
+            elif result.stt_output:
+                # Otherwise, copy STT output
+                ClipboardUtils.set_text(result.stt_output)
+                self.status_update.emit("STT output copied to clipboard", 2000)
+        
         # Forward the signal to views
         self.processing_complete.emit(result)
         
