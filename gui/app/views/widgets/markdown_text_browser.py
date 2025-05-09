@@ -75,8 +75,14 @@ class MarkdownTextBrowser(QWebEngineView):
         # Store original markdown text
         self._markdown_text = ""
         
+        # Store placeholder text
+        self._placeholder_text = ""
+        
         # Initialize HTML template
         self._initialize_html_template()
+        
+        # Connect loadFinished signal to apply placeholder
+        self.loadFinished.connect(self._on_load_finished)
     
     def _initialize_html_template(self) -> None:
         r"""
@@ -118,8 +124,11 @@ class MarkdownTextBrowser(QWebEngineView):
                     new QWebChannel(qt.webChannelTransport, function(channel) {
                         var content = channel.objects.content;
                         content.content_changed.connect(function(new_content) {
-                            document.getElementById('content').innerHTML = new_content;
-                            typesetMath();
+                            var contentElement = document.getElementById('content');
+                            if (contentElement) {
+                                contentElement.innerHTML = new_content;
+                                typesetMath();
+                            }
                         });
                     });
                 });
@@ -184,6 +193,31 @@ class MarkdownTextBrowser(QWebEngineView):
         
         return text
     
+    def _apply_placeholder(self):
+        """
+        Apply placeholder text if available and content is empty.
+        This is a helper method to avoid code duplication.
+        """
+        if self._placeholder_text and not self._markdown_text:
+            placeholder_html = f'<span class="placeholder">{self._placeholder_text}</span>'
+            self._document.set_content(placeholder_html)
+            
+            # Ensure placeholder is visible with direct JavaScript injection
+            # Added error handling to avoid JavaScript errors
+            js_code = """
+            (function() {
+                setTimeout(function() {
+                    var contentElement = document.getElementById('content');
+                    if (contentElement) {
+                        contentElement.innerHTML = '<span class="placeholder">""" + self._placeholder_text + """</span>';
+                    }
+                }, 200);
+            })();
+            """
+            self.page().runJavaScript(js_code)
+            return True
+        return False
+    
     def markdown_text(self) -> str:
         """
         Get the original markdown text.
@@ -210,7 +244,9 @@ class MarkdownTextBrowser(QWebEngineView):
         self._markdown_text = text
         
         if not text:
-            self._document.set_content("")
+            # If text is empty, show placeholder or clear
+            if not self._apply_placeholder():
+                self._document.set_content("")
             return
         
         # Preserve LaTeX expressions before markdown conversion
@@ -228,9 +264,13 @@ class MarkdownTextBrowser(QWebEngineView):
     def clear(self) -> None:
         """
         Clear both the displayed HTML and stored markdown text.
+        Shows placeholder text if set.
         """
         self._markdown_text = ""
-        self._document.set_content("")
+        
+        # Show placeholder if set, otherwise clear content
+        if not self._apply_placeholder():
+            self._document.set_content("")
     
     def append_markdown(self, text: str) -> None:
         """
@@ -266,20 +306,44 @@ class MarkdownTextBrowser(QWebEngineView):
         """
         Set placeholder text for the browser.
         """
-        if not self._markdown_text:
-            placeholder_html = f'<span class="placeholder">{text}</span>'
-            self._document.set_content(placeholder_html)
+        # Store the placeholder text for later use
+        self._placeholder_text = text
+        
+        # Apply placeholder if content is empty
+        self._apply_placeholder()
+    
+    def _on_load_finished(self, success):
+        """
+        Handler for the loadFinished signal.
+        Ensures that placeholder text is applied after the page is fully loaded.
+        
+        Parameters
+        ----------
+        success : bool
+            Whether the page was loaded successfully
+        """
+        if success:
+            # Use a timer to ensure the DOM is fully ready
+            self.page().runJavaScript("""
+            setTimeout(function() {
+                // Signal that the page is truly ready for content
+                if (document.readyState === 'complete') {
+                    console.log('Page fully loaded');
+                }
+            }, 100);
+            """)
+            # Apply placeholder after a short delay
+            self._apply_placeholder()
     
     def sizeHint(self) -> QSize:
         """
         Provide a default size.
         """
         return QSize(600, 400)
-    
+        
     def setOpenExternalLinks(self, open: bool) -> None:
         """
         Set whether external links are opened in the default browser.
         """
         if open:
             self.page().linkClicked.connect(lambda url: QDesktopServices.openUrl(url))
-
