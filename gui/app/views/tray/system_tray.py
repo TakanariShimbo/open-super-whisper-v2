@@ -6,6 +6,7 @@ allowing it to run in the background while maintaining accessibility.
 """
 
 import os
+from typing import Literal
 
 from PyQt6.QtWidgets import QSystemTrayIcon, QMenu, QStyle, QApplication
 from PyQt6.QtGui import QIcon, QAction
@@ -161,16 +162,18 @@ class SystemTray(QSystemTrayIcon):
             # Single click - toggle window visibility
             self.show_window_signal.emit()
             
-    def update_recording_status(self, is_recording: bool) -> None:
+    def update_recording_status(self, status: Literal["start_recording", "stop_recording", "cancel_processing"]) -> None:
         """
         Update the recording action text based on recording status.
         
         Parameters
         ----------
-        is_recording : bool
-            True if recording is in progress, False otherwise
+        status : Literal["start_recording", "stop_recording", "cancel_processing"]
+            The status of the recording
         """
-        if is_recording:
-            self._record_action.setText("Stop Recording")
-        else:
+        if status == "start_recording":
             self._record_action.setText("Start Recording")
+        elif status == "stop_recording":
+            self._record_action.setText("Stop Recording")
+        elif status == "cancel_processing":
+            self._record_action.setText("Cancel Processing")

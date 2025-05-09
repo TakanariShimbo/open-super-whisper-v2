@@ -352,7 +352,7 @@ class MainWindow(QMainWindow):
         self.status_indicator.setText("Recording...")
         
         # Update system tray recording status
-        self.system_tray.update_recording_status(True)
+        self.system_tray.update_recording_status("stop_recording")
         
         # Play recording start sound
         self.audio_manager.play_start_recording()
@@ -365,9 +365,6 @@ class MainWindow(QMainWindow):
         # Don't update button text here since we might be going into processing state
         self.status_indicator.setText("Processing...")
         
-        # Update system tray recording status
-        self.system_tray.update_recording_status(False)
-        
         # Play recording stop sound
         self.audio_manager.play_stop_recording()
     
@@ -378,6 +375,10 @@ class MainWindow(QMainWindow):
         """
         self.record_button.setText("Cancel Processing")
         self.status_indicator.setText("Processing...")
+
+        # Update system tray recording status
+        self.system_tray.update_recording_status("cancel_processing")
+
         # Disable instruction set selection during processing
         self.instruction_set_combo.setEnabled(False)
         
@@ -400,12 +401,16 @@ class MainWindow(QMainWindow):
             self.status_indicator.setText("Processing...")
             # Disable instruction set selection during processing
             self.instruction_set_combo.setEnabled(False)
+            # Update system tray recording status
+            self.system_tray.update_recording_status("cancel_processing")
         else:
             # Processing stopped
             self.record_button.setText("Start Recording")
             self.status_indicator.setText("Ready")
             # Re-enable instruction set selection
             self.instruction_set_combo.setEnabled(True)
+            # Update system tray recording status
+            self.system_tray.update_recording_status("start_recording")
     
     @pyqtSlot()
     def on_processing_cancelled(self):
@@ -416,7 +421,8 @@ class MainWindow(QMainWindow):
         self.status_indicator.setText("Cancelled")
         # Re-enable instruction set selection
         self.instruction_set_combo.setEnabled(True)
-
+        # Update system tray recording status
+        self.system_tray.update_recording_status("start_processing")
         # Play cancel processing sound
         self.audio_manager.play_cancel_processing()
     
@@ -452,7 +458,8 @@ class MainWindow(QMainWindow):
         self.status_indicator.setText("Ready")
         # Re-enable instruction set selection
         self.instruction_set_combo.setEnabled(True)
-        
+        # Update system tray recording status
+        self.system_tray.update_recording_status("start_recording")
         # Update status bar to show completion
         self.status_bar.showMessage("Processing complete", 3000)
         
