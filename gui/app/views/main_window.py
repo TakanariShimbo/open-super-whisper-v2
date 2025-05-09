@@ -250,6 +250,9 @@ class MainWindow(QMainWindow):
         
         # Hotkey triggered signal
         self.controller.hotkey_triggered.connect(self.on_hotkey_triggered)
+        
+        # LLM streaming signal
+        self.controller.llm_stream_update.connect(self.on_llm_stream_update)
     
     def populate_instruction_set_combo(self):
         """
@@ -352,6 +355,9 @@ class MainWindow(QMainWindow):
         self.status_indicator.setText("Processing...")
         # Disable instruction set selection during processing
         self.instruction_set_combo.setEnabled(False)
+        
+        # Clear the LLM text to prepare for streaming updates
+        self.llm_text.clear()
     
     @pyqtSlot(bool)
     def on_processing_state_changed(self, is_processing: bool):
@@ -402,11 +408,17 @@ class MainWindow(QMainWindow):
         # Update the transcription text
         self.transcription_text.setText(result.transcription)
         
-        # Update the LLM text if LLM was processed
+        # For LLM text, if streaming was used, the text is already in the UI
+        # Only update if it's different from the streaming result
         if result.llm_processed and result.llm_response:
-            self.llm_text.setText(result.llm_response)
-            self.tab_widget.setCurrentIndex(1)  # Switch to LLM tab
+            current_text = self.llm_text.toPlainText()
+            if current_text != result.llm_response:
+                self.llm_text.setText(result.llm_response)
+            
+            # Stay on or switch to LLM tab
+            self.tab_widget.setCurrentIndex(1)
         else:
+            # No LLM processing, clear any existing text
             self.llm_text.clear()
             self.tab_widget.setCurrentIndex(0)  # Switch to transcription tab
         
@@ -415,6 +427,9 @@ class MainWindow(QMainWindow):
         self.status_indicator.setText("Ready")
         # Re-enable instruction set selection
         self.instruction_set_combo.setEnabled(True)
+        
+        # Update status bar to show completion
+        self.status_bar.showMessage("Processing complete", 3000)
         
         # Play completion sound
         self.audio_manager.play_complete_processing()
@@ -465,6 +480,38 @@ class MainWindow(QMainWindow):
         """
         # The controller will handle the actual logic, this is for UI feedback
         self.status_bar.showMessage(f"Hotkey triggered: {hotkey}", 2000)
+        
+    @pyqtSlot(str)
+    def on_llm_stream_update(self, chunk: str):
+        """
+        Handle streaming updates from the LLM processor.
+        
+        This method updates the LLM output text in real-time as
+        chunks are received.
+        
+        Parameters
+        ----------
+        chunk : str
+            The text chunk from the LLM stream
+        """
+        # Switch to the LLM tab if not already active
+        if self.tab_widget.currentIndex() != 1:
+            self.tab_widget.setCurrentIndex(1)
+            
+        # Append the new chunk to the LLM text
+        current_text = self.llm_text.toPlainText()
+        self.llm_text.setText(current_text + chunk)
+        
+        # Scroll to the bottom to show the latest content
+        cursor = self.llm_text.textCursor()
+        cursor.movePosition(cursor.MoveOperation.End)
+        self.llm_text.setTextCursor(cursor)
+        
+        # Update status indicator to show streaming progress
+        self.status_indicator.setText("LLM Streaming...")
+        
+        # Update status bar with a message
+        self.status_bar.showMessage("Receiving LLM response...", 1000)
     
     @pyqtSlot(int)
     def on_instruction_set_changed(self, index: int):

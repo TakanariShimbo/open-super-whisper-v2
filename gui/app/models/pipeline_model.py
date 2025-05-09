@@ -33,6 +33,8 @@ class PipelineModel(QObject):
         Signal emitted when processing is cancelled
     processing_state_changed : pyqtSignal
         Signal emitted when processing state changes (bool: is_processing)
+    llm_stream_chunk : pyqtSignal
+        Signal emitted when a streaming chunk is received from the LLM
     """
     
     # Define signals
@@ -41,6 +43,7 @@ class PipelineModel(QObject):
     processing_complete = pyqtSignal(PipelineResult)
     processing_cancelled = pyqtSignal()
     processing_state_changed = pyqtSignal(bool)  # is_processing
+    llm_stream_chunk = pyqtSignal(str)  # Signal for streaming LLM chunks
     
     def __init__(self, api_key: str = ""):
         """
@@ -217,10 +220,10 @@ class PipelineModel(QObject):
         Exception
             If processing fails
         """
-        # Define a streaming callback function (not used in this simplified version)
+        # Define a streaming callback function for LLM updates
         def stream_callback(chunk):
-            # Could use thread manager to update UI with streaming chunks
-            self._thread_manager.run_in_main_thread(lambda: print(f"Stream chunk: {chunk[:20]}..."))
+            # Emit the streaming chunk through the thread manager to ensure thread safety
+            self._thread_manager.run_in_main_thread(lambda: self.llm_stream_chunk.emit(chunk))
         
         # Process the audio file
         return self._pipeline.process(

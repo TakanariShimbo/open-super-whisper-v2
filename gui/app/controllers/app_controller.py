@@ -54,6 +54,8 @@ class AppController(QObject):
         Signal emitted when an instruction set is activated
     hotkey_triggered : pyqtSignal
         Signal emitted when a hotkey is triggered
+    llm_stream_update : pyqtSignal
+        Signal emitted when a streaming chunk is received from the LLM
     """
     
     # Define signals for view communication
@@ -66,6 +68,7 @@ class AppController(QObject):
     status_update = pyqtSignal(str, int)  # message, timeout
     instruction_set_activated = pyqtSignal(InstructionSet)
     hotkey_triggered = pyqtSignal(str)
+    llm_stream_update = pyqtSignal(str)  # Signal for streaming LLM updates
     
     def __init__(self) -> None:
         """
@@ -147,6 +150,7 @@ class AppController(QObject):
         self._pipeline_model.processing_error.connect(
             lambda error: self.status_update.emit(f"Error: {error}", 3000)
         )
+        self._pipeline_model.llm_stream_chunk.connect(self._handle_llm_stream_chunk)
         
         # Instruction set model connections
         self._instruction_set_model.selected_set_changed.connect(
@@ -156,6 +160,19 @@ class AppController(QObject):
         # Hotkey model connections
         self._hotkey_model.hotkey_triggered.connect(self._handle_hotkey_triggered)
     
+    @pyqtSlot(str)
+    def _handle_llm_stream_chunk(self, chunk: str) -> None:
+        """
+        Handle streaming chunks from the LLM processor.
+        
+        Parameters
+        ----------
+        chunk : str
+            The text chunk from the LLM stream
+        """
+        # Forward the stream chunk to any listening views
+        self.llm_stream_update.emit(chunk)
+        
     @pyqtSlot(bool)
     def _handle_processing_state_change(self, is_processing: bool) -> None:
         """
