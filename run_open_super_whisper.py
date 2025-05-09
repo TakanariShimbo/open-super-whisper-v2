@@ -1,11 +1,15 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
-Open Super Whisper - Application Entry Point
+Open Super Whisper App Runner
 
-This is the main entry point for the application.
+This script runs the Open Super Whisper application.
 """
 
+import sys
 import os
+
+# Add the project root to the path so we can import the package
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Configure ffmpeg environment before any imports
 def setup_ffmpeg_environment():
@@ -20,8 +24,8 @@ def setup_ffmpeg_environment():
 # Set up ffmpeg environment immediately
 setup_ffmpeg_environment()
 
-# Import after PATH is set
-from old_gui.gui_app import start_application
+from gui.main import start_application
+
 
 if __name__ == "__main__":
     start_application()
