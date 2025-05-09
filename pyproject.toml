@@ -12,6 +12,7 @@ dependencies = [
     "pyinstaller>=6.13.0",
     "pynput>=1.8.1",
     "pyqt6>=6.9.0",
+    "pyqt6-webengine>=6.9.0",
     "sounddevice>=0.5.1",
     "soundfile>=0.13.1",
 ]
