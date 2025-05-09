@@ -4,9 +4,8 @@ API Key Management Model
 This module provides functionality for API key validation and management.
 """
 
-from PyQt6.QtCore import QSettings
-
 from core.api.api_client_factory import APIClientFactory
+from ...utils.settings_manager import SettingsManager
 
 
 class APIKeyModel:
@@ -17,16 +16,11 @@ class APIKeyModel:
     storage, and retrieval.
     """
     
-    def __init__(self, settings: QSettings) -> None:
+    def __init__(self) -> None:
         """
         Initialize the API Key Model.
-        
-        Parameters
-        ----------
-        settings : QSettings
-            Application settings for persistent storage
         """
-        self._settings = settings
+        self._settings_manager = SettingsManager.instance()
     
     def validate_api_key(self, api_key: str) -> bool:
         """
@@ -54,7 +48,7 @@ class APIKeyModel:
         str
             The stored API key, or an empty string if none is stored
         """
-        return self._settings.value("api_key", "")
+        return self._settings_manager.get_api_key()
     
     def set_api_key(self, api_key: str) -> None:
         """
@@ -65,15 +59,13 @@ class APIKeyModel:
         api_key : str
             The API key to store
         """
-        self._settings.setValue("api_key", api_key)
-        self._settings.sync()
+        self._settings_manager.set_api_key(api_key)
     
     def clear_api_key(self) -> None:
         """
         Clear the stored API key.
         """
-        self._settings.remove("api_key")
-        self._settings.sync()
+        self._settings_manager.clear_api_key()
     
     def has_valid_api_key(self) -> bool:
         """

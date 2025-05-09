@@ -5,10 +5,11 @@ This module provides the model component for managing instruction sets
 in the Super Whisper application.
 """
 
-from PyQt6.QtCore import QObject, pyqtSignal, QSettings
+from PyQt6.QtCore import QObject, pyqtSignal
 
 from core.pipelines.instruction_set import InstructionSet
 from core.pipelines.instruction_manager import InstructionManager
+from ..utils.settings_manager import SettingsManager
 
 
 class InstructionSetModel(QObject):
@@ -30,22 +31,17 @@ class InstructionSetModel(QObject):
     instruction_sets_changed = pyqtSignal()
     selected_set_changed = pyqtSignal(InstructionSet)
     
-    def __init__(self, settings: QSettings | None = None):
+    def __init__(self):
         """
         Initialize the InstructionSetModel.
-        
-        Parameters
-        ----------
-        settings : QSettings, optional
-            QSettings object for storing instruction sets, by default None
         """
         super().__init__()
         
         # Initialize instruction manager
         self._instruction_manager = InstructionManager()
         
-        # Store settings for persistence
-        self._settings = settings
+        # Store settings manager for persistence
+        self._settings_manager = SettingsManager.instance()
         
         # Track selected instruction set
         self._selected_set_name = ""
@@ -58,15 +54,15 @@ class InstructionSetModel(QObject):
     
     def _load_data_from_settings(self) -> None:
         """
-        Load instruction sets data from QSettings.
+        Load instruction sets data from settings.
         
         This method loads raw data from settings without enforcing state validity.
         """
-        if not self._settings:
+        if not self._settings_manager:
             return
             
         # Try to load instruction sets
-        serialized_data = self._settings.value("instruction_sets")
+        serialized_data = self._settings_manager.get_instruction_sets()
         if serialized_data:
             try:
                 self._instruction_manager.import_from_dict(serialized_data)
@@ -74,7 +70,7 @@ class InstructionSetModel(QObject):
                 print(f"Failed to load instruction sets from settings: {e}")
                 
         # Load selected set name without validation
-        self._selected_set_name = self._settings.value("selected_instruction_set", "")
+        self._selected_set_name = self._settings_manager.get_selected_instruction_set()
     
     def _ensure_valid_state(self) -> None:
         """
@@ -102,22 +98,19 @@ class InstructionSetModel(QObject):
     
     def _save_to_settings(self) -> None:
         """
-        Save instruction sets to QSettings.
+        Save instruction sets to settings.
         
         This is an internal method that persists the model's state to settings.
         """
-        if not self._settings:
+        if not self._settings_manager:
             return
             
         # Save instruction sets
         serialized_data = self._instruction_manager.export_to_dict()
-        self._settings.setValue("instruction_sets", serialized_data)
+        self._settings_manager.set_instruction_sets(serialized_data)
         
         # Save selected set
-        self._settings.setValue("selected_instruction_set", self._selected_set_name)
-        
-        # Sync settings to disk
-        self._settings.sync()
+        self._settings_manager.set_selected_instruction_set(self._selected_set_name)
         
     def save_to_settings(self) -> None:
         """

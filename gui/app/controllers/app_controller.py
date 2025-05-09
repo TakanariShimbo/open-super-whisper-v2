@@ -7,7 +7,7 @@ coordinating between models and views.
 
 import sys
 
-from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QSettings
+from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 from PyQt6.QtWidgets import QMessageBox
 
 from core.pipelines.pipeline_result import PipelineResult
@@ -21,6 +21,7 @@ from ..controllers.dialogs.instruction_dialog_controller import InstructionDialo
 from ..controllers.dialogs.api_key_controller import APIKeyController
 from ..views.dialogs.instruction_dialog import InstructionDialog
 from ..utils.clipboard_utils import ClipboardUtils
+from ..utils.settings_manager import SettingsManager
 
 
 class AppController(QObject):
@@ -64,27 +65,20 @@ class AppController(QObject):
     instruction_set_activated = pyqtSignal(InstructionSet)
     hotkey_triggered = pyqtSignal(str)
     
-    def __init__(self, settings: QSettings) -> None:
+    def __init__(self) -> None:
         """
         Initialize the AppController.
-        
-        Parameters
-        ----------
-        settings : QSettings
-            Application settings object for persistence
         """
         super().__init__()
         
-        # Store settings for model initialization
-        self._settings = settings
+        # Store settings manager for model initialization
+        self._settings_manager = SettingsManager.instance()
         
         # Initialize models
         self._init_models()
         
         # Set up model connections
         self._setup_model_connections()
-        
-        # 状態変数は使用せず、PipelineModelのプロパティを利用する
     
     @property
     def is_recording(self) -> bool:
@@ -117,8 +111,8 @@ class AppController(QObject):
         Note: The APIKeyController has already validated the API key, so we can assume
         it's valid here. However, we still check initialization status to be safe.
         """
-        # Get API key from settings
-        api_key = self._settings.value("api_key", "")
+        # Get API key from settings manager
+        api_key = self._settings_manager.get_api_key()
         
         # Initialize models
         self._pipeline_model = PipelineModel(api_key)
@@ -132,7 +126,7 @@ class AppController(QObject):
             )
             sys.exit(1)
             
-        self._instruction_set_model = InstructionSetModel(self._settings)
+        self._instruction_set_model = InstructionSetModel()
         self._hotkey_model = HotkeyModel()
     
     def _setup_model_connections(self) -> None:
@@ -219,9 +213,8 @@ class AppController(QObject):
         result = self._pipeline_model.initialize_pipeline(api_key)
         
         if result:
-            # Save API key to settings
-            self._settings.setValue("api_key", api_key)
-            self._settings.sync()
+            # Save API key to settings manager
+            self._settings_manager.set_api_key(api_key)
             
             # Apply the selected instruction set if available
             selected_set = self._instruction_set_model.get_selected_set()
@@ -502,7 +495,7 @@ class AppController(QObject):
             True if the API key was successfully updated, False otherwise
         """
         # Create API key controller
-        api_key_controller = APIKeyController(self._settings)
+        api_key_controller = APIKeyController()
         
         # Connect signals for status updates
         api_key_controller.api_key_validated.connect(
@@ -513,7 +506,7 @@ class AppController(QObject):
         initial_message = "Update your API key or enter a new one if needed."
         if api_key_controller.prompt_for_api_key(parent, initial_message, True):
             # Get the new API key
-            api_key = self._settings.value("api_key", "")
+            api_key = self._settings_manager.get_api_key()
             
             # Reinitialize pipeline with the new API key
             if self.initialize_with_api_key(api_key):

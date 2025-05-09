@@ -13,7 +13,7 @@ from PyQt6.QtWidgets import (
     QGridLayout, QFormLayout, QTabWidget, QStatusBar,
     QMessageBox, QSystemTrayIcon
 )
-from PyQt6.QtCore import Qt, pyqtSlot, QSettings, QTimer
+from PyQt6.QtCore import Qt, pyqtSlot, QTimer
 from PyQt6.QtGui import QAction, QCloseEvent
 
 from core.pipelines.pipeline_result import PipelineResult
@@ -23,6 +23,7 @@ from ..controllers.app_controller import AppController
 from ..utils.icon_manager import IconManager
 from ..utils.clipboard_utils import ClipboardUtils
 from ..utils.audio_manager import AudioManager
+from ..utils.settings_manager import SettingsManager
 from .tray.system_tray import SystemTray
 
 class MainWindow(QMainWindow):
@@ -38,7 +39,7 @@ class MainWindow(QMainWindow):
         The application controller that manages the business logic
     """
     
-    def __init__(self, controller: AppController, settings: QSettings):
+    def __init__(self, controller: AppController):
         """
         Initialize the MainWindow.
         
@@ -46,23 +47,21 @@ class MainWindow(QMainWindow):
         ----------
         controller : AppController
             The application controller
-        settings : QSettings
-            The application settings
         """
         super().__init__()
         
         # Store references
         self.controller = controller
-        self.settings = settings
+        self.settings_manager = SettingsManager.instance()
         
         # Get settings
-        self.api_key = settings.value("api_key", "")
+        self.api_key = self.settings_manager.get_api_key()
         
         # Initialize icon manager
         self.icon_manager = IconManager()
         
         # Initialize audio manager
-        self.audio_manager = AudioManager(settings)
+        self.audio_manager = AudioManager()
         
         # Set application icon
         self.setWindowIcon(self.icon_manager.get_app_icon())
@@ -299,7 +298,7 @@ class MainWindow(QMainWindow):
         # Use the controller's API key settings method
         if self.controller.show_api_key_settings(self):
             # Update the stored API key
-            self.api_key = self.settings.value("api_key", "")
+            self.api_key = self.settings_manager.get_api_key()
         else:
             # If initializing with a new API key failed
             if not self.api_key:

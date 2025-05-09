@@ -4,7 +4,7 @@ API Key Controller
 This module provides the controller component for API key management.
 """
 
-from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QSettings
+from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 from PyQt6.QtWidgets import QMessageBox, QWidget
 
 from ...models.dialogs.api_key_model import APIKeyModel
@@ -30,19 +30,14 @@ class APIKeyController(QObject):
     api_key_validated = pyqtSignal(str)
     api_key_invalid = pyqtSignal(str)
     
-    def __init__(self, settings: QSettings) -> None:
+    def __init__(self) -> None:
         """
         Initialize the API Key Controller.
-        
-        Parameters
-        ----------
-        settings : QSettings
-            Application settings for persistent storage
         """
         super().__init__()
         
         # Initialize the model
-        self._api_key_model = APIKeyModel(settings)
+        self._api_key_model = APIKeyModel()
     
     def ensure_valid_api_key(self, parent: QWidget | None = None) -> bool:
         """

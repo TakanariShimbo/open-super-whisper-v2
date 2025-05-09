@@ -8,10 +8,11 @@ in the Super Whisper application.
 import os
 import sys
 
-from PyQt6.QtCore import QObject, QUrl, QSettings
+from PyQt6.QtCore import QObject, QUrl
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 
 from .pyinstaller_utils import PyInstallerUtils
+from .settings_manager import SettingsManager
 
 
 class AudioManager(QObject):
@@ -35,19 +36,14 @@ class AudioManager(QObject):
         'cancel_processing': 'cancel_processing.wav'
     }
     
-    def __init__(self, settings: QSettings) -> None:
+    def __init__(self) -> None:
         """
         Initialize the AudioManager.
-        
-        Parameters
-        ----------
-        settings : QSettings
-            Application settings for persistence
         """
         super().__init__()
         
-        # Store settings
-        self._settings = settings
+        # Store settings manager
+        self._settings_manager = SettingsManager.instance()
         
         # Initialize media players for each sound type
         self._players: dict[str, QMediaPlayer] = {}
@@ -57,8 +53,8 @@ class AudioManager(QObject):
         self._setup_players()
         
         # Load settings
-        self._enabled = self._settings.value("audio_notifications_enabled", True, type=bool)
-        self._volume = self._settings.value("audio_notifications_volume", 0.7, type=float)
+        self._enabled = self._settings_manager.get_audio_notifications_enabled()
+        self._volume = self._settings_manager.get_audio_notifications_volume()
         
         # Apply volume setting to all players
         self._apply_volume_setting()
@@ -85,8 +81,7 @@ class AudioManager(QObject):
             True to enable notifications, False to disable
         """
         self._enabled = value
-        self._settings.setValue("audio_notifications_enabled", value)
-        self._settings.sync()
+        self._settings_manager.set_audio_notifications_enabled(value)
     
     @property
     def volume(self) -> float:
@@ -118,8 +113,7 @@ class AudioManager(QObject):
             raise ValueError("Volume must be between 0.0 and 1.0")
         
         self._volume = value
-        self._settings.setValue("audio_notifications_volume", value)
-        self._settings.sync()
+        self._settings_manager.set_audio_notifications_volume(value)
         
         # Apply the new volume setting
         self._apply_volume_setting()
