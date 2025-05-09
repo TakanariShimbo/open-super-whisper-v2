@@ -22,6 +22,7 @@ from core.pipelines.instruction_set import InstructionSet
 from ..controllers.app_controller import AppController
 from ..utils.icon_manager import IconManager
 from ..utils.clipboard_utils import ClipboardUtils
+from ..utils.audio_manager import AudioManager
 from .tray.system_tray import SystemTray
 
 class MainWindow(QMainWindow):
@@ -59,6 +60,9 @@ class MainWindow(QMainWindow):
         
         # Initialize icon manager
         self.icon_manager = IconManager()
+        
+        # Initialize audio manager
+        self.audio_manager = AudioManager(settings)
         
         # Set application icon
         self.setWindowIcon(self.icon_manager.get_app_icon())
@@ -322,6 +326,9 @@ class MainWindow(QMainWindow):
         
         # Update system tray recording status
         self.system_tray.update_recording_status(True)
+        
+        # Play recording start sound
+        self.audio_manager.play_start_recording()
     
     @pyqtSlot()
     def on_recording_stopped(self):
@@ -333,6 +340,9 @@ class MainWindow(QMainWindow):
         
         # Update system tray recording status
         self.system_tray.update_recording_status(False)
+        
+        # Play recording stop sound
+        self.audio_manager.play_stop_recording()
     
     @pyqtSlot()
     def on_processing_started(self):
@@ -376,6 +386,9 @@ class MainWindow(QMainWindow):
         self.status_indicator.setText("Cancelled")
         # Re-enable instruction set selection
         self.instruction_set_combo.setEnabled(True)
+
+        # Play cancel processing sound
+        self.audio_manager.play_cancel_processing()
     
     @pyqtSlot(PipelineResult)
     def on_processing_complete(self, result: PipelineResult):
@@ -403,6 +416,9 @@ class MainWindow(QMainWindow):
         self.status_indicator.setText("Ready")
         # Re-enable instruction set selection
         self.instruction_set_combo.setEnabled(True)
+        
+        # Play completion sound
+        self.audio_manager.play_complete_processing()
     
     @pyqtSlot(str, int)
     def update_status(self, message: str, timeout: int = 0):
@@ -483,7 +499,7 @@ class MainWindow(QMainWindow):
         """
         ClipboardUtils.set_text(self.llm_text.toPlainText())
         self.status_bar.showMessage("LLM output copied to clipboard", 2000)
-        
+
     def show_instruction_sets_dialog(self):
         """
         Show the instruction sets management dialog.
