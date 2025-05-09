@@ -9,9 +9,8 @@ import sys
 
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QPushButton, 
-    QLabel, QTextEdit, QComboBox,
-    QGridLayout, QFormLayout, QTabWidget, QStatusBar,
-    QMessageBox, QSystemTrayIcon
+    QLabel, QComboBox, QGridLayout, QFormLayout, 
+    QTabWidget, QStatusBar, QMessageBox, QSystemTrayIcon
 )
 from PyQt6.QtCore import Qt, pyqtSlot, QTimer
 from PyQt6.QtGui import QAction, QCloseEvent
@@ -139,9 +138,9 @@ class MainWindow(QMainWindow):
         transcription_label = QLabel("Transcription Output:")
         transcription_layout.addWidget(transcription_label)
         
-        self.transcription_text = QTextEdit()
+        # Use MarkdownTextBrowser instead of QTextEdit for consistency
+        self.transcription_text = MarkdownTextBrowser()
         self.transcription_text.setPlaceholderText("Transcription will appear here...")
-        self.transcription_text.setReadOnly(False)  # Allow editing
         transcription_layout.addWidget(self.transcription_text)
         
         # LLM output tab (if LLM is enabled in instruction set)
@@ -407,8 +406,8 @@ class MainWindow(QMainWindow):
         result : PipelineResult
             The result of the processing
         """
-        # Update the transcription text
-        self.transcription_text.setText(result.transcription)
+        # Update the transcription text using markdown text browser method
+        self.transcription_text.set_markdown_text(result.transcription)
         
         # For LLM text, if streaming was used, the text is already in the UI
         # Only update if it's different from the streaming result
@@ -532,8 +531,11 @@ class MainWindow(QMainWindow):
     def copy_transcription(self):
         """
         Copy the transcription text to the clipboard.
+        
+        This method copies the original markdown text, not the rendered HTML,
+        consistent with how we handle LLM output copying.
         """
-        ClipboardUtils.set_text(self.transcription_text.toPlainText())
+        ClipboardUtils.set_text(self.transcription_text.markdown_text())
         self.status_bar.showMessage("Transcription copied to clipboard", 2000)
     
     def copy_llm(self):
