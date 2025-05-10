@@ -66,17 +66,3 @@ class APIKeyModel:
         Clear the stored API key.
         """
         self._settings_manager.clear_api_key()
-    
-    def has_valid_api_key(self) -> bool:
-        """
-        Check if a valid API key is stored.
-        
-        Returns
-        -------
-        bool
-            True if a valid API key is stored, False otherwise
-        """
-        api_key = self.get_api_key()
-        if not api_key:
-            return False
-        return self.validate_api_key(api_key)

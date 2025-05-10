@@ -77,7 +77,7 @@ class APIKeyController(QObject):
                 self._api_key_model.clear_api_key()
         else:
             # No API key set, show welcome message
-            initial_message = "Welcome to Super Whisper! Please enter your OpenAI API key to get started."
+            initial_message = "Welcome to Open Super Whisper! Please enter your OpenAI API key to get started."
         
         # Prompt for API key
         return self.prompt_for_api_key(parent, initial_message)
@@ -154,7 +154,8 @@ class APIKeyController(QObject):
             The API key entered by the user
         """
         # Validate the API key
-        if self._api_key_model.validate_api_key(api_key):
+        is_valid = self._api_key_model.validate_api_key(api_key)
+        if is_valid:
             # Save the valid API key
             self._api_key_model.set_api_key(api_key)
             
@@ -166,7 +167,7 @@ class APIKeyController(QObject):
             self._current_dialog.accept()
         else:
             # Show error message
-            self._current_dialog.show_message("Invalid API key. Please check and try again.")
+            self._current_dialog.show_status_message("Invalid API key. Please check and try again.")
             
             # Emit signal
             self.api_key_invalid.emit(api_key)

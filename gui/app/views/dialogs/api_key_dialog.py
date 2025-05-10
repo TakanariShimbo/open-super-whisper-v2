@@ -55,7 +55,7 @@ class APIKeyDialog(QDialog):
         
         # Set initial message if provided
         if initial_message:
-            self.show_message(initial_message)
+            self.show_status_message(initial_message)
     
     def _init_ui(self):
         """
@@ -168,16 +168,16 @@ class APIKeyDialog(QDialog):
         
         This method emits the api_key_entered signal with the entered API key.
         """
-        api_key = self.get_api_key()
+        entered_api_key = self.get_entered_api_key()
         
-        if not api_key:
-            self.show_message("API key cannot be empty")
+        if not entered_api_key:
+            self.show_status_message("API key cannot be empty")
             return
         
         # Emit the signal with the entered API key
-        self.api_key_entered.emit(api_key)
+        self.api_key_entered.emit(entered_api_key)
     
-    def get_api_key(self):
+    def get_entered_api_key(self):
         """
         Get the entered API key.
         
@@ -188,7 +188,7 @@ class APIKeyDialog(QDialog):
         """
         return self._api_key_input.text().strip()
     
-    def show_message(self, message):
+    def show_status_message(self, message):
         """
         Display a message in the status label.
         
@@ -199,10 +199,3 @@ class APIKeyDialog(QDialog):
         """
         self._status_label.setText(message)
         self._status_label.setVisible(True)
-    
-    def clear_message(self):
-        """
-        Clear the status message.
-        """
-        self._status_label.setText("")
-        self._status_label.setVisible(False)
