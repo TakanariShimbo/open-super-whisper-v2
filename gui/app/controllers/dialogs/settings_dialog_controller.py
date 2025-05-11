@@ -8,7 +8,6 @@ mediating between the model and view.
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 
 from ...models.dialogs.settings_dialog_model import SettingsDialogModel
-from ...utils.audio_manager import AudioManager
 
 
 class SettingsDialogController(QObject):
@@ -49,10 +48,8 @@ class SettingsDialogController(QObject):
         """
         Connect signals from the model to controller handlers.
         """
-        # Connect all model signals to a single handler that emits settings_updated
-        self._dialog_model.sound_enabled_changed.connect(self._on_settings_changed)
-        self._dialog_model.indicator_visible_changed.connect(self._on_settings_changed)
-        self._dialog_model.auto_clipboard_changed.connect(self._on_settings_changed)
+        # Connect the model's settings_changed signal to our handler
+        self._dialog_model.settings_changed.connect(self._on_settings_changed)
     
     @pyqtSlot()
     def _on_settings_changed(self) -> None:
@@ -137,11 +134,7 @@ class SettingsDialogController(QObject):
         """
         # Save settings to persistent storage
         self._dialog_model.save_settings()
-        
-        # Update AudioManager with new settings
-        audio_manager = AudioManager.instance()
-        audio_manager.set_enabled(self._dialog_model.sound_enabled)
-    
+
     def cancel(self) -> None:
         """
         Cancel dialog and restore original settings.

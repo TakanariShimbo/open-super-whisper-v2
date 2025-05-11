@@ -8,6 +8,7 @@ handling the data and business logic related to application settings.
 from PyQt6.QtCore import QObject, pyqtSignal
 
 from ...utils.settings_manager import SettingsManager
+from ...utils.audio_manager import AudioManager
 
 
 class SettingsDialogModel(QObject):
@@ -20,18 +21,12 @@ class SettingsDialogModel(QObject):
     
     Attributes
     ----------
-    sound_enabled_changed : pyqtSignal
-        Signal emitted when sound enabled setting changes
-    indicator_visible_changed : pyqtSignal
-        Signal emitted when indicator visibility setting changes
-    auto_clipboard_changed : pyqtSignal
-        Signal emitted when auto clipboard setting changes
+    settings_changed : pyqtSignal
+        Signal emitted when any setting changes
     """
     
-    # Define signals for controller communication
-    sound_enabled_changed = pyqtSignal(bool)
-    indicator_visible_changed = pyqtSignal(bool)
-    auto_clipboard_changed = pyqtSignal(bool)
+    # Define a single signal for any settings change
+    settings_changed = pyqtSignal()
     
     def __init__(self) -> None:
         """
@@ -78,7 +73,7 @@ class SettingsDialogModel(QObject):
         """
         if self._sound_enabled != value:
             self._sound_enabled = value
-            self.sound_enabled_changed.emit(value)
+            self.settings_changed.emit()
     
     @property
     def indicator_visible(self) -> bool:
@@ -104,7 +99,7 @@ class SettingsDialogModel(QObject):
         """
         if self._indicator_visible != value:
             self._indicator_visible = value
-            self.indicator_visible_changed.emit(value)
+            self.settings_changed.emit()
     
     @property
     def auto_clipboard(self) -> bool:
@@ -130,7 +125,7 @@ class SettingsDialogModel(QObject):
         """
         if self._auto_clipboard != value:
             self._auto_clipboard = value
-            self.auto_clipboard_changed.emit(value)
+            self.settings_changed.emit()
     
     def save_settings(self) -> None:
         """
@@ -145,6 +140,10 @@ class SettingsDialogModel(QObject):
         self._original_indicator_visible = self._indicator_visible
         self._original_auto_clipboard = self._auto_clipboard
     
+        # Update AudioManager with new settings
+        audio_manager = AudioManager.instance()
+        audio_manager.set_enabled(self.sound_enabled)
+
     def restore_original(self) -> None:
         """
         Restore original settings (cancel changes).
