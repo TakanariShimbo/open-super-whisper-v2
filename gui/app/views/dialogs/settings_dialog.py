@@ -96,10 +96,10 @@ class SettingsDialog(QDialog):
         """
         Connect signals from the controller.
         """
-        self._controller.sound_enabled_changed.connect(self._update_sound_checkbox)
-        self._controller.indicator_visible_changed.connect(self._update_indicator_checkbox)
-        self._controller.auto_clipboard_changed.connect(self._update_clipboard_checkbox)
+        # Connect the controller's settings_updated signal to refresh the entire view
+        self._controller.settings_updated.connect(self._update_ui_from_settings)
     
+    @pyqtSlot()
     def _update_ui_from_settings(self) -> None:
         """
         Update UI controls to reflect current settings.
@@ -119,47 +119,6 @@ class SettingsDialog(QDialog):
         self.indicator_checkbox.blockSignals(False)
         self.clipboard_checkbox.blockSignals(False)
     
-    @pyqtSlot(bool)
-    def _update_sound_checkbox(self, enabled: bool) -> None:
-        """
-        Update sound checkbox state.
-        
-        Parameters
-        ----------
-        enabled : bool
-            New checkbox state
-        """
-        self.sound_checkbox.blockSignals(True)
-        self.sound_checkbox.setChecked(enabled)
-        self.sound_checkbox.blockSignals(False)
-    
-    @pyqtSlot(bool)
-    def _update_indicator_checkbox(self, visible: bool) -> None:
-        """
-        Update indicator checkbox state.
-        
-        Parameters
-        ----------
-        visible : bool
-            New checkbox state
-        """
-        self.indicator_checkbox.blockSignals(True)
-        self.indicator_checkbox.setChecked(visible)
-        self.indicator_checkbox.blockSignals(False)
-    
-    @pyqtSlot(bool)
-    def _update_clipboard_checkbox(self, enabled: bool) -> None:
-        """
-        Update clipboard checkbox state.
-        
-        Parameters
-        ----------
-        enabled : bool
-            New checkbox state
-        """
-        self.clipboard_checkbox.blockSignals(True)
-        self.clipboard_checkbox.setChecked(enabled)
-        self.clipboard_checkbox.blockSignals(False)
     
     @pyqtSlot(bool)
     def _on_sound_toggled(self, enabled: bool) -> None:

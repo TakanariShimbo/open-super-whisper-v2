@@ -20,18 +20,12 @@ class SettingsDialogController(QObject):
     
     Attributes
     ----------
-    sound_enabled_changed : pyqtSignal
-        Signal emitted when sound enabled setting changes
-    indicator_visible_changed : pyqtSignal
-        Signal emitted when indicator visibility setting changes
-    auto_clipboard_changed : pyqtSignal
-        Signal emitted when auto clipboard setting changes
+    settings_updated : pyqtSignal
+        Signal emitted when any settings are updated
     """
     
-    # Define signals for view communication
-    sound_enabled_changed = pyqtSignal(bool)
-    indicator_visible_changed = pyqtSignal(bool)
-    auto_clipboard_changed = pyqtSignal(bool)
+    # Define single signal for view communication
+    settings_updated = pyqtSignal()
     
     def __init__(self, parent_controller: QObject | None = None) -> None:
         """
@@ -55,48 +49,21 @@ class SettingsDialogController(QObject):
         """
         Connect signals from the model to controller handlers.
         """
-        self._dialog_model.sound_enabled_changed.connect(self._on_sound_enabled_changed)
-        self._dialog_model.indicator_visible_changed.connect(self._on_indicator_visible_changed)
-        self._dialog_model.auto_clipboard_changed.connect(self._on_auto_clipboard_changed)
+        # Connect all model signals to a single handler that emits settings_updated
+        self._dialog_model.sound_enabled_changed.connect(self._on_settings_changed)
+        self._dialog_model.indicator_visible_changed.connect(self._on_settings_changed)
+        self._dialog_model.auto_clipboard_changed.connect(self._on_settings_changed)
     
-    @pyqtSlot(bool)
-    def _on_sound_enabled_changed(self, enabled: bool) -> None:
+    @pyqtSlot()
+    def _on_settings_changed(self) -> None:
         """
-        Handle sound enabled change from the model.
+        Handle any settings change from the model.
         
-        Parameters
-        ----------
-        enabled : bool
-            New sound enabled value
+        This unified handler emits a single signal to notify the view
+        that settings have been updated and the view should refresh.
         """
-        # Forward signal to view
-        self.sound_enabled_changed.emit(enabled)
-    
-    @pyqtSlot(bool)
-    def _on_indicator_visible_changed(self, visible: bool) -> None:
-        """
-        Handle indicator visibility change from the model.
-        
-        Parameters
-        ----------
-        visible : bool
-            New indicator visibility value
-        """
-        # Forward signal to view
-        self.indicator_visible_changed.emit(visible)
-    
-    @pyqtSlot(bool)
-    def _on_auto_clipboard_changed(self, enabled: bool) -> None:
-        """
-        Handle auto clipboard change from the model.
-        
-        Parameters
-        ----------
-        enabled : bool
-            New auto clipboard value
-        """
-        # Forward signal to view
-        self.auto_clipboard_changed.emit(enabled)
+        # Notify view that settings have changed
+        self.settings_updated.emit()
     
     def get_sound_enabled(self) -> bool:
         """
