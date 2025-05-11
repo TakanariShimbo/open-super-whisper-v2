@@ -7,7 +7,7 @@ It allows users to configure application preferences like sound, indicator visib
 
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout,
-    QDialogButtonBox, QCheckBox, QGroupBox, QGridLayout
+    QDialogButtonBox, QCheckBox, QGroupBox, QGridLayout, QWidget
 )
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtGui import QCloseEvent
@@ -25,7 +25,7 @@ class SettingsDialog(QDialog):
     - Automatic clipboard copy after processing
     """
     
-    def __init__(self, parent=None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         """
         Initialize the SettingsDialog.
         
@@ -49,7 +49,9 @@ class SettingsDialog(QDialog):
         self._update_ui_from_settings()
     
     def _init_ui(self) -> None:
-        """Initialize the user interface."""
+        """
+        Initialize the dialog UI components.
+        """
         # Set dialog properties
         self.setWindowTitle("Settings")
         self.setMinimumWidth(450)

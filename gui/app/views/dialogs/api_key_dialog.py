@@ -4,7 +4,7 @@ API Key Dialog View
 This module provides the view component for API key input dialog.
 """
 
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout, QWidget
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtGui import QCloseEvent
 
@@ -19,7 +19,7 @@ class APIKeyDialog(QDialog):
     with proper explanation and validation feedback.
     """
     
-    def __init__(self, parent=None, initial_message=None):
+    def __init__(self, parent: QWidget | None = None, initial_message: str | None = None) -> None:
         """
         Initialize the API Key Dialog.
         
@@ -50,7 +50,7 @@ class APIKeyDialog(QDialog):
         if current_api_key:
             self._api_key_input.setText(current_api_key)
     
-    def _init_ui(self):
+    def _init_ui(self) -> None:
         """
         Initialize the dialog UI components.
         """
@@ -129,7 +129,7 @@ class APIKeyDialog(QDialog):
         self._ok_button.clicked.connect(self._on_ok_clicked)
         self._api_key_input.returnPressed.connect(self._on_ok_clicked)
     
-    def _connect_controller_signals(self):
+    def _connect_controller_signals(self) -> None:
         """
         Connect signals from the controller.
         """
@@ -137,7 +137,8 @@ class APIKeyDialog(QDialog):
         self._controller.api_key_validated.connect(self._on_api_key_validated)
         self._controller.api_key_invalid.connect(self._on_api_key_invalid)
     
-    def _toggle_key_visibility(self):
+    @pyqtSlot()
+    def _toggle_key_visibility(self) -> None:
         """
         Toggle the visibility of the API key in the input field.
         """
@@ -153,7 +154,7 @@ class APIKeyDialog(QDialog):
             self._toggle_button.setToolTip("Show API Key")
     
     @pyqtSlot()
-    def _on_ok_clicked(self):
+    def _on_ok_clicked(self) -> None:
         """
         Handle OK button click.
         """
@@ -167,7 +168,7 @@ class APIKeyDialog(QDialog):
         self._controller.validate_key(entered_api_key)
     
     @pyqtSlot()
-    def _on_cancel_clicked(self):
+    def _on_cancel_clicked(self) -> None:
         """
         Handle Cancel button click.
         """
