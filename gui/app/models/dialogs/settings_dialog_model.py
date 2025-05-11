@@ -26,7 +26,7 @@ class SettingsDialogModel(QObject):
     """
     
     # Define a single signal for any settings change
-    settings_changed = pyqtSignal()
+    settings_updated = pyqtSignal()
     
     def __init__(self) -> None:
         """
@@ -49,8 +49,7 @@ class SettingsDialogModel(QObject):
         self._original_indicator_visible = self._indicator_visible
         self._original_auto_clipboard = self._auto_clipboard
     
-    @property
-    def sound_enabled(self) -> bool:
+    def get_sound_enabled(self) -> bool:
         """
         Get if sound notifications are enabled.
         
@@ -61,8 +60,7 @@ class SettingsDialogModel(QObject):
         """
         return self._sound_enabled
     
-    @sound_enabled.setter
-    def sound_enabled(self, value: bool) -> None:
+    def set_sound_enabled(self, value: bool) -> None:
         """
         Set if sound notifications are enabled.
         
@@ -73,10 +71,9 @@ class SettingsDialogModel(QObject):
         """
         if self._sound_enabled != value:
             self._sound_enabled = value
-            self.settings_changed.emit()
+            self.settings_updated.emit()
     
-    @property
-    def indicator_visible(self) -> bool:
+    def get_indicator_visible(self) -> bool:
         """
         Get if status indicator should be visible.
         
@@ -87,8 +84,7 @@ class SettingsDialogModel(QObject):
         """
         return self._indicator_visible
     
-    @indicator_visible.setter
-    def indicator_visible(self, value: bool) -> None:
+    def set_indicator_visible(self, value: bool) -> None:
         """
         Set if status indicator should be visible.
         
@@ -99,10 +95,9 @@ class SettingsDialogModel(QObject):
         """
         if self._indicator_visible != value:
             self._indicator_visible = value
-            self.settings_changed.emit()
+            self.settings_updated.emit()
     
-    @property
-    def auto_clipboard(self) -> bool:
+    def get_auto_clipboard(self) -> bool:
         """
         Get if results should be automatically copied to clipboard.
         
@@ -113,8 +108,7 @@ class SettingsDialogModel(QObject):
         """
         return self._auto_clipboard
     
-    @auto_clipboard.setter
-    def auto_clipboard(self, value: bool) -> None:
+    def set_auto_clipboard(self, value: bool) -> None:
         """
         Set if results should be automatically copied to clipboard.
         
@@ -125,7 +119,7 @@ class SettingsDialogModel(QObject):
         """
         if self._auto_clipboard != value:
             self._auto_clipboard = value
-            self.settings_changed.emit()
+            self.settings_updated.emit()
     
     def save_settings(self) -> None:
         """
@@ -142,12 +136,12 @@ class SettingsDialogModel(QObject):
     
         # Update AudioManager with new settings
         audio_manager = AudioManager.instance()
-        audio_manager.set_enabled(self.sound_enabled)
+        audio_manager.set_enabled(self.get_sound_enabled())
 
     def restore_original(self) -> None:
         """
         Restore original settings (cancel changes).
         """
-        self.sound_enabled = self._original_sound_enabled
-        self.indicator_visible = self._original_indicator_visible
-        self.auto_clipboard = self._original_auto_clipboard
+        self.set_sound_enabled(self._original_sound_enabled)
+        self.set_indicator_visible(self._original_indicator_visible)
+        self.set_auto_clipboard(self._original_auto_clipboard)

@@ -97,9 +97,8 @@ class SettingsDialog(QDialog):
         Connect signals from the controller.
         """
         # Connect the controller's settings_updated signal to refresh the entire view
-        self._controller.settings_updated.connect(self._update_ui_from_settings)
+        self._controller.settings_updated.connect(self._on_settings_updated)
     
-    @pyqtSlot()
     def _update_ui_from_settings(self) -> None:
         """
         Update UI controls to reflect current settings.
@@ -118,6 +117,13 @@ class SettingsDialog(QDialog):
         self.sound_checkbox.blockSignals(False)
         self.indicator_checkbox.blockSignals(False)
         self.clipboard_checkbox.blockSignals(False)
+    
+    @pyqtSlot()
+    def _on_settings_updated(self) -> None:
+        """
+        Update UI controls to reflect current settings.
+        """
+        self._update_ui_from_settings()
     
     
     @pyqtSlot(bool)

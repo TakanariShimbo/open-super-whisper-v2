@@ -48,11 +48,11 @@ class SettingsDialogController(QObject):
         """
         Connect signals from the model to controller handlers.
         """
-        # Connect the model's settings_changed signal to our handler
-        self._dialog_model.settings_changed.connect(self._on_settings_changed)
+        # Connect the model's settings_updated signal to our handler
+        self._dialog_model.settings_updated.connect(self._on_settings_updated)
     
     @pyqtSlot()
-    def _on_settings_changed(self) -> None:
+    def _on_settings_updated(self) -> None:
         """
         Handle any settings change from the model.
         
@@ -71,7 +71,7 @@ class SettingsDialogController(QObject):
         bool
             True if sound is enabled, False otherwise
         """
-        return self._dialog_model.sound_enabled
+        return self._dialog_model.get_sound_enabled()
     
     def set_sound_enabled(self, enabled: bool) -> None:
         """
@@ -82,7 +82,7 @@ class SettingsDialogController(QObject):
         enabled : bool
             True to enable sound, False to disable
         """
-        self._dialog_model.sound_enabled = enabled
+        self._dialog_model.set_sound_enabled(enabled)
     
     def get_indicator_visible(self) -> bool:
         """
@@ -93,7 +93,7 @@ class SettingsDialogController(QObject):
         bool
             True if indicator should be visible, False otherwise
         """
-        return self._dialog_model.indicator_visible
+        return self._dialog_model.get_indicator_visible()
     
     def set_indicator_visible(self, visible: bool) -> None:
         """
@@ -104,7 +104,7 @@ class SettingsDialogController(QObject):
         visible : bool
             True to make indicator visible, False to hide
         """
-        self._dialog_model.indicator_visible = visible
+        self._dialog_model.set_indicator_visible(visible)
     
     def get_auto_clipboard(self) -> bool:
         """
@@ -115,7 +115,7 @@ class SettingsDialogController(QObject):
         bool
             True if auto-clipboard is enabled, False otherwise
         """
-        return self._dialog_model.auto_clipboard
+        return self._dialog_model.get_auto_clipboard()
     
     def set_auto_clipboard(self, enabled: bool) -> None:
         """
@@ -126,7 +126,7 @@ class SettingsDialogController(QObject):
         enabled : bool
             True to enable auto-clipboard, False to disable
         """
-        self._dialog_model.auto_clipboard = enabled
+        self._dialog_model.set_auto_clipboard(enabled)
     
     def save_settings(self) -> None:
         """
