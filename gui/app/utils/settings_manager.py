@@ -12,6 +12,8 @@ import pathlib
 import threading
 from typing import Any
 
+from core.api.api_client_factory import APIClientFactory
+
 
 class SettingsManager:
     """
@@ -202,11 +204,21 @@ class SettingsManager:
         """
         self.set_value(self.KEY_API_KEY, api_key)
     
-    def clear_api_key(self) -> None:
+    def has_valid_api_key(self) -> bool:
         """
-        Clear the stored API key.
+        Check if the stored API key is valid.
+        
+        Returns
+        -------
+        bool
+            True if the API key is valid, False otherwise
         """
-        self.set_value(self.KEY_API_KEY, "")
+        stored_api_key = self.get_api_key()
+        if not stored_api_key:
+            return False
+        
+        is_successful, _ = APIClientFactory.create_client(stored_api_key)
+        return is_successful
     
     # Audio notification methods
     

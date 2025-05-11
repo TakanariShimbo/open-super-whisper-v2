@@ -9,7 +9,7 @@ import sys
 from PyQt6.QtWidgets import QApplication
 
 from .app.controllers.app_controller import AppController
-from .app.controllers.dialogs.api_key_controller import APIKeyController
+from .app.views.factories.api_key_dialog_factory import APIKeyDialogFactory
 from .app.views.main_window import MainWindow
 from .app.utils.icon_manager import IconManager
 from .app.utils.settings_manager import SettingsManager
@@ -41,12 +41,18 @@ def start_application() -> int:
     # Initialize settings manager
     SettingsManager.instance()
     
-    # Create API key controller and ensure a valid API key
-    api_key_controller = APIKeyController()
+    # Check for API key and show dialog if not available
+    settings_manager = SettingsManager.instance()
+    has_valid_api_key = settings_manager.has_valid_api_key()
     
-    if not api_key_controller.ensure_valid_api_key():
-        print("Application exiting: No valid API key provided.")
-        return 1
+    # If no API key is available or it's invalid, prompt for one
+    if not has_valid_api_key:
+        # Create and show initial API key dialog
+        dialog = APIKeyDialogFactory.create_initial_dialog(None)
+        
+        if not dialog.exec():
+            print("Application exiting: No API key provided.")
+            return 1
     
     # Create the main app controller with validated API key
     controller = AppController()

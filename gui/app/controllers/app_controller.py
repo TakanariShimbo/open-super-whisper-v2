@@ -19,7 +19,7 @@ from ..models.hotkey_model import HotkeyModel
 from ..models.status_indicator_model import StatusIndicatorModel
 from ..models.dialogs.instruction_dialog_model import InstructionDialogModel
 from ..controllers.dialogs.instruction_dialog_controller import InstructionDialogController
-from ..controllers.dialogs.api_key_controller import APIKeyController
+from ..views.factories.api_key_dialog_factory import APIKeyDialogFactory
 from ..controllers.status_indicator_controller import StatusIndicatorController
 from ..views.dialogs.instruction_dialog import InstructionDialog
 from ..utils.clipboard_utils import ClipboardUtils
@@ -569,22 +569,21 @@ class AppController(QObject):
         bool
             True if the API key was successfully updated, False otherwise
         """
-        # Create API key controller
-        api_key_controller = APIKeyController()
+        # Create and show the API key settings dialog through factory
+        dialog = APIKeyDialogFactory.create_settings_dialog(parent)
         
-        # Connect signals for status updates
-        api_key_controller.api_key_validated.connect(
-            lambda key: self.status_update.emit("API key updated successfully", 3000)
-        )
+        # Show dialog and handle result
+        result = dialog.exec()
         
-        # Show the API key dialog in settings mode
-        initial_message = "Update your API key or enter a new one if needed."
-        if api_key_controller.prompt_for_api_key(parent, initial_message, True):
+        if result:
+            # Dialog was accepted, emit status update
+            self.status_update.emit("API key updated successfully", 3000)
+            
             # Get the new API key
             api_key = self._settings_manager.get_api_key()
             
             # Reinitialize pipeline with the new API key
             if self.initialize_with_api_key(api_key):
                 return True
-            
+        
         return False

@@ -26,7 +26,7 @@ from ..utils.audio_manager import AudioManager
 from ..utils.settings_manager import SettingsManager
 from .tray.system_tray import SystemTray
 from .widgets.markdown_text_browser import MarkdownTextBrowser
-from .dialogs.settings_dialog import SettingsDialog
+from .factories.settings_dialog_factory import SettingsDialogFactory
 
 
 class MainWindow(QMainWindow):
@@ -602,14 +602,14 @@ class MainWindow(QMainWindow):
         Show the settings dialog.
         
         This method creates and shows the settings dialog for configuring
-        application preferences.
+        application preferences using the SettingsDialogFactory.
         """        
-        # Create and show the settings dialog
-        dialog = SettingsDialog(self)
+        # Create and show the settings dialog using the factory
+        dialog = SettingsDialogFactory.create_dialog(self)
         result = dialog.exec()
         
         # Show status message if settings were updated
-        if result == SettingsDialog.DialogCode.Accepted:
+        if result == dialog.DialogCode.Accepted:
             self.status_bar.showMessage("Settings updated", 2000)
     
     @pyqtSlot()

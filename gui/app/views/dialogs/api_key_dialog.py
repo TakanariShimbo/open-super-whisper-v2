@@ -5,7 +5,10 @@ This module provides the view component for API key input dialog.
 """
 
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout
-from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtCore import pyqtSlot
+from PyQt6.QtGui import QCloseEvent
+
+from ...controllers.dialogs.api_key_controller import APIKeyController
 
 
 class APIKeyDialog(QDialog):
@@ -14,17 +17,9 @@ class APIKeyDialog(QDialog):
     
     This class provides a user-friendly dialog for entering an API key
     with proper explanation and validation feedback.
-    
-    Signals
-    -------
-    api_key_entered : pyqtSignal
-        Signal emitted when a valid API key is entered
     """
     
-    # Signal emitted when API key is entered
-    api_key_entered = pyqtSignal(str)
-    
-    def __init__(self, parent=None, initial_message=None, is_settings_mode=False):
+    def __init__(self, parent=None, initial_message=None):
         """
         Initialize the API Key Dialog.
         
@@ -34,60 +29,50 @@ class APIKeyDialog(QDialog):
             Parent widget, by default None
         initial_message : str, optional
             Initial message to display as error/info, by default None
-        is_settings_mode : bool, optional
-            Whether the dialog is being used in settings mode, by default False
         """
         super().__init__(parent)
         
-        # Store the mode
-        self._is_settings_mode = is_settings_mode
-        
-        # Set window title based on mode
-        if is_settings_mode:
-            self.setWindowTitle("API Key Settings")
-        else:
-            self.setWindowTitle("API Key Required")
-            
-        self.setMinimumWidth(400)
+        # Create controller
+        self._controller = APIKeyController()
         
         # Create UI components
         self._init_ui()
         
+        # Connect controller signals
+        self._connect_controller_signals()
+        
         # Set initial message if provided
         if initial_message:
             self.show_status_message(initial_message)
+        
+        # Initialize API key field
+        current_api_key = self._controller.get_api_key()
+        if current_api_key:
+            self._api_key_input.setText(current_api_key)
     
     def _init_ui(self):
         """
         Initialize the dialog UI components.
         """
+        # Set window title based on mode
+        self.setWindowTitle("API Key Settings")    
+        self.setMinimumWidth(400)
+
         layout = QVBoxLayout()
         
-        # Title label - different based on mode
-        if self._is_settings_mode:
-            title_label = QLabel("OpenAI API Key Settings")
-        else:
-            title_label = QLabel("OpenAI API Key Required")
-            
+        # Title label
+        title_label = QLabel("OpenAI API Key Settings")    
         title_label.setStyleSheet("font-size: 14px; font-weight: bold;")
         layout.addWidget(title_label)
         
-        # Help text - different based on mode
-        if self._is_settings_mode:
-            help_text = QLabel(
-                "You can update your OpenAI API key here.\n\n"
-                "A valid API key is required for the application to function correctly.\n"
-                "Your key will be stored securely in your application settings."
-            )
-        else:
-            help_text = QLabel(
-                "To use Super Whisper, you need a valid OpenAI API key.\n\n"
-                "If you don't have an API key:\n"
-                "1. Create an account at https://platform.openai.com\n"
-                "2. Navigate to API Keys section\n"
-                "3. Create a new API key\n"
-                "4. Copy and paste the key below"
-            )
+        # Help text
+        help_text = QLabel(
+            "To use Open Super Whisper, you need a valid OpenAI API key.\n\n"
+            "1. Create an account at https://platform.openai.com\n"
+            "2. Navigate to API Keys section\n"
+            "3. Create a new API key\n"
+            "4. Copy and paste the key below"
+        )
             
         help_text.setWordWrap(True)
         layout.addWidget(help_text)
@@ -95,11 +80,8 @@ class APIKeyDialog(QDialog):
         # API key input
         layout.addSpacing(10)
         
-        # Input label - different based on mode
-        if self._is_settings_mode:
-            input_label = QLabel("Enter or update your OpenAI API key:")
-        else:
-            input_label = QLabel("Enter your OpenAI API key:")
+        # Input label
+        input_label = QLabel("OpenAI API key:")
             
         layout.addWidget(input_label)
         
@@ -143,9 +125,17 @@ class APIKeyDialog(QDialog):
         self.setLayout(layout)
         
         # Connect signals
-        self._cancel_button.clicked.connect(self.reject)
+        self._cancel_button.clicked.connect(self._on_cancel_clicked)
         self._ok_button.clicked.connect(self._on_ok_clicked)
         self._api_key_input.returnPressed.connect(self._on_ok_clicked)
+    
+    def _connect_controller_signals(self):
+        """
+        Connect signals from the controller.
+        """
+        # Connect controller signals to view methods
+        self._controller.api_key_validated.connect(self._on_api_key_validated)
+        self._controller.api_key_invalid.connect(self._on_api_key_invalid)
     
     def _toggle_key_visibility(self):
         """
@@ -162,11 +152,10 @@ class APIKeyDialog(QDialog):
             self._toggle_button.setText("👁️")
             self._toggle_button.setToolTip("Show API Key")
     
+    @pyqtSlot()
     def _on_ok_clicked(self):
         """
         Handle OK button click.
-        
-        This method emits the api_key_entered signal with the entered API key.
         """
         entered_api_key = self.get_entered_api_key()
         
@@ -174,8 +163,47 @@ class APIKeyDialog(QDialog):
             self.show_status_message("API key cannot be empty")
             return
         
-        # Emit the signal with the entered API key
-        self.api_key_entered.emit(entered_api_key)
+        # Use controller to validate the key
+        self._controller.validate_key(entered_api_key)
+    
+    @pyqtSlot()
+    def _on_cancel_clicked(self):
+        """
+        Handle Cancel button click.
+        """
+        # Restore original state
+        self._controller.cancel()
+        
+        # Reject the dialog
+        super().reject()
+    
+    @pyqtSlot()
+    def _on_api_key_validated(self) -> None:
+        """
+        Handle successful API key validation.
+        
+        Parameters
+        ----------
+        api_key : str
+            The validated API key
+        """
+        # Save the valid API key
+        self._controller.save_api_key()
+        
+        # Accept the dialog
+        super().accept()
+    
+    @pyqtSlot()
+    def _on_api_key_invalid(self) -> None:
+        """
+        Handle failed API key validation.
+        
+        Parameters
+        ----------
+        api_key : str
+            The invalid API key
+        """
+        self.show_status_message("Invalid API key. Please check and try again.")
     
     def get_entered_api_key(self):
         """
@@ -188,7 +216,7 @@ class APIKeyDialog(QDialog):
         """
         return self._api_key_input.text().strip()
     
-    def show_status_message(self, message):
+    def show_status_message(self, message: str) -> None:
         """
         Display a message in the status label.
         
@@ -199,3 +227,20 @@ class APIKeyDialog(QDialog):
         """
         self._status_label.setText(message)
         self._status_label.setVisible(True)
+    
+    def closeEvent(self, event: QCloseEvent) -> None:
+        """
+        Handle dialog close event.
+        
+        Restore original settings when dialog is closed without accepting.
+        
+        Parameters
+        ----------
+        event : QCloseEvent
+            Close event
+        """
+        # Restore original settings
+        self._controller.cancel()
+        
+        # Call parent class method
+        super().closeEvent(event)
