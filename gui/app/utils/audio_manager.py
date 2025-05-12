@@ -199,7 +199,7 @@ class AudioManager(QObject):
             print(f"Warning: Sound file '{filename}' not found", file=sys.stderr)
             return None
     
-    def play_sound(self, sound_type: str) -> bool:
+    def _play_sound(self, sound_type: str) -> bool:
         """
         Play a sound notification.
         
@@ -247,7 +247,7 @@ class AudioManager(QObject):
         bool
             True if the sound was played, False otherwise
         """
-        return self.play_sound('start_recording')
+        return self._play_sound('start_recording')
     
     def play_stop_recording(self) -> bool:
         """
@@ -258,7 +258,7 @@ class AudioManager(QObject):
         bool
             True if the sound was played, False otherwise
         """
-        return self.play_sound('stop_recording')
+        return self._play_sound('stop_recording')
     
     def play_complete_processing(self) -> bool:
         """
@@ -269,7 +269,7 @@ class AudioManager(QObject):
         bool
             True if the sound was played, False otherwise
         """
-        return self.play_sound('complete_processing')
+        return self._play_sound('complete_processing')
     
     def play_cancel_processing(self) -> bool:
         """
@@ -280,4 +280,4 @@ class AudioManager(QObject):
         bool
             True if the sound was played, False otherwise
         """
-        return self.play_sound('cancel_processing')
+        return self._play_sound('cancel_processing')
