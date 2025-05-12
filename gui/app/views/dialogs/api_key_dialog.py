@@ -5,8 +5,8 @@ This module provides the view component for API key input dialog.
 """
 
 from PyQt6.QtWidgets import (
-    QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout, QWidget,
-    QDialogButtonBox
+    QDialog, QVBoxLayout, QPushButton, QHBoxLayout, QWidget,
+    QDialogButtonBox, QLabel, QLineEdit
 )
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtGui import QCloseEvent
