@@ -1,12 +1,14 @@
 """
-Hotkey Manager Implementation
+Hotkey Implementation
 
-This module provides a platform-independent implementation for registering and managing global hotkeys.
+This module provides functionality for registering and managing global hotkeys.
 """
 
 from typing import Callable
 
 from pynput import keyboard
+
+from .key_formatter import KeyFormatter
 
 
 class HotkeyManager:
@@ -21,67 +23,36 @@ class HotkeyManager:
     --------
     Basic usage:
     
-    >>> hotkey_manager = HotkeyManager()
+    >>> hotkey = Hotkey()
     >>> # Register a hotkey for Ctrl+Shift+R
-    >>> hotkey_manager.register_hotkey("ctrl+shift+r", lambda: print("Hotkey pressed!"))
+    >>> hotkey.register("ctrl+shift+r", lambda: print("Hotkey pressed!"))
+    >>> # Start listening for hotkeys
+    >>> hotkey.start_listening()
     >>> # Unregister the hotkey when no longer needed
-    >>> hotkey_manager.unregister_hotkey("ctrl+shift+r")
+    >>> hotkey.stop_listening()
+    >>> hotkey.unregister("ctrl+shift+r")
     
     Filtered mode example:
     
-    >>> hotkey_manager = HotkeyManager()
+    >>> hotkey = Hotkey()
     >>> # Register multiple hotkeys
-    >>> hotkey_manager.register_hotkey("ctrl+shift+r", lambda: print("Action R"))
-    >>> hotkey_manager.register_hotkey("ctrl+shift+s", lambda: print("Action S"))
-    >>> # Enable filtered mode to only allow specific hotkey
-    >>> hotkey_manager.enable_filtered_mode(["ctrl+shift+r"])
-    >>> # Later, disable filtered mode to restore all hotkeys
-    >>> hotkey_manager.disable_filtered_mode()
+    >>> hotkey.register("ctrl+shift+r", lambda: print("Action R"))
+    >>> hotkey.register("ctrl+shift+s", lambda: print("Action S"))
+    >>> # Start listening with filtered mode to only allow specific hotkey
+    >>> hotkey.enable_filtered_mode(["ctrl+shift+r"])
+    >>> hotkey.start_listening()
+    >>> # Later, stop and disable filtered mode to restore all hotkeys
+    >>> hotkey.stop_listening()
+    >>> hotkey.disable_filtered_mode()
     """
-    
-    # Class constants for key mappings
-    MODIFIER_KEYS: dict[str, str] = {
-        'ctrl': '<ctrl>',
-        'control': '<ctrl>',
-        'alt': '<alt>',
-        'option': '<alt>',  # for macOS
-        'shift': '<shift>',
-        'cmd': '<cmd>',
-        'command': '<cmd>',
-        'win': '<cmd>',
-        'windows': '<cmd>',
-        'meta': '<cmd>'
-    }
-    
-    SPECIAL_KEYS: dict[str, str] = {
-        'f1': '<f1>', 'f2': '<f2>', 'f3': '<f3>', 'f4': '<f4>',
-        'f5': '<f5>', 'f6': '<f6>', 'f7': '<f7>', 'f8': '<f8>',
-        'f9': '<f9>', 'f10': '<f10>', 'f11': '<f11>', 'f12': '<f12>',
-        'esc': '<esc>', 'escape': '<esc>',
-        'tab': '<tab>',
-        'space': '<space>',
-        'backspace': '<backspace>', 'bs': '<backspace>',
-        'enter': '<enter>', 'return': '<enter>',
-        'ins': '<insert>', 'insert': '<insert>',
-        'del': '<delete>', 'delete': '<delete>',
-        'home': '<home>',
-        'end': '<end>',
-        'pageup': '<page_up>', 'pgup': '<page_up>',
-        'pagedown': '<page_down>', 'pgdn': '<page_down>',
-        'up': '<up>', 'down': '<down>', 'left': '<left>', 'right': '<right>',
-        'capslock': '<caps_lock>', 'caps': '<caps_lock>',
-        'numlock': '<num_lock>', 'num': '<num_lock>',
-        'scrolllock': '<scroll_lock>', 'scrl': '<scroll_lock>',
-        'prtsc': '<print_screen>', 'printscreen': '<print_screen>'
-    }
     
     def __init__(self):
         """
         Initialize the HotkeyManager.
         """
-        self._hotkeys: dict[str, Callable] = {}  # Dictionary to store hotkey strings and their callbacks
-        self._listener: keyboard.GlobalHotKeys | None = None  # Will be set to a listener object when active
-        self._active_hotkeys: list[str] | None = None  # None = filter mode off, list = filter mode on (even empty list)
+        self._hotkeys: dict[str, Callable] = {}                 # Dictionary to store hotkey strings and their callbacks
+        self._listener: keyboard.GlobalHotKeys | None = None    # Will be set to a listener object when active
+        self._active_hotkeys: list[str] | None = None           # None = filter mode off, list = filter mode on (even empty list)
     
     @property
     def is_listening(self) -> bool:
@@ -134,7 +105,7 @@ class HotkeyManager:
             raise RuntimeError("Cannot register hotkey: listener is active. Stop listening first.")
             
         # Parse hotkey string into the format pynput expects
-        hotkey_combination = self.parse_hotkey_string(hotkey_string)
+        hotkey_combination = KeyFormatter.parse_hotkey_string(hotkey_string)
         if not hotkey_combination:
             raise ValueError(f"Invalid hotkey string: {hotkey_string}")
         
@@ -167,7 +138,7 @@ class HotkeyManager:
             raise RuntimeError("Cannot unregister hotkey: listener is active. Stop listening first.")
             
         # Parse hotkey string
-        hotkey_combination = self.parse_hotkey_string(hotkey_string)
+        hotkey_combination = KeyFormatter.parse_hotkey_string(hotkey_string)
         
         # Check if hotkey string is valid
         if not hotkey_combination:
@@ -192,7 +163,6 @@ class HotkeyManager:
         ----------
         active_hotkeys : list[str]
             List of hotkey strings that should remain active when filtered mode is enabled.
-            Must not be empty.
             
         Returns
         -------
@@ -214,7 +184,7 @@ class HotkeyManager:
         
         # Parse and validate each active hotkey
         for hotkey in active_hotkeys:
-            parsed_hotkey = self.parse_hotkey_string(hotkey)
+            parsed_hotkey = KeyFormatter.parse_hotkey_string(hotkey)
             if not parsed_hotkey:
                 raise ValueError(f"Invalid hotkey string: {hotkey}")
             parsed_hotkeys.append(parsed_hotkey)
@@ -332,66 +302,3 @@ class HotkeyManager:
         
         # Clear the hotkeys dictionary
         self._hotkeys.clear()
-    
-    @classmethod
-    def parse_hotkey_string(cls, hotkey_string: str) -> str | None:
-        """
-        Convert a user-friendly hotkey string to the format pynput expects.
-        
-        Parameters
-        ----------
-        hotkey_string : str
-            User-friendly hotkey string (e.g., "ctrl+shift+r").
-            
-        Returns
-        -------
-        str | None
-            Pynput format hotkey string (e.g., "<ctrl>+<shift>+r"), or None if invalid.
-            
-        Examples
-        --------
-        >>> HotkeyManager.parse_hotkey_string("ctrl+shift+r")
-        '<ctrl>+<shift>+r'
-        >>> HotkeyManager.parse_hotkey_string("alt+f4")
-        '<alt>+<f4>'
-        >>> HotkeyManager.parse_hotkey_string("command+option+space")
-        '<cmd>+<alt>+<space>'
-        >>> HotkeyManager.parse_hotkey_string("")
-        None
-        """
-        if not hotkey_string:
-            return None
-        
-        # Normalize to lowercase and split by '+'
-        parts = [part.strip() for part in hotkey_string.lower().split('+')]
-        
-        # Ensure we have valid parts
-        if not parts:
-            return None
-            
-        processed_parts = []
-        
-        for part in parts:
-            # Skip empty parts
-            if not part:
-                continue
-                
-            # Check for modifier keys first
-            if part in cls.MODIFIER_KEYS:
-                processed_parts.append(cls.MODIFIER_KEYS[part])
-            # Then check for special keys
-            elif part in cls.SPECIAL_KEYS:
-                processed_parts.append(cls.SPECIAL_KEYS[part])
-            # Single character keys (a-z, 0-9, etc.)
-            elif len(part) == 1:
-                processed_parts.append(part)
-            # Unknown part - pass it through as-is with a warning comment
-            else:
-                processed_parts.append(part)
-        
-        # Return None if no valid parts were found
-        if not processed_parts:
-            return None
-            
-        # Join all parts with '+' to create the final hotkey string
-        return '+'.join(processed_parts)

@@ -8,6 +8,7 @@ in the Super Whisper application.
 from typing import Callable
 from PyQt6.QtCore import QObject, pyqtSignal
 
+from core.hotkey.key_formatter import KeyFormatter
 from core.hotkey.hotkey_manager import HotkeyManager
 
 
@@ -126,7 +127,7 @@ class HotkeyModel(QObject):
         bool
             True if the hotkey is valid, False otherwise
         """
-        return HotkeyManager.parse_hotkey_string(hotkey) is not None
+        return KeyFormatter.parse_hotkey_string(hotkey) is not None
     
     def register_hotkey(self, hotkey: str, handler_id: str) -> bool:
         """
