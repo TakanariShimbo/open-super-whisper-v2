@@ -15,7 +15,7 @@ import threading
 # Add parent directory to path so we can import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.hotkey.hotkey_manager import HotkeyManager
+from core.key.hotkey_manager import HotkeyManager
 
 
 def test_callback(shortcut_name: str):

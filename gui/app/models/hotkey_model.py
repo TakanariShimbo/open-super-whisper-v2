@@ -8,8 +8,8 @@ in the Super Whisper application.
 from typing import Callable
 from PyQt6.QtCore import QObject, pyqtSignal
 
-from core.hotkey.key_formatter import KeyFormatter
-from core.hotkey.hotkey_manager import HotkeyManager
+from core.key.key_formatter import KeyFormatter
+from core.key.hotkey_manager import HotkeyManager
 
 
 class HotkeyModel(QObject):
