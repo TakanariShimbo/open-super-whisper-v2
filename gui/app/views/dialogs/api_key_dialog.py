@@ -104,7 +104,7 @@ class APIKeyDialog(QDialog):
         self._toggle_button.setFixedWidth(30)  # Fixed width for the button
         self._toggle_button.setCheckable(True)  # Make it a toggle button
         self._toggle_button.setChecked(False)  # Initially not checked
-        self._toggle_button.clicked.connect(self._toggle_key_visibility)
+        self._toggle_button.clicked.connect(self._on_key_visibility_toggled)
         input_layout.addWidget(self._toggle_button)
         
         # Add the input layout to the main layout
@@ -135,9 +135,9 @@ class APIKeyDialog(QDialog):
         self._controller.api_key_invalid.connect(self._on_api_key_invalid)
     
     @pyqtSlot()
-    def _toggle_key_visibility(self) -> None:
+    def _on_key_visibility_toggled(self) -> None:
         """
-        Toggle the visibility of the API key in the input field.
+        Handle key visibility toggle.
         """
         if self._toggle_button.isChecked():
             # Show API key

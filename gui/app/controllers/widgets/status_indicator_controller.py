@@ -53,7 +53,7 @@ class StatusIndicatorController(QObject):
     @pyqtSlot(int)
     def _on_mode_changed(self, mode: int) -> None:
         """
-        Handle mode changes from the model.
+        Handle mode changes.
         
         Parameters
         ----------
@@ -66,7 +66,7 @@ class StatusIndicatorController(QObject):
     @pyqtSlot(str)
     def _on_timer_updated(self, time_str: str) -> None:
         """
-        Handle timer updates from the model.
+        Handle timer updates.
         
         Parameters
         ----------
@@ -79,7 +79,7 @@ class StatusIndicatorController(QObject):
     @pyqtSlot(bool)
     def _on_visibility_changed(self, visible: bool) -> None:
         """
-        Handle visibility changes from the model.
+        Handle visibility changes.
         
         Parameters
         ----------
