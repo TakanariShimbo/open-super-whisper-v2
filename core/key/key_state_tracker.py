@@ -21,19 +21,19 @@ class KeyStateTracker:
     --------
     Basic usage:
     
-    >>> monitor = KeyboardMonitor()
+    >>> key_state_tracker = KeyStateTracker()
     >>> # Start monitoring keyboard input
-    >>> monitor.start()
+    >>> key_state_tracker.start()
     >>> # Get the current pressed keys as a string
-    >>> current_keys = monitor.get_current_keys_str()
+    >>> current_keys = key_state_tracker.get_current_keys_str()
     >>> print(f"Current pressed keys: {current_keys}")
     >>> # Stop monitoring keyboard input
-    >>> monitor.stop()
+    >>> key_state_tracker.stop()
     """
     
     def __init__(self):
         """
-        Initialize the KeyboardMonitor.
+        Initialize the KeyStateTracker.
         """
         self._listener: keyboard.Listener | None = None
         self._pressed_keys: set[keyboard.Key | keyboard.KeyCode] = set()  # Set of currently pressed keys

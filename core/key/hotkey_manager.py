@@ -1,5 +1,5 @@
 """
-Hotkey Implementation
+Hotkey Manager Implementation
 
 This module provides functionality for registering and managing global hotkeys.
 """
@@ -23,27 +23,27 @@ class HotkeyManager:
     --------
     Basic usage:
     
-    >>> hotkey = Hotkey()
+    >>> hotkey_manager = HotkeyManager()
     >>> # Register a hotkey for Ctrl+Shift+R
-    >>> hotkey.register("ctrl+shift+r", lambda: print("Hotkey pressed!"))
+    >>> hotkey_manager.register_hotkey("ctrl+shift+r", lambda: print("Hotkey pressed!"))
     >>> # Start listening for hotkeys
-    >>> hotkey.start_listening()
+    >>> hotkey_manager.start_listening()
     >>> # Unregister the hotkey when no longer needed
-    >>> hotkey.stop_listening()
-    >>> hotkey.unregister("ctrl+shift+r")
+    >>> hotkey_manager.stop_listening()
+    >>> hotkey_manager.unregister_hotkey("ctrl+shift+r")
     
     Filtered mode example:
     
-    >>> hotkey = Hotkey()
+    >>> hotkey_manager = HotkeyManager()
     >>> # Register multiple hotkeys
-    >>> hotkey.register("ctrl+shift+r", lambda: print("Action R"))
+    >>> hotkey_manager.register_hotkey("ctrl+shift+r", lambda: print("Action R"))
     >>> hotkey.register("ctrl+shift+s", lambda: print("Action S"))
     >>> # Start listening with filtered mode to only allow specific hotkey
-    >>> hotkey.enable_filtered_mode(["ctrl+shift+r"])
-    >>> hotkey.start_listening()
+    >>> hotkey_manager.enable_filtered_mode(["ctrl+shift+r"])
+    >>> hotkey_manager.start_listening()
     >>> # Later, stop and disable filtered mode to restore all hotkeys
-    >>> hotkey.stop_listening()
-    >>> hotkey.disable_filtered_mode()
+    >>> hotkey_manager.stop_listening()
+    >>> hotkey_manager.disable_filtered_mode()
     """
     
     def __init__(self):
