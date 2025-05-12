@@ -7,9 +7,9 @@ following the MVC architecture.
 
 from PyQt6.QtCore import QObject, pyqtSlot
 
-from ..models.status_indicator_model import StatusIndicatorModel
-from ..views.widgets.status_indicator import StatusIndicatorWindow
-from ..utils.settings_manager import SettingsManager
+from ...models.widgets.status_indicator_model import StatusIndicatorModel
+from ...views.widgets.status_indicator import StatusIndicatorWindow
+from ...utils.settings_manager import SettingsManager
 
 
 class StatusIndicatorController(QObject):

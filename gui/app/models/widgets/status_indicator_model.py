@@ -76,13 +76,13 @@ class StatusIndicatorModel(QObject):
             self._visible = visible
             self.visibility_changed.emit(visible)
             
-    def update_timer(self, elapsed_time: float = None) -> None:
+    def update_timer(self, elapsed_time: float | None = None) -> None:
         """
         Update the timer display.
         
         Parameters
         ----------
-        elapsed_time : float, optional
+        elapsed_time : float | None, optional
             Elapsed time in seconds, by default calculates from recording start time
         """
         if elapsed_time is None and self._recording_start_time > 0:

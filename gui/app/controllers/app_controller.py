@@ -16,11 +16,11 @@ from core.pipelines.instruction_set import InstructionSet
 from ..models.pipeline_model import PipelineModel
 from ..models.instruction_set_model import InstructionSetModel
 from ..models.hotkey_model import HotkeyModel
-from ..models.status_indicator_model import StatusIndicatorModel
+from ..models.widgets.status_indicator_model import StatusIndicatorModel
 from ..models.dialogs.instruction_dialog_model import InstructionDialogModel
 from ..controllers.dialogs.instruction_dialog_controller import InstructionDialogController
 from ..views.factories.api_key_dialog_factory import APIKeyDialogFactory
-from ..controllers.status_indicator_controller import StatusIndicatorController
+from .widgets.status_indicator_controller import StatusIndicatorController
 from ..views.dialogs.instruction_dialog import InstructionDialog
 from ..utils.clipboard_utils import ClipboardUtils
 from ..utils.settings_manager import SettingsManager
