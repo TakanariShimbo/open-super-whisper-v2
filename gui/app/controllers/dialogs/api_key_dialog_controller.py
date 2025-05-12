@@ -6,7 +6,7 @@ This module provides the controller component for API key management.
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
-from ...models.dialogs.api_key_model import APIKeyModel
+from ...models.dialogs.api_key_dialog_model import APIKeyModel
 
 
 class APIKeyController(QObject):
