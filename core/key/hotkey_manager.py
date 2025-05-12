@@ -280,6 +280,7 @@ class HotkeyManager:
             return False
         
         self._listener.stop()
+        self._active_hotkeys = None
         self._listener = None
         return True
     
