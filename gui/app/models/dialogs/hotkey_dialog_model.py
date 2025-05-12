@@ -5,7 +5,7 @@ This module provides the model component for the hotkey dialog, handling the dat
 and business logic related to hotkey management.
 """
 
-from PyQt6.QtCore import QObject, pyqtSignal
+from PyQt6.QtCore import QObject, pyqtSignal, Qt
 from PyQt6.QtGui import QKeySequence
 
 from ...models.dialogs.instruction_dialog_model import InstructionDialogModel
@@ -158,10 +158,7 @@ class HotkeyDialogModel(QObject):
         -------
         str
             The hotkey string in the format "modifier1+modifier2+key"
-        """
-        # This is simplified from the original implementation
-        from PyQt6.QtCore import Qt
-        
+        """        
         parts = []
         
         # Add modifiers
