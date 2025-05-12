@@ -4,7 +4,10 @@ API Key Dialog View
 This module provides the view component for API key input dialog.
 """
 
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout, QWidget
+from PyQt6.QtWidgets import (
+    QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton, QHBoxLayout, QWidget,
+    QDialogButtonBox
+)
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtGui import QCloseEvent
 
@@ -92,6 +95,7 @@ class APIKeyDialog(QDialog):
         self._api_key_input = QLineEdit()
         self._api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
         self._api_key_input.setPlaceholderText("sk-...")
+        self._api_key_input.returnPressed.connect(self._on_accept)
         input_layout.addWidget(self._api_key_input, 1)  # Use stretch factor 1
         
         # Toggle visibility button
@@ -112,22 +116,15 @@ class APIKeyDialog(QDialog):
         self._status_label.setVisible(False)
         layout.addWidget(self._status_label)
         
-        # Buttons
-        button_layout = QHBoxLayout()
-        self._cancel_button = QPushButton("Cancel")
-        self._ok_button = QPushButton("OK")
-        self._ok_button.setDefault(True)
-        
-        button_layout.addWidget(self._cancel_button)
-        button_layout.addWidget(self._ok_button)
-        layout.addLayout(button_layout)
-        
+        # Add button box
+        button_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        button_box.accepted.connect(self._on_accept)
+        button_box.rejected.connect(self._on_reject)
+        layout.addWidget(button_box)
+
         self.setLayout(layout)
-        
-        # Connect signals
-        self._cancel_button.clicked.connect(self._on_cancel_clicked)
-        self._ok_button.clicked.connect(self._on_ok_clicked)
-        self._api_key_input.returnPressed.connect(self._on_ok_clicked)
     
     def _connect_controller_signals(self) -> None:
         """
@@ -154,9 +151,9 @@ class APIKeyDialog(QDialog):
             self._toggle_button.setToolTip("Show API Key")
     
     @pyqtSlot()
-    def _on_ok_clicked(self) -> None:
+    def _on_accept(self) -> None:
         """
-        Handle OK button click.
+        Handle dialog acceptance.
         """
         entered_api_key = self.get_entered_api_key()
         
@@ -168,9 +165,9 @@ class APIKeyDialog(QDialog):
         self._controller.validate_key(entered_api_key)
     
     @pyqtSlot()
-    def _on_cancel_clicked(self) -> None:
+    def _on_reject(self) -> None:
         """
-        Handle Cancel button click.
+        Handle dialog rejection.
         """
         # Restore original state
         self._controller.cancel()

@@ -6,8 +6,8 @@ It allows users to configure application preferences like sound, indicator visib
 """
 
 from PyQt6.QtWidgets import (
-    QDialog, QVBoxLayout,
-    QDialogButtonBox, QCheckBox, QGroupBox, QGridLayout, QWidget
+    QDialog, QVBoxLayout, QWidget, QCheckBox,
+    QDialogButtonBox, QGroupBox, QGridLayout
 )
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtGui import QCloseEvent
@@ -164,6 +164,7 @@ class SettingsDialog(QDialog):
         """
         self._controller.set_auto_clipboard(enabled)
     
+    @pyqtSlot()
     def _on_accept(self) -> None:
         """
         Handle dialog acceptance.
@@ -176,6 +177,7 @@ class SettingsDialog(QDialog):
         # Accept the dialog
         super().accept()
     
+    @pyqtSlot()
     def _on_reject(self) -> None:
         """
         Handle dialog rejection.
