@@ -9,6 +9,8 @@ from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QFrame
 from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QPalette, QColor, QShowEvent, QMouseEvent
 
+from ...controllers.widgets.status_indicator_controller import StatusIndicatorController
+
 
 class StatusIndicatorWindow(QWidget):
     """
@@ -18,7 +20,7 @@ class StatusIndicatorWindow(QWidget):
     and provides visual feedback to the user.
     """
     
-    # Status constants
+    # Status constants - these should match the model
     MODE_RECORDING = 1
     MODE_PROCESSING = 2
     MODE_COMPLETED = 3
@@ -35,10 +37,8 @@ class StatusIndicatorWindow(QWidget):
         """
         super().__init__(parent, Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
         
-        # Set window properties
-        self.setMinimumSize(120, 60)
-        self.setMaximumSize(200, 100)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        # Create controller
+        self._controller = StatusIndicatorController()
         
         # Set initial mode
         self._current_mode = self.MODE_RECORDING
@@ -48,11 +48,19 @@ class StatusIndicatorWindow(QWidget):
         
         # Position window in bottom right corner of screen
         self._update_position()
+        
+        # Connect controller signals
+        self._connect_controller_signals()
     
     def _init_ui(self) -> None:
         """
-        Initialize user interface.
+        Initialize user interface components.
         """
+        # Set window properties
+        self.setMinimumSize(120, 60)
+        self.setMaximumSize(200, 100)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        
         # Main layout
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(10, 10, 10, 10)
@@ -92,6 +100,15 @@ class StatusIndicatorWindow(QWidget):
         # Update indicator based on initial mode
         self._update_indicator()
     
+    def _connect_controller_signals(self) -> None:
+        """
+        Connect signals from controller to view methods.
+        """
+        # Connect controller signals to update view
+        self._controller.mode_changed.connect(self._set_mode)
+        self._controller.timer_updated.connect(self._update_timer)
+        self._controller.visibility_changed.connect(self._handle_visibility_changed)
+    
     def _update_position(self) -> None:
         """
         Update window position to bottom right corner of screen.
@@ -120,20 +137,21 @@ class StatusIndicatorWindow(QWidget):
             self.timer_label.setText("")
     
     @pyqtSlot(int)
-    def set_mode(self, mode: int) -> None:
+    def _set_mode(self, mode: int) -> None:
         """
         Set the current mode of the indicator.
         
         Parameters
         ----------
         mode : int
-            Mode constant (MODE_RECORDING, MODE_PROCESSING, MODE_COMPLETE, MODE_CANCELLED)
+            Mode constant (MODE_RECORDING, MODE_PROCESSING, MODE_COMPLETED, MODE_CANCELLED)
         """
-        self._current_mode = mode
-        self._update_indicator()
+        if self._current_mode != mode:
+            self._current_mode = mode
+            self._update_indicator()
     
     @pyqtSlot(str)
-    def update_timer(self, time_str: str) -> None:
+    def _update_timer(self, time_str: str) -> None:
         """
         Update the timer display.
         
@@ -144,25 +162,41 @@ class StatusIndicatorWindow(QWidget):
         """
         self.timer_label.setText(time_str)
     
+    
+    @pyqtSlot(bool)
+    def _handle_visibility_changed(self, visible: bool) -> None:
+        """
+        Handle visibility changes from the controller.
+        
+        Parameters
+        ----------
+        visible : bool
+            Whether the indicator should be visible
+        """
+        if visible:
+            self.show()
+        else:
+            self.hide()
+
     def showEvent(self, event: QShowEvent) -> None:
         """
         Handle show event by updating position.
+        
+        Parameters
+        ----------
+        event : QShowEvent
+            Show event
         """
         super().showEvent(event)
         self._update_position()
+            
+    def get_controller(self) -> StatusIndicatorController:
+        """
+        Get the controller associated with this view.
         
-    def mousePressEvent(self, event: QMouseEvent) -> None:
+        Returns
+        -------
+        StatusIndicatorController
+            The controller for this view
         """
-        Handle mouse press events for dragging the window.
-        """
-        if event.button() == Qt.MouseButton.LeftButton:
-            self._drag_start_position = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
-            event.accept()
-    
-    def mouseMoveEvent(self, event: QMouseEvent) -> None:
-        """
-        Handle mouse move events for dragging the window.
-        """
-        if event.buttons() & Qt.MouseButton.LeftButton:
-            self.move(event.globalPosition().toPoint() - self._drag_start_position)
-            event.accept()
+        return self._controller

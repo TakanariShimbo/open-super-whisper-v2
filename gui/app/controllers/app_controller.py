@@ -16,11 +16,10 @@ from core.pipelines.instruction_set import InstructionSet
 from ..models.pipeline_model import PipelineModel
 from ..models.instruction_set_model import InstructionSetModel
 from ..models.hotkey_model import HotkeyModel
-from ..models.widgets.status_indicator_model import StatusIndicatorModel
 from ..models.dialogs.instruction_dialog_model import InstructionDialogModel
 from ..controllers.dialogs.instruction_dialog_controller import InstructionDialogController
 from ..views.factories.api_key_dialog_factory import APIKeyDialogFactory
-from .widgets.status_indicator_controller import StatusIndicatorController
+from ..views.factories.status_indicator_factory import StatusIndicatorFactory
 from ..views.dialogs.instruction_dialog import InstructionDialog
 from ..utils.clipboard_utils import ClipboardUtils
 from ..utils.settings_manager import SettingsManager
@@ -134,9 +133,11 @@ class AppController(QObject):
         self._instruction_set_model = InstructionSetModel()
         self._hotkey_model = HotkeyModel()
         
-        # Initialize status indicator model and controller
-        self._status_indicator_model = StatusIndicatorModel()
-        self._status_indicator_controller = StatusIndicatorController(self._status_indicator_model)
+        # Create status indicator view using factory
+        self._status_indicator_view = StatusIndicatorFactory.create_status_indicator()
+        
+        # Get the controller from the view
+        self._status_indicator_controller = self._status_indicator_view.get_controller()
     
     def _setup_model_connections(self) -> None:
         """

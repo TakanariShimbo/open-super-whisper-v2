@@ -9,6 +9,8 @@ import time
 
 from PyQt6.QtCore import QObject, pyqtSignal, QTimer
 
+from ...utils.settings_manager import SettingsManager
+
 
 class StatusIndicatorModel(QObject):
     """
@@ -25,9 +27,9 @@ class StatusIndicatorModel(QObject):
     MODE_CANCELLED = 4
     
     # Signals
-    mode_changed = pyqtSignal(int)       # mode
-    timer_updated = pyqtSignal(str)      # time_string
-    visibility_changed = pyqtSignal(bool)  # visible
+    mode_changed = pyqtSignal(int)        # mode
+    timer_updated = pyqtSignal(str)       # time_string
+    visibility_changed = pyqtSignal(bool) # visible
     
     def __init__(self, parent=None) -> None:
         """
@@ -39,6 +41,9 @@ class StatusIndicatorModel(QObject):
             Parent object, by default None
         """
         super().__init__(parent)
+        
+        # Get settings manager
+        self._settings_manager = SettingsManager.instance()
         
         # State variables
         self._mode = self.MODE_RECORDING
@@ -57,7 +62,7 @@ class StatusIndicatorModel(QObject):
         Parameters
         ----------
         mode : int
-            Mode constant (MODE_RECORDING, MODE_PROCESSING, MODE_COMPLETE, MODE_CANCELLED)
+            Mode constant (MODE_RECORDING, MODE_PROCESSING, MODE_COMPLETED, MODE_CANCELLED)
         """
         if self._mode != mode:
             self._mode = mode
@@ -72,7 +77,13 @@ class StatusIndicatorModel(QObject):
         visible : bool
             Whether the indicator should be visible
         """
-        if self._visible != visible:
+        if self._visible == visible:
+            return
+        
+        # Check if indicator should be visible based on settings
+        indicator_visible_setting = self._settings_manager.get_indicator_visible()
+
+        if indicator_visible_setting:
             self._visible = visible
             self.visibility_changed.emit(visible)
             
