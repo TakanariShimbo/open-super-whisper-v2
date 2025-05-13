@@ -110,16 +110,24 @@ class KeyStateTracker:
         key : pynput.keyboard.Key or pynput.keyboard.KeyCode
             The key that was pressed.
         """
-        # First check if this is a new key
-        is_new_key = key not in self._pressed_keys
-        
         # Add the key to the set of pressed keys
         self._pressed_keys.add(key)
         
-        # If this is a new key, print and update last_keys
-        if is_new_key:
-            # Create a fresh copy of the current pressed keys
-            self._last_keys = set(self._pressed_keys)
+        # Check if the key is a new key
+        current_keys = self.get_current_keys()
+        last_keys = self.get_last_keys()
+        
+        has_new_key = False
+        for k in current_keys:
+            if k in last_keys:
+                continue
+            else:
+                has_new_key = True
+                break
+        
+        # If the key is a new key, update the last keys
+        if has_new_key:
+            self._last_keys = self._pressed_keys.copy()
 
     def _on_key_release(self, key: keyboard.Key | keyboard.KeyCode) -> None:
         """
@@ -133,32 +141,32 @@ class KeyStateTracker:
         # Remove the key from the set of pressed keys
         self._pressed_keys.discard(key)
     
-    def get_current_keys_str(self) -> str:
+    def get_current_keys(self) -> list[str]:
         """
         Get a string representation of all currently pressed keys.
         
         Returns
         -------
-        str
-            A string containing all currently pressed keys, separated by '+'.
-            Empty string if no keys are pressed or monitoring is not active.
+        list[str]
+            A list of strings containing all currently pressed keys.
+            Empty list if no keys are pressed or monitoring is not active.
         """
         if not self.is_monitoring:
-            return ""
+            return []
             
         return KeyFormatter.format_keys_set(self._pressed_keys)
         
-    def get_last_keys_str(self) -> str:
+    def get_last_keys(self) -> list[str]:
         """
         Get a string representation of the last pressed key combination.
 
         Returns
         -------
-        str
-            A string containing the last pressed key combination, separated by '+'.
-            Empty string if no keys have been pressed or monitoring is not active.
+        list[str]
+            A list of strings containing the last pressed key combination.
+            Empty list if no keys have been pressed or monitoring is not active.
         """
         if not self.is_monitoring:
-            return ""
+            return []
             
         return KeyFormatter.format_keys_set(self._last_keys)

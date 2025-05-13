@@ -45,10 +45,10 @@ def test_key_state_tracker(test_duration: int = 15, verbose: bool = False):
             try:
                 last_output = ""
                 while tracker.is_monitoring:
-                    current_keys = tracker.get_current_keys_str()
-                    last_keys = tracker.get_last_keys_str()
+                    current_keys = tracker.get_current_keys()
+                    last_keys = tracker.get_last_keys()
                     
-                    output = f"Current keys: {current_keys or '<none>'} | Last keys: {last_keys or '<none>'}"
+                    output = f"Current keys: {'+'.join(current_keys) or '<none>'} | Last keys: {'+'.join(last_keys) or '<none>'}"
                     
                     # Only print if the output changed to reduce console spam
                     if output != last_output:

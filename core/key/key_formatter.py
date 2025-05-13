@@ -269,7 +269,7 @@ class KeyFormatter:
         return control_char.lower()
             
     @classmethod
-    def format_keys_set(cls, keys: set[keyboard.Key | keyboard.KeyCode]) -> str:
+    def format_keys_set(cls, keys: set[keyboard.Key | keyboard.KeyCode]) -> list[str]:
         """
         Format a set of keys into a sorted string representation.
         
@@ -280,13 +280,13 @@ class KeyFormatter:
             
         Returns
         -------
-        str
-            A string containing all keys formatted and sorted (modifiers first),
-            separated by '+'. Empty string if no keys are provided.
+        list[str]
+            A list of strings containing all keys formatted and sorted (modifiers first). 
+            Empty list if no keys are provided.
         """
         # Return early if no keys
         if not keys:
-            return ""
+            return []
         
         # Check for control/modifier keys presence
         has_ctrl = cls._has_ctrl_key(keys)
@@ -299,7 +299,7 @@ class KeyFormatter:
         
         # Combine and join with '+'
         sorted_keys = modifier_keys + regular_keys
-        return '+'.join(sorted_keys) if sorted_keys else ""
+        return sorted_keys if sorted_keys else []
     
     @classmethod
     def _has_ctrl_key(cls, keys: set[keyboard.Key | keyboard.KeyCode]) -> bool:
