@@ -51,7 +51,7 @@ class HotkeyDialogController(QObject):
         super().__init__()
         
         # Create model
-        self._dialog_model = HotkeyDialogModel(current_hotkey)
+        self._model = HotkeyDialogModel(current_hotkey)
         self._parent_controller = parent_controller
         self._conflict_checker = conflict_checker
         
@@ -62,10 +62,10 @@ class HotkeyDialogController(QObject):
         """
         Connect signals from the model to controller handlers.
         """
-        self._dialog_model.hotkey_changed.connect(self._on_hotkey_changed)
-        self._dialog_model.hotkey_captured.connect(self._on_hotkey_captured)
-        self._dialog_model.validation_succeeded.connect(self._on_validation_succeeded)
-        self._dialog_model.validation_failed.connect(self._on_validation_failed)
+        self._model.hotkey_changed.connect(self._on_hotkey_changed)
+        self._model.hotkey_captured.connect(self._on_hotkey_captured)
+        self._model.validation_succeeded.connect(self._on_validation_succeeded)
+        self._model.validation_failed.connect(self._on_validation_failed)
     
     @pyqtSlot(str)
     def _on_hotkey_changed(self, hotkey: str) -> None:
@@ -123,25 +123,25 @@ class HotkeyDialogController(QObject):
         str
             The current hotkey string
         """
-        return self._dialog_model.hotkey
+        return self._model.hotkey
     
     def start_capturing(self) -> None:
         """
         Start capturing keyboard input.
         """
-        self._dialog_model.start_capturing()
+        self._model.start_capturing()
     
     def stop_capturing(self) -> None:
         """
         Stop capturing keyboard input.
         """
-        self._dialog_model.stop_capturing()
+        self._model.stop_capturing()
     
     def capture_keys(self) -> None:
         """
         Capture the current key combination.
         """
-        self._dialog_model.capture_current_keys()
+        self._model.capture_current_keys()
     
     def set_hotkey(self, hotkey: str) -> None:
         """
@@ -152,13 +152,13 @@ class HotkeyDialogController(QObject):
         hotkey : str
             The hotkey string to set
         """
-        self._dialog_model.hotkey = hotkey
+        self._model.hotkey = hotkey
     
     def reset_hotkey(self) -> None:
         """
         Reset the hotkey to empty.
         """
-        self._dialog_model.reset()
+        self._model.reset()
     
     def validate_and_accept(self) -> bool:
         """
@@ -169,13 +169,13 @@ class HotkeyDialogController(QObject):
         bool
             True if the hotkey is valid, False otherwise
         """
-        return self._dialog_model.validate_hotkey(self._conflict_checker)
+        return self._model.validate_hotkey(self._conflict_checker)
     
     def save(self) -> None:
         """
         Save the current hotkey as the new original.
         """
-        self._dialog_model.save()
+        self._model.save()
     
     def cancel(self) -> None:
         """
@@ -185,4 +185,4 @@ class HotkeyDialogController(QObject):
         self.stop_capturing()
         
         # Restore original value
-        self._dialog_model.restore_original()
+        self._model.restore_original()
