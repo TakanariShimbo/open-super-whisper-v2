@@ -113,8 +113,16 @@ class KeyStateTracker:
         # Add the key to the set of pressed keys
         self._pressed_keys.add(key)
 
-        # If the number of pressed keys is different from the last keys, update the last keys
-        if len(self._last_keys) != len(self._pressed_keys):
+        has_new_key = False
+        for key in self._pressed_keys:
+            if key in self._last_keys:
+                continue
+            else:
+                has_new_key = True
+                print("new key: ", key)
+                break
+
+        if has_new_key:
             self._last_keys = self._pressed_keys.copy()
 
     def _on_key_release(self, key: keyboard.Key | keyboard.KeyCode) -> None:
