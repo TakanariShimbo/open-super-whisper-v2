@@ -121,6 +121,36 @@ class KeyFormatter:
         keyboard.Key.up: 'up'
     }
     
+        # Map for control characters to more readable names (without 'ctrl+' prefix)
+    CONTROL_CHAR_MAPPING: dict[str, str] = {
+        '\x01': 'a', 
+        '\x02': 'b', 
+        '\x03': 'c', 
+        '\x04': 'd',
+        '\x05': 'e', 
+        '\x06': 'f', 
+        '\x07': 'g', 
+        '\x08': 'h',
+        '\x09': 'i', 
+        '\x0A': 'j', 
+        '\x0B': 'k', 
+        '\x0C': 'l',
+        '\x0D': 'm', 
+        '\x0E': 'n', 
+        '\x0F': 'o', 
+        '\x10': 'p',
+        '\x11': 'q', 
+        '\x12': 'r', 
+        '\x13': 's', 
+        '\x14': 't',
+        '\x15': 'u', 
+        '\x16': 'v', 
+        '\x17': 'w', 
+        '\x18': 'x',
+        '\x19': 'y', 
+        '\x1A': 'z'
+    }
+    
     # Map for virtual key codes (VK) to human-readable names for special keys
     VK_CODE_MAPPING: dict[int, str] = {
         # Standard keyboard special keys
