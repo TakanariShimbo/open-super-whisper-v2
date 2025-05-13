@@ -64,7 +64,7 @@ class HotkeyManager:
         bool
             True if the manager is actively listening, False otherwise.
         """
-        return self._listener is not None
+        return self._listener is not None and self._listener.running
         
     @property
     def is_filter_mode_active(self) -> bool:
