@@ -28,7 +28,7 @@ class KeyStateTracker:
     >>> current_keys = key_state_tracker.get_current_keys_str()
     >>> print(f"Current pressed keys: {current_keys}")
     >>> # Get the last pressed key combination as a string
-    >>> last_keys = key_state_tracker.get_keys_str()
+    >>> last_keys = key_state_tracker.get_last_keys_str()
     >>> print(f"Last key combination: {last_keys}")
     >>> # Stop monitoring keyboard input
     >>> key_state_tracker.stop()
@@ -110,20 +110,16 @@ class KeyStateTracker:
         key : pynput.keyboard.Key or pynput.keyboard.KeyCode
             The key that was pressed.
         """
+        # First check if this is a new key
+        is_new_key = key not in self._pressed_keys
+        
         # Add the key to the set of pressed keys
         self._pressed_keys.add(key)
-
-        has_new_key = False
-        for key in self._pressed_keys:
-            if key in self._last_keys:
-                continue
-            else:
-                has_new_key = True
-                print("new key: ", key)
-                break
-
-        if has_new_key:
-            self._last_keys = self._pressed_keys.copy()
+        
+        # If this is a new key, print and update last_keys
+        if is_new_key:
+            # Create a fresh copy of the current pressed keys
+            self._last_keys = set(self._pressed_keys)
 
     def _on_key_release(self, key: keyboard.Key | keyboard.KeyCode) -> None:
         """
@@ -136,51 +132,6 @@ class KeyStateTracker:
         """
         # Remove the key from the set of pressed keys
         self._pressed_keys.discard(key)
-    
-    def _format_keys_to_str(self, keys: set[keyboard.Key | keyboard.KeyCode]) -> str:
-        """
-        Format a set of keys into a sorted string representation.
-        
-        Parameters
-        ----------
-        keys : set[keyboard.Key | keyboard.KeyCode]
-            Set of keys to format
-            
-        Returns
-        -------
-        str
-            A string containing all keys formatted and sorted (modifiers first),
-            separated by '+'. Empty string if no keys are provided.
-        """
-        if not keys:
-            return ""
-            
-        # Convert all keys to strings
-        key_strings = [KeyFormatter.format_key(key) for key in keys]
-        
-        # Separate modifiers and regular keys
-        modifier_keys = []
-        regular_keys = []
-        
-        # List of all modifier key names
-        modifiers = ('ctrl', 'ctrl_l', 'ctrl_r', 'alt', 'alt_l', 'alt_r', 
-                    'shift', 'shift_l', 'shift_r', 'cmd', 'cmd_l', 'cmd_r')
-        
-        for key_str in key_strings:
-            if key_str in modifiers:
-                modifier_keys.append(key_str)
-            else:
-                regular_keys.append(key_str)
-                
-        # Sort both lists
-        modifier_keys.sort()
-        regular_keys.sort()
-        
-        # Combine with modifiers first
-        sorted_keys = modifier_keys + regular_keys
-        
-        # Join with '+' and return
-        return '+'.join(sorted_keys) if sorted_keys else ""
     
     def get_current_keys_str(self) -> str:
         """
@@ -195,7 +146,7 @@ class KeyStateTracker:
         if not self.is_monitoring:
             return ""
             
-        return self._format_keys_to_str(self._pressed_keys)
+        return KeyFormatter.format_keys_set(self._pressed_keys)
         
     def get_last_keys_str(self) -> str:
         """
@@ -210,4 +161,4 @@ class KeyStateTracker:
         if not self.is_monitoring:
             return ""
             
-        return self._format_keys_to_str(self._last_keys)
+        return KeyFormatter.format_keys_set(self._last_keys)
