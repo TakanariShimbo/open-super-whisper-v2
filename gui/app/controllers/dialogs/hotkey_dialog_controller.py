@@ -6,7 +6,6 @@ mediating between the hotkey dialog model and view.
 """
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
-from PyQt6.QtGui import QKeyEvent
 
 from ...models.dialogs.hotkey_dialog_model import HotkeyDialogModel
 
