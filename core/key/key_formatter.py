@@ -74,17 +74,17 @@ class KeyFormatter:
     # Reverse mapping for converting pynput key objects to human-readable strings
     REVERSE_KEY_MAPPING: dict[keyboard.Key, str] = {
         keyboard.Key.alt: 'alt',
-        keyboard.Key.alt_l: 'alt_l',
-        keyboard.Key.alt_r: 'alt_r',
-        keyboard.Key.alt_gr: 'alt_gr',
+        keyboard.Key.alt_l: 'alt',
+        keyboard.Key.alt_r: 'alt',
+        keyboard.Key.alt_gr: 'alt',
         keyboard.Key.backspace: 'backspace',
         keyboard.Key.caps_lock: 'caps_lock',
         keyboard.Key.cmd: 'cmd',
-        keyboard.Key.cmd_l: 'cmd_l',
-        keyboard.Key.cmd_r: 'cmd_r',
+        keyboard.Key.cmd_l: 'cmd',
+        keyboard.Key.cmd_r: 'cmd',
         keyboard.Key.ctrl: 'ctrl',
-        keyboard.Key.ctrl_l: 'ctrl_l',
-        keyboard.Key.ctrl_r: 'ctrl_r',
+        keyboard.Key.ctrl_l: 'ctrl',
+        keyboard.Key.ctrl_r: 'ctrl',
         keyboard.Key.delete: 'delete',
         keyboard.Key.down: 'down',
         keyboard.Key.end: 'end',
@@ -114,41 +114,83 @@ class KeyFormatter:
         keyboard.Key.right: 'right',
         keyboard.Key.scroll_lock: 'scroll_lock',
         keyboard.Key.shift: 'shift',
-        keyboard.Key.shift_l: 'shift_l',
-        keyboard.Key.shift_r: 'shift_r',
+        keyboard.Key.shift_l: 'shift',
+        keyboard.Key.shift_r: 'shift',
         keyboard.Key.space: 'space',
         keyboard.Key.tab: 'tab',
         keyboard.Key.up: 'up'
     }
     
-    # Map for control characters to more readable names (without 'ctrl+' prefix)
-    CONTROL_CHAR_MAPPING: dict[str, str] = {
-        '\x01': 'a', 
-        '\x02': 'b', 
-        '\x03': 'c', 
-        '\x04': 'd',
-        '\x05': 'e', 
-        '\x06': 'f', 
-        '\x07': 'g', 
-        '\x08': 'h',
-        '\x09': 'i', 
-        '\x0A': 'j', 
-        '\x0B': 'k', 
-        '\x0C': 'l',
-        '\x0D': 'm', 
-        '\x0E': 'n', 
-        '\x0F': 'o', 
-        '\x10': 'p',
-        '\x11': 'q', 
-        '\x12': 'r', 
-        '\x13': 's', 
-        '\x14': 't',
-        '\x15': 'u', 
-        '\x16': 'v', 
-        '\x17': 'w', 
-        '\x18': 'x',
-        '\x19': 'y', 
-        '\x1A': 'z'
+    # Map for virtual key codes (VK) to human-readable names for special keys
+    VK_CODE_MAPPING: dict[int, str] = {
+        # Standard keyboard special keys
+        186: ';',
+        187: '=',
+        188: ',',
+        189: '-',
+        190: '.',
+        191: '/',
+        192: '`',
+        219: '[',
+        220: '\\',
+        221: ']',
+        222: "'",
+        
+        # Numpad keys
+        96: '0',
+        97: '1',
+        98: '2',
+        99: '3',
+        100: '4',
+        101: '5',
+        102: '6',
+        103: '7',
+        104: '8',
+        105: '9',
+        106: '*',
+        107: '+',
+        109: '-',
+        110: '.',
+        111: '/',
+        
+        # Other common special keys
+        9: 'tab',
+        13: 'enter',
+        16: 'shift',
+        17: 'ctrl',
+        18: 'alt',
+        19: 'pause',
+        20: 'caps_lock',
+        27: 'esc',
+        32: 'space',
+        33: 'page_up',
+        34: 'page_down',
+        35: 'end',
+        36: 'home',
+        37: 'left',
+        38: 'up',
+        39: 'right',
+        40: 'down',
+        45: 'insert',
+        46: 'delete',
+        91: 'win',
+        93: 'menu',
+        144: 'num_lock',
+        145: 'scroll_lock',
+        
+        # Function keys
+        112: 'f1',
+        113: 'f2',
+        114: 'f3',
+        115: 'f4',
+        116: 'f5',
+        117: 'f6',
+        118: 'f7',
+        119: 'f8',
+        120: 'f9',
+        121: 'f10',
+        122: 'f11',
+        123: 'f12'
     }
 
     @classmethod
@@ -240,17 +282,48 @@ class KeyFormatter:
         # Handle special keys (like shift, ctrl, etc.)
         if isinstance(key, keyboard.Key):
             return cls.REVERSE_KEY_MAPPING.get(key, str(key))
-            
+        
         # Handle character keys
-        if not hasattr(key, 'char') or not key.char:
-            return str(key)
+        if hasattr(key, 'char') and key.char:
+            return cls._format_char_key(key.char)
+        
+        # Handle virtual key code
+        if hasattr(key, 'vk') and key.vk:
+            return cls._format_vk_code(key.vk)
+        
+        # Handle unknown key types
+        return cls._format_unknown_key(key)
+        
+    @classmethod
+    def _format_char_key(cls, char: str) -> str:
+        """Format a character key."""
+        if not cls._is_control_character(char):
+            return char.lower()
+        
+        return cls._format_control_character(char)
+    
+    @classmethod
+    def _format_vk_code(cls, vk: int) -> str:
+        """Format a virtual key code."""
+        # Check in our VK_CODE_MAPPING dictionary
+        if vk in cls.VK_CODE_MAPPING:
+            return cls.VK_CODE_MAPPING[vk]
             
-        # Regular character - return as is
-        if not cls._is_control_character(key.char):
-            return key.char
+        # ASCII range for letters (65-90 for A-Z)
+        if 65 <= vk <= 90:  # ASCII A-Z
+            return chr(vk).lower()
+        
+        # ASCII range for numbers (48-57 for 0-9)
+        if 48 <= vk <= 57:  # ASCII 0-9
+            return chr(vk)
             
-        # Handle control characters (Ctrl+Key combinations)
-        return cls._format_control_character(key.char)
+        # For unknown VK codes, return a readable format but still indicate it's a VK code
+        return f"key_{vk}"
+    
+    @classmethod
+    def _format_unknown_key(cls, key) -> str:
+        """Format an unknown key type."""
+        return str(key).replace('<', '').replace('>', '').lower()
     
     @classmethod
     def _is_control_character(cls, char: str) -> bool:
@@ -331,8 +404,7 @@ class KeyFormatter:
         regular_keys = []
         
         # List of all modifier key names
-        modifiers = ('ctrl', 'ctrl_l', 'ctrl_r', 'alt', 'alt_l', 'alt_r', 
-                    'shift', 'shift_l', 'shift_r', 'cmd', 'cmd_l', 'cmd_r')
+        modifiers = ('ctrl', 'alt', 'shift', 'cmd')
         
         # Letters that might be control characters
         ctrl_letters = set("abcdefghijklmnopqrstuvwxyz")
