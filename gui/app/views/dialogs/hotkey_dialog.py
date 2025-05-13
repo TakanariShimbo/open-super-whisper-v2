@@ -7,14 +7,14 @@ It integrates the MVC components of the hotkey dialog.
 
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QLabel, QLineEdit,
-    QPushButton, QDialogButtonBox, QGridLayout, QMessageBox
+    QPushButton, QDialogButtonBox, QGridLayout, QMessageBox,
+    QHBoxLayout, QFrame
 )
-from PyQt6.QtCore import Qt, QEvent, pyqtSlot, QObject
-from PyQt6.QtGui import QCloseEvent, QShowEvent
+from PyQt6.QtCore import Qt, QEvent, pyqtSlot, QTimer, QObject
+from PyQt6.QtGui import QCloseEvent, QShowEvent, QFocusEvent, QKeyEvent
 
 from ...controllers.dialogs.hotkey_dialog_controller import HotkeyDialogController
 from ...models.hotkey_model import HotkeyModel
-from ...models.dialogs.instruction_dialog_model import InstructionDialogModel
 
 
 class HotkeyDialog(QDialog):
@@ -22,46 +22,66 @@ class HotkeyDialog(QDialog):
     Dialog for setting global hotkeys.
     
     This dialog allows users to define a custom hotkey combination
-    for various actions in the application.
+    for various actions in the application. It uses an advanced key
+    capture method for accurate hotkey detection.
     """
     
-    def __init__(self, parent: QDialog | None = None, 
+    def __init__(self, parent=None, 
                  current_hotkey: str = "", 
-                 hotkey_manager: HotkeyModel | None = None, 
-                 instruction_dialog_model: InstructionDialogModel | None = None) -> None:
+                 hotkey_manager: HotkeyModel | None = None,
+                 conflict_checker=None,
+                 instruction_dialog_model=None) -> None:
         """
         Initialize the HotkeyDialog.
         
         Parameters
         ----------
-        parent : QDialog | None, optional
+        parent : QWidget, optional
             Parent widget, by default None
         current_hotkey : str, optional
             Current hotkey string, by default ""
         hotkey_manager : HotkeyModel | None, optional
-            The hotkey manager for enabling/disabling hotkeys
+            The hotkey manager for enabling/disabling hotkeys during dialog
+        conflict_checker : callable, optional
+            Function to check for hotkey conflicts, by default None
+            Should take a hotkey string and return None or error message
         instruction_dialog_model : InstructionDialogModel | None, optional
-            The model containing instruction sets for conflict checking
+            For backward compatibility - model containing instruction sets for conflict checking
         """
         super().__init__(parent)
         
-        # Create controller
-        self._controller = HotkeyDialogController(
-            current_hotkey=current_hotkey,
-            hotkey_manager=instruction_dialog_model
-        )
-        
-        # Store hotkey manager
+        # Store hotkey manager 
         self._hotkey_manager = hotkey_manager
         
         # Flag to track if hotkeys were disabled
         self._hotkeys_disabled = False
+        
+        # For backward compatibility: Convert instruction_dialog_model to conflict_checker
+        if instruction_dialog_model and not conflict_checker and hasattr(instruction_dialog_model, 'get_set_by_hotkey'):
+            def check_hotkey_conflict(hotkey: str) -> str | None:
+                conflicting_set = instruction_dialog_model.get_set_by_hotkey(hotkey)
+                if conflicting_set:
+                    return f"The hotkey '{hotkey}' is already used by instruction set '{conflicting_set.name}'."
+                return None
+            
+            conflict_checker = check_hotkey_conflict
+        
+        # Create controller with conflict checker
+        self._controller = HotkeyDialogController(
+            current_hotkey=current_hotkey,
+            conflict_checker=conflict_checker
+        )
         
         # Set up UI
         self._init_ui()
         
         # Connect controller signals
         self._connect_controller_signals()
+        
+        # Timer for continuous key capture
+        self._capture_timer = QTimer(self)
+        self._capture_timer.setInterval(100)  # 100ms interval
+        self._capture_timer.timeout.connect(self._on_capture_timer)
     
     def _init_ui(self) -> None:
         """Initialize the user interface."""
@@ -79,39 +99,58 @@ class HotkeyDialog(QDialog):
         description = QLabel("Set a global hotkey combination for this action.")
         description.setWordWrap(True)
         
-        # Create hotkey input
+        # Create hotkey display area
         hotkey_label = QLabel("Hotkey:")
-        self.hotkey_input = QLineEdit(self._controller.get_hotkey())
-        self.hotkey_input.setPlaceholderText("Press keys to set hotkey")
-        self.hotkey_input.setReadOnly(True)
         
-        # Make the input field receive key events
-        self.hotkey_input.installEventFilter(self)
+        # Hotkey display field (read-only)
+        self._hotkey_display = QLineEdit(self._controller.get_hotkey())
+        self._hotkey_display.setReadOnly(True)
+        self._hotkey_display.setPlaceholderText("Click to capture keys")
+        
+        # Styling for the hotkey display when in capture mode
+        self._normal_style = self._hotkey_display.styleSheet()
+        self._capture_style = "QLineEdit { background-color: #f0f0f0; border: 2px solid #3498db; }"
+        
+        # Container for capture button and reset button
+        button_container = QHBoxLayout()
+        
+        # Capture button
+        self._capture_button = QPushButton("Capture")
+        self._capture_button.setCheckable(True)
+        self._capture_button.clicked.connect(self._on_capture_toggled)
+        button_container.addWidget(self._capture_button)
         
         # Reset button
         reset_button = QPushButton("Clear")
         reset_button.clicked.connect(self._on_reset_clicked)
+        button_container.addWidget(reset_button)
         
         # Add to grid layout
-        form_layout.addWidget(description, 0, 0, 1, 3)
+        form_layout.addWidget(description, 0, 0, 1, 2)
         form_layout.addWidget(hotkey_label, 1, 0)
-        form_layout.addWidget(self.hotkey_input, 1, 1)
-        form_layout.addWidget(reset_button, 1, 2)
+        form_layout.addWidget(self._hotkey_display, 1, 1)
+        form_layout.addLayout(button_container, 2, 1, Qt.AlignmentFlag.AlignRight)
         
-        # Add hotkey examples
-        examples_label = QLabel("Examples: ctrl+shift+r, alt+a, ctrl+alt+s")
-        examples_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        form_layout.addWidget(examples_label, 2, 0, 1, 3)
+        # Separator
+        separator = QFrame()
+        separator.setFrameShape(QFrame.Shape.HLine)
+        separator.setFrameShadow(QFrame.Shadow.Sunken)
         
-        # Add button box
+        # Add hotkey examples and tips
+        tips_label = QLabel("Tips:\n• Click 'Capture' and press keys to set a hotkey\n• Examples: ctrl+shift+r, alt+a, ctrl+alt+s")
+        tips_label.setWordWrap(True)
+        
+        # Button box
         button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
         button_box.accepted.connect(self._on_accept)
         button_box.rejected.connect(self._on_reject)
         
-        # Add layouts to main layout
+        # Add components to main layout
         layout.addLayout(form_layout)
+        layout.addWidget(separator)
+        layout.addWidget(tips_label)
         layout.addWidget(button_box)
     
     def _connect_controller_signals(self) -> None:
@@ -119,36 +158,84 @@ class HotkeyDialog(QDialog):
         Connect signals from the controller.
         """
         self._controller.hotkey_changed.connect(self._on_hotkey_changed)
-        self._controller.validation_error.connect(self._show_validation_error)
+        self._controller.hotkey_captured.connect(self._on_hotkey_captured)
+        self._controller.validation_error.connect(self._on_validation_error)
     
-    def eventFilter(self, obj: QObject, event: QEvent) -> bool:
+    @pyqtSlot(bool)
+    def _on_capture_toggled(self, checked: bool) -> None:
         """
-        Event filter to capture key presses.
+        Handle capture button toggle.
         
         Parameters
         ----------
-        obj : QObject
-            Object that received the event.
-        event : QEvent
-            Event that was received.
-            
-        Returns
-        -------
-        bool
-            Whether the event was handled.
+        checked : bool
+            Whether the button is checked
         """
-        if obj == self.hotkey_input and event.type() == QEvent.Type.KeyPress:
-            # Handle key press through controller
-            self._controller.handle_key_press(event)
-            return True
+        if checked:
+            # Start capture mode
+            self._start_capture_mode()
+        else:
+            # Stop capture mode
+            self._stop_capture_mode()
+    
+    def _start_capture_mode(self) -> None:
+        """
+        Start key capture mode.
+        """
+        # Update button text
+        self._capture_button.setText("Stop Capturing")
         
-        return super().eventFilter(obj, event)
+        # Apply capture style to input field
+        self._hotkey_display.setStyleSheet(self._capture_style)
+        self._hotkey_display.setPlaceholderText("Press keys to capture hotkey...")
+        
+        # Give focus to the display field
+        self._hotkey_display.setFocus()
+        
+        # Start key capture in controller
+        self._controller.start_capturing()
+        
+        # Start capture timer
+        self._capture_timer.start()
+    
+    def _stop_capture_mode(self) -> None:
+        """
+        Stop key capture mode.
+        """
+        # Update button state and text
+        self._capture_button.setChecked(False)
+        self._capture_button.setText("Capture")
+        
+        # Restore normal style
+        self._hotkey_display.setStyleSheet(self._normal_style)
+        self._hotkey_display.setPlaceholderText("Click to capture keys")
+        
+        # Stop key capture in controller
+        self._controller.stop_capturing()
+        
+        # Stop capture timer
+        self._capture_timer.stop()
+    
+    @pyqtSlot()
+    def _on_capture_timer(self) -> None:
+        """
+        Handle capture timer tick.
+        
+        This method is called periodically to capture the current key combination.
+        """
+        # Capture current keys
+        self._controller.capture_keys()
     
     @pyqtSlot()
     def _on_reset_clicked(self) -> None:
         """
         Handle reset button click.
         """
+        # Stop capture mode if active
+        if self._capture_button.isChecked():
+            self._stop_capture_mode()
+        
+        # Reset hotkey in controller
         self._controller.reset_hotkey()
     
     @pyqtSlot(str)
@@ -161,32 +248,50 @@ class HotkeyDialog(QDialog):
         hotkey : str
             The new hotkey value
         """
-        self.hotkey_input.setText(hotkey)
+        self._hotkey_display.setText(hotkey)
     
-    @pyqtSlot(str, str)
-    def _show_validation_error(self, title: str, message: str) -> None:
+    @pyqtSlot(str)
+    def _on_hotkey_captured(self, hotkey: str) -> None:
+        """
+        Handle hotkey captured event from the controller.
+        
+        Parameters
+        ----------
+        hotkey : str
+            The captured hotkey
+        """
+        # Just update the display (controller already updated the model)
+        self._hotkey_display.setText(hotkey)
+    
+    @pyqtSlot(str)
+    def _on_validation_error(self, message: str) -> None:
         """
         Display a validation error message.
         
         Parameters
         ----------
-        title : str
-            Error dialog title
         message : str
             Error message
         """
-        QMessageBox.warning(self, title, message)
+        QMessageBox.warning(self, "Hotkey Validation Error", message)
     
     def _on_accept(self) -> None:
         """
         Handle dialog acceptance.
         
         This method is called when the OK button is clicked. It validates
-        the hotkey and re-enables all hotkeys that were disabled.
+        the hotkey and saves changes if valid.
         """
+        # Stop capture mode if active
+        if self._capture_button.isChecked():
+            self._stop_capture_mode()
+        
         # Validate hotkey before accepting
         if not self._controller.validate_and_accept():
             return
+        
+        # Save the validated hotkey
+        self._controller.save()
         
         # Re-enable hotkeys
         self._restore_hotkeys()
@@ -199,8 +304,12 @@ class HotkeyDialog(QDialog):
         Handle dialog rejection.
         
         This method is called when the Cancel button is clicked. It restores
-        the original hotkey and re-enables all hotkeys.
+        the original hotkey and rejects the dialog.
         """
+        # Stop capture mode if active
+        if self._capture_button.isChecked():
+            self._stop_capture_mode()
+        
         # Tell controller to restore original hotkey
         self._controller.cancel()
         
@@ -237,9 +346,9 @@ class HotkeyDialog(QDialog):
         super().showEvent(event)
         
         # Disable hotkeys if a hotkey manager is provided
-        if self._hotkey_manager and hasattr(self._hotkey_manager, 'disable_hotkeys'):
+        if self._hotkey_manager and hasattr(self._hotkey_manager, 'stop_listening'):
             try:
-                self._hotkey_manager.disable_hotkeys()
+                self._hotkey_manager.stop_listening()
                 self._hotkeys_disabled = True
             except Exception as e:
                 print(f"Error disabling hotkeys: {e}")
@@ -249,15 +358,22 @@ class HotkeyDialog(QDialog):
         Handle dialog close event.
         
         This method is called when the dialog is closed. It re-enables all hotkeys
-        that were disabled when the dialog was shown.
+        that were disabled when the dialog was shown, and ensures capture mode is stopped.
         
         Parameters
         ----------
         event : QCloseEvent
             Close event
         """
+        # Stop capture mode if active
+        if self._capture_button.isChecked():
+            self._stop_capture_mode()
+        
         # Re-enable hotkeys
         self._restore_hotkeys()
+        
+        # Cancel changes
+        self._controller.cancel()
         
         # Call parent class method
         super().closeEvent(event)
@@ -268,9 +384,9 @@ class HotkeyDialog(QDialog):
         
         This method re-enables all hotkeys that were disabled when the dialog was shown.
         """
-        if self._hotkeys_disabled and self._hotkey_manager and hasattr(self._hotkey_manager, 'enable_hotkeys'):
+        if self._hotkeys_disabled and self._hotkey_manager and hasattr(self._hotkey_manager, 'start_listening'):
             try:
-                self._hotkey_manager.enable_hotkeys()
+                self._hotkey_manager.start_listening()
                 self._hotkeys_disabled = False
             except Exception as e:
                 print(f"Error re-enabling hotkeys: {e}")
