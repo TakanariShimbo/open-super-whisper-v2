@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtGui import QCloseEvent
 
-from ...controllers.dialogs.api_key_dialog_controller import APIKeyController
+from ...controllers.dialogs.api_key_dialog_controller import APIKeyDialogController
 
 
 class APIKeyDialog(QDialog):
@@ -36,7 +36,7 @@ class APIKeyDialog(QDialog):
         super().__init__(parent)
         
         # Create controller
-        self._controller = APIKeyController()
+        self._controller = APIKeyDialogController()
         
         # Create UI components
         self._init_ui()

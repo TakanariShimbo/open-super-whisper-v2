@@ -11,9 +11,9 @@ from core.api.api_client_factory import APIClientFactory
 from ...utils.settings_manager import SettingsManager
 
 
-class APIKeyModel(QObject):
+class APIKeyDialogModel(QObject):
     """
-    Model for API key management.
+    Model for API key dialog.
     
     This class encapsulates the functionality related to API key validation,
     storage, and retrieval.

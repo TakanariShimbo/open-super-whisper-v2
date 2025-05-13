@@ -6,14 +6,14 @@ This module provides the controller component for API key management.
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
-from ...models.dialogs.api_key_dialog_model import APIKeyModel
+from ...models.dialogs.api_key_dialog_model import APIKeyDialogModel
 
 
-class APIKeyController(QObject):
+class APIKeyDialogController(QObject):
     """
-    Controller for API key management.
+    Controller for API key dialog.
     
-    This class coordinates between the API key model and view components,
+    This class coordinates between the API key dialog model and view components,
     handling user interactions and business logic.
     
     Signals
@@ -40,7 +40,7 @@ class APIKeyController(QObject):
         super().__init__()
         
         # Initialize the model
-        self._api_key_model = APIKeyModel()
+        self._model = APIKeyDialogModel()
         self._parent_controller = parent_controller
 
     
@@ -59,11 +59,11 @@ class APIKeyController(QObject):
             True if the API key is valid, False otherwise
         """
         # Validate the API key
-        is_valid = self._api_key_model.validate_api_key(api_key)
+        is_valid = self._model.validate_api_key(api_key)
         
         if is_valid:
             # Set the valid key in the model
-            self._api_key_model.set_api_key(api_key)
+            self._model.set_api_key(api_key)
             
             # Emit signal for validation success
             self.api_key_validated.emit()
@@ -82,7 +82,7 @@ class APIKeyController(QObject):
         str
             The current API key
         """
-        return self._api_key_model.get_api_key()
+        return self._model.get_api_key()
     
     def set_api_key(self, api_key: str) -> None:
         """
@@ -93,16 +93,16 @@ class APIKeyController(QObject):
         api_key : str
             The API key to set
         """
-        self._api_key_model.set_api_key(api_key)
+        self._model.set_api_key(api_key)
     
     def save_api_key(self) -> None:
         """
         Save current API key to persistent storage.
         """
-        self._api_key_model.save_api_key()
+        self._model.save_api_key()
     
     def cancel(self) -> None:
         """
         Cancel dialog and restore original API key.
         """
-        self._api_key_model.restore_original()
+        self._model.restore_original()
