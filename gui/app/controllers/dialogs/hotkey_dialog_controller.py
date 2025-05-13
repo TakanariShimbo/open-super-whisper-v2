@@ -123,7 +123,7 @@ class HotkeyDialogController(QObject):
         str
             The current hotkey string
         """
-        return self._model.hotkey
+        return self._model.get_hotkey()
     
     def start_capturing(self) -> None:
         """
@@ -152,7 +152,7 @@ class HotkeyDialogController(QObject):
         hotkey : str
             The hotkey string to set
         """
-        self._model.hotkey = hotkey
+        self._model.set_hotkey(hotkey)
     
     def reset_hotkey(self) -> None:
         """

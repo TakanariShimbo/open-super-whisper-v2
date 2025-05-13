@@ -57,8 +57,7 @@ class HotkeyDialogModel(QObject):
         # Track if capture mode is active
         self._capturing = False
     
-    @property
-    def hotkey(self) -> str:
+    def get_hotkey(self) -> str:
         """
         Get the current hotkey.
         
@@ -69,8 +68,7 @@ class HotkeyDialogModel(QObject):
         """
         return self._hotkey
     
-    @hotkey.setter
-    def hotkey(self, value: str) -> None:
+    def set_hotkey(self, value: str) -> None:
         """
         Set the current hotkey.
         
@@ -83,8 +81,7 @@ class HotkeyDialogModel(QObject):
             self._hotkey = value
             self.hotkey_changed.emit(value)
     
-    @property
-    def original_hotkey(self) -> str:
+    def get_original_hotkey(self) -> str:
         """
         Get the original hotkey.
         
