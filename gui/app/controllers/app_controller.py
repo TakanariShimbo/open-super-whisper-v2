@@ -134,8 +134,8 @@ class AppController(QObject):
         self._hotkey_model = HotkeyModel()
         
         # Create status indicator view using factory and get controller
-        status_indicator_view = StatusIndicatorFactory.create_status_indicator()
-        self._status_indicator_controller = status_indicator_view.get_controller()
+        self._status_indicator_view = StatusIndicatorFactory.create_status_indicator()
+        self._status_indicator_controller = self._status_indicator_view.get_controller()
     
     def _setup_model_connections(self) -> None:
         """
