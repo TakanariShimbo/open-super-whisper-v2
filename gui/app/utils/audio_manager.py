@@ -80,14 +80,14 @@ class AudioManager(QObject):
         self._setup_players()
         
         # Load settings
-        self._enabled = self._settings_manager.get_audio_notifications_enabled()
+        self._is_enabled = self._settings_manager.get_audio_notifications_enabled()
         self._volume = self._settings_manager.get_audio_notifications_volume()
         
         # Apply volume setting to all players
         self._apply_volume_setting()
     
     @property
-    def enabled(self) -> bool:
+    def is_enabled(self) -> bool:
         """
         Check if audio notifications are enabled.
         
@@ -96,7 +96,7 @@ class AudioManager(QObject):
         bool
             True if notifications are enabled, False otherwise
         """
-        return self._enabled
+        return self._is_enabled
     
     def set_enabled(self, value: bool) -> None:
         """
@@ -107,11 +107,10 @@ class AudioManager(QObject):
         value : bool
             True to enable notifications, False to disable
         """
-        self._enabled = value
+        self._is_enabled = value
         self._settings_manager.set_audio_notifications_enabled(value)
     
-    @property
-    def volume(self) -> float:
+    def get_volume(self) -> float:
         """
         Get the current volume level.
         
@@ -219,7 +218,7 @@ class AudioManager(QObject):
             If the sound_type is not valid
         """
         # Check if notifications are enabled
-        if not self._enabled:
+        if not self._is_enabled:
             return False
         
         # Check if the sound type is valid
