@@ -97,21 +97,8 @@ class AudioRecorder:
             True if recording is in progress, False otherwise.
         """
         return self._audio_stream is not None and self._audio_stream.active
-        
-    @property
-    def current_recording_path(self) -> str | None:
-        """
-        Get the path of the current or most recent recording.
-        
-        Returns
-        -------
-        str | None
-            Path to the recording file, or None if no recording has been made.
-        """
-        return self._current_recording_path
     
-    @property
-    def current_device(self) -> dict[str, Any] | None:
+    def get_current_device(self) -> dict[str, Any] | None:
         """
         Get information about the currently selected recording device.
         
