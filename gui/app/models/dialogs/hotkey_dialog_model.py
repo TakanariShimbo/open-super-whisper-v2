@@ -145,7 +145,7 @@ class HotkeyDialogModel(QObject):
         hotkey_string = "+".join(keys_list)
         
         # Update the model
-        self.hotkey = hotkey_string
+        self.set_hotkey(hotkey_string)
         
         # Emit the captured signal
         self.hotkey_captured.emit(hotkey_string)
@@ -192,7 +192,7 @@ class HotkeyDialogModel(QObject):
         """
         Reset the hotkey to empty.
         """
-        self.hotkey = ""
+        self.set_hotkey("")
     
     def restore_original(self) -> None:
         """
@@ -200,7 +200,7 @@ class HotkeyDialogModel(QObject):
         
         This is typically used when canceling changes.
         """
-        self.hotkey = self._original_hotkey
+        self.set_hotkey(self._original_hotkey)
     
     def save(self) -> None:
         """
