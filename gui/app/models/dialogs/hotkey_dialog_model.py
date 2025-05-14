@@ -24,8 +24,6 @@ class HotkeyDialogModel(QObject):
         Signal emitted when the hotkey value changes
     hotkey_captured : pyqtSignal
         Signal emitted when a new key combination is captured
-    validation_succeeded : pyqtSignal
-        Signal emitted when hotkey validation succeeds
     validation_failed : pyqtSignal
         Signal emitted when hotkey validation fails, with error message
     """
@@ -33,7 +31,6 @@ class HotkeyDialogModel(QObject):
     # Define signals
     hotkey_changed = pyqtSignal(str)
     hotkey_captured = pyqtSignal(str)
-    validation_succeeded = pyqtSignal()
     validation_failed = pyqtSignal(str)  # error_message
     
     def __init__(self, current_hotkey: str = "") -> None:
@@ -77,17 +74,6 @@ class HotkeyDialogModel(QObject):
         if self._hotkey != value:
             self._hotkey = value
             self.hotkey_changed.emit(value)
-    
-    def get_original_hotkey(self) -> str:
-        """
-        Get the original hotkey.
-        
-        Returns
-        -------
-        str
-            The original hotkey string that was set during initialization
-        """
-        return self._original_hotkey
     
     @property
     def is_capturing(self) -> bool:
@@ -163,7 +149,6 @@ class HotkeyDialogModel(QObject):
         """
         # Empty hotkey is valid (means no hotkey assigned)
         if not self._hotkey:
-            self.validation_succeeded.emit()
             return True
         
         # Parse with the KeyFormatter to ensure it's a valid format
@@ -178,9 +163,6 @@ class HotkeyDialogModel(QObject):
             if conflict_message:
                 self.validation_failed.emit(conflict_message)
                 return False
-        
-        # Hotkey is valid
-        self.validation_succeeded.emit()
         return True
     
     def reset(self) -> None:

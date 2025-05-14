@@ -32,7 +32,8 @@ class HotkeyDialogController(QObject):
     hotkey_captured = pyqtSignal(str)
     validation_error = pyqtSignal(str)  # error_message
     
-    def __init__(self, current_hotkey: str = "", 
+    def __init__(self, 
+                 current_hotkey: str = "", 
                  conflict_checker=None, 
                  parent_controller: QObject | None = None) -> None:
         """
@@ -64,7 +65,6 @@ class HotkeyDialogController(QObject):
         """
         self._model.hotkey_changed.connect(self._on_hotkey_changed)
         self._model.hotkey_captured.connect(self._on_hotkey_captured)
-        self._model.validation_succeeded.connect(self._on_validation_succeeded)
         self._model.validation_failed.connect(self._on_validation_failed)
     
     @pyqtSlot(str)
@@ -92,14 +92,6 @@ class HotkeyDialogController(QObject):
         """
         # Forward signal to view
         self.hotkey_captured.emit(hotkey)
-    
-    @pyqtSlot()
-    def _on_validation_succeeded(self) -> None:
-        """
-        Handle successful validation from the model.
-        """
-        # Nothing to do, just let the dialog proceed
-        pass
     
     @pyqtSlot(str)
     def _on_validation_failed(self, error_message: str) -> None:

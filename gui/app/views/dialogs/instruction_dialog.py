@@ -17,7 +17,7 @@ from PyQt6.QtGui import QCloseEvent, QShowEvent
 from core.pipelines.instruction_set import InstructionSet
 
 from ...controllers.dialogs.instruction_dialog_controller import InstructionDialogController
-from .hotkey_dialog import HotkeyDialog
+from ..factories.hotkey_dialog_factory import HotkeyDialogFactory
 
 
 class InstructionDialog(QDialog):
@@ -683,7 +683,7 @@ class InstructionDialog(QDialog):
         current_hotkey = self._hotkey_input.text()
         
         # Pass the dialog model to check for hotkey conflicts
-        dialog = HotkeyDialog(
+        dialog = HotkeyDialogFactory.create_dialog(
             parent=self,
             current_hotkey=current_hotkey,
             hotkey_manager=self._controller._hotkey_model,

@@ -10,8 +10,8 @@ from PyQt6.QtWidgets import (
     QPushButton, QDialogButtonBox, QGridLayout, QMessageBox,
     QHBoxLayout, QFrame
 )
-from PyQt6.QtCore import Qt, QEvent, pyqtSlot, QTimer, QObject
-from PyQt6.QtGui import QCloseEvent, QShowEvent, QFocusEvent, QKeyEvent
+from PyQt6.QtCore import Qt, pyqtSlot, QTimer
+from PyQt6.QtGui import QCloseEvent, QShowEvent
 
 from ...controllers.dialogs.hotkey_dialog_controller import HotkeyDialogController
 from ...models.hotkey_model import HotkeyModel
@@ -26,11 +26,11 @@ class HotkeyDialog(QDialog):
     capture method for accurate hotkey detection.
     """
     
-    def __init__(self, parent=None, 
+    def __init__(self, 
+                 parent=None, 
                  current_hotkey: str = "", 
                  hotkey_manager: HotkeyModel | None = None,
-                 conflict_checker=None,
-                 instruction_dialog_model=None) -> None:
+                 conflict_checker=None) -> None:
         """
         Initialize the HotkeyDialog.
         
@@ -45,27 +45,12 @@ class HotkeyDialog(QDialog):
         conflict_checker : callable, optional
             Function to check for hotkey conflicts, by default None
             Should take a hotkey string and return None or error message
-        instruction_dialog_model : InstructionDialogModel | None, optional
-            For backward compatibility - model containing instruction sets for conflict checking
         """
         super().__init__(parent)
         
         # Store hotkey manager 
         self._hotkey_manager = hotkey_manager
-        
-        # Flag to track if hotkeys were disabled
-        self._hotkeys_disabled = False
-        
-        # For backward compatibility: Convert instruction_dialog_model to conflict_checker
-        if instruction_dialog_model and not conflict_checker and hasattr(instruction_dialog_model, 'get_set_by_hotkey'):
-            def check_hotkey_conflict(hotkey: str) -> str | None:
-                conflicting_set = instruction_dialog_model.get_set_by_hotkey(hotkey)
-                if conflicting_set:
-                    return f"The hotkey '{hotkey}' is already used by instruction set '{conflicting_set.name}'."
-                return None
-            
-            conflict_checker = check_hotkey_conflict
-        
+
         # Create controller with conflict checker
         self._controller = HotkeyDialogController(
             current_hotkey=current_hotkey,
@@ -349,7 +334,6 @@ class HotkeyDialog(QDialog):
         if self._hotkey_manager and hasattr(self._hotkey_manager, 'stop_listening'):
             try:
                 self._hotkey_manager.stop_listening()
-                self._hotkeys_disabled = True
             except Exception as e:
                 print(f"Error disabling hotkeys: {e}")
     
@@ -384,9 +368,8 @@ class HotkeyDialog(QDialog):
         
         This method re-enables all hotkeys that were disabled when the dialog was shown.
         """
-        if self._hotkeys_disabled and self._hotkey_manager and hasattr(self._hotkey_manager, 'start_listening'):
+        if self._hotkey_manager and hasattr(self._hotkey_manager, 'start_listening'):
             try:
                 self._hotkey_manager.start_listening()
-                self._hotkeys_disabled = False
             except Exception as e:
                 print(f"Error re-enabling hotkeys: {e}")
