@@ -21,10 +21,10 @@ class StatusIndicatorModel(QObject):
     """
     
     # Status constants
-    MODE_RECORDING = 1
-    MODE_PROCESSING = 2
-    MODE_COMPLETED = 3
-    MODE_CANCELLED = 4
+    _MODE_RECORDING = 1
+    _MODE_PROCESSING = 2
+    _MODE_COMPLETED = 3
+    _MODE_CANCELLED = 4
     
     # Signals
     mode_changed = pyqtSignal(int)        # mode
@@ -46,7 +46,7 @@ class StatusIndicatorModel(QObject):
         self._settings_manager = SettingsManager.instance()
         
         # State variables
-        self._mode = self.MODE_RECORDING
+        self._mode = self._MODE_RECORDING
         self._visible = False
         self._recording_start_time = 0
         
@@ -62,7 +62,7 @@ class StatusIndicatorModel(QObject):
         Parameters
         ----------
         mode : int
-            Mode constant (MODE_RECORDING, MODE_PROCESSING, MODE_COMPLETED, MODE_CANCELLED)
+            Mode constant (_MODE_RECORDING, _MODE_PROCESSING, _MODE_COMPLETED, _MODE_CANCELLED)
         """
         if self._mode != mode:
             self._mode = mode
@@ -117,7 +117,7 @@ class StatusIndicatorModel(QObject):
         Start recording mode and timer.
         """
         self._recording_start_time = time.time()
-        self.set_mode(self.MODE_RECORDING)
+        self.set_mode(self._MODE_RECORDING)
         self.update_timer(0)  # Reset timer display
         self._timer.start()  # Start timer updates
         self.set_visible(True)  # Show indicator
@@ -127,7 +127,7 @@ class StatusIndicatorModel(QObject):
         Start processing mode.
         """
         self._timer.stop()  # Stop timer updates
-        self.set_mode(self.MODE_PROCESSING)
+        self.set_mode(self._MODE_PROCESSING)
         self.set_visible(True)  # Ensure indicator is visible
         
     def complete_processing(self) -> None:
@@ -135,7 +135,7 @@ class StatusIndicatorModel(QObject):
         Set completion mode.
         """
         self._timer.stop()  # Stop timer updates
-        self.set_mode(self.MODE_COMPLETED)
+        self.set_mode(self._MODE_COMPLETED)
         # Keep indicator visible for a short time
         QTimer.singleShot(3000, lambda: self.set_visible(False))
         
@@ -144,6 +144,6 @@ class StatusIndicatorModel(QObject):
         Set cancelled mode.
         """
         self._timer.stop()  # Stop timer updates
-        self.set_mode(self.MODE_CANCELLED)
+        self.set_mode(self._MODE_CANCELLED)
         # Keep indicator visible for a short time
         QTimer.singleShot(3000, lambda: self.set_visible(False))

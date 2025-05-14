@@ -21,10 +21,10 @@ class StatusIndicatorWindow(QWidget):
     """
     
     # Status constants - these should match the model
-    MODE_RECORDING = 1
-    MODE_PROCESSING = 2
-    MODE_COMPLETED = 3
-    MODE_CANCELLED = 4
+    _MODE_RECORDING = 1
+    _MODE_PROCESSING = 2
+    _MODE_COMPLETED = 3
+    _MODE_CANCELLED = 4
     
     def __init__(self, parent=None) -> None:
         """
@@ -41,7 +41,7 @@ class StatusIndicatorWindow(QWidget):
         self._controller = StatusIndicatorController()
         
         # Set initial mode
-        self._current_mode = self.MODE_RECORDING
+        self._current_mode = self._MODE_RECORDING
         
         # Init UI
         self._init_ui()
@@ -120,18 +120,18 @@ class StatusIndicatorWindow(QWidget):
         """
         Update the indicator visuals based on current mode.
         """
-        if self._current_mode == self.MODE_RECORDING:
+        if self._current_mode == self._MODE_RECORDING:
             self.status_label.setText("Recording...")
             self.status_label.setStyleSheet("color: #ff5f5f; font-weight: bold;")
-        elif self._current_mode == self.MODE_PROCESSING:
+        elif self._current_mode == self._MODE_PROCESSING:
             self.status_label.setText("Processing...")
             self.status_label.setStyleSheet("color: #bbbbbb; font-weight: bold;")
             self.timer_label.setText("")
-        elif self._current_mode == self.MODE_COMPLETED:
+        elif self._current_mode == self._MODE_COMPLETED:
             self.status_label.setText("Completed!")
             self.status_label.setStyleSheet("color: #5fff5f; font-weight: bold;")
             self.timer_label.setText("")
-        elif self._current_mode == self.MODE_CANCELLED:
+        elif self._current_mode == self._MODE_CANCELLED:
             self.status_label.setText("Cancelled!")
             self.status_label.setStyleSheet("color: #bbbbbb; font-weight: bold;")
             self.timer_label.setText("")
@@ -144,7 +144,7 @@ class StatusIndicatorWindow(QWidget):
         Parameters
         ----------
         mode : int
-            Mode constant (MODE_RECORDING, MODE_PROCESSING, MODE_COMPLETED, MODE_CANCELLED)
+            Mode constant (_MODE_RECORDING, _MODE_PROCESSING, _MODE_COMPLETED, _MODE_CANCELLED)
         """
         if self._current_mode != mode:
             self._current_mode = mode

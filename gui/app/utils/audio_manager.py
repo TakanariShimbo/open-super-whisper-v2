@@ -29,11 +29,16 @@ class AudioManager(QObject):
     """
     
     # Define sound types
+    _START_RECORDING = 'start_recording'
+    _STOP_RECORDING = 'stop_recording'
+    _COMPLETE_PROCESSING = 'complete_processing'
+    _CANCEL_PROCESSING = 'cancel_processing'
+    
     SOUND_TYPES = {
-        'start_recording': 'start_recording.wav',
-        'stop_recording': 'stop_recording.wav',
-        'complete_processing': 'complete_processing.wav',
-        'cancel_processing': 'cancel_processing.wav'
+        _START_RECORDING: 'start_recording.wav',
+        _STOP_RECORDING: 'stop_recording.wav',
+        _COMPLETE_PROCESSING: 'complete_processing.wav',
+        _CANCEL_PROCESSING: 'cancel_processing.wav'
     }
     
     # Singleton instance
@@ -246,7 +251,7 @@ class AudioManager(QObject):
         bool
             True if the sound was played, False otherwise
         """
-        return self._play_sound('start_recording')
+        return self._play_sound(self._START_RECORDING)
     
     def play_stop_recording(self) -> bool:
         """
@@ -257,7 +262,7 @@ class AudioManager(QObject):
         bool
             True if the sound was played, False otherwise
         """
-        return self._play_sound('stop_recording')
+        return self._play_sound(self._STOP_RECORDING)
     
     def play_complete_processing(self) -> bool:
         """
@@ -268,7 +273,7 @@ class AudioManager(QObject):
         bool
             True if the sound was played, False otherwise
         """
-        return self._play_sound('complete_processing')
+        return self._play_sound(self._COMPLETE_PROCESSING)
     
     def play_cancel_processing(self) -> bool:
         """
@@ -279,4 +284,4 @@ class AudioManager(QObject):
         bool
             True if the sound was played, False otherwise
         """
-        return self._play_sound('cancel_processing')
+        return self._play_sound(self._CANCEL_PROCESSING)
