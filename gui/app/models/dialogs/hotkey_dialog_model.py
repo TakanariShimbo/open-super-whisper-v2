@@ -53,9 +53,6 @@ class HotkeyDialogModel(QObject):
         
         # Create key state tracker for capturing key combinations
         self._key_state_tracker = KeyStateTracker()
-        
-        # Track if capture mode is active
-        self._capturing = False
     
     def get_hotkey(self) -> str:
         """
@@ -102,7 +99,7 @@ class HotkeyDialogModel(QObject):
         bool
             True if capturing key inputs, False otherwise
         """
-        return self._capturing and self._key_state_tracker.is_monitoring
+        return self._key_state_tracker.is_monitoring
     
     def start_capturing(self) -> None:
         """
@@ -110,9 +107,8 @@ class HotkeyDialogModel(QObject):
         
         This method activates the key state tracker to monitor key combinations.
         """
-        if not self._capturing:
+        if not self.is_capturing:
             self._key_state_tracker.start()
-            self._capturing = True
     
     def stop_capturing(self) -> None:
         """
@@ -120,9 +116,8 @@ class HotkeyDialogModel(QObject):
         
         This method stops the key state tracker from monitoring key combinations.
         """
-        if self._capturing:
+        if self.is_capturing:
             self._key_state_tracker.stop()
-            self._capturing = False
     
     def capture_current_keys(self) -> None:
         """
