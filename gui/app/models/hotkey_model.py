@@ -7,7 +7,7 @@ in the Super Whisper application.
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
-from core.key.hotkey_manager import HotkeyManager
+from ..managers.keyboard_manager import KeyboardManager
 
 
 class HotkeyModel(QObject):
@@ -33,7 +33,7 @@ class HotkeyModel(QObject):
         super().__init__()
         
         # Initialize the underlying hotkey manager
-        self._hotkey_manager = HotkeyManager()
+        self._keyboard_manager = KeyboardManager.get_instance()
     
     @property
     def is_filter_mode(self) -> bool:
@@ -45,7 +45,7 @@ class HotkeyModel(QObject):
         bool
             True if filter mode is active, False otherwise
         """
-        return self._hotkey_manager.is_filter_mode_active
+        return self._keyboard_manager.is_filter_mode
     
     def get_active_hotkey(self) -> str | None:
         """
@@ -56,12 +56,9 @@ class HotkeyModel(QObject):
         str | None
             The active hotkey, or None if not in filter mode
         """
-        active_hotkeys = self._hotkey_manager.get_active_hotkeys()
-        if active_hotkeys:
-            return active_hotkeys[0]
-        return None
+        return self._keyboard_manager.get_active_hotkey()
     
-    def enable_filtered_mode(self, active_hotkey: str = "") -> None:
+    def enable_filtered_mode_and_start_listening(self, active_hotkey: str = "") -> None:
         """
         Enable filtered mode with the active hotkey.
 
@@ -73,33 +70,15 @@ class HotkeyModel(QObject):
         active_hotkey : str, optional
             The hotkey that triggered filter mode, by default ""
         """
-        # Stop listening
-        self.stop_listening()
-            
-        # Enable filter mode with the active hotkey
-        if active_hotkey:
-            self._hotkey_manager.enable_filtered_mode([active_hotkey])
-        else:
-            # If no active hotkey provided, disable all hotkeys
-            self._hotkey_manager.enable_filtered_mode([])
-            
-        # Start listening again
-        self.start_listening()
+        self._keyboard_manager.enable_filtered_mode_and_start_listening(active_hotkey)
 
-    def disable_filtered_mode(self) -> None:
+    def disable_filtered_mode_and_start_listening(self) -> None:
         """
         Disable filtered mode.
 
         When disabled, all hotkeys are enabled again.
         """
-        # Stop listening
-        self.stop_listening()
-            
-        # Disable filtered mode
-        self._hotkey_manager.disable_filtered_mode()
-        
-        # Start listening again
-        self.start_listening()
+        self._keyboard_manager.disable_filtered_mode_and_start_listening()
     
     def register_hotkey(self, hotkey: str) -> bool:
         """
@@ -117,27 +96,8 @@ class HotkeyModel(QObject):
         """        
         # Define the callback function
         callback = lambda: self.hotkey_triggered.emit(hotkey)
-        
-        # Check if we need to stop the listener first
-        was_listening = False
-        if self._hotkey_manager.is_listening:
-            was_listening = True
-            self._hotkey_manager.stop_listening()
-        
-        # Register the hotkey with a callback that emits the signal
-        try:
-            self._hotkey_manager.register_hotkey(
-                hotkey, 
-                callback
-            )
-        except ValueError:
-            return False
-        
-        # Restart listener if it was active
-        if was_listening:
-            self._hotkey_manager.start_listening()
-            
-        return True
+
+        return self._keyboard_manager.register_hotkey(hotkey, callback)
     
     def unregister_hotkey(self, hotkey: str) -> bool:
         """
@@ -153,20 +113,7 @@ class HotkeyModel(QObject):
         bool
             True if unregistration was successful, False otherwise
         """
-        # Check if we need to stop the listener first
-        was_listening = False
-        if self._hotkey_manager.is_listening:
-            was_listening = True
-            self._hotkey_manager.stop_listening()
-        
-        # Remove the hotkey from the manager
-        result = self._hotkey_manager.unregister_hotkey(hotkey)
-        
-        # Restart listener if it was active and we still have hotkeys
-        if was_listening and self._hotkey_manager.get_registered_hotkeys():
-            self._hotkey_manager.start_listening()
-            
-        return result
+        return self._keyboard_manager.unregister_hotkey(hotkey)
     
     def start_listening(self) -> bool:
         """
@@ -177,12 +124,7 @@ class HotkeyModel(QObject):
         bool
             True if listening started successfully, False otherwise
         """
-        if not self._hotkey_manager.get_registered_hotkeys():
-            return False
-            
-        if not self._hotkey_manager.is_listening:
-            self._hotkey_manager.start_listening()
-        return True
+        return self._keyboard_manager.start_listening()
     
     def stop_listening(self) -> bool:
         """
@@ -193,7 +135,7 @@ class HotkeyModel(QObject):
         bool
             True if listening was stopped, False if it wasn't active
         """
-        return self._hotkey_manager.stop_listening()
+        return self._keyboard_manager.stop_listening()
     
     def get_all_registered_hotkeys(self) -> list[str]:
         """
@@ -204,4 +146,4 @@ class HotkeyModel(QObject):
         list[str]
             List of registered hotkey strings
         """
-        return self._hotkey_manager.get_registered_hotkeys()
+        return self._keyboard_manager.get_all_registered_hotkeys()

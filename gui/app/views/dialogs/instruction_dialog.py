@@ -686,7 +686,6 @@ class InstructionDialog(QDialog):
         dialog = HotkeyDialogFactory.create_dialog(
             parent=self,
             current_hotkey=current_hotkey,
-            hotkey_manager=self._controller._hotkey_model,
             instruction_dialog_model=self._controller._dialog_model
         )
         result = dialog.exec()

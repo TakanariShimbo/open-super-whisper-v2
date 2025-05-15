@@ -49,6 +49,8 @@ class KeyboardManager:
             # If this is not the first instantiation, don't reinitialize
             raise Exception("KeyboardManager is a singleton class and cannot be instantiated directly.")
 
+        self._instance = self
+        
         # Initialize the underlying hotkey manager
         self._hotkey_manager = HotkeyManager()
         self._key_state_tracker = KeyStateTracker()
@@ -102,7 +104,7 @@ class KeyboardManager:
         
         # Start monitoring
         if not self.is_monitoring:
-            self._key_state_tracker.start()
+            self._key_state_tracker.start_monitoring()
     
     def stop_monitoring(self) -> None:
         """
@@ -112,7 +114,7 @@ class KeyboardManager:
         """
         # Stop monitoring
         if self.is_monitoring:
-            self._key_state_tracker.stop()
+            self._key_state_tracker.stop_monitoring()
     
     def capture_last_keys(self) -> list[str]:
         """

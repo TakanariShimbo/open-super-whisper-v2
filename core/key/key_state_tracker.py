@@ -54,7 +54,7 @@ class KeyStateTracker:
         """
         return self._listener is not None and self._listener.running
     
-    def start(self) -> None:
+    def start_monitoring(self) -> None:
         """
         Start monitoring all keyboard inputs.
         
@@ -83,7 +83,7 @@ class KeyStateTracker:
         )
         self._listener.start()
     
-    def stop(self) -> bool:
+    def stop_monitoring(self) -> bool:
         """
         Stop monitoring keyboard inputs.
         

@@ -210,7 +210,7 @@ class AppController(QObject):
                 self.status_update.emit("STT output copied to clipboard", 2000)
         
         # Disable recording mode for hotkeys
-        self._hotkey_model.disable_filtered_mode()
+        self._hotkey_model.disable_filtered_mode_and_start_listening()
 
         # Forward the signal to views
         self.processing_complete.emit(result)
@@ -321,7 +321,7 @@ class AppController(QObject):
         """
         return self._instruction_set_model.set_selected(name)
     
-    def register_hotkey(self, hotkey: str, handler_id: str) -> bool:
+    def register_hotkey(self, hotkey: str) -> bool:
         """
         Register a global hotkey.
         
@@ -329,8 +329,6 @@ class AppController(QObject):
         ----------
         hotkey : str
             The hotkey string to register (e.g., "ctrl+shift+r")
-        handler_id : str
-            Unique ID for the hotkey handler
             
         Returns
         -------
@@ -382,7 +380,7 @@ class AppController(QObject):
             
         if self._pipeline_model.start_recording():
             # Set recording mode for hotkeys (no active hotkey in this case)
-            self._hotkey_model.enable_filtered_mode()
+            self._hotkey_model.enable_filtered_mode_and_start_listening()
             
             # Start status indicator in recording mode
             self._status_indicator_controller.start_recording()
@@ -419,7 +417,7 @@ class AppController(QObject):
             
         if self._pipeline_model.start_recording():
             # Set recording mode for hotkeys with the active hotkey
-            self._hotkey_model.enable_filtered_mode(hotkey)
+            self._hotkey_model.enable_filtered_mode_and_start_listening(hotkey)
             
             # Start status indicator in recording mode
             self._status_indicator_controller.start_recording()
@@ -500,7 +498,7 @@ class AppController(QObject):
             self.status_update.emit("Processing cancelled", 3000)
             
         # Disable recording mode for hotkeys
-        self._hotkey_model.disable_filtered_mode()
+        self._hotkey_model.disable_filtered_mode_and_start_listening()
         
         return result
     

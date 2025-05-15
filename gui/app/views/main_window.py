@@ -313,8 +313,7 @@ class MainWindow(QMainWindow):
         """
         for instruction_set in self.controller.get_instruction_sets():
             if instruction_set.hotkey:
-                handler_id = f"instruction_set_{instruction_set.name}"
-                self.controller.register_hotkey(instruction_set.hotkey, handler_id)
+                self.controller.register_hotkey(instruction_set.hotkey)
     
     def show_api_key_dialog(self):
         """

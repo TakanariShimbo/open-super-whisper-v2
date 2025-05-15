@@ -22,7 +22,6 @@ class HotkeyDialogFactory:
     def _create_dialog(
         parent=None, 
         current_hotkey: str = "",
-        hotkey_manager: HotkeyModel | None = None,
         conflict_checker=None
     ) -> HotkeyDialog:
         """
@@ -37,8 +36,6 @@ class HotkeyDialogFactory:
             Parent widget for the dialog, by default None
         current_hotkey : str, optional
             Current hotkey value, by default ""
-        hotkey_manager : HotkeyModel | None, optional
-            Hotkey manager for handling system-wide hotkeys, by default None
         conflict_checker : callable, optional
             Function to check for hotkey conflicts, by default None
             
@@ -51,7 +48,6 @@ class HotkeyDialogFactory:
         dialog = HotkeyDialog(
             parent=parent,
             current_hotkey=current_hotkey,
-            hotkey_manager=hotkey_manager,
             conflict_checker=conflict_checker
         )
         
@@ -62,7 +58,6 @@ class HotkeyDialogFactory:
         cls,
         parent=None,
         current_hotkey: str = "",
-        hotkey_manager: HotkeyModel | None = None,
         instruction_dialog_model: InstructionDialogModel | None = None
     ) -> HotkeyDialog:
         """
@@ -102,6 +97,5 @@ class HotkeyDialogFactory:
         return cls._create_dialog(
             parent=parent,
             current_hotkey=current_hotkey,
-            hotkey_manager=hotkey_manager,
             conflict_checker=conflict_checker
         )

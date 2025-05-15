@@ -37,7 +37,7 @@ def test_key_state_tracker(test_duration: int = 15, verbose: bool = False):
         print("Initialized KeyStateTracker")
         
         # Start monitoring
-        tracker.start()
+        tracker.start_monitoring()
         print("Started key monitoring")
         
         # Function to run in a separate thread to continuously print key states
@@ -87,7 +87,7 @@ def test_key_state_tracker(test_duration: int = 15, verbose: bool = False):
         
         # Stop key monitoring
         print("\n\nStopping key monitoring...")
-        tracker.stop()
+        tracker.stop_monitoring()
         
         # Wait for thread to complete
         monitor_thread.join(timeout=2)

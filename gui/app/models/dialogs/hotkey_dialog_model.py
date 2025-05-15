@@ -7,8 +7,8 @@ handling the data and business logic related to hotkey management.
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
-from core.key.key_state_tracker import KeyStateTracker
 from core.key.key_formatter import KeyFormatter
+from ...managers.keyboard_manager import KeyboardManager
 
 
 class HotkeyDialogModel(QObject):
@@ -49,7 +49,7 @@ class HotkeyDialogModel(QObject):
         self._original_hotkey = current_hotkey
         
         # Create key state tracker for capturing key combinations
-        self._key_state_tracker = KeyStateTracker()
+        self._keyboard_manager = KeyboardManager.get_instance()
     
     def get_hotkey(self) -> str:
         """
@@ -85,7 +85,7 @@ class HotkeyDialogModel(QObject):
         bool
             True if capturing key inputs, False otherwise
         """
-        return self._key_state_tracker.is_monitoring
+        return self._keyboard_manager.is_monitoring
     
     def start_capturing(self) -> None:
         """
@@ -93,8 +93,7 @@ class HotkeyDialogModel(QObject):
         
         This method activates the key state tracker to monitor key combinations.
         """
-        if not self.is_capturing:
-            self._key_state_tracker.start()
+        self._keyboard_manager.start_monitoring()
     
     def stop_capturing(self) -> None:
         """
@@ -102,21 +101,17 @@ class HotkeyDialogModel(QObject):
         
         This method stops the key state tracker from monitoring key combinations.
         """
-        if self.is_capturing:
-            self._key_state_tracker.stop()
+        self._keyboard_manager.stop_monitoring()
     
-    def capture_current_keys(self) -> None:
+    def capture_keys(self) -> None:
         """
-        Capture and process the current key combination.
+        Capture and process the key combination.
         
-        This method reads the current keys from the key state tracker,
+        This method reads the keys from the key state tracker,
         formats them into a hotkey string, and updates the model.
         """
-        if not self.is_capturing:
-            return
-            
-        # Get the current key combination from the tracker
-        keys_list = self._key_state_tracker.get_last_keys()
+        # Get the key combination from the tracker
+        keys_list = self._keyboard_manager.capture_last_keys()
         
         # If no keys are pressed, don't update
         if not keys_list:

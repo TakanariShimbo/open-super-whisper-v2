@@ -71,7 +71,9 @@ class AudioManager(QObject):
         if self._instance is not None:
             # If this is not the first instantiation, don't reinitialize
             raise Exception("AudioManager is a singleton class and cannot be instantiated directly.")
-            
+        
+        self._instance = self
+        
         super().__init__()
         
         # Store settings manager

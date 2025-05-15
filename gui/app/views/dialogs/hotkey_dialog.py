@@ -14,7 +14,6 @@ from PyQt6.QtCore import Qt, pyqtSlot, QTimer
 from PyQt6.QtGui import QCloseEvent, QShowEvent
 
 from ...controllers.dialogs.hotkey_dialog_controller import HotkeyDialogController
-from ...models.hotkey_model import HotkeyModel
 
 
 class HotkeyDialog(QDialog):
@@ -29,7 +28,6 @@ class HotkeyDialog(QDialog):
     def __init__(self, 
                  parent=None, 
                  current_hotkey: str = "", 
-                 hotkey_manager: HotkeyModel | None = None,
                  conflict_checker=None) -> None:
         """
         Initialize the HotkeyDialog.
@@ -40,16 +38,11 @@ class HotkeyDialog(QDialog):
             Parent widget, by default None
         current_hotkey : str, optional
             Current hotkey string, by default ""
-        hotkey_manager : HotkeyModel | None, optional
-            The hotkey manager for enabling/disabling hotkeys during dialog
         conflict_checker : callable, optional
             Function to check for hotkey conflicts, by default None
             Should take a hotkey string and return None or error message
         """
         super().__init__(parent)
-        
-        # Store hotkey manager 
-        self._hotkey_manager = hotkey_manager
 
         # Create controller with conflict checker
         self._controller = HotkeyDialogController(
@@ -272,14 +265,11 @@ class HotkeyDialog(QDialog):
             self._stop_capture_mode()
         
         # Validate hotkey before accepting
-        if not self._controller.validate_and_accept():
+        if not self._controller.validate_hotkey():
             return
         
         # Save the validated hotkey
         self._controller.save()
-        
-        # Re-enable hotkeys
-        self._restore_hotkeys()
         
         # Accept the dialog
         super().accept()
@@ -297,9 +287,6 @@ class HotkeyDialog(QDialog):
         
         # Tell controller to restore original hotkey
         self._controller.cancel()
-        
-        # Re-enable hotkeys
-        self._restore_hotkeys()
         
         # Reject the dialog
         super().reject()
@@ -329,13 +316,6 @@ class HotkeyDialog(QDialog):
         """
         # Call parent class method first
         super().showEvent(event)
-        
-        # Disable hotkeys if a hotkey manager is provided
-        if self._hotkey_manager and hasattr(self._hotkey_manager, 'stop_listening'):
-            try:
-                self._hotkey_manager.stop_listening()
-            except Exception as e:
-                print(f"Error disabling hotkeys: {e}")
     
     def closeEvent(self, event: QCloseEvent) -> None:
         """
@@ -353,23 +333,8 @@ class HotkeyDialog(QDialog):
         if self._capture_button.isChecked():
             self._stop_capture_mode()
         
-        # Re-enable hotkeys
-        self._restore_hotkeys()
-        
         # Cancel changes
         self._controller.cancel()
         
         # Call parent class method
         super().closeEvent(event)
-    
-    def _restore_hotkeys(self) -> None:
-        """
-        Restore hotkeys that were disabled.
-        
-        This method re-enables all hotkeys that were disabled when the dialog was shown.
-        """
-        if self._hotkey_manager and hasattr(self._hotkey_manager, 'start_listening'):
-            try:
-                self._hotkey_manager.start_listening()
-            except Exception as e:
-                print(f"Error re-enabling hotkeys: {e}")

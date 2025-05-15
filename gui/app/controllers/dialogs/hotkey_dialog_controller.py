@@ -131,9 +131,9 @@ class HotkeyDialogController(QObject):
     
     def capture_keys(self) -> None:
         """
-        Capture the current key combination.
+        Capture the key combination.
         """
-        self._model.capture_current_keys()
+        self._model.capture_keys()
     
     def set_hotkey(self, hotkey: str) -> None:
         """
@@ -152,7 +152,7 @@ class HotkeyDialogController(QObject):
         """
         self._model.reset()
     
-    def validate_and_accept(self) -> bool:
+    def validate_hotkey(self) -> bool:
         """
         Validate the current hotkey.
         
