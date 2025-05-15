@@ -7,8 +7,8 @@ handling the data and business logic related to application settings.
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
-from ...manager.settings_manager import SettingsManager
-from ...manager.audio_manager import AudioManager
+from ...managers.settings_manager import SettingsManager
+from ...managers.audio_manager import AudioManager
 
 
 class SettingsDialogModel(QObject):

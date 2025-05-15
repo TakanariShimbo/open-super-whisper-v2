@@ -9,7 +9,7 @@ import time
 
 from PyQt6.QtCore import QObject, pyqtSignal, QTimer
 
-from ...manager.settings_manager import SettingsManager
+from ...managers.settings_manager import SettingsManager
 
 
 class StatusIndicatorModel(QObject):

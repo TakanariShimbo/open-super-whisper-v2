@@ -8,7 +8,7 @@ from PyQt6.QtCore import QObject
 
 from core.api.api_client_factory import APIClientFactory
 
-from ...manager.settings_manager import SettingsManager
+from ...managers.settings_manager import SettingsManager
 
 
 class APIKeyDialogModel(QObject):

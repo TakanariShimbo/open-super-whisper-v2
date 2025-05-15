@@ -9,7 +9,7 @@ from PyQt6.QtCore import QObject, pyqtSignal
 
 from core.pipelines.instruction_set import InstructionSet
 from core.pipelines.instruction_manager import InstructionManager
-from ..manager.settings_manager import SettingsManager
+from ..managers.settings_manager import SettingsManager
 
 
 class InstructionSetModel(QObject):
