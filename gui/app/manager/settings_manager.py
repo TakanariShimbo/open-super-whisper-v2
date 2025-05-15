@@ -132,7 +132,7 @@ class SettingsManager:
             self.KEY_AUTO_CLIPBOARD: False
         }
     
-    def get_value(self, key: str, default: Any = None) -> Any:
+    def _get_value(self, key: str, default: Any = None) -> Any:
         """
         Get a value from settings.
         
@@ -151,7 +151,7 @@ class SettingsManager:
         with self._lock:
             return self._settings.get(key, default)
     
-    def set_value(self, key: str, value: Any) -> None:
+    def _set_value(self, key: str, value: Any) -> None:
         """
         Set a value in settings.
         
@@ -166,7 +166,7 @@ class SettingsManager:
             self._settings[key] = value
             self._save_settings()
     
-    def remove_value(self, key: str) -> None:
+    def _remove_value(self, key: str) -> None:
         """
         Remove a key-value pair from settings.
         
@@ -191,7 +191,7 @@ class SettingsManager:
         str
             The stored API key, or an empty string if none is stored
         """
-        return self.get_value(self.KEY_API_KEY, "")
+        return self._get_value(self.KEY_API_KEY, "")
     
     def set_api_key(self, api_key: str) -> None:
         """
@@ -202,7 +202,7 @@ class SettingsManager:
         api_key : str
             The API key to store
         """
-        self.set_value(self.KEY_API_KEY, api_key)
+        self._set_value(self.KEY_API_KEY, api_key)
     
     def has_valid_api_key(self) -> bool:
         """
@@ -231,7 +231,7 @@ class SettingsManager:
         bool
             True if notifications are enabled, False otherwise
         """
-        return self.get_value(self.KEY_AUDIO_NOTIFICATIONS_ENABLED, True)
+        return self._get_value(self.KEY_AUDIO_NOTIFICATIONS_ENABLED, True)
     
     def set_audio_notifications_enabled(self, enabled: bool) -> None:
         """
@@ -242,7 +242,7 @@ class SettingsManager:
         enabled : bool
             True to enable notifications, False to disable
         """
-        self.set_value(self.KEY_AUDIO_NOTIFICATIONS_ENABLED, enabled)
+        self._set_value(self.KEY_AUDIO_NOTIFICATIONS_ENABLED, enabled)
     
     def get_audio_notifications_volume(self) -> float:
         """
@@ -253,7 +253,7 @@ class SettingsManager:
         float
             Volume level between 0.0 and 1.0
         """
-        return self.get_value(self.KEY_AUDIO_NOTIFICATIONS_VOLUME, 0.7)
+        return self._get_value(self.KEY_AUDIO_NOTIFICATIONS_VOLUME, 0.7)
     
     def set_audio_notifications_volume(self, volume: float) -> None:
         """
@@ -272,7 +272,7 @@ class SettingsManager:
         if not 0.0 <= volume <= 1.0:
             raise ValueError("Volume must be between 0.0 and 1.0")
         
-        self.set_value(self.KEY_AUDIO_NOTIFICATIONS_VOLUME, volume)
+        self._set_value(self.KEY_AUDIO_NOTIFICATIONS_VOLUME, volume)
     
     # Instruction set methods
     
@@ -285,7 +285,7 @@ class SettingsManager:
         list[dict[str, Any]]
             The serialized instruction sets data, or empty list if not found
         """
-        return self.get_value(self.KEY_INSTRUCTION_SETS, [])
+        return self._get_value(self.KEY_INSTRUCTION_SETS, [])
     
     def set_instruction_sets(self, instruction_sets_data: Any) -> None:
         """
@@ -296,7 +296,7 @@ class SettingsManager:
         instruction_sets_data : Any
             The serialized instruction sets data to store
         """
-        self.set_value(self.KEY_INSTRUCTION_SETS, instruction_sets_data)
+        self._set_value(self.KEY_INSTRUCTION_SETS, instruction_sets_data)
     
     def get_selected_instruction_set(self) -> str:
         """
@@ -307,7 +307,7 @@ class SettingsManager:
         str
             The name of the selected instruction set, or an empty string if none selected
         """
-        return self.get_value(self.KEY_SELECTED_INSTRUCTION_SET, "")
+        return self._get_value(self.KEY_SELECTED_INSTRUCTION_SET, "")
     
     def set_selected_instruction_set(self, name: str) -> None:
         """
@@ -318,7 +318,7 @@ class SettingsManager:
         name : str
             Name of the instruction set to select
         """
-        self.set_value(self.KEY_SELECTED_INSTRUCTION_SET, name)
+        self._set_value(self.KEY_SELECTED_INSTRUCTION_SET, name)
         
     # Status indicator visibility methods
     
@@ -331,7 +331,7 @@ class SettingsManager:
         bool
             True if indicator should be visible, False otherwise
         """
-        return self.get_value(self.KEY_INDICATOR_VISIBLE, True)
+        return self._get_value(self.KEY_INDICATOR_VISIBLE, True)
     
     def set_indicator_visible(self, visible: bool) -> None:
         """
@@ -342,7 +342,7 @@ class SettingsManager:
         visible : bool
             True to make indicator visible, False to hide
         """
-        self.set_value(self.KEY_INDICATOR_VISIBLE, visible)
+        self._set_value(self.KEY_INDICATOR_VISIBLE, visible)
     
     # Auto clipboard methods
     
@@ -355,7 +355,7 @@ class SettingsManager:
         bool
             True if auto-clipboard is enabled, False otherwise
         """
-        return self.get_value(self.KEY_AUTO_CLIPBOARD, False)
+        return self._get_value(self.KEY_AUTO_CLIPBOARD, False)
     
     def set_auto_clipboard(self, enabled: bool) -> None:
         """
@@ -366,5 +366,5 @@ class SettingsManager:
         enabled : bool
             True to enable auto-clipboard, False to disable
         """
-        self.set_value(self.KEY_AUTO_CLIPBOARD, enabled)
+        self._set_value(self.KEY_AUTO_CLIPBOARD, enabled)
     
