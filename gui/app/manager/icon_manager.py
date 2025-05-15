@@ -27,13 +27,40 @@ class IconManager:
     _icon_paths : dict
         Dictionary of icon names to file paths
     """
-
+    
+    # Singleton instance
+    _instance = None
+    
+    @classmethod
+    def instance(cls) -> 'IconManager':
+        """
+        Get the singleton instance of the IconManager.
+        
+        Returns
+        -------
+        IconManager
+            The singleton instance
+        """
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+    
     def __init__(self) -> None:
         """
         Initialize the IconManager.
         
         Sets up icon paths and loads the application icon.
+
+        Raises
+        ------
+        Exception
+            If the IconManager is instantiated directly
         """
+        if self._instance is not None:
+            raise Exception("IconManager is a singleton class and cannot be instantiated directly.")
+        
+        self._instance = self
+
         # Initialize icon cache
         self._app_icon = None
         

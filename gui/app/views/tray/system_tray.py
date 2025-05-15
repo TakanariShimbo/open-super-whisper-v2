@@ -84,13 +84,9 @@ class SystemTray(QSystemTrayIcon):
         
         # If no valid icon, use a standard system icon
         if not icon or icon.isNull():
-            try:
-                # Try to use IconManager as fallback
-                icon_manager = IconManager()
-                icon = icon_manager.get_app_icon()
-            except Exception:
-                # Fallback to system icon if IconManager is not available
-                icon = QApplication.style().standardIcon(QStyle.StandardPixmap.SP_MediaPlay)
+            # Try to use IconManager as fallback
+            icon_manager = IconManager.instance()
+            icon = icon_manager.get_app_icon()
         
         self.setIcon(icon)
     

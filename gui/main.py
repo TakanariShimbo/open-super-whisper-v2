@@ -35,7 +35,7 @@ def start_application() -> int:
     app.setOrganizationName("OpenSuperWhisper")
     
     # Set application icon using the IconManager
-    icon_manager = IconManager()
+    icon_manager = IconManager.instance()
     app.setWindowIcon(icon_manager.get_app_icon())
     
     # Initialize settings manager

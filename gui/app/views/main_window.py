@@ -61,7 +61,7 @@ class MainWindow(QMainWindow):
         self.api_key = self.settings_manager.get_api_key()
         
         # Initialize icon manager
-        self.icon_manager = IconManager()
+        self.icon_manager = IconManager.instance()
         
         # Initialize audio manager (use singleton instance)
         self.audio_manager = AudioManager.instance()
