@@ -280,7 +280,6 @@ class HotkeyManager:
             return False
         
         self._listener.stop()
-        self._active_hotkeys = None
         self._listener = None
         return True
     
@@ -314,3 +313,15 @@ class HotkeyManager:
             List of registered hotkey strings in the internal format.
         """
         return list(self._hotkeys.keys())
+        
+    def get_active_hotkeys(self) -> list[str] | None:
+        """
+        Get the list of active hotkeys when in filter mode.
+        
+        Returns
+        -------
+        list[str] | None
+            List of active hotkey strings in the internal format,
+            or None if filter mode is not active.
+        """
+        return self._active_hotkeys

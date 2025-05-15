@@ -35,9 +35,6 @@ class HotkeyModel(QObject):
         
         # Initialize the underlying hotkey manager
         self._hotkey_manager = HotkeyManager()
-        
-        # Currently active hotkey (during filter mode)
-        self._active_hotkey: str | None = None
     
     @property
     def is_filter_mode(self) -> bool:
@@ -49,7 +46,7 @@ class HotkeyModel(QObject):
         bool
             True if filter mode is active, False otherwise
         """
-        return self._active_hotkey is not None
+        return self._hotkey_manager.is_filter_mode_active
     
     def get_active_hotkey(self) -> str | None:
         """
@@ -60,7 +57,10 @@ class HotkeyModel(QObject):
         str | None
             The active hotkey, or None if not in filter mode
         """
-        return self._active_hotkey
+        active_hotkeys = self._hotkey_manager.get_active_hotkeys()
+        if active_hotkeys:
+            return active_hotkeys[0]
+        return None
     
     def change_filter_mode(self, active: bool, active_hotkey: str = "") -> None:
         """
@@ -76,34 +76,22 @@ class HotkeyModel(QObject):
         active_hotkey : str, optional
             The hotkey that triggered filter mode, by default ""
         """
-        if active:
-            # Enable filter mode
-            self._active_hotkey = active_hotkey
+        # Stop listening
+        self.stop_listening()
             
-            # Stop listening
-            self.stop_listening()
-                
-            # Set filtered mode to only allow the active hotkey
+        if active:
+            # Enable filter mode with the active hotkey
             if active_hotkey:
                 self._hotkey_manager.enable_filtered_mode([active_hotkey])
             else:
                 # If no active hotkey provided, disable all hotkeys
                 self._hotkey_manager.enable_filtered_mode([])
-                
-            # Start listening again
-            self.start_listening()
         else:
-            # Disable recording mode
-            self._active_hotkey = None
-            
-            # Stop listening
-            self.stop_listening()
-                
             # Disable filtered mode
             self._hotkey_manager.disable_filtered_mode()
             
-            # Start listening again
-            self.start_listening()
+        # Start listening again
+        self.start_listening()
     
     def is_valid_hotkey(self, hotkey: str) -> bool:
         """
