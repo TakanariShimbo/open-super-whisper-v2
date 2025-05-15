@@ -74,10 +74,7 @@ class HotkeyModel(QObject):
             The hotkey that triggered filter mode, by default ""
         """
         # Stop listening
-        was_listening = False
-        if self._hotkey_manager.is_listening:
-            was_listening = True
-            self.stop_listening()
+        self.stop_listening()
             
         # Enable filter mode with the active hotkey
         if active_hotkey:
@@ -87,8 +84,7 @@ class HotkeyModel(QObject):
             self._hotkey_manager.enable_filtered_mode([])
             
         # Start listening again
-        if was_listening:
-            self.start_listening()
+        self.start_listening()
 
     def disable_filtered_mode(self) -> None:
         """
@@ -97,17 +93,13 @@ class HotkeyModel(QObject):
         When disabled, all hotkeys are enabled again.
         """
         # Stop listening
-        was_listening = False
-        if self._hotkey_manager.is_listening:
-            was_listening = True
-            self.stop_listening()
+        self.stop_listening()
             
         # Disable filtered mode
         self._hotkey_manager.disable_filtered_mode()
         
         # Start listening again
-        if was_listening:
-            self.start_listening()
+        self.start_listening()
     
     def register_hotkey(self, hotkey: str) -> bool:
         """
