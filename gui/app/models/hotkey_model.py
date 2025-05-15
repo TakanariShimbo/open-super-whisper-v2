@@ -5,7 +5,6 @@ This module provides the model component for managing global hotkeys
 in the Super Whisper application.
 """
 
-from typing import Callable
 from PyQt6.QtCore import QObject, pyqtSignal
 
 from core.key.key_formatter import KeyFormatter
