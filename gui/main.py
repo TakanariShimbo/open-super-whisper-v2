@@ -11,8 +11,8 @@ from PyQt6.QtWidgets import QApplication
 from .app.controllers.app_controller import AppController
 from .app.views.factories.api_key_dialog_factory import APIKeyDialogFactory
 from .app.views.main_window import MainWindow
-from .app.utils.icon_manager import IconManager
-from .app.utils.settings_manager import SettingsManager
+from .app.manager.icon_manager import IconManager
+from .app.manager.settings_manager import SettingsManager
 
 
 def start_application() -> int:

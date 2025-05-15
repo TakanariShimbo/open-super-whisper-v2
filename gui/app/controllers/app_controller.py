@@ -22,7 +22,7 @@ from ..views.factories.api_key_dialog_factory import APIKeyDialogFactory
 from ..views.factories.status_indicator_factory import StatusIndicatorFactory
 from ..views.dialogs.instruction_dialog import InstructionDialog
 from ..utils.clipboard_utils import ClipboardUtils
-from ..utils.settings_manager import SettingsManager
+from ..manager.settings_manager import SettingsManager
 
 
 class AppController(QObject):

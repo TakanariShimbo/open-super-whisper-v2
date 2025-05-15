@@ -20,10 +20,10 @@ from core.pipelines.pipeline_result import PipelineResult
 from core.pipelines.instruction_set import InstructionSet
 
 from ..controllers.app_controller import AppController
-from ..utils.icon_manager import IconManager
+from ..manager.icon_manager import IconManager
 from ..utils.clipboard_utils import ClipboardUtils
-from ..utils.audio_manager import AudioManager
-from ..utils.settings_manager import SettingsManager
+from ..manager.audio_manager import AudioManager
+from ..manager.settings_manager import SettingsManager
 from .tray.system_tray import SystemTray
 from .widgets.markdown_text_browser import MarkdownTextBrowser
 from .factories.settings_dialog_factory import SettingsDialogFactory

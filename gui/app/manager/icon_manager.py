@@ -10,7 +10,7 @@ import os
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QStyle, QApplication
 
-from .pyinstaller_utils import PyInstallerUtils
+from ..utils.pyinstaller_utils import PyInstallerUtils
 
 
 class IconManager:

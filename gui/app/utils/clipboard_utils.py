@@ -74,21 +74,6 @@ class ClipboardUtils:
         return ClipboardUtils.extract_text(), ClipboardUtils.extract_image()
 
     @staticmethod
-    def is_empty() -> bool:
-        """
-        Check if clipboard is empty (no text or image).
-        
-        Returns
-        -------
-        bool
-            True if clipboard is empty, False otherwise
-        """
-        clipboard = QApplication.clipboard()
-        mime_data = clipboard.mimeData()
-        
-        return not (mime_data.hasText() or mime_data.hasImage())
-
-    @staticmethod
     def set_text(text: str) -> None:
         """
         Set text to the clipboard.

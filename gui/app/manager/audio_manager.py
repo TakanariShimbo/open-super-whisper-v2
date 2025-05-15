@@ -11,7 +11,7 @@ import sys
 from PyQt6.QtCore import QObject, QUrl
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 
-from .pyinstaller_utils import PyInstallerUtils
+from ..utils.pyinstaller_utils import PyInstallerUtils
 from .settings_manager import SettingsManager
 
 
