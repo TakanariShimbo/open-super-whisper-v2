@@ -105,7 +105,7 @@ class InstructionDialogController(QObject):
         
         # Register hotkey if set has one
         if instruction_set.hotkey and self._hotkey_model:
-            success = self._hotkey_model.register_hotkey(instruction_set.hotkey, f"instruction_set_{instruction_set.name}")
+            success = self._hotkey_model.register_hotkey(instruction_set.hotkey)
             if not success:
                 self.hotkey_conflict.emit(instruction_set.hotkey, "")
     
@@ -180,7 +180,7 @@ class InstructionDialogController(QObject):
                 return
             
             # Register the hotkey
-            self._hotkey_model.register_hotkey(hotkey, f"instruction_set_{set_name}")
+            self._hotkey_model.register_hotkey(hotkey)
     
     def get_all_sets(self) -> list[InstructionSet]:
         """

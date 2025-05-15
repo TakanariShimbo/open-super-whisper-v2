@@ -337,7 +337,7 @@ class AppController(QObject):
         bool
             True if registration was successful, False otherwise
         """
-        result = self._hotkey_model.register_hotkey(hotkey, handler_id)
+        result = self._hotkey_model.register_hotkey(hotkey)
         
         # If successful and not already listening, start listening
         if result and not self._hotkey_model.is_filter_mode:

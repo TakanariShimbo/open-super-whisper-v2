@@ -80,8 +80,8 @@ class HotkeyModel(QObject):
             # Enable filter mode
             self._active_hotkey = active_hotkey
             
-            if self._hotkey_manager.is_listening:
-                self._hotkey_manager.stop_listening()
+            # Stop listening
+            self.stop_listening()
                 
             # Set filtered mode to only allow the active hotkey
             if active_hotkey:
@@ -91,23 +91,19 @@ class HotkeyModel(QObject):
                 self._hotkey_manager.enable_filtered_mode([])
                 
             # Start listening again
-            hotkeys = self._hotkey_manager.get_registered_hotkeys()
-            if hotkeys:
-                self._hotkey_manager.start_listening()
+            self.start_listening()
         else:
             # Disable recording mode
             self._active_hotkey = None
             
-            if self._hotkey_manager.is_listening:
-                self._hotkey_manager.stop_listening()
+            # Stop listening
+            self.stop_listening()
                 
             # Disable filtered mode
             self._hotkey_manager.disable_filtered_mode()
             
             # Start listening again
-            hotkeys = self._hotkey_manager.get_registered_hotkeys()
-            if hotkeys:
-                self._hotkey_manager.start_listening()
+            self.start_listening()
     
     def is_valid_hotkey(self, hotkey: str) -> bool:
         """
@@ -125,16 +121,14 @@ class HotkeyModel(QObject):
         """
         return KeyFormatter.parse_hotkey_string(hotkey) is not None
     
-    def register_hotkey(self, hotkey: str, handler_id: str) -> bool:
+    def register_hotkey(self, hotkey: str) -> bool:
         """
-        Register a hotkey with a handler ID.
+        Register a hotkey.
         
         Parameters
         ----------
         hotkey : str
             Hotkey string to register
-        handler_id : str
-            Unique ID for this hotkey handler
             
         Returns
         -------
@@ -210,12 +204,9 @@ class HotkeyModel(QObject):
         if not self._hotkey_manager.get_registered_hotkeys():
             return False
             
-        try:
-            if not self._hotkey_manager.is_listening:
-                self._hotkey_manager.start_listening()
-            return True
-        except RuntimeError:
-            return False
+        if not self._hotkey_manager.is_listening:
+            self._hotkey_manager.start_listening()
+        return True
     
     def stop_listening(self) -> bool:
         """
