@@ -7,7 +7,6 @@ in the Super Whisper application.
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
-from core.key.key_formatter import KeyFormatter
 from core.key.hotkey_manager import HotkeyManager
 
 
@@ -102,22 +101,6 @@ class HotkeyModel(QObject):
         # Start listening again
         self.start_listening()
     
-    def is_valid_hotkey(self, hotkey: str) -> bool:
-        """
-        Check if a hotkey string is valid.
-        
-        Parameters
-        ----------
-        hotkey : str
-            Hotkey string to validate
-            
-        Returns
-        -------
-        bool
-            True if the hotkey is valid, False otherwise
-        """
-        return KeyFormatter.parse_hotkey_string(hotkey) is not None
-    
     def register_hotkey(self, hotkey: str) -> bool:
         """
         Register a hotkey.
@@ -131,11 +114,7 @@ class HotkeyModel(QObject):
         -------
         bool
             True if registration was successful, False otherwise
-        """
-        # Check if hotkey is valid
-        if not self.is_valid_hotkey(hotkey):
-            return False
-        
+        """        
         # Check if we need to stop the listener first
         was_listening = False
         if self._hotkey_manager.is_listening:
@@ -148,7 +127,7 @@ class HotkeyModel(QObject):
                 hotkey, 
                 lambda: self.hotkey_triggered.emit(hotkey)
             )
-        except (ValueError, RuntimeError):
+        except ValueError:
             return False
         
         # Restart listener if it was active
@@ -178,10 +157,7 @@ class HotkeyModel(QObject):
             self._hotkey_manager.stop_listening()
         
         # Remove the hotkey from the manager
-        try:
-            result = self._hotkey_manager.unregister_hotkey(hotkey)
-        except (ValueError, RuntimeError):
-            return False
+        result = self._hotkey_manager.unregister_hotkey(hotkey)
         
         # Restart listener if it was active and we still have hotkeys
         if was_listening and self._hotkey_manager.get_registered_hotkeys():
