@@ -68,7 +68,7 @@ class AudioManager(QObject):
             If the AudioManager is instantiated directly
         """
         # Check if singleton already exists
-        if AudioManager._instance is not None:
+        if self._instance is not None:
             # If this is not the first instantiation, don't reinitialize
             raise Exception("AudioManager is a singleton class and cannot be instantiated directly.")
             
