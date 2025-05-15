@@ -62,34 +62,43 @@ class HotkeyModel(QObject):
             return active_hotkeys[0]
         return None
     
-    def change_filter_mode(self, active: bool, active_hotkey: str = "") -> None:
+    def enable_filtered_mode(self, active_hotkey: str = "") -> None:
         """
-        Change filter mode active or inactive.
-        
+        Enable filtered mode with the active hotkey.
+
         In filter mode, only the active hotkey is enabled and
         all other hotkeys are filtered out.
-        
+
         Parameters
         ----------
-        active : bool
-            True to enable filter mode, False to disable
         active_hotkey : str, optional
             The hotkey that triggered filter mode, by default ""
         """
         # Stop listening
         self.stop_listening()
             
-        if active:
-            # Enable filter mode with the active hotkey
-            if active_hotkey:
-                self._hotkey_manager.enable_filtered_mode([active_hotkey])
-            else:
-                # If no active hotkey provided, disable all hotkeys
-                self._hotkey_manager.enable_filtered_mode([])
+        # Enable filter mode with the active hotkey
+        if active_hotkey:
+            self._hotkey_manager.enable_filtered_mode([active_hotkey])
         else:
-            # Disable filtered mode
-            self._hotkey_manager.disable_filtered_mode()
+            # If no active hotkey provided, disable all hotkeys
+            self._hotkey_manager.enable_filtered_mode([])
             
+        # Start listening again
+        self.start_listening()
+
+    def disable_filtered_mode(self) -> None:
+        """
+        Disable filtered mode.
+
+        When disabled, all hotkeys are enabled again.
+        """
+        # Stop listening
+        self.stop_listening()
+            
+        # Disable filtered mode
+        self._hotkey_manager.disable_filtered_mode()
+        
         # Start listening again
         self.start_listening()
     
@@ -206,17 +215,6 @@ class HotkeyModel(QObject):
             True if listening was stopped, False if it wasn't active
         """
         return self._hotkey_manager.stop_listening()
-    
-    def clear_all_hotkeys(self) -> None:
-        """
-        Clear all registered hotkeys.
-        """
-        # Stop listening if active
-        if self._hotkey_manager.is_listening:
-            self._hotkey_manager.stop_listening()
-            
-        # Clear manager hotkeys
-        self._hotkey_manager.clear_all_hotkeys()
     
     def get_all_registered_hotkeys(self) -> list[str]:
         """

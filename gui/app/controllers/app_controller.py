@@ -210,7 +210,7 @@ class AppController(QObject):
                 self.status_update.emit("STT output copied to clipboard", 2000)
         
         # Disable recording mode for hotkeys
-        self._hotkey_model.change_filter_mode(False)
+        self._hotkey_model.disable_filtered_mode()
 
         # Forward the signal to views
         self.processing_complete.emit(result)
@@ -382,7 +382,7 @@ class AppController(QObject):
             
         if self._pipeline_model.start_recording():
             # Set recording mode for hotkeys (no active hotkey in this case)
-            self._hotkey_model.change_filter_mode(True)
+            self._hotkey_model.enable_filtered_mode()
             
             # Start status indicator in recording mode
             self._status_indicator_controller.start_recording()
@@ -419,7 +419,7 @@ class AppController(QObject):
             
         if self._pipeline_model.start_recording():
             # Set recording mode for hotkeys with the active hotkey
-            self._hotkey_model.change_filter_mode(True, hotkey)
+            self._hotkey_model.enable_filtered_mode(hotkey)
             
             # Start status indicator in recording mode
             self._status_indicator_controller.start_recording()
@@ -500,7 +500,7 @@ class AppController(QObject):
             self.status_update.emit("Processing cancelled", 3000)
             
         # Disable recording mode for hotkeys
-        self._hotkey_model.change_filter_mode(False)
+        self._hotkey_model.disable_filtered_mode()
         
         return result
     
