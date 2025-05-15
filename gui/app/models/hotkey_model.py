@@ -37,9 +37,6 @@ class HotkeyModel(QObject):
         # Initialize the underlying hotkey manager
         self._hotkey_manager = HotkeyManager()
         
-        # Dictionary to store registered hotkeys and their handlers
-        self._handlers: dict[str, Callable] = {}
-        
         # Currently active hotkey (during filter mode)
         self._active_hotkey: str | None = None
     
@@ -95,8 +92,8 @@ class HotkeyModel(QObject):
                 self._hotkey_manager.enable_filtered_mode([])
                 
             # Start listening again
-            if self._handlers:
-                self._register_handlers_with_manager()
+            hotkeys = self._hotkey_manager.get_registered_hotkeys()
+            if hotkeys:
                 self._hotkey_manager.start_listening()
         else:
             # Disable recording mode
@@ -109,8 +106,8 @@ class HotkeyModel(QObject):
             self._hotkey_manager.disable_filtered_mode()
             
             # Start listening again
-            if self._handlers:
-                self._register_handlers_with_manager()
+            hotkeys = self._hotkey_manager.get_registered_hotkeys()
+            if hotkeys:
                 self._hotkey_manager.start_listening()
     
     def is_valid_hotkey(self, hotkey: str) -> bool:
@@ -155,11 +152,14 @@ class HotkeyModel(QObject):
             was_listening = True
             self._hotkey_manager.stop_listening()
         
-        # Store the handler
-        self._handlers[hotkey] = lambda: self.hotkey_triggered.emit(hotkey)
-        
-        # Re-register all handlers
-        self._register_handlers_with_manager()
+        # Register the hotkey with a callback that emits the signal
+        try:
+            self._hotkey_manager.register_hotkey(
+                hotkey, 
+                lambda: self.hotkey_triggered.emit(hotkey)
+            )
+        except (ValueError, RuntimeError):
+            return False
         
         # Restart listener if it was active
         if was_listening:
@@ -181,45 +181,23 @@ class HotkeyModel(QObject):
         bool
             True if unregistration was successful, False otherwise
         """
-        # Check if hotkey is registered
-        if hotkey not in self._handlers:
-            return False
-            
         # Check if we need to stop the listener first
         was_listening = False
         if self._hotkey_manager.is_listening:
             was_listening = True
             self._hotkey_manager.stop_listening()
         
-        # Remove the handler
-        del self._handlers[hotkey]
+        # Remove the hotkey from the manager
+        try:
+            result = self._hotkey_manager.unregister_hotkey(hotkey)
+        except (ValueError, RuntimeError):
+            return False
         
-        # Re-register all handlers
-        self._register_handlers_with_manager()
-        
-        # Restart listener if it was active
-        if was_listening and self._handlers:
+        # Restart listener if it was active and we still have hotkeys
+        if was_listening and self._hotkey_manager.get_registered_hotkeys():
             self._hotkey_manager.start_listening()
             
-        return True
-    
-    def _register_handlers_with_manager(self) -> None:
-        """
-        Register all handlers with the hotkey manager.
-        
-        This internal method clears all existing hotkeys in the manager
-        and registers the current set of handlers.
-        """
-        # Clear existing hotkeys in the manager
-        self._hotkey_manager.clear_all_hotkeys()
-        
-        # Register each handler
-        for hotkey, handler in self._handlers.items():
-            try:
-                self._hotkey_manager.register_hotkey(hotkey, handler)
-            except (ValueError, RuntimeError):
-                # Skip invalid hotkeys or runtime errors
-                continue
+        return result
     
     def start_listening(self) -> bool:
         """
@@ -230,7 +208,7 @@ class HotkeyModel(QObject):
         bool
             True if listening started successfully, False otherwise
         """
-        if not self._handlers:
+        if not self._hotkey_manager.get_registered_hotkeys():
             return False
             
         try:
@@ -259,9 +237,6 @@ class HotkeyModel(QObject):
         if self._hotkey_manager.is_listening:
             self._hotkey_manager.stop_listening()
             
-        # Clear handlers
-        self._handlers.clear()
-        
         # Clear manager hotkeys
         self._hotkey_manager.clear_all_hotkeys()
     
@@ -274,4 +249,4 @@ class HotkeyModel(QObject):
         list[str]
             List of registered hotkey strings
         """
-        return list(self._handlers.keys())
+        return self._hotkey_manager.get_registered_hotkeys()

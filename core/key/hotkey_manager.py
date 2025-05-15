@@ -303,3 +303,14 @@ class HotkeyManager:
         
         # Clear the hotkeys dictionary
         self._hotkeys.clear()
+        
+    def get_registered_hotkeys(self) -> list[str]:
+        """
+        Get a list of all registered hotkey strings.
+        
+        Returns
+        -------
+        list[str]
+            List of registered hotkey strings in the internal format.
+        """
+        return list(self._hotkeys.keys())
