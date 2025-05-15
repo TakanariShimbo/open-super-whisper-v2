@@ -74,7 +74,10 @@ class HotkeyModel(QObject):
             The hotkey that triggered filter mode, by default ""
         """
         # Stop listening
-        self.stop_listening()
+        was_listening = False
+        if self._hotkey_manager.is_listening:
+            was_listening = True
+            self.stop_listening()
             
         # Enable filter mode with the active hotkey
         if active_hotkey:
@@ -84,7 +87,8 @@ class HotkeyModel(QObject):
             self._hotkey_manager.enable_filtered_mode([])
             
         # Start listening again
-        self.start_listening()
+        if was_listening:
+            self.start_listening()
 
     def disable_filtered_mode(self) -> None:
         """
@@ -93,13 +97,17 @@ class HotkeyModel(QObject):
         When disabled, all hotkeys are enabled again.
         """
         # Stop listening
-        self.stop_listening()
+        was_listening = False
+        if self._hotkey_manager.is_listening:
+            was_listening = True
+            self.stop_listening()
             
         # Disable filtered mode
         self._hotkey_manager.disable_filtered_mode()
         
         # Start listening again
-        self.start_listening()
+        if was_listening:
+            self.start_listening()
     
     def register_hotkey(self, hotkey: str) -> bool:
         """
@@ -115,6 +123,9 @@ class HotkeyModel(QObject):
         bool
             True if registration was successful, False otherwise
         """        
+        # Define the callback function
+        callback = lambda: self.hotkey_triggered.emit(hotkey)
+        
         # Check if we need to stop the listener first
         was_listening = False
         if self._hotkey_manager.is_listening:
@@ -125,7 +136,7 @@ class HotkeyModel(QObject):
         try:
             self._hotkey_manager.register_hotkey(
                 hotkey, 
-                lambda: self.hotkey_triggered.emit(hotkey)
+                callback
             )
         except ValueError:
             return False
