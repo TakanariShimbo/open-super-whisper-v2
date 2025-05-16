@@ -36,19 +36,19 @@ class InstructionSetModel(QObject):
         super().__init__()
         
         # Initialize instruction manager
-        self._instruction_manager = InstructionSetsManager.get_instance()
+        self._instruction_sets_manager = InstructionSetsManager.get_instance()
         
     def save_to_settings(self) -> None:
         """
         Save instruction sets to QSettings.
         """
-        self._instruction_manager.save_to_settings()
+        self._instruction_sets_manager.save_to_settings()
         
     def load_from_settings(self) -> None:
         """
         Load instruction sets from QSettings.
         """
-        self._instruction_manager.load_from_settings()
+        self._instruction_sets_manager.load_from_settings()
     
     def get_all_sets(self) -> list[InstructionSet]:
         """
@@ -59,7 +59,7 @@ class InstructionSetModel(QObject):
         list[InstructionSet]
             List of all instruction sets
         """
-        return self._instruction_manager.get_all_sets()
+        return self._instruction_sets_manager.get_all_sets()
     
     def get_set_by_name(self, name: str) -> InstructionSet | None:
         """
@@ -75,7 +75,7 @@ class InstructionSetModel(QObject):
         InstructionSet | None
             The instruction set with the specified name, or None if not found
         """
-        return self._instruction_manager.find_set_by_name(name)
+        return self._instruction_sets_manager.find_set_by_name(name)
     
     def get_set_by_hotkey(self, hotkey: str) -> InstructionSet | None:
         """
@@ -91,7 +91,7 @@ class InstructionSetModel(QObject):
         InstructionSet | None
             The instruction set with the specified hotkey, or None if not found
         """
-        return self._instruction_manager.find_set_by_hotkey(hotkey)
+        return self._instruction_sets_manager.find_set_by_hotkey(hotkey)
     
     def get_selected_set(self) -> InstructionSet | None:
         """
@@ -102,7 +102,7 @@ class InstructionSetModel(QObject):
         InstructionSet | None
             The currently selected instruction set, or None if none selected
         """
-        return self._instruction_manager.get_selected_set()
+        return self._instruction_sets_manager.get_selected_set()
     
     def get_selected_set_name(self) -> str:
         """
@@ -113,7 +113,7 @@ class InstructionSetModel(QObject):
         str
             The name of the currently selected instruction set, or an empty string
         """
-        return self._instruction_manager.get_selected_set_name()
+        return self._instruction_sets_manager.get_selected_set_name()
     
     def set_selected_set_name(self, name: str) -> bool:
         """
@@ -129,11 +129,11 @@ class InstructionSetModel(QObject):
         bool
             True if successful, False if the named set doesn't exist
         """
-        is_success = self._instruction_manager.set_selected_set_name(name)
+        is_success = self._instruction_sets_manager.set_selected_set_name(name)
         if not is_success:
             return False
         
         # Emit the selected set changed signal
-        self.selected_set_changed.emit(self._instruction_manager.get_selected_set())
+        self.selected_set_changed.emit(self._instruction_sets_manager.get_selected_set())
         
         return True
