@@ -121,7 +121,7 @@ class PipelineModel(QObject):
         super().__init__()
 
         self._pipeline = Pipeline(api_key=api_key)
-        self._worker = None
+        self._processor = None
     
     @property
     def is_recording(self) -> bool:
@@ -145,7 +145,7 @@ class PipelineModel(QObject):
         bool
             True if audio processing is in progress, False otherwise
         """
-        return self._worker is not None
+        return self._processor is not None
     
     def reinitialize(self, api_key: str) -> None:
         """
@@ -245,7 +245,7 @@ class PipelineModel(QObject):
             self.processing_started.emit()
             
             # Create and configure worker thread
-            self._worker = ProcessingThread(
+            self._processor = ProcessingThread(
                 self._pipeline,
                 audio_file_path,
                 language,
@@ -254,18 +254,18 @@ class PipelineModel(QObject):
             )
             
             # Connect signals
-            self._worker.completed.connect(self._on_processing_completed)
-            self._worker.failed.connect(self._on_processing_failed)
-            self._worker.progress.connect(self.llm_stream_chunk)
+            self._processor.completed.connect(self._on_processing_completed)
+            self._processor.failed.connect(self._on_processing_failed)
+            self._processor.progress.connect(self.llm_stream_chunk)
             
             # Start processing
-            self._worker.start()
+            self._processor.start()
             return True
             
         except Exception as e:
             self.processing_state_changed.emit(False)
             self.processing_error.emit(f"Error processing audio: {str(e)}")
-            self._worker = None
+            self._processor = None
             return False
     
     def _on_processing_completed(self, result: PipelineResult) -> None:
@@ -279,9 +279,9 @@ class PipelineModel(QObject):
         """
         self.processing_state_changed.emit(False)
         
-        if self._worker:
-            self._worker.deleteLater()
-            self._worker = None
+        if self._processor:
+            self._processor.deleteLater()
+            self._processor = None
             
         self.processing_complete.emit(result)
     
@@ -296,9 +296,9 @@ class PipelineModel(QObject):
         """
         self.processing_state_changed.emit(False)
         
-        if self._worker:
-            self._worker.deleteLater()
-            self._worker = None
+        if self._processor:
+            self._processor.deleteLater()
+            self._processor = None
             
         self.processing_error.emit(f"Processing failed: {error}")
     
@@ -315,10 +315,10 @@ class PipelineModel(QObject):
             return False
         
         # Terminate and clean up
-        self._worker.terminate()
-        self._worker.wait(1000)
-        self._worker.deleteLater()
-        self._worker = None
+        self._processor.terminate()
+        self._processor.wait(1000)
+        self._processor.deleteLater()
+        self._processor = None
         
         # Update state
         self.processing_state_changed.emit(False)
