@@ -8,7 +8,7 @@ in the Super Whisper application.
 from PyQt6.QtCore import QObject, pyqtSignal
 
 from core.pipelines.instruction_set import InstructionSet
-from core.pipelines.instruction_manager import InstructionSetsManager
+from core.pipelines.instruction_sets_manager import InstructionSetsManager
 from ..managers.settings_manager import SettingsManager
 
 
