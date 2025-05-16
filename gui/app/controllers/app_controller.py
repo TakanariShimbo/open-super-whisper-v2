@@ -119,10 +119,9 @@ class AppController(QObject):
         api_key = self._settings_manager.get_api_key()
         
         # Initialize models
-        self._pipeline_model = PipelineModel(api_key)
-        
-        # Verify that pipeline was initialized successfully
-        if not self._pipeline_model.is_initialized:
+        try:
+            self._pipeline_model = PipelineModel(api_key)
+        except ValueError:
             QMessageBox.critical(
                 None,
                 "Initialization Error",
@@ -256,32 +255,25 @@ class AppController(QObject):
             self._instruction_set_model.set_selected_set_name(instruction_set.name)
             self.start_recording_with_hotkey(hotkey)
     
-    def initialize_with_api_key(self, api_key: str) -> bool:
+    def reinitialize(self, api_key: str) -> None:
         """
-        Initialize or reinitialize the pipeline with an API key.
+        Reinitialize the pipeline with an API key.
         
         Parameters
         ----------
         api_key : str
             The API key to use
-            
-        Returns
-        -------
-        bool
-            True if initialization was successful, False otherwise
         """
-        result = self._pipeline_model.initialize_pipeline(api_key)
+        # Reinitialize the pipeline with the new API key
+        self._pipeline_model.reinitialize(api_key)
+
+        # Save API key to settings manager
+        self._settings_manager.set_api_key(api_key)
         
-        if result:
-            # Save API key to settings manager
-            self._settings_manager.set_api_key(api_key)
-            
-            # Apply the selected instruction set if available
-            selected_set = self._instruction_set_model.get_selected_set()
-            if selected_set:
-                self._pipeline_model.apply_instruction_set(selected_set)
-            
-        return result
+        # Apply the selected instruction set if available
+        selected_set = self._instruction_set_model.get_selected_set()
+        if selected_set:
+            self._pipeline_model.apply_instruction_set(selected_set)
     
     def get_instruction_sets(self) -> list[InstructionSet]:
         """
@@ -580,7 +572,6 @@ class AppController(QObject):
             api_key = self._settings_manager.get_api_key()
             
             # Reinitialize pipeline with the new API key
-            if self.initialize_with_api_key(api_key):
-                return True
-        
+            self.reinitialize(api_key)
+            
         return False
