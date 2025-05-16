@@ -352,7 +352,7 @@ class InstructionDialogModel(QObject):
         """
         return LLMModelManager.get_available_models()
     
-    def supports_image_input(self, model_id: str) -> bool:
+    def check_image_input_supported(self, model_id: str) -> bool:
         """
         Check if an LLM model supports image input.
         
@@ -366,4 +366,4 @@ class InstructionDialogModel(QObject):
         bool
             True if the model supports image input, False otherwise
         """
-        return LLMModelManager.supports_image_input(model_id)
+        return LLMModelManager.check_image_input_supported(model_id)

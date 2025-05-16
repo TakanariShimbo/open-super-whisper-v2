@@ -497,7 +497,7 @@ class InstructionDialog(QDialog):
         # Check if model supports image input
         supports_image = False
         if instruction_set.llm_model:
-            supports_image = self._controller.supports_image_input(instruction_set.llm_model)
+            supports_image = self._controller.check_image_input_supported(instruction_set.llm_model)
         
         # Set enabled state for LLM-related UI components
         self._llm_model_combo.setEnabled(is_llm_enabled)
@@ -842,7 +842,7 @@ class InstructionDialog(QDialog):
         # Check if model supports image input
         supports_image = False
         if instruction_set.llm_model:
-            supports_image = self._controller.supports_image_input(instruction_set.llm_model)
+            supports_image = self._controller.check_image_input_supported(instruction_set.llm_model)
         
         # Set enabled state for LLM-related UI components
         self._llm_model_combo.setEnabled(is_llm_enabled)
@@ -940,7 +940,7 @@ class InstructionDialog(QDialog):
         # Check if model supports image input
         supports_image = False
         if selected_model_id:
-            supports_image = self._controller.supports_image_input(selected_model_id)
+            supports_image = self._controller.check_image_input_supported(selected_model_id)
         
         # Enable/disable LLM model selector
         self._llm_model_combo.setEnabled(is_enabled)
@@ -976,7 +976,7 @@ class InstructionDialog(QDialog):
         # Check if model supports image input
         supports_image = False
         if selected_model_id:
-            supports_image = self._controller.supports_image_input(selected_model_id)
+            supports_image = self._controller.check_image_input_supported(selected_model_id)
         
         # Update UI components
         # Image checkbox is enabled only if LLM is enabled AND model supports images

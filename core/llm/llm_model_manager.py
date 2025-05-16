@@ -104,7 +104,7 @@ class LLMModelManager:
         raise ValueError("No default model found")
     
     @classmethod
-    def supports_image_input(cls, model_id: str) -> bool:
+    def check_image_input_supported(cls, model_id: str) -> bool:
         """
         Check if a model supports image input.
         
