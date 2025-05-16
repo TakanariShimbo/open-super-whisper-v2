@@ -27,8 +27,7 @@ class HotkeyDialog(QDialog):
     
     def __init__(self, 
                  parent=None, 
-                 current_hotkey: str = "", 
-                 conflict_checker=None) -> None:
+                 current_hotkey: str = "") -> None:
         """
         Initialize the HotkeyDialog.
         
@@ -38,17 +37,11 @@ class HotkeyDialog(QDialog):
             Parent widget, by default None
         current_hotkey : str, optional
             Current hotkey string, by default ""
-        conflict_checker : callable, optional
-            Function to check for hotkey conflicts, by default None
-            Should take a hotkey string and return None or error message
         """
         super().__init__(parent)
 
-        # Create controller with conflict checker
-        self._controller = HotkeyDialogController(
-            current_hotkey=current_hotkey,
-            conflict_checker=conflict_checker
-        )
+        # Create controller
+        self._controller = HotkeyDialogController(current_hotkey=current_hotkey)
         
         # Set up UI
         self._init_ui()

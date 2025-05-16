@@ -34,7 +34,6 @@ class HotkeyDialogController(QObject):
     
     def __init__(self, 
                  current_hotkey: str = "", 
-                 conflict_checker=None, 
                  parent_controller: QObject | None = None) -> None:
         """
         Initialize the HotkeyDialogController.
@@ -43,9 +42,6 @@ class HotkeyDialogController(QObject):
         ----------
         current_hotkey : str, optional
             Initial hotkey value, by default ""
-        conflict_checker : callable, optional
-            Function that checks for hotkey conflicts, by default None
-            Should take a hotkey string and return None or an error message
         parent_controller : QObject | None, optional
             Parent controller for this controller, by default None
         """
@@ -54,7 +50,6 @@ class HotkeyDialogController(QObject):
         # Create model
         self._model = HotkeyDialogModel(current_hotkey)
         self._parent_controller = parent_controller
-        self._conflict_checker = conflict_checker
         
         # Connect model signals
         self._connect_model_signals()
@@ -161,7 +156,7 @@ class HotkeyDialogController(QObject):
         bool
             True if the hotkey is valid, False otherwise
         """
-        return self._model.validate_hotkey(self._conflict_checker)
+        return self._model.validate_hotkey()
     
     def save(self) -> None:
         """

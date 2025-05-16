@@ -7,6 +7,7 @@ handling the data and business logic related to hotkey management.
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
+from ...managers.instruction_sets_manager import InstructionSetsManager
 from ...managers.keyboard_manager import KeyboardManager
 
 
@@ -48,6 +49,7 @@ class HotkeyDialogModel(QObject):
         self._original_hotkey = current_hotkey
         
         # Create key state tracker for capturing key combinations
+        self._instruction_sets_manager = InstructionSetsManager.get_instance()
         self._keyboard_manager = KeyboardManager.get_instance()
     
     def get_hotkey(self) -> str:
@@ -125,17 +127,10 @@ class HotkeyDialogModel(QObject):
         # Emit the captured signal
         self.hotkey_captured.emit(hotkey_string)
     
-    def validate_hotkey(self, conflict_checker=None) -> bool:
+    def validate_hotkey(self) -> bool:
         """
         Validate the current hotkey.
         
-        Parameters
-        ----------
-        conflict_checker : callable, optional
-            Function that checks if a hotkey conflicts with existing hotkeys
-            Should take a hotkey string and return None if no conflict,
-            or a message string if there is a conflict
-            
         Returns
         -------
         bool
@@ -152,12 +147,31 @@ class HotkeyDialogModel(QObject):
             return False
         
         # Check for conflicts if a checker function is provided
-        if conflict_checker and self._hotkey != self._original_hotkey:
-            conflict_message = conflict_checker(self._hotkey)
-            if conflict_message:
-                self.validation_failed.emit(conflict_message)
+        if self._hotkey != self._original_hotkey:
+            conflicting_set_name = self._check_hotkey_conflict(self._hotkey)
+            if conflicting_set_name:
+                self.validation_failed.emit(f"The hotkey '{self._hotkey}' is already used by instruction set '{conflicting_set_name}'.")
                 return False
         return True
+    
+    def _check_hotkey_conflict(self, hotkey: str) -> str | None:
+        """
+        Check if the hotkey conflicts with any existing hotkeys.
+        
+        Parameters
+        ----------
+        hotkey : str
+            The hotkey to check for conflicts
+            
+        Returns
+        -------
+        str | None
+            None if no conflict, or the name of the conflicting instruction set if there is a conflict
+        """ 
+        conflicting_set = self._instruction_sets_manager.find_set_by_hotkey(hotkey)
+        if conflicting_set:
+            return conflicting_set.name
+        return None
     
     def reset(self) -> None:
         """

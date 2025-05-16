@@ -685,8 +685,7 @@ class InstructionDialog(QDialog):
         # Pass the dialog model to check for hotkey conflicts
         dialog = HotkeyDialogFactory.create_dialog(
             parent=self,
-            current_hotkey=current_hotkey,
-            instruction_dialog_model=self._controller._dialog_model
+            current_hotkey=current_hotkey
         )
         result = dialog.exec()
         
