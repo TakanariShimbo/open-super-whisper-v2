@@ -121,7 +121,6 @@ class PipelineModel(QObject):
         super().__init__()
 
         self._pipeline = Pipeline(api_key=api_key)
-        self._is_processing = False
         self._worker = None
     
     @property
@@ -134,7 +133,7 @@ class PipelineModel(QObject):
         bool
             True if recording is in progress, False otherwise
         """
-        return self._pipeline.is_recording if self._pipeline else False
+        return self._pipeline.is_recording
     
     @property
     def is_processing(self) -> bool:
@@ -146,7 +145,7 @@ class PipelineModel(QObject):
         bool
             True if audio processing is in progress, False otherwise
         """
-        return self._is_processing
+        return self._worker is not None
     
     def reinitialize(self, api_key: str) -> None:
         """
@@ -163,10 +162,6 @@ class PipelineModel(QObject):
         instruction_set: InstructionSet
             The instruction set to apply to the pipeline
         """
-        if not self._pipeline:
-            self.processing_error.emit("Pipeline not initialized")
-            return False
-            
         try:
             self._pipeline.apply_instruction_set(instruction_set)
             return True
@@ -210,8 +205,13 @@ class PipelineModel(QObject):
             self.processing_error.emit(f"Error stopping recording: {str(e)}")
             return None
     
-    def process_audio(self, audio_file_path: str, language: str | None = None,
-                     clipboard_text: str | None = None, clipboard_image: bytes | None = None) -> bool:
+    def process_audio(
+        self,
+        audio_file_path: str,
+        language: str | None = None,
+        clipboard_text: str | None = None,
+        clipboard_image: bytes | None = None
+    ) -> bool:
         """
         Process an audio file through the pipeline asynchronously.
 
@@ -235,13 +235,12 @@ class PipelineModel(QObject):
             self.processing_error.emit("Pipeline not initialized")
             return False
         
-        if self._is_processing:
+        if self.is_processing:
             self.processing_error.emit("Processing already in progress")
             return False
             
         try:
             # Update state
-            self._is_processing = True
             self.processing_state_changed.emit(True)
             self.processing_started.emit()
             
@@ -264,9 +263,9 @@ class PipelineModel(QObject):
             return True
             
         except Exception as e:
-            self._is_processing = False
             self.processing_state_changed.emit(False)
             self.processing_error.emit(f"Error processing audio: {str(e)}")
+            self._worker = None
             return False
     
     def _on_processing_completed(self, result: PipelineResult) -> None:
@@ -278,7 +277,6 @@ class PipelineModel(QObject):
         result: PipelineResult
             The result of the processing
         """
-        self._is_processing = False
         self.processing_state_changed.emit(False)
         
         if self._worker:
@@ -296,7 +294,6 @@ class PipelineModel(QObject):
         error: str
             The error message
         """
-        self._is_processing = False
         self.processing_state_changed.emit(False)
         
         if self._worker:
@@ -314,7 +311,7 @@ class PipelineModel(QObject):
         bool
             True if processing is cancelled, False otherwise
         """
-        if not self._is_processing or not self._worker:
+        if not self.is_processing:
             return False
         
         # Terminate and clean up
@@ -324,7 +321,6 @@ class PipelineModel(QObject):
         self._worker = None
         
         # Update state
-        self._is_processing = False
         self.processing_state_changed.emit(False)
         self.processing_cancelled.emit()
         
