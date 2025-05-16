@@ -1,5 +1,5 @@
 """
-Instruction Manager
+Instruction Sets Manager
 
 This module provides functionality for managing instruction sets
 used in speech-to-text and LLM processing.
@@ -10,7 +10,7 @@ from typing import Any
 from .instruction_set import InstructionSet
 
 
-class InstructionManager:
+class InstructionSetsManager:
     """
     Manager for instruction sets.
     

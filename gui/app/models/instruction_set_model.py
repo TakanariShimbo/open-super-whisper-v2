@@ -8,7 +8,7 @@ in the Super Whisper application.
 from PyQt6.QtCore import QObject, pyqtSignal
 
 from core.pipelines.instruction_set import InstructionSet
-from core.pipelines.instruction_manager import InstructionManager
+from core.pipelines.instruction_manager import InstructionSetsManager
 from ..managers.settings_manager import SettingsManager
 
 
@@ -38,7 +38,7 @@ class InstructionSetModel(QObject):
         super().__init__()
         
         # Initialize instruction manager
-        self._instruction_manager = InstructionManager()
+        self._instruction_manager = InstructionSetsManager()
         
         # Store settings manager for persistence
         self._settings_manager = SettingsManager.instance()

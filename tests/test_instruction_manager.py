@@ -15,7 +15,7 @@ import tempfile
 # Add parent directory to path so we can import modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.pipelines.instruction_manager import InstructionManager
+from core.pipelines.instruction_manager import InstructionSetsManager
 from core.pipelines.instruction_set import InstructionSet
 
 
@@ -44,7 +44,7 @@ def test_instruction_manager(use_temp_file: bool = True, file_path: str = None, 
     
     try:
         # Initialize manager (no config path parameter in constructor)
-        manager = InstructionManager()
+        manager = InstructionSetsManager()
         print("Initialized InstructionManager")
         
         # Check initial instruction sets
@@ -129,7 +129,7 @@ def test_instruction_manager(use_temp_file: bool = True, file_path: str = None, 
             print("\nTesting loading from file")
             
             # Create a new manager instance
-            new_manager = InstructionManager()
+            new_manager = InstructionSetsManager()
             
             # Manually load from file
             with open(file_path, 'r') as f:
