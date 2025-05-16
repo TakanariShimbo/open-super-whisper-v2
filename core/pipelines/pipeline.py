@@ -7,7 +7,7 @@ both speech-to-text transcription and LLM processing in a seamless way.
 
 from typing import Callable
 
-from core.api.api_client_factory import APIClientFactory
+from ..api.api_client_factory import APIClientFactory
 from ..stt.stt_processor import STTProcessor
 from ..llm.llm_processor import LLMProcessor
 from ..recorder.audio_recorder import AudioRecorder
