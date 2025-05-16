@@ -15,7 +15,7 @@ from core.stt.stt_lang_model_manager import STTLangModelManager
 from core.stt.stt_model_manager import STTModelManager
 from core.llm.llm_model_manager import LLMModelManager
 
-from ...models.instruction_set_model import InstructionSetModel
+from ...managers.instruction_sets_manager import InstructionSetsManager
 
 
 class InstructionDialogModel(QObject):
@@ -40,6 +40,9 @@ class InstructionDialogModel(QObject):
         Signal emitted when a hotkey is updated
     """
     
+    # Default models
+    DEFAULT_SET = InstructionSet.get_default()
+
     # Define signals
     instruction_set_added = pyqtSignal(InstructionSet)
     instruction_set_updated = pyqtSignal(InstructionSet)
@@ -47,7 +50,7 @@ class InstructionDialogModel(QObject):
     instruction_set_renamed = pyqtSignal(str, str)  # Old name, new name
     hotkey_updated = pyqtSignal(str, str)  # Set name, hotkey
     
-    def __init__(self, instruction_set_model: InstructionSetModel) -> None:
+    def __init__(self) -> None:
         """
         Initialize the InstructionDialogModel.
         
@@ -58,11 +61,8 @@ class InstructionDialogModel(QObject):
         """
         super().__init__()
         
-        # Store instruction set model
-        self._instruction_set_model = instruction_set_model
-        
         # Get instruction manager from the model
-        self._instruction_manager = instruction_set_model._instruction_manager
+        self._instruction_manager = InstructionSetsManager.get_instance()
     
     def get_all_sets(self) -> list[InstructionSet]:
         """
@@ -108,16 +108,16 @@ class InstructionDialogModel(QObject):
         return self._instruction_manager.find_set_by_hotkey(hotkey)
     
     def add_set(self, name: str, 
-                stt_vocabulary: str = "", 
-                stt_instructions: str = "",
-                stt_language: str | None = None,
-                stt_model: str = "gpt-4o-transcribe",
-                llm_enabled: bool = False,
-                llm_model: str = "gpt-4o",
-                llm_instructions: str = "",
-                llm_clipboard_text_enabled: bool = False,
-                llm_clipboard_image_enabled: bool = False,
-                hotkey: str = "") -> bool:
+                stt_vocabulary: str = DEFAULT_SET.stt_vocabulary, 
+                stt_instructions: str = DEFAULT_SET.stt_instructions,
+                stt_language: str | None = DEFAULT_SET.stt_language,
+                stt_model: str = DEFAULT_SET.stt_model,
+                llm_enabled: bool = DEFAULT_SET.llm_enabled,
+                llm_model: str = DEFAULT_SET.llm_model,
+                llm_instructions: str = DEFAULT_SET.llm_instructions,
+                llm_clipboard_text_enabled: bool = DEFAULT_SET.llm_clipboard_text_enabled,
+                llm_clipboard_image_enabled: bool = DEFAULT_SET.llm_clipboard_image_enabled,
+                hotkey: str = DEFAULT_SET.hotkey) -> bool:
         """
         Add a new instruction set.
         
@@ -126,25 +126,25 @@ class InstructionDialogModel(QObject):
         name : str
             Name for the new instruction set
         stt_vocabulary : str, optional
-            Custom vocabulary for speech recognition, by default ""
+            Custom vocabulary for speech recognition, by default DEFAULT_SET.stt_vocabulary
         stt_instructions : str, optional
-            System instructions for speech recognition, by default ""
+            System instructions for speech recognition, by default DEFAULT_SET.stt_instructions
         stt_language : str | None, optional
-            Language code for speech recognition, by default None (auto-detect)
+            Language code for speech recognition, by default DEFAULT_SET.stt_language
         stt_model : str, optional
-            Model name for speech recognition, by default "gpt-4o-transcribe"
+            Model name for speech recognition, by default DEFAULT_SET.stt_model
         llm_enabled : bool, optional
-            Whether LLM processing is enabled, by default False
+            Whether LLM processing is enabled, by default DEFAULT_SET.llm_enabled
         llm_model : str, optional
-            Model name for LLM processing, by default "gpt-4o"
+            Model name for LLM processing, by default DEFAULT_SET.llm_model
         llm_instructions : str, optional
-            System instructions for LLM, by default ""
+            System instructions for LLM, by default DEFAULT_SET.llm_instructions
         llm_clipboard_text_enabled : bool, optional
-            Whether to include clipboard text in LLM input, by default False
+            Whether to include clipboard text in LLM input, by default DEFAULT_SET.llm_clipboard_text_enabled
         llm_clipboard_image_enabled : bool, optional
-            Whether to include clipboard images in LLM input, by default False
+            Whether to include clipboard images in LLM input, by default DEFAULT_SET.llm_clipboard_image_enabled
         hotkey : str, optional
-            Hotkey for quick activation, by default ""
+            Hotkey for quick activation, by default DEFAULT_SET.hotkey
             
         Returns
         -------
@@ -171,13 +171,10 @@ class InstructionDialogModel(QObject):
         
         if result:
             # Save changes through the main model
-            self._instruction_set_model.save_to_settings()
+            self._instruction_manager.save_to_settings()
             
             # Emit signal
             self.instruction_set_added.emit(instruction_set)
-            
-            # Notify the main model
-            self._instruction_set_model.instruction_sets_changed.emit()
         
         return result
     
@@ -245,7 +242,7 @@ class InstructionDialogModel(QObject):
         )
         
         # Save changes through the main model
-        self._instruction_set_model.save_to_settings()
+        self._instruction_manager.save_to_settings()
         
         # Emit hotkey updated signal if hotkey was updated
         if hotkey is not None:
@@ -253,9 +250,6 @@ class InstructionDialogModel(QObject):
         
         # Emit signal
         self.instruction_set_updated.emit(instruction_set)
-        
-        # Notify the main model
-        self._instruction_set_model.instruction_sets_changed.emit()
         
         return True
     
@@ -278,13 +272,10 @@ class InstructionDialogModel(QObject):
         
         if result:
             # Save changes through the main model
-            self._instruction_set_model.save_to_settings()
+            self._instruction_manager.save_to_settings()
             
             # Emit signal
             self.instruction_set_deleted.emit(name)
-            
-            # Notify the main model
-            self._instruction_set_model.instruction_sets_changed.emit()
         
         return result
     
@@ -309,13 +300,10 @@ class InstructionDialogModel(QObject):
         
         if result:
             # Save changes through the main model
-            self._instruction_set_model.save_to_settings()
+            self._instruction_manager.save_to_settings()
             
             # Emit signal
             self.instruction_set_renamed.emit(old_name, new_name)
-            
-            # Notify the main model
-            self._instruction_set_model.instruction_sets_changed.emit()
         
         return result
     

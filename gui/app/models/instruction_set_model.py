@@ -27,7 +27,6 @@ class InstructionSetModel(QObject):
     """
     
     # Define signals
-    instruction_sets_changed = pyqtSignal()
     selected_set_changed = pyqtSignal(InstructionSet)
     
     def __init__(self):
