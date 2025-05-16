@@ -174,10 +174,6 @@ class InstructionSetsManager:
 
             self.add_set(InstructionSet.from_dict(set_data))
     
-        # If no sets were loaded, create a default set
-        if not self._sets:
-            self.add_set(InstructionSet.get_default())
-    
     def export_to_dict(self) -> list[dict[str, Any]]:
         """
         Export instruction sets to a list for external serialization.

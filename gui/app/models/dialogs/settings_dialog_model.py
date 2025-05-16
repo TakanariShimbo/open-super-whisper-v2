@@ -37,6 +37,7 @@ class SettingsDialogModel(QObject):
         super().__init__()
         
         # Get settings manager instance
+        self._audio_manager = AudioManager.instance()
         self._settings_manager = SettingsManager.instance()
         
         # Load current settings
@@ -125,7 +126,7 @@ class SettingsDialogModel(QObject):
         """
         Save current settings to persistent storage.
         """
-        self._settings_manager.set_audio_notifications_enabled(self._sound_enabled)
+        self._audio_manager.set_enabled(self._sound_enabled)
         self._settings_manager.set_indicator_visible(self._indicator_visible)
         self._settings_manager.set_auto_clipboard(self._auto_clipboard)
         
@@ -133,10 +134,6 @@ class SettingsDialogModel(QObject):
         self._original_sound_enabled = self._sound_enabled
         self._original_indicator_visible = self._indicator_visible
         self._original_auto_clipboard = self._auto_clipboard
-    
-        # Update AudioManager with new settings
-        audio_manager = AudioManager.instance()
-        audio_manager.set_enabled(self.get_sound_enabled())
 
     def restore_original(self) -> None:
         """

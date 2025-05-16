@@ -253,7 +253,7 @@ class AppController(QObject):
             self.stop_recording()
         else:
             # Not recording or processing, so this is a start request with the selected instruction set
-            self._instruction_set_model.set_selected(instruction_set.name)
+            self._instruction_set_model.set_selected_set_name(instruction_set.name)
             self.start_recording_with_hotkey(hotkey)
     
     def initialize_with_api_key(self, api_key: str) -> bool:
@@ -319,7 +319,7 @@ class AppController(QObject):
         bool
             True if successful, False if the named set doesn't exist
         """
-        return self._instruction_set_model.set_selected(name)
+        return self._instruction_set_model.set_selected_set_name(name)
     
     def register_hotkey(self, hotkey: str) -> bool:
         """
@@ -412,7 +412,7 @@ class AppController(QObject):
         # Apply selected instruction set if available
         selected_set = self._instruction_set_model.get_set_by_hotkey(hotkey)
         if selected_set:
-            self._instruction_set_model.set_selected(selected_set.name)
+            self._instruction_set_model.set_selected_set_name(selected_set.name)
             self._pipeline_model.apply_instruction_set(selected_set)
             
         if self._pipeline_model.start_recording():

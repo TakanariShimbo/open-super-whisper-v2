@@ -8,8 +8,7 @@ in the Super Whisper application.
 from PyQt6.QtCore import QObject, pyqtSignal
 
 from core.pipelines.instruction_set import InstructionSet
-from core.pipelines.instruction_sets_manager import InstructionSetsManager
-from ..managers.settings_manager import SettingsManager
+from ..managers.instruction_sets_manager import InstructionSetsManager
 
 
 class InstructionSetModel(QObject):
@@ -38,92 +37,19 @@ class InstructionSetModel(QObject):
         super().__init__()
         
         # Initialize instruction manager
-        self._instruction_manager = InstructionSetsManager()
-        
-        # Store settings manager for persistence
-        self._settings_manager = SettingsManager.instance()
-        
-        # Track selected instruction set
-        self._selected_set_name = ""
-        
-        # Load data and ensure valid state
-        self.load_from_settings()
-        
-        # Save settings after initialization to ensure persistence
-        self.save_to_settings()
-    
-    def _load_data_from_settings(self) -> None:
-        """
-        Load instruction sets data from settings.
-        
-        This method loads raw data from settings without enforcing state validity.
-        """
-        if not self._settings_manager:
-            return
-            
-        # Try to load instruction sets
-        serialized_data = self._settings_manager.get_instruction_sets()
-        if serialized_data:
-            try:
-                self._instruction_manager.import_from_dict(serialized_data)
-            except Exception as e:
-                print(f"Failed to load instruction sets from settings: {e}")
-                
-        # Load selected set name without validation
-        self._selected_set_name = self._settings_manager.get_selected_instruction_set()
-    
-    def _ensure_valid_state(self) -> None:
-        """
-        Ensure the model is in a valid state.
-        
-        This method ensures:
-        1. At least one instruction set exists (creates Default if needed)
-        2. A valid selection is made
-        """
-        # Get current instruction sets
-        instruction_sets = self._instruction_manager.get_all_sets()
-        
-        # Create default set if none exist
-        if not instruction_sets:
-            default_set = InstructionSet(name="Default")
-            self._instruction_manager.add_set(default_set)
-            instruction_sets = [default_set]
-        
-        # Ensure a valid selection
-        valid_selection = (self._selected_set_name and 
-                          self._instruction_manager.find_set_by_name(self._selected_set_name))
-                          
-        if not valid_selection:
-            self._selected_set_name = instruction_sets[0].name
-    
-    def _save_to_settings(self) -> None:
-        """
-        Save instruction sets to settings.
-        
-        This is an internal method that persists the model's state to settings.
-        """
-        if not self._settings_manager:
-            return
-            
-        # Save instruction sets
-        serialized_data = self._instruction_manager.export_to_dict()
-        self._settings_manager.set_instruction_sets(serialized_data)
-        
-        # Save selected set
-        self._settings_manager.set_selected_instruction_set(self._selected_set_name)
+        self._instruction_manager = InstructionSetsManager.get_instance()
         
     def save_to_settings(self) -> None:
         """
         Save instruction sets to QSettings.
         """
-        self._save_to_settings()
+        self._instruction_manager.save_to_settings()
         
     def load_from_settings(self) -> None:
         """
         Load instruction sets from QSettings.
         """
-        self._load_data_from_settings()
-        self._ensure_valid_state()
+        self._instruction_manager.load_from_settings()
     
     def get_all_sets(self) -> list[InstructionSet]:
         """
@@ -177,10 +103,7 @@ class InstructionSetModel(QObject):
         InstructionSet | None
             The currently selected instruction set, or None if none selected
         """
-        if not self._selected_set_name:
-            return None
-            
-        return self._instruction_manager.find_set_by_name(self._selected_set_name)
+        return self._instruction_manager.get_selected_set()
     
     def get_selected_set_name(self) -> str:
         """
@@ -191,9 +114,9 @@ class InstructionSetModel(QObject):
         str
             The name of the currently selected instruction set, or an empty string
         """
-        return self._selected_set_name
+        return self._instruction_manager.get_selected_set_name()
     
-    def set_selected(self, name: str) -> bool:
+    def set_selected_set_name(self, name: str) -> bool:
         """
         Set the selected instruction set by name.
         
@@ -207,14 +130,11 @@ class InstructionSetModel(QObject):
         bool
             True if successful, False if the named set doesn't exist
         """
-        instruction_set = self._instruction_manager.find_set_by_name(name)
-        if not instruction_set:
+        is_success = self._instruction_manager.set_selected_set_name(name)
+        if not is_success:
             return False
-            
-        self._selected_set_name = name
-        self._save_to_settings()
         
         # Emit the selected set changed signal
-        self.selected_set_changed.emit(instruction_set)
+        self.selected_set_changed.emit(self._instruction_manager.get_selected_set())
         
         return True
