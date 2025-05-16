@@ -7,7 +7,6 @@ handling the data and business logic related to hotkey management.
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
-from core.key.key_formatter import KeyFormatter
 from ...managers.keyboard_manager import KeyboardManager
 
 
@@ -147,7 +146,7 @@ class HotkeyDialogModel(QObject):
             return True
         
         # Parse with the KeyFormatter to ensure it's a valid format
-        parsed_hotkey = KeyFormatter.parse_hotkey_string(self._hotkey)
+        parsed_hotkey = self._keyboard_manager.parse_hotkey_string(self._hotkey)
         if parsed_hotkey is None:
             self.validation_failed.emit(f"Invalid hotkey format: {self._hotkey}")
             return False

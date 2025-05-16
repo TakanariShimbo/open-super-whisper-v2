@@ -7,6 +7,7 @@ in the Super Whisper application.
 
 from typing import Callable
 
+from core.key.key_formatter import KeyFormatter
 from core.key.key_state_tracker import KeyStateTracker
 from core.key.hotkey_manager import HotkeyManager
 
@@ -301,3 +302,11 @@ class KeyboardManager:
             List of registered hotkey strings
         """
         return self._hotkey_manager.get_registered_hotkeys()
+
+    # Key Formatter methods
+
+    def parse_hotkey_string(self, hotkey_string: str) -> str:
+        """
+        Parse a hotkey string.
+        """
+        return KeyFormatter.parse_hotkey_string(hotkey_string)
