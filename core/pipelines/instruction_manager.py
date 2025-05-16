@@ -169,12 +169,14 @@ class InstructionManager:
                 continue  # Skip invalid entries
                 
             name = set_data.get("name", "")
-            if name:
-                self._sets[name] = InstructionSet.from_dict(set_data)
+            if name == "":
+                continue  # Skip invalid entries
+
+            self.add_set(InstructionSet.from_dict(set_data))
     
         # If no sets were loaded, create a default set
         if not self._sets:
-            self.add_set(InstructionSet(name= "Default"))
+            self.add_set(InstructionSet.get_default())
     
     def export_to_dict(self) -> list[dict[str, Any]]:
         """

@@ -8,6 +8,9 @@ used in speech-to-text and LLM processing.
 from dataclasses import dataclass
 from typing import Any
 
+from ..stt.stt_processor import STTProcessor
+from ..llm.llm_processor import LLMProcessor
+
 
 @dataclass
 class InstructionSet:
@@ -32,11 +35,11 @@ class InstructionSet:
     stt_language : Optional[str]
         Language code (e.g., "en", "ja"), None for auto-detection, by default None.
     stt_model : str
-        Speech-to-text model ID, by default "gpt-4o-transcribe".
+        Speech-to-text model ID, default from STTProcessor.
     llm_enabled : bool
         Whether LLM processing is enabled, by default False.
     llm_model : str
-        LLM model ID to use, by default "gpt-4o".
+        LLM model ID to use, default from LLMProcessor.
     llm_instructions : str
         System instructions for LLM, by default empty string.
     llm_clipboard_text_enabled : bool
@@ -47,20 +50,34 @@ class InstructionSet:
         Hotkey string for quick activation (e.g., "ctrl+shift+1"), by default empty string.
     """
     name: str
+
+    # STT settings
     stt_vocabulary: str = ""
     stt_instructions: str = ""
     stt_language: str | None = None  # Language code (e.g., "en", "ja"), None for auto-detection
-    stt_model: str = "gpt-4o-transcribe"
+    stt_model: str = STTProcessor.DEFAULT_MODEL_ID
     
     # LLM settings
     llm_enabled: bool = False
-    llm_model: str = "gpt-4o"
+    llm_model: str = LLMProcessor.DEFAULT_MODEL_ID
     llm_instructions: str = ""
     llm_clipboard_text_enabled: bool = False
     llm_clipboard_image_enabled: bool = False
     
     # Hotkey setting
     hotkey: str = ""  # Hotkey string (e.g., "ctrl+shift+1", "alt+f1")
+
+    @classmethod
+    def get_default(cls) -> 'InstructionSet':
+        """
+        Get the default instruction set.
+
+        Returns
+        -------
+        InstructionSet
+            The default instruction set.
+        """
+        return cls(name="Default")
     
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> 'InstructionSet':
@@ -76,19 +93,29 @@ class InstructionSet:
         -------
         InstructionSet
             A new InstructionSet instance.
+
+        Raises
+        ------
+        ValueError
+            If the name is not provided or is empty.
         """
+        if data.get("name", "") == "":
+            raise ValueError("Name is required")
+        
+        # Get default values
+        default_set = cls.get_default()
         return cls(
-            name=data.get("name", ""),
-            stt_vocabulary=data.get("stt_vocabulary", ""),
-            stt_instructions=data.get("stt_instructions", ""),
-            stt_language=data.get("stt_language", None),
-            stt_model=data.get("stt_model", "gpt-4o-transcribe"),
-            llm_enabled=data.get("llm_enabled", False),
-            llm_model=data.get("llm_model", "gpt-4o"),
-            llm_instructions=data.get("llm_instructions", ""),
-            llm_clipboard_text_enabled=data.get("llm_clipboard_text_enabled", False),
-            llm_clipboard_image_enabled=data.get("llm_clipboard_image_enabled", False),
-            hotkey=data.get("hotkey", "")
+            name=data.get("name"),
+            stt_vocabulary=data.get("stt_vocabulary", default_set.stt_vocabulary),
+            stt_instructions=data.get("stt_instructions", default_set.stt_instructions),
+            stt_language=data.get("stt_language", default_set.stt_language),
+            stt_model=data.get("stt_model", default_set.stt_model),
+            llm_enabled=data.get("llm_enabled", default_set.llm_enabled),
+            llm_model=data.get("llm_model", default_set.llm_model),
+            llm_instructions=data.get("llm_instructions", default_set.llm_instructions),
+            llm_clipboard_text_enabled=data.get("llm_clipboard_text_enabled", default_set.llm_clipboard_text_enabled),
+            llm_clipboard_image_enabled=data.get("llm_clipboard_image_enabled", default_set.llm_clipboard_image_enabled),
+            hotkey=data.get("hotkey", default_set.hotkey)
         )
 
     def to_dict(self) -> dict[str, Any]:
