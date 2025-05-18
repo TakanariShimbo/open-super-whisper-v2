@@ -16,6 +16,7 @@ from core.stt.stt_model_manager import STTModelManager
 from core.llm.llm_model_manager import LLMModelManager
 
 from ...managers.instruction_sets_manager import InstructionSetsManager
+from ...managers.keyboard_manager import KeyboardManager
 
 
 class InstructionDialogModel(QObject):
@@ -63,6 +64,35 @@ class InstructionDialogModel(QObject):
         
         # Get instruction manager from the model
         self._instruction_manager = InstructionSetsManager.get_instance()
+        self._keyboard_manager = KeyboardManager.get_instance()
+
+    def register_hotkey(self, hotkey: str) -> bool:
+        """
+        Register a hotkey for the instruction dialog.
+        """
+        return self._keyboard_manager.register_hotkey(hotkey)
+    
+    def start_listening(self) -> bool:
+        """
+        Start listening for hotkeys.
+
+        Returns
+        -------
+        bool
+            True if listening started successfully, False otherwise
+        """
+        return self._keyboard_manager.start_listening()
+    
+    def stop_listening(self) -> bool:
+        """
+        Stop listening for hotkeys.
+
+        Returns
+        -------
+        bool
+            True if listening stopped successfully, False otherwise
+        """
+        return self._keyboard_manager.stop_listening()
     
     def get_all_sets(self) -> list[InstructionSet]:
         """

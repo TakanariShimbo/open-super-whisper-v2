@@ -13,7 +13,6 @@ from core.llm.llm_model import LLMModel
 from core.pipelines.instruction_set import InstructionSet
 
 from ...models.dialogs.instruction_dialog_model import InstructionDialogModel
-from ...models.hotkey_model import HotkeyModel
 
 
 class InstructionDialogController(QObject):
@@ -52,7 +51,6 @@ class InstructionDialogController(QObject):
     
     def __init__(self, 
                  dialog_model: InstructionDialogModel,
-                 hotkey_model: HotkeyModel | None = None,
                  parent_controller: QObject | None = None):
         """
         Initialize the InstructionDialogController.
@@ -70,7 +68,6 @@ class InstructionDialogController(QObject):
         
         # Store models
         self._dialog_model = dialog_model
-        self._hotkey_model = hotkey_model
         self._parent_controller = parent_controller
         
         # Connect model signals
@@ -104,8 +101,8 @@ class InstructionDialogController(QObject):
         self.instruction_set_added.emit(instruction_set)
         
         # Register hotkey if set has one
-        if instruction_set.hotkey and self._hotkey_model:
-            success = self._hotkey_model.register_hotkey(instruction_set.hotkey)
+        if instruction_set.hotkey:
+            success = self._dialog_model.register_hotkey(instruction_set.hotkey)
             if not success:
                 self.hotkey_conflict.emit(instruction_set.hotkey, "")
     
@@ -171,7 +168,7 @@ class InstructionDialogController(QObject):
             The new hotkey
         """
         # Register new hotkey if not empty
-        if hotkey and self._hotkey_model:
+        if hotkey:
             # Check for conflicts first
             conflicting_set = self._dialog_model.get_set_by_hotkey(hotkey)
             if conflicting_set and conflicting_set.name != set_name:
@@ -180,7 +177,7 @@ class InstructionDialogController(QObject):
                 return
             
             # Register the hotkey
-            self._hotkey_model.register_hotkey(hotkey)
+            self._dialog_model.register_hotkey(hotkey)
     
     def get_all_sets(self) -> list[InstructionSet]:
         """
@@ -464,3 +461,25 @@ class InstructionDialogController(QObject):
             True if the model supports image input, False otherwise
         """
         return self._dialog_model.check_image_input_supported(model_id)
+
+    def start_listening(self) -> bool:
+        """
+        Start listening for hotkeys.
+
+        Returns
+        -------
+        bool
+            True if listening started successfully, False otherwise
+        """
+        return self._dialog_model.start_listening()
+    
+    def stop_listening(self) -> bool:
+        """
+        Stop listening for hotkeys.
+
+        Returns
+        -------
+        bool
+            True if listening stopped successfully, False otherwise
+        """
+        return self._dialog_model.stop_listening()

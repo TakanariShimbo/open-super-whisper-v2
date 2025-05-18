@@ -5,20 +5,28 @@ This module provides the manager component for managing keyboard events
 in the Super Whisper application.
 """
 
-from typing import Callable
+from PyQt6.QtCore import QObject, pyqtSignal
 
 from core.key.key_formatter import KeyFormatter
 from core.key.key_state_tracker import KeyStateTracker
 from core.key.hotkey_manager import HotkeyManager
 
 
-class KeyboardManager:
+class KeyboardManager(QObject):
     """
     Manager for managing keyboard events.
     
     This class provides a manager for managing keyboard events
+
+    Attributes
+    ----------
+    hotkey_triggered : pyqtSignal
+        Signal emitted when a registered hotkey is triggered
     """
     
+    # Define signals
+    hotkey_triggered = pyqtSignal(str)
+
     # Singleton instance
     _instance = None
     
@@ -44,7 +52,9 @@ class KeyboardManager:
         ------
         Exception
             If the KeyboardManager is instantiated directly
-        """        
+        """
+        super().__init__()
+        
         # Check if singleton already exists
         if self._instance is not None:
             # If this is not the first instantiation, don't reinitialize
@@ -194,7 +204,7 @@ class KeyboardManager:
         # Start listening again
         self.start_listening()
     
-    def register_hotkey(self, hotkey: str, callback: Callable) -> bool:
+    def register_hotkey(self, hotkey: str) -> bool:
         """
         Register a hotkey.
         
@@ -209,7 +219,10 @@ class KeyboardManager:
         -------
         bool
             True if registration was successful, False otherwise
-        """                
+        """
+        # Define the callback function
+        callback = lambda: self.hotkey_triggered.emit(hotkey)
+
         # Check if we need to stop the listener first
         was_listening = False
         if self.is_listening:

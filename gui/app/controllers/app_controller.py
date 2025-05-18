@@ -532,7 +532,6 @@ class AppController(QObject):
         # Create instruction dialog controller
         dialog_controller = InstructionDialogController(
             dialog_model=dialog_model,
-            hotkey_model=self._hotkey_model,
             parent_controller=self
         )
         

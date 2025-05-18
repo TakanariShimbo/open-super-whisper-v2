@@ -1037,9 +1037,8 @@ class InstructionDialog(QDialog):
         super().showEvent(event)
         
         # Disable hotkeys
-        if self._controller._hotkey_model:
-            self._controller._hotkey_model.stop_listening()
-            self._hotkeys_disabled = True
+        self._controller.stop_listening()
+        self._hotkeys_disabled = True
         
         # Ensure UI is fully updated with the selected instruction set data
         # This is needed because sometimes the UI might not reflect the data on dialog opening
@@ -1107,6 +1106,6 @@ class InstructionDialog(QDialog):
         
         This method re-enables all hotkeys that were disabled when the dialog was shown.
         """
-        if self._hotkeys_disabled and self._controller._hotkey_model:
-            self._controller._hotkey_model.start_listening()
+        if self._hotkeys_disabled:
+            self._controller.start_listening()
             self._hotkeys_disabled = False

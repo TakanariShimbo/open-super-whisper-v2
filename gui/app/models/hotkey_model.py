@@ -5,7 +5,7 @@ This module provides the model component for managing global hotkeys
 in the Super Whisper application.
 """
 
-from PyQt6.QtCore import QObject, pyqtSignal
+from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 
 from ..managers.keyboard_manager import KeyboardManager
 
@@ -34,7 +34,25 @@ class HotkeyModel(QObject):
         
         # Initialize the underlying hotkey manager
         self._keyboard_manager = KeyboardManager.get_instance()
+        
+        # Connect model signals
+        self._connect_manager_signals()
     
+    def _connect_manager_signals(self) -> None:
+        """
+        Connect signals from the manager to model handlers.
+        """
+        # Connect the manager's hotkey_triggered signal to our handler
+        self._keyboard_manager.hotkey_triggered.connect(self._on_hotkey_triggered)
+    
+    @pyqtSlot(str)
+    def _on_hotkey_triggered(self, hotkey: str) -> None:
+        """
+        Handle any hotkey triggered from the manager.
+        """
+        # Notify view that hotkey has been triggered
+        self.hotkey_triggered.emit(hotkey)
+
     @property
     def is_filter_mode(self) -> bool:
         """
@@ -93,11 +111,8 @@ class HotkeyModel(QObject):
         -------
         bool
             True if registration was successful, False otherwise
-        """        
-        # Define the callback function
-        callback = lambda: self.hotkey_triggered.emit(hotkey)
-
-        return self._keyboard_manager.register_hotkey(hotkey, callback)
+        """
+        return self._keyboard_manager.register_hotkey(hotkey)
     
     def unregister_hotkey(self, hotkey: str) -> bool:
         """
