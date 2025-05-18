@@ -2,7 +2,7 @@
 Instruction Dialog Model
 
 This module provides the model component for the instruction dialog in the Super Whisper application.
-It handles the data management for instruction sets using the core InstructionManager.
+It handles the data management for instruction sets using the core InstructionSetsManager.
 """
 
 from PyQt6.QtCore import QObject, pyqtSignal
@@ -25,25 +25,21 @@ class InstructionDialogModel(QObject):
     
     This class encapsulates the data management for the instruction dialog,
     providing methods to manipulate instruction sets and their properties.
-    It relies on InstructionSetModel for managing the actual instruction sets.
     
     Attributes
-    ----------
-    instruction_set_added : pyqtSignal
+    -------
+    instruction_set_added : pyqtSignal(InstructionSet)
         Signal emitted when an instruction set is added
-    instruction_set_updated : pyqtSignal
+    instruction_set_updated : pyqtSignal(InstructionSet)
         Signal emitted when an instruction set is updated
-    instruction_set_deleted : pyqtSignal
+    instruction_set_deleted : pyqtSignal(str)
         Signal emitted when an instruction set is deleted
-    instruction_set_renamed : pyqtSignal
+    instruction_set_renamed : pyqtSignal(str, str)
         Signal emitted when an instruction set is renamed
-    hotkey_updated : pyqtSignal
+    hotkey_updated : pyqtSignal(str, str)
         Signal emitted when a hotkey is updated
     """
     
-    # Default models
-    DEFAULT_SET = InstructionSet.get_default()
-
     # Define signals
     instruction_set_added = pyqtSignal(InstructionSet)
     instruction_set_updated = pyqtSignal(InstructionSet)
@@ -54,21 +50,26 @@ class InstructionDialogModel(QObject):
     def __init__(self) -> None:
         """
         Initialize the InstructionDialogModel.
-        
-        Parameters
-        ----------
-        instruction_set_model : InstructionSetModel
-            The main model for managing instruction sets
         """
         super().__init__()
         
-        # Get instruction manager from the model
-        self._instruction_manager = InstructionSetsManager.get_instance()
+        # Get managers
         self._keyboard_manager = KeyboardManager.get_instance()
+        self._instruction_manager = InstructionSetsManager.get_instance()
 
     def register_hotkey(self, hotkey: str) -> bool:
         """
-        Register a hotkey for the instruction dialog.
+        Register a hotkey.
+        
+        Parameters
+        ----------
+        hotkey : str
+            The hotkey to register
+            
+        Returns
+        -------
+        bool
+            True if registration was successful, False otherwise
         """
         return self._keyboard_manager.register_hotkey(hotkey)
     
@@ -137,70 +138,29 @@ class InstructionDialogModel(QObject):
         """
         return self._instruction_manager.find_set_by_hotkey(hotkey)
     
-    def add_set(self, name: str, 
-                stt_vocabulary: str = DEFAULT_SET.stt_vocabulary, 
-                stt_instructions: str = DEFAULT_SET.stt_instructions,
-                stt_language: str | None = DEFAULT_SET.stt_language,
-                stt_model: str = DEFAULT_SET.stt_model,
-                llm_enabled: bool = DEFAULT_SET.llm_enabled,
-                llm_model: str = DEFAULT_SET.llm_model,
-                llm_instructions: str = DEFAULT_SET.llm_instructions,
-                llm_clipboard_text_enabled: bool = DEFAULT_SET.llm_clipboard_text_enabled,
-                llm_clipboard_image_enabled: bool = DEFAULT_SET.llm_clipboard_image_enabled,
-                hotkey: str = DEFAULT_SET.hotkey) -> bool:
+    def add_set(self, name: str) -> bool:
         """
-        Add a new instruction set.
+        Add a new instruction set with default settings.
         
         Parameters
         ----------
         name : str
             Name for the new instruction set
-        stt_vocabulary : str, optional
-            Custom vocabulary for speech recognition, by default DEFAULT_SET.stt_vocabulary
-        stt_instructions : str, optional
-            System instructions for speech recognition, by default DEFAULT_SET.stt_instructions
-        stt_language : str | None, optional
-            Language code for speech recognition, by default DEFAULT_SET.stt_language
-        stt_model : str, optional
-            Model name for speech recognition, by default DEFAULT_SET.stt_model
-        llm_enabled : bool, optional
-            Whether LLM processing is enabled, by default DEFAULT_SET.llm_enabled
-        llm_model : str, optional
-            Model name for LLM processing, by default DEFAULT_SET.llm_model
-        llm_instructions : str, optional
-            System instructions for LLM, by default DEFAULT_SET.llm_instructions
-        llm_clipboard_text_enabled : bool, optional
-            Whether to include clipboard text in LLM input, by default DEFAULT_SET.llm_clipboard_text_enabled
-        llm_clipboard_image_enabled : bool, optional
-            Whether to include clipboard images in LLM input, by default DEFAULT_SET.llm_clipboard_image_enabled
-        hotkey : str, optional
-            Hotkey for quick activation, by default DEFAULT_SET.hotkey
             
         Returns
         -------
         bool
-            True if successful, False if a set with the same name already exists
+            True if successful, False if a set with the name already exists
         """
-        # Create a new instruction set
-        instruction_set = InstructionSet(
-            name=name,
-            stt_vocabulary=stt_vocabulary,
-            stt_instructions=stt_instructions,
-            stt_language=stt_language,
-            stt_model=stt_model,
-            llm_enabled=llm_enabled,
-            llm_model=llm_model,
-            llm_instructions=llm_instructions,
-            llm_clipboard_text_enabled=llm_clipboard_text_enabled,
-            llm_clipboard_image_enabled=llm_clipboard_image_enabled,
-            hotkey=hotkey
-        )
+        # Create a new instruction set with default settings
+        instruction_set = InstructionSet.get_default()
+        instruction_set.name = name
         
         # Add the set
         result = self._instruction_manager.add_set(instruction_set)
         
         if result:
-            # Save changes through the main model
+            # Save changes
             self._instruction_manager.save_to_settings()
             
             # Emit signal
@@ -208,17 +168,7 @@ class InstructionDialogModel(QObject):
         
         return result
     
-    def update_set(self, name: str, 
-                  stt_vocabulary: str | None = None, 
-                  stt_instructions: str | None = None,
-                  stt_language: str | None = None,
-                  stt_model: str | None = None,
-                  llm_enabled: bool | None = None,
-                  llm_model: str | None = None,
-                  llm_instructions: str | None = None,
-                  llm_clipboard_text_enabled: bool | None = None,
-                  llm_clipboard_image_enabled: bool | None = None,
-                  hotkey: str | None = None) -> bool:
+    def update_set(self, name: str, **kwargs) -> bool:
         """
         Update an existing instruction set.
         
@@ -226,26 +176,8 @@ class InstructionDialogModel(QObject):
         ----------
         name : str
             Name of the instruction set to update
-        stt_vocabulary : str | None, optional
-            Custom vocabulary for speech recognition, by default None (unchanged)
-        stt_instructions : str | None, optional
-            System instructions for speech recognition, by default None (unchanged)
-        stt_language : str | None, optional
-            Language code for speech recognition, by default None (unchanged)
-        stt_model : str | None, optional
-            Model name for speech recognition, by default None (unchanged)
-        llm_enabled : bool | None, optional
-            Whether LLM processing is enabled, by default None (unchanged)
-        llm_model : str | None, optional
-            Model name for LLM processing, by default None (unchanged)
-        llm_instructions : str | None, optional
-            System instructions for LLM, by default None (unchanged)
-        llm_clipboard_text_enabled : bool | None, optional
-            Whether to include clipboard text in LLM input, by default None (unchanged)
-        llm_clipboard_image_enabled : bool | None, optional
-            Whether to include clipboard images in LLM input, by default None (unchanged)
-        hotkey : str | None, optional
-            Hotkey for quick activation, by default None (unchanged)
+        **kwargs : dict
+            Keyword arguments with properties to update
             
         Returns
         -------
@@ -258,25 +190,14 @@ class InstructionDialogModel(QObject):
             return False
         
         # Update the set
-        instruction_set.update(
-            stt_vocabulary=stt_vocabulary,
-            stt_instructions=stt_instructions,
-            stt_language=stt_language,
-            stt_model=stt_model,
-            llm_enabled=llm_enabled,
-            llm_model=llm_model,
-            llm_instructions=llm_instructions,
-            llm_clipboard_text_enabled=llm_clipboard_text_enabled,
-            llm_clipboard_image_enabled=llm_clipboard_image_enabled,
-            hotkey=hotkey
-        )
+        instruction_set.update(**kwargs)
         
-        # Save changes through the main model
+        # Save changes
         self._instruction_manager.save_to_settings()
         
         # Emit hotkey updated signal if hotkey was updated
-        if hotkey is not None:
-            self.hotkey_updated.emit(name, hotkey)
+        if 'hotkey' in kwargs:
+            self.hotkey_updated.emit(name, kwargs['hotkey'])
         
         # Emit signal
         self.instruction_set_updated.emit(instruction_set)
@@ -301,7 +222,7 @@ class InstructionDialogModel(QObject):
         result = self._instruction_manager.delete_set(name)
         
         if result:
-            # Save changes through the main model
+            # Save changes
             self._instruction_manager.save_to_settings()
             
             # Emit signal
@@ -323,13 +244,13 @@ class InstructionDialogModel(QObject):
         Returns
         -------
         bool
-            True if successful, False if the old set doesn't exist or the new name is already taken
+            True if successful, False otherwise
         """
         # Rename the set
         result = self._instruction_manager.rename_set(old_name, new_name)
         
         if result:
-            # Save changes through the main model
+            # Save changes
             self._instruction_manager.save_to_settings()
             
             # Emit signal

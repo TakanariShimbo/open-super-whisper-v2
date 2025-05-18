@@ -16,11 +16,9 @@ from core.pipelines.instruction_set import InstructionSet
 from ..models.pipeline_model import PipelineModel
 from ..models.instruction_set_model import InstructionSetModel
 from ..models.hotkey_model import HotkeyModel
-from ..models.dialogs.instruction_dialog_model import InstructionDialogModel
-from ..controllers.dialogs.instruction_dialog_controller import InstructionDialogController
 from ..views.factories.api_key_dialog_factory import APIKeyDialogFactory
+from ..views.factories.instruction_dialog_factory import InstructionDialogFactory
 from ..views.factories.status_indicator_factory import StatusIndicatorFactory
-from ..views.dialogs.instruction_dialog import InstructionDialog
 from ..utils.clipboard_utils import ClipboardUtils
 from ..managers.settings_manager import SettingsManager
 
@@ -509,12 +507,11 @@ class AppController(QObject):
         if self.is_processing:
             self.cancel_processing()
     
-    def create_instruction_dialog(self, parent=None) -> InstructionDialog:
+    def create_instruction_dialog(self, parent=None):
         """
         Create and return an instruction dialog.
         
-        This method creates an instruction dialog with its own controller,
-        but connected to the app's instruction set model.
+        This method creates an instruction dialog using the factory pattern.
         
         Parameters
         ----------
@@ -526,19 +523,8 @@ class AppController(QObject):
         InstructionDialog
             The created instruction dialog
         """
-        # Create instruction dialog model passing the app's instruction set model
-        dialog_model = InstructionDialogModel()
-        
-        # Create instruction dialog controller
-        dialog_controller = InstructionDialogController(
-            dialog_model=dialog_model,
-            parent_controller=self
-        )
-        
-        # Create instruction dialog view
-        dialog = InstructionDialog(dialog_controller, parent)
-        
-        return dialog
+        # Create instruction dialog using factory
+        return InstructionDialogFactory.create_dialog(parent, self)
     
     def show_api_key_settings(self, parent=None) -> bool:
         """

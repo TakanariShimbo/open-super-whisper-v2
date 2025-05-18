@@ -20,23 +20,23 @@ class InstructionDialogController(QObject):
     Controller for the instruction dialog.
     
     This class mediates between the instruction dialog view and model,
-    handling user interactions and updating the model and view accordingly.
+    handling user interactions and business logic.
     
     Attributes
-    ----------
-    instruction_set_added : pyqtSignal
+    -------
+    instruction_set_added : pyqtSignal(InstructionSet)
         Signal emitted when an instruction set is added
-    instruction_set_updated : pyqtSignal
+    instruction_set_updated : pyqtSignal(InstructionSet)
         Signal emitted when an instruction set is updated
-    instruction_set_deleted : pyqtSignal
+    instruction_set_deleted : pyqtSignal(str)
         Signal emitted when an instruction set is deleted
-    instruction_set_renamed : pyqtSignal
+    instruction_set_renamed : pyqtSignal(str, str)
         Signal emitted when an instruction set is renamed
-    instruction_set_selected : pyqtSignal
+    instruction_set_selected : pyqtSignal(InstructionSet)
         Signal emitted when an instruction set is selected
-    hotkey_conflict : pyqtSignal
+    hotkey_conflict : pyqtSignal(str, str)
         Signal emitted when there is a hotkey conflict
-    operation_result : pyqtSignal
+    operation_result : pyqtSignal(bool, str)
         Signal emitted with the result of an operation
     """
     
@@ -59,15 +59,13 @@ class InstructionDialogController(QObject):
         ----------
         dialog_model : InstructionDialogModel
             The model for the instruction dialog
-        hotkey_model : HotkeyModel | None, optional
-            The model for hotkey management, by default None
         parent_controller : QObject, optional
             The parent controller, typically AppController
         """
         super().__init__()
         
         # Store models
-        self._dialog_model = dialog_model
+        self._model = dialog_model
         self._parent_controller = parent_controller
         
         # Connect model signals
@@ -78,14 +76,13 @@ class InstructionDialogController(QObject):
     
     def _connect_model_signals(self) -> None:
         """
-        Connect signals from the models.
+        Connect signals from the model.
         """
-        # Connect dialog model signals
-        self._dialog_model.instruction_set_added.connect(self._handle_instruction_set_added)
-        self._dialog_model.instruction_set_updated.connect(self._handle_instruction_set_updated)
-        self._dialog_model.instruction_set_deleted.connect(self._handle_instruction_set_deleted)
-        self._dialog_model.instruction_set_renamed.connect(self._handle_instruction_set_renamed)
-        self._dialog_model.hotkey_updated.connect(self._handle_hotkey_updated)
+        self._model.instruction_set_added.connect(self._handle_instruction_set_added)
+        self._model.instruction_set_updated.connect(self._handle_instruction_set_updated)
+        self._model.instruction_set_deleted.connect(self._handle_instruction_set_deleted)
+        self._model.instruction_set_renamed.connect(self._handle_instruction_set_renamed)
+        self._model.hotkey_updated.connect(self._handle_hotkey_updated)
     
     @pyqtSlot(InstructionSet)
     def _handle_instruction_set_added(self, instruction_set: InstructionSet) -> None:
@@ -102,7 +99,7 @@ class InstructionDialogController(QObject):
         
         # Register hotkey if set has one
         if instruction_set.hotkey:
-            success = self._dialog_model.register_hotkey(instruction_set.hotkey)
+            success = self._model.register_hotkey(instruction_set.hotkey)
             if not success:
                 self.hotkey_conflict.emit(instruction_set.hotkey, "")
     
@@ -170,14 +167,14 @@ class InstructionDialogController(QObject):
         # Register new hotkey if not empty
         if hotkey:
             # Check for conflicts first
-            conflicting_set = self._dialog_model.get_set_by_hotkey(hotkey)
+            conflicting_set = self._model.get_set_by_hotkey(hotkey)
             if conflicting_set and conflicting_set.name != set_name:
                 # Emit hotkey conflict signal
                 self.hotkey_conflict.emit(hotkey, conflicting_set.name)
                 return
             
             # Register the hotkey
-            self._dialog_model.register_hotkey(hotkey)
+            self._model.register_hotkey(hotkey)
     
     def get_all_sets(self) -> list[InstructionSet]:
         """
@@ -188,7 +185,7 @@ class InstructionDialogController(QObject):
         list[InstructionSet]
             List of all instruction sets
         """
-        return self._dialog_model.get_all_sets()
+        return self._model.get_all_sets()
     
     def get_set_by_name(self, name: str) -> InstructionSet | None:
         """
@@ -204,7 +201,7 @@ class InstructionDialogController(QObject):
         InstructionSet | None
             The instruction set with the specified name, or None if not found
         """
-        return self._dialog_model.get_set_by_name(name)
+        return self._model.get_set_by_name(name)
     
     def select_set(self, name: str) -> bool:
         """
@@ -220,7 +217,7 @@ class InstructionDialogController(QObject):
         bool
             True if successful, False if the set doesn't exist
         """
-        instruction_set = self._dialog_model.get_set_by_name(name)
+        instruction_set = self._model.get_set_by_name(name)
         if not instruction_set:
             return False
         
@@ -240,7 +237,7 @@ class InstructionDialogController(QObject):
         if not self._selected_set_name:
             return None
         
-        return self._dialog_model.get_set_by_name(self._selected_set_name)
+        return self._model.get_set_by_name(self._selected_set_name)
     
     def add_set(self, name: str) -> bool:
         """
@@ -257,12 +254,12 @@ class InstructionDialogController(QObject):
             True if successful, False if a set with the name already exists
         """
         # Check if name already exists
-        if self._dialog_model.get_set_by_name(name):
+        if self._model.get_set_by_name(name):
             self.operation_result.emit(False, f"An instruction set named '{name}' already exists.")
             return False
         
         # Add set with default settings
-        result = self._dialog_model.add_set(name)
+        result = self._model.add_set(name)
         
         if result:
             self.operation_result.emit(True, f"Instruction set '{name}' created successfully.")
@@ -288,12 +285,12 @@ class InstructionDialogController(QObject):
             True if successful, False if the set doesn't exist
         """
         # Check if set exists
-        if not self._dialog_model.get_set_by_name(name):
+        if not self._model.get_set_by_name(name):
             self.operation_result.emit(False, f"Instruction set '{name}' does not exist.")
             return False
         
         # Update the set
-        result = self._dialog_model.update_set(name, **kwargs)
+        result = self._model.update_set(name, **kwargs)
         
         if result:
             self.operation_result.emit(True, f"Instruction set '{name}' updated successfully.")
@@ -317,17 +314,17 @@ class InstructionDialogController(QObject):
             True if successful, False if the set doesn't exist or is the last one
         """
         # Check if set exists
-        if not self._dialog_model.get_set_by_name(name):
+        if not self._model.get_set_by_name(name):
             self.operation_result.emit(False, f"Instruction set '{name}' does not exist.")
             return False
         
         # Check if this is the last set
-        if len(self._dialog_model.get_all_sets()) <= 1:
+        if len(self._model.get_all_sets()) <= 1:
             self.operation_result.emit(False, "Cannot delete the last instruction set.")
             return False
         
         # Delete the set
-        result = self._dialog_model.delete_set(name)
+        result = self._model.delete_set(name)
         
         if result:
             self.operation_result.emit(True, f"Instruction set '{name}' deleted successfully.")
@@ -353,17 +350,17 @@ class InstructionDialogController(QObject):
             True if successful, False otherwise
         """
         # Check if old name exists
-        if not self._dialog_model.get_set_by_name(old_name):
+        if not self._model.get_set_by_name(old_name):
             self.operation_result.emit(False, f"Instruction set '{old_name}' does not exist.")
             return False
         
         # Check if new name already exists
-        if self._dialog_model.get_set_by_name(new_name):
+        if self._model.get_set_by_name(new_name):
             self.operation_result.emit(False, f"An instruction set named '{new_name}' already exists.")
             return False
         
         # Rename the set
-        result = self._dialog_model.rename_set(old_name, new_name)
+        result = self._model.rename_set(old_name, new_name)
         
         if result:
             self.operation_result.emit(True, f"Instruction set renamed from '{old_name}' to '{new_name}' successfully.")
@@ -389,19 +386,19 @@ class InstructionDialogController(QObject):
             True if successful, False otherwise
         """
         # Check if set exists
-        if not self._dialog_model.get_set_by_name(set_name):
+        if not self._model.get_set_by_name(set_name):
             self.operation_result.emit(False, f"Instruction set '{set_name}' does not exist.")
             return False
         
         # Check for conflicts
         if hotkey:
-            conflicting_set = self._dialog_model.get_set_by_hotkey(hotkey)
+            conflicting_set = self._model.get_set_by_hotkey(hotkey)
             if conflicting_set and conflicting_set.name != set_name:
                 self.hotkey_conflict.emit(hotkey, conflicting_set.name)
                 return False
         
         # Update the hotkey
-        result = self._dialog_model.update_set(set_name, hotkey=hotkey)
+        result = self._model.update_set(set_name, hotkey=hotkey)
         
         if result:
             if hotkey:
@@ -422,7 +419,7 @@ class InstructionDialogController(QObject):
         list[STTLangModel]
             List of available language objects
         """
-        return self._dialog_model.get_available_languages()
+        return self._model.get_available_languages()
     
     def get_available_stt_models(self) -> list[STTModel]:
         """
@@ -433,7 +430,7 @@ class InstructionDialogController(QObject):
         list[STTModel]
             List of available STT model objects
         """
-        return self._dialog_model.get_available_stt_models()
+        return self._model.get_available_stt_models()
     
     def get_available_llm_models(self) -> list[LLMModel]:
         """
@@ -444,7 +441,7 @@ class InstructionDialogController(QObject):
         list[LLMModel]
             List of available LLM model objects
         """
-        return self._dialog_model.get_available_llm_models()
+        return self._model.get_available_llm_models()
     
     def check_image_input_supported(self, model_id: str) -> bool:
         """
@@ -460,7 +457,7 @@ class InstructionDialogController(QObject):
         bool
             True if the model supports image input, False otherwise
         """
-        return self._dialog_model.check_image_input_supported(model_id)
+        return self._model.check_image_input_supported(model_id)
 
     def start_listening(self) -> bool:
         """
@@ -471,7 +468,7 @@ class InstructionDialogController(QObject):
         bool
             True if listening started successfully, False otherwise
         """
-        return self._dialog_model.start_listening()
+        return self._model.start_listening()
     
     def stop_listening(self) -> bool:
         """
@@ -482,4 +479,4 @@ class InstructionDialogController(QObject):
         bool
             True if listening stopped successfully, False otherwise
         """
-        return self._dialog_model.stop_listening()
+        return self._model.stop_listening()
