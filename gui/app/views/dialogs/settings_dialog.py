@@ -168,8 +168,6 @@ class SettingsDialog(QDialog):
     def _on_accept(self) -> None:
         """
         Handle dialog acceptance.
-        
-        Save settings and close dialog.
         """
         # Save settings
         self._controller.save_settings()
@@ -181,8 +179,6 @@ class SettingsDialog(QDialog):
     def _on_reject(self) -> None:
         """
         Handle dialog rejection.
-        
-        Restore original settings and close dialog.
         """
         # Restore original settings
         self._controller.cancel()
@@ -193,8 +189,6 @@ class SettingsDialog(QDialog):
     def closeEvent(self, event: QCloseEvent) -> None:
         """
         Handle dialog close event.
-        
-        Restore original settings when dialog is closed without accepting.
         
         Parameters
         ----------

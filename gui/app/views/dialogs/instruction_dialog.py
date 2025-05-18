@@ -29,21 +29,19 @@ class InstructionDialog(QDialog):
     language/model selection, and LLM settings.
     """
     
-    def __init__(self, controller: InstructionDialogController, parent=None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         """
         Initialize the InstructionDialog.
         
         Parameters
         ----------
-        controller : InstructionDialogController
-            The controller for this dialog
         parent : QWidget, optional
             Parent widget, by default None
         """
         super().__init__(parent)
         
-        # Store controller
-        self._controller = controller
+        # Create controller
+        self._controller = InstructionDialogController()
         
         # Track changes and hotkey state
         self._changes_made = False
@@ -59,7 +57,9 @@ class InstructionDialog(QDialog):
         self._load_instruction_sets()
     
     def _init_ui(self) -> None:
-        """Initialize the user interface."""
+        """
+        Initialize the user interface.
+        """
         # Set dialog properties
         self.setWindowTitle("Instruction Sets")
         self.setMinimumSize(700, 500)
@@ -180,7 +180,14 @@ class InstructionDialog(QDialog):
         return right_widget
     
     def _create_vocabulary_tab(self) -> QWidget:
-        """Create the vocabulary tab."""
+        """
+        Create the vocabulary tab.
+        
+        Returns
+        -------
+        QWidget
+            The vocabulary tab widget
+        """
         vocab_tab = QWidget()
         vocab_layout = QVBoxLayout(vocab_tab)
         
@@ -198,7 +205,14 @@ class InstructionDialog(QDialog):
         return vocab_tab
     
     def _create_stt_instructions_tab(self) -> QWidget:
-        """Create the STT instructions tab."""
+        """
+        Create the STT instructions tab.
+        
+        Returns
+        -------
+        QWidget
+            The STT instructions tab widget
+        """
         stt_tab = QWidget()
         stt_layout = QVBoxLayout(stt_tab)
         
@@ -216,7 +230,14 @@ class InstructionDialog(QDialog):
         return stt_tab
     
     def _create_llm_instructions_tab(self) -> QWidget:
-        """Create the LLM instructions tab."""
+        """
+        Create the LLM instructions tab.
+        
+        Returns
+        -------
+        QWidget
+            The LLM instructions tab widget
+        """
         llm_tab = QWidget()
         llm_layout = QVBoxLayout(llm_tab)
         
@@ -234,7 +255,14 @@ class InstructionDialog(QDialog):
         return llm_tab
     
     def _create_settings_tab(self) -> QWidget:
-        """Create the settings tab."""
+        """
+        Create the settings tab.
+        
+        Returns
+        -------
+        QWidget
+            The settings tab widget
+        """
         settings_tab = QWidget()
         settings_layout = QVBoxLayout(settings_tab)
         
@@ -300,7 +328,9 @@ class InstructionDialog(QDialog):
         return settings_tab
     
     def _connect_controller_signals(self) -> None:
-        """Connect signals from the controller."""
+        """
+        Connect signals from the controller.
+        """
         self._controller.instruction_set_added.connect(self._handle_instruction_set_added)
         self._controller.instruction_set_updated.connect(self._handle_instruction_set_updated)
         self._controller.instruction_set_deleted.connect(self._handle_instruction_set_deleted)
@@ -310,7 +340,9 @@ class InstructionDialog(QDialog):
         self._controller.operation_result.connect(self._handle_operation_result)
         
     def _load_instruction_sets(self) -> None:
-        """Load instruction sets into the UI."""
+        """
+        Load instruction sets into the UI.
+        """
         # Clear list
         self._sets_list.clear()
         
@@ -328,7 +360,9 @@ class InstructionDialog(QDialog):
             self._sets_list.setCurrentRow(0)
     
     def _load_languages(self) -> None:
-        """Load available languages into the combo box."""
+        """
+        Load available languages into the combo box.
+        """
         self._stt_language_combo.clear()
         
         languages = self._controller.get_available_languages()
@@ -339,7 +373,9 @@ class InstructionDialog(QDialog):
                 self._stt_language_combo.addItem(lang.name, lang.code)
 
     def _load_stt_models(self) -> None:
-        """Load available STT models into the combo box."""
+        """
+        Load available STT models into the combo box.
+        """
         self._stt_model_combo.clear()
         
         models = self._controller.get_available_stt_models()
@@ -352,7 +388,9 @@ class InstructionDialog(QDialog):
             )
     
     def _load_llm_models(self) -> None:
-        """Load available LLM models into the combo box."""
+        """
+        Load available LLM models into the combo box.
+        """
         self._llm_model_combo.clear()
         
         models = self._controller.get_available_llm_models()
@@ -365,7 +403,9 @@ class InstructionDialog(QDialog):
             )
     
     def _update_ui_state(self) -> None:
-        """Update the UI state based on current settings."""
+        """
+        Update the UI state based on current settings.
+        """
         # Enable/disable operation buttons based on changes
         operations_enabled = not self._changes_made
         
@@ -393,7 +433,14 @@ class InstructionDialog(QDialog):
     
     @pyqtSlot(int)
     def _on_set_selected(self, row: int) -> None:
-        """Handle selection of an instruction set."""
+        """
+        Handle selection of an instruction set.
+        
+        Parameters
+        ----------
+        row : int
+            The row index of the selected instruction set
+        """
         if row < 0:
             return
         
@@ -412,7 +459,14 @@ class InstructionDialog(QDialog):
     
     @pyqtSlot(InstructionSet)
     def _handle_instruction_set_selected(self, instruction_set: InstructionSet) -> None:
-        """Handle instruction set selected event."""
+        """
+        Handle instruction set selected event.
+        
+        Parameters
+        ----------
+        instruction_set : InstructionSet
+            The instruction set that was selected
+        """
         # Block signals to prevent triggering change events
         self._block_signals(True)
         
@@ -446,7 +500,14 @@ class InstructionDialog(QDialog):
         self._update_ui_state()
     
     def _block_signals(self, block: bool) -> None:
-        """Block or unblock signals from form elements."""
+        """
+        Block or unblock signals from form elements.
+        
+        Parameters
+        ----------
+        block : bool
+            True to block signals, False to unblock
+        """
         widgets = [
             self._vocabulary_edit, self._stt_instructions_edit, self._llm_instructions_edit,
             self._stt_language_combo, self._stt_model_combo, self._llm_enabled_checkbox,
@@ -457,7 +518,16 @@ class InstructionDialog(QDialog):
             widget.blockSignals(block)
     
     def _set_combo_value(self, combo: QComboBox, value: str) -> None:
-        """Set combo box value by item data."""
+        """
+        Set combo box value by item data.
+        
+        Parameters
+        ----------
+        combo : QComboBox
+            The combo box to set the value for
+        value : str
+            The value to set in the combo box
+        """
         for i in range(combo.count()):
             if combo.itemData(i) == value:
                 combo.setCurrentIndex(i)
@@ -465,14 +535,18 @@ class InstructionDialog(QDialog):
         combo.setCurrentIndex(0)  # Default to first item
     
     def _on_form_changed(self) -> None:
-        """Handle form value changes."""
+        """
+        Handle form value changes.
+        """
         if self.isVisible():  # Only mark changes if dialog is visible
             self._changes_made = True
             self._update_ui_state()
     
     @pyqtSlot()
     def _on_add_set(self) -> None:
-        """Handle adding a new instruction set."""
+        """
+        Handle adding a new instruction set.
+        """
         name, ok = QInputDialog.getText(
             self,
             "New Instruction Set",
@@ -484,7 +558,14 @@ class InstructionDialog(QDialog):
     
     @pyqtSlot(InstructionSet)
     def _handle_instruction_set_added(self, instruction_set: InstructionSet) -> None:
-        """Handle instruction set added event."""
+        """
+        Handle instruction set added event.
+        
+        Parameters
+        ----------
+        instruction_set : InstructionSet
+            The instruction set that was added
+        """
         # Add to list
         self._sets_list.addItem(instruction_set.name)
         
@@ -496,7 +577,9 @@ class InstructionDialog(QDialog):
     
     @pyqtSlot()
     def _on_rename_set(self) -> None:
-        """Handle renaming an instruction set."""
+        """
+        Handle renaming an instruction set.
+        """
         row = self._sets_list.currentRow()
         if row < 0:
             return
@@ -516,7 +599,16 @@ class InstructionDialog(QDialog):
     
     @pyqtSlot(str, str)
     def _handle_instruction_set_renamed(self, old_name: str, new_name: str) -> None:
-        """Handle instruction set renamed event."""
+        """
+        Handle instruction set renamed event.
+        
+        Parameters
+        ----------
+        old_name : str
+            The old name of the instruction set
+        new_name : str
+            The new name of the instruction set
+        """
         # Find and update item
         for i in range(self._sets_list.count()):
             if self._sets_list.item(i).text() == old_name:
@@ -525,7 +617,9 @@ class InstructionDialog(QDialog):
     
     @pyqtSlot()
     def _on_delete_set(self) -> None:
-        """Handle deleting an instruction set."""
+        """
+        Handle deleting an instruction set.
+        """
         row = self._sets_list.currentRow()
         if row < 0:
             return
@@ -545,7 +639,14 @@ class InstructionDialog(QDialog):
     
     @pyqtSlot(str)
     def _handle_instruction_set_deleted(self, name: str) -> None:
-        """Handle instruction set deleted event."""
+        """
+        Handle instruction set deleted event.
+        
+        Parameters
+        ----------
+        name : str
+            The name of the instruction set that was deleted
+        """
         # Find and remove item
         for i in range(self._sets_list.count()):
             if self._sets_list.item(i).text() == name:
@@ -558,7 +659,9 @@ class InstructionDialog(QDialog):
     
     @pyqtSlot()
     def _on_set_hotkey(self) -> None:
-        """Handle setting a hotkey for the selected instruction set."""
+        """
+        Handle setting a hotkey for the selected instruction set.
+        """
         row = self._sets_list.currentRow()
         if row < 0:
             return
@@ -567,8 +670,8 @@ class InstructionDialog(QDialog):
         current_hotkey = self._hotkey_input.text()
         
         dialog = HotkeyDialogFactory.create_dialog(
-            parent=self,
-            current_hotkey=current_hotkey
+            current_hotkey=current_hotkey,
+            parent=self
         )
         result = dialog.exec()
         
@@ -581,7 +684,16 @@ class InstructionDialog(QDialog):
     
     @pyqtSlot(str, str)
     def _handle_hotkey_conflict(self, hotkey: str, conflict_set_name: str) -> None:
-        """Handle hotkey conflict event."""
+        """
+        Handle hotkey conflict event.
+        
+        Parameters
+        ----------
+        hotkey : str
+            The hotkey that caused the conflict
+        conflict_set_name : str
+            The name of the instruction set that has the conflicting hotkey
+        """
         if conflict_set_name:
             QMessageBox.warning(
                 self,
@@ -599,7 +711,9 @@ class InstructionDialog(QDialog):
     
     @pyqtSlot()
     def _on_save_changes(self) -> None:
-        """Handle saving changes to the current instruction set."""
+        """
+        Handle saving changes to the current instruction set.
+        """
         row = self._sets_list.currentRow()
         if row < 0:
             return
@@ -629,7 +743,9 @@ class InstructionDialog(QDialog):
     
     @pyqtSlot()
     def _on_discard_changes(self) -> None:
-        """Handle discarding changes to the current instruction set."""
+        """
+        Handle discarding changes to the current instruction set.
+        """
         row = self._sets_list.currentRow()
         if row < 0:
             return
@@ -649,13 +765,27 @@ class InstructionDialog(QDialog):
     
     @pyqtSlot(InstructionSet)
     def _handle_instruction_set_updated(self, instruction_set: InstructionSet) -> None:
-        """Handle instruction set updated event."""
+        """
+        Handle instruction set updated event.
+        
+        Parameters
+        ----------
+        instruction_set : InstructionSet
+            The instruction set that was updated
+        """
         # No action needed here as the UI is already updated
         pass
     
     @pyqtSlot(bool, str)
     def _handle_operation_result(self, success: bool, message: str) -> None:
-        """Handle operation result event."""
+        """
+        Handle operation result event.
+        
+        Parameters
+        ----------
+        success : bool
+            True if the operation was successful, False otherwise
+        """
         if success:
             QMessageBox.information(
                 self,
@@ -673,18 +803,39 @@ class InstructionDialog(QDialog):
     
     @pyqtSlot(int)
     def _on_llm_enabled_changed(self, state: int) -> None:
-        """Handle changes to the LLM enabled checkbox."""
+        """
+        Handle changes to the LLM enabled checkbox.
+        
+        Parameters
+        ----------
+        state : int
+            The state of the LLM enabled checkbox
+        """
         self._on_form_changed()
         self._update_ui_state()
     
     @pyqtSlot(int)
     def _on_llm_model_changed(self, index: int) -> None:
-        """Handle changes to the LLM model selection."""
+        """
+        Handle changes to the LLM model selection.
+        
+        Parameters
+        ----------
+        index : int
+            The index of the selected LLM model
+        """
         self._on_form_changed()
         self._update_ui_state()
     
     def _show_unsaved_changes_dialog(self) -> QMessageBox.StandardButton:
-        """Show dialog asking if unsaved changes should be saved."""
+        """
+        Show dialog asking if unsaved changes should be saved.
+        
+        Returns
+        -------
+        QMessageBox.StandardButton
+            The button that was clicked
+        """
         return QMessageBox.question(
             self,
             "Unsaved Changes",
@@ -696,7 +847,9 @@ class InstructionDialog(QDialog):
         )
     
     def on_close(self) -> None:
-        """Handle dialog close event."""
+        """
+        Handle dialog close event.
+        """
         if self._changes_made:
             result = self._show_unsaved_changes_dialog()
             if result == QMessageBox.StandardButton.Cancel:
@@ -708,7 +861,14 @@ class InstructionDialog(QDialog):
         self.accept()
     
     def showEvent(self, event: QShowEvent) -> None:
-        """Handle dialog show event."""
+        """
+        Handle dialog show event.
+        
+        Parameters
+        ----------
+        event : QShowEvent
+            The show event
+        """
         super().showEvent(event)
         
         # Disable hotkeys while dialog is open
@@ -724,7 +884,14 @@ class InstructionDialog(QDialog):
                 self._handle_instruction_set_selected(instruction_set)
     
     def closeEvent(self, event: QCloseEvent) -> None:
-        """Handle window close event."""
+        """
+        Handle window close event.
+        
+        Parameters
+        ----------
+        event : QCloseEvent
+            The close event
+        """
         if self._changes_made:
             result = self._show_unsaved_changes_dialog()
             if result == QMessageBox.StandardButton.Cancel:
@@ -737,17 +904,23 @@ class InstructionDialog(QDialog):
         event.accept()
     
     def accept(self) -> None:
-        """Handle dialog acceptance."""
+        """
+        Handle dialog acceptance.
+        """
         self._restore_hotkeys()
         super().accept()
     
     def reject(self) -> None:
-        """Handle dialog rejection."""
+        """
+        Handle dialog rejection.
+        """
         self._restore_hotkeys()
         super().reject()
     
     def _restore_hotkeys(self) -> None:
-        """Restore hotkeys that were disabled."""
+        """
+        Restore hotkeys that were disabled.
+        """
         if self._hotkeys_disabled:
             self._controller.start_listening()
             self._hotkeys_disabled = False

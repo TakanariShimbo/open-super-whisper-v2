@@ -26,7 +26,7 @@ class StatusIndicatorWindow(QWidget):
     _MODE_COMPLETED = 3
     _MODE_CANCELLED = 4
     
-    def __init__(self, parent=None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         """
         Initialize the StatusIndicatorWindow.
         

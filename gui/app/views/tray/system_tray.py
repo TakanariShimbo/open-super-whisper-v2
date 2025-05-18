@@ -44,8 +44,6 @@ class SystemTray(QSystemTrayIcon):
         """
         Initialize the SystemTray.
         
-        Creates a system tray icon with a context menu and connects signals.
-        
         Parameters
         ----------
         icon_path : str, optional
@@ -64,9 +62,6 @@ class SystemTray(QSystemTrayIcon):
     def _set_icon(self, icon_path: str = None) -> None:
         """
         Set the system tray icon.
-        
-        If the specified icon_path doesn't exist or is None, 
-        falls back to a standard system icon.
         
         Parameters
         ----------
@@ -90,9 +85,6 @@ class SystemTray(QSystemTrayIcon):
     def _create_tray_menu(self) -> None:
         """
         Create the context menu for the system tray icon.
-        
-        This method sets up the menu items for showing/hiding the application
-        window and for quitting the application.
         """
         # Create the menu
         self._tray_menu = QMenu()
@@ -152,9 +144,6 @@ class SystemTray(QSystemTrayIcon):
     def _handle_tray_icon_activated(self, reason: QSystemTrayIcon.ActivationReason) -> None:
         """
         Handle activation of the tray icon.
-        
-        This method determines what action to take when the tray icon is clicked,
-        depending on the activation reason.
         
         Parameters
         ----------

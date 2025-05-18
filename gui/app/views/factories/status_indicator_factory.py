@@ -5,6 +5,8 @@ This module provides a factory for creating status indicator instances,
 following the factory design pattern to centralize view creation logic.
 """
 
+from PyQt6.QtWidgets import QWidget
+
 from ..widgets.status_indicator import StatusIndicatorWindow
 
 
@@ -17,13 +19,9 @@ class StatusIndicatorFactory:
     """
     
     @staticmethod
-    def create_status_indicator(parent=None) -> StatusIndicatorWindow:
+    def create_status_indicator(parent: QWidget | None = None) -> StatusIndicatorWindow:
         """
         Create a status indicator instance.
-        
-        This method creates a new status indicator view properly configured
-        and ready to use. The controller and model are not created here,
-        as they are created and connected by the AppController.
         
         Parameters
         ----------

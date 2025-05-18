@@ -5,6 +5,8 @@ This module provides a factory for creating hotkey dialog instances,
 following the factory design pattern to centralize dialog creation logic.
 """
 
+from PyQt6.QtWidgets import QWidget
+
 from ..dialogs.hotkey_dialog import HotkeyDialog
 
 
@@ -17,22 +19,16 @@ class HotkeyDialogFactory:
     """
     
     @staticmethod
-    def create_dialog(
-        parent=None, 
-        current_hotkey: str = ""
-    ) -> HotkeyDialog:
+    def create_dialog(current_hotkey: str = "", parent: QWidget | None = None) -> HotkeyDialog:
         """
         Create a hotkey dialog instance.
         
-        This method creates a new hotkey dialog with its controller,
-        properly configured and ready to use.
-        
         Parameters
         ----------
-        parent : QWidget, optional
-            Parent widget for the dialog, by default None
         current_hotkey : str, optional
             Current hotkey value, by default ""
+        parent : QWidget, optional
+            Parent widget for the dialog, by default None
             
         Returns
         -------
@@ -41,8 +37,8 @@ class HotkeyDialogFactory:
         """
         # Create a hotkey dialog with the controller
         dialog = HotkeyDialog(
-            parent=parent,
-            current_hotkey=current_hotkey
+            current_hotkey=current_hotkey,
+            parent=parent
         )
         
         return dialog

@@ -5,6 +5,8 @@ This module provides a factory for creating settings dialog instances,
 following the factory design pattern to centralize dialog creation logic.
 """
 
+from PyQt6.QtWidgets import QWidget
+
 from ..dialogs.settings_dialog import SettingsDialog
 
 
@@ -17,12 +19,9 @@ class SettingsDialogFactory:
     """
     
     @staticmethod
-    def create_dialog(parent=None) -> SettingsDialog:
+    def create_dialog(parent: QWidget | None = None) -> SettingsDialog:
         """
         Create a settings dialog instance.
-        
-        This method creates a new settings dialog with its controller,
-        properly configured and ready to use.
         
         Parameters
         ----------

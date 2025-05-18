@@ -22,16 +22,16 @@ class APIKeyDialog(QDialog):
     with proper explanation and validation feedback.
     """
     
-    def __init__(self, parent: QWidget | None = None, initial_message: str | None = None) -> None:
+    def __init__(self, initial_message: str, parent: QWidget | None = None) -> None:
         """
         Initialize the API Key Dialog.
         
         Parameters
         ----------
+        initial_message : str
+            Initial message to display as error/info
         parent : QWidget, optional
             Parent widget, by default None
-        initial_message : str, optional
-            Initial message to display as error/info, by default None
         """
         super().__init__(parent)
         
@@ -229,8 +229,6 @@ class APIKeyDialog(QDialog):
     def closeEvent(self, event: QCloseEvent) -> None:
         """
         Handle dialog close event.
-        
-        Restore original settings when dialog is closed without accepting.
         
         Parameters
         ----------

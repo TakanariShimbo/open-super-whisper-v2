@@ -6,7 +6,7 @@ It integrates the MVC components of the hotkey dialog.
 """
 
 from PyQt6.QtWidgets import (
-    QDialog, QVBoxLayout, QLabel, QLineEdit,
+    QWidget, QDialog, QVBoxLayout, QLabel, QLineEdit,
     QPushButton, QDialogButtonBox, QGridLayout, QMessageBox,
     QHBoxLayout, QFrame
 )
@@ -25,18 +25,17 @@ class HotkeyDialog(QDialog):
     capture method for accurate hotkey detection.
     """
     
-    def __init__(self, 
-                 parent=None, 
-                 current_hotkey: str = "") -> None:
+    def __init__(self, current_hotkey: str = "", parent: QWidget | None = None) -> None:
         """
         Initialize the HotkeyDialog.
         
         Parameters
         ----------
-        parent : QWidget, optional
-            Parent widget, by default None
         current_hotkey : str, optional
             Current hotkey string, by default ""
+        parent : QWidget, optional
+            Parent widget, by default None
+            
         """
         super().__init__(parent)
 
@@ -55,7 +54,9 @@ class HotkeyDialog(QDialog):
         self._capture_timer.timeout.connect(self._on_capture_timer)
     
     def _init_ui(self) -> None:
-        """Initialize the user interface."""
+        """
+        Initialize the user interface.
+        """
         # Set dialog properties
         self.setWindowTitle("Hotkey Settings")
         self.setMinimumWidth(400)
@@ -191,8 +192,6 @@ class HotkeyDialog(QDialog):
     def _on_capture_timer(self) -> None:
         """
         Handle capture timer tick.
-        
-        This method is called periodically to capture the current key combination.
         """
         # Capture current keys
         self._controller.capture_keys()
@@ -213,7 +212,7 @@ class HotkeyDialog(QDialog):
     def _handle_hotkey_changed(self, hotkey: str) -> None:
         """
         Handle hotkey changed event from the controller.
-        
+
         Parameters
         ----------
         hotkey : str
@@ -249,9 +248,6 @@ class HotkeyDialog(QDialog):
     def _on_accept(self) -> None:
         """
         Handle dialog acceptance.
-        
-        This method is called when the OK button is clicked. It validates
-        the hotkey and saves changes if valid.
         """
         # Stop capture mode if active
         if self._capture_button.isChecked():
@@ -270,9 +266,6 @@ class HotkeyDialog(QDialog):
     def _on_reject(self) -> None:
         """
         Handle dialog rejection.
-        
-        This method is called when the Cancel button is clicked. It restores
-        the original hotkey and rejects the dialog.
         """
         # Stop capture mode if active
         if self._capture_button.isChecked():
@@ -298,10 +291,7 @@ class HotkeyDialog(QDialog):
     def showEvent(self, event: QShowEvent) -> None:
         """
         Handle dialog show event.
-        
-        This method is called when the dialog is shown. It disables all hotkeys
-        to prevent them from being triggered while the dialog is open.
-        
+
         Parameters
         ----------
         event : QShowEvent
@@ -313,9 +303,6 @@ class HotkeyDialog(QDialog):
     def closeEvent(self, event: QCloseEvent) -> None:
         """
         Handle dialog close event.
-        
-        This method is called when the dialog is closed. It re-enables all hotkeys
-        that were disabled when the dialog was shown, and ensures capture mode is stopped.
         
         Parameters
         ----------

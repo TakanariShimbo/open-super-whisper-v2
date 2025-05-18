@@ -49,24 +49,14 @@ class InstructionDialogController(QObject):
     hotkey_conflict = pyqtSignal(str, str)  # Conflicting hotkey, set name with conflict
     operation_result = pyqtSignal(bool, str)  # Success/failure, message
     
-    def __init__(self, 
-                 dialog_model: InstructionDialogModel,
-                 parent_controller: QObject | None = None):
+    def __init__(self):
         """
         Initialize the InstructionDialogController.
-        
-        Parameters
-        ----------
-        dialog_model : InstructionDialogModel
-            The model for the instruction dialog
-        parent_controller : QObject, optional
-            The parent controller, typically AppController
         """
         super().__init__()
         
-        # Store models
-        self._model = dialog_model
-        self._parent_controller = parent_controller
+        # Create model
+        self._model = InstructionDialogModel()
         
         # Connect model signals
         self._connect_model_signals()
