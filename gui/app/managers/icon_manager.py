@@ -48,8 +48,6 @@ class IconManager:
     def __init__(self) -> None:
         """
         Initialize the IconManager.
-        
-        Sets up icon paths and loads the application icon.
 
         Raises
         ------
@@ -101,10 +99,6 @@ class IconManager:
     def _load_app_icon(self) -> None:
         """
         Load the main application icon.
-        
-        Tries to load the icon from the configured paths, with fallbacks
-        for different platforms. If no icon is found, falls back to a
-        standard system icon.
         """
         # Try to load the most appropriate icon for the platform
         icon_paths = [

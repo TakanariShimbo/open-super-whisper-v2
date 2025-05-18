@@ -12,9 +12,7 @@ class PyInstallerUtils:
     @staticmethod
     def get_resource_path(relative_path: str) -> str:
         """
-        Get the absolute path to a resource file.
-        
-        This function resolves the correct path to a resource file, whether the application is running from source or is bundled by PyInstaller.
+        Get the absolute path to a resource file for PyInstaller.
         
         Parameters
         ----------

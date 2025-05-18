@@ -55,9 +55,6 @@ class SettingsDialogController(QObject):
     def _handle_settings_updated(self) -> None:
         """
         Handle any settings change from the model.
-        
-        This unified handler emits a single signal to notify the view
-        that settings have been updated and the view should refresh.
         """
         # Notify view that settings have changed
         self.settings_updated.emit()

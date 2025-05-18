@@ -205,8 +205,6 @@ class InstructionSetsManager:
     def _load_data_from_settings(self) -> None:
         """
         Load instruction sets data from settings.
-        
-        This method loads raw data from settings without enforcing state validity.
         """
         # Try to load instruction sets
         serialized_data = self._settings_manager.get_instruction_sets()
@@ -237,8 +235,6 @@ class InstructionSetsManager:
     def _save_to_settings(self) -> None:
         """
         Save instruction sets to settings.
-        
-        This is an internal method that persists the model's state to settings.
         """
         # Save instruction sets
         serialized_data = self._instruction_sets_manager.export_to_dict()

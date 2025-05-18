@@ -91,25 +91,18 @@ class HotkeyDialogModel(QObject):
     def start_capturing(self) -> None:
         """
         Start capturing keyboard inputs.
-        
-        This method activates the key state tracker to monitor key combinations.
         """
         self._keyboard_manager.start_monitoring()
     
     def stop_capturing(self) -> None:
         """
         Stop capturing keyboard inputs.
-        
-        This method stops the key state tracker from monitoring key combinations.
         """
         self._keyboard_manager.stop_monitoring()
     
     def capture_keys(self) -> None:
         """
         Capture and process the key combination.
-        
-        This method reads the keys from the key state tracker,
-        formats them into a hotkey string, and updates the model.
         """
         # Get the key combination from the tracker
         keys_list = self._keyboard_manager.capture_last_keys()
@@ -182,15 +175,11 @@ class HotkeyDialogModel(QObject):
     def restore_original(self) -> None:
         """
         Restore the original hotkey value.
-        
-        This is typically used when canceling changes.
         """
         self.set_hotkey(self._original_hotkey)
     
     def save(self) -> None:
         """
         Save the current hotkey as the new original value.
-        
-        This is typically called when changes are accepted.
         """
         self._original_hotkey = self._hotkey

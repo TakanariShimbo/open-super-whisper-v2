@@ -120,8 +120,6 @@ class KeyboardManager(QObject):
     def stop_monitoring(self) -> None:
         """
         Stop monitoring keyboard inputs.
-        
-        This method stops the key state tracker from monitoring key combinations.
         """
         # Stop monitoring
         if self.is_monitoring:
@@ -130,9 +128,6 @@ class KeyboardManager(QObject):
     def capture_last_keys(self) -> list[str]:
         """
         Capture and process the last key combination.
-        
-        This method reads the last keys from the key state tracker,
-        formats them into a hotkey string, and updates the model.
 
         Returns
         -------
@@ -168,9 +163,6 @@ class KeyboardManager(QObject):
         """
         Enable filtered mode with the active hotkey and start listening.
 
-        In filter mode, only the active hotkey is enabled and
-        all other hotkeys are filtered out.
-
         Parameters
         ----------
         active_hotkey : str, optional
@@ -192,8 +184,6 @@ class KeyboardManager(QObject):
     def disable_filtered_mode_and_start_listening(self) -> None:
         """
         Disable filtered mode and start listening.
-
-        When disabled, all hotkeys are enabled again.
         """
         # Stop listening
         self.stop_listening()
