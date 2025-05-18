@@ -8,7 +8,7 @@ allowing it to run in the background while maintaining accessibility.
 import os
 from typing import Literal
 
-from PyQt6.QtWidgets import QSystemTrayIcon, QMenu, QStyle, QApplication
+from PyQt6.QtWidgets import QSystemTrayIcon, QMenu
 from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtCore import pyqtSignal
 
@@ -60,9 +60,6 @@ class SystemTray(QSystemTrayIcon):
         
         # Create the tray menu
         self._create_tray_menu()
-        
-        # Connect tray icon signals
-        self.activated.connect(self._handle_tray_icon_activated)
     
     def _set_icon(self, icon_path: str = None) -> None:
         """
@@ -102,19 +99,18 @@ class SystemTray(QSystemTrayIcon):
         
         # Create actions
         self._show_action = QAction("Show Window")
+        self._show_action.triggered.connect(self._on_show_window)
+
         self._hide_action = QAction("Hide Window")
+        self._hide_action.triggered.connect(self._on_hide_window)
         
         # Create record action
         self._record_action = QAction("Start Recording")
+        self._record_action.triggered.connect(self._on_toggle_recording)
         
         self._quit_action = QAction("Quit")
-        
-        # Connect action signals
-        self._show_action.triggered.connect(self._on_show_window)
-        self._hide_action.triggered.connect(self._on_hide_window)
-        self._record_action.triggered.connect(self._on_toggle_recording)
         self._quit_action.triggered.connect(self._on_quit_application)
-        
+
         # Add actions to menu
         self._tray_menu.addAction(self._show_action)
         self._tray_menu.addAction(self._hide_action)
@@ -125,21 +121,32 @@ class SystemTray(QSystemTrayIcon):
         
         # Set the menu
         self.setContextMenu(self._tray_menu)
+
+        # Connect tray icon signals
+        self.activated.connect(self._handle_tray_icon_activated)
     
     def _on_show_window(self) -> None:
-        """Handle show window action."""
+        """
+        Handle show window action.
+        """
         self.show_window_signal.emit()
         
     def _on_hide_window(self) -> None:
-        """Handle hide window action."""
+        """
+        Handle hide window action.
+        """
         self.hide_window_signal.emit()
     
     def _on_toggle_recording(self) -> None:
-        """Handle toggle recording action."""
+        """
+        Handle toggle recording action.
+        """
         self.toggle_recording_signal.emit()
         
     def _on_quit_application(self) -> None:
-        """Handle quit application action."""
+        """
+        Handle quit application action.
+        """
         self.quit_application_signal.emit()
     
     def _handle_tray_icon_activated(self, reason: QSystemTrayIcon.ActivationReason) -> None:

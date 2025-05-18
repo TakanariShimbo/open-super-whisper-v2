@@ -46,12 +46,12 @@ class StatusIndicatorController(QObject):
         Connect signals from the model to controller handlers.
         """
         # Connect model signals to controller handlers
-        self._model.mode_changed.connect(self._on_mode_changed)
-        self._model.timer_updated.connect(self._on_timer_updated)
-        self._model.visibility_changed.connect(self._on_visibility_changed)
+        self._model.mode_changed.connect(self._handle_mode_changed)
+        self._model.timer_updated.connect(self._handle_timer_updated)
+        self._model.visibility_changed.connect(self._handle_visibility_changed)
         
     @pyqtSlot(int)
-    def _on_mode_changed(self, mode: int) -> None:
+    def _handle_mode_changed(self, mode: int) -> None:
         """
         Handle mode changes.
         
@@ -64,7 +64,7 @@ class StatusIndicatorController(QObject):
         self.mode_changed.emit(mode)
         
     @pyqtSlot(str)
-    def _on_timer_updated(self, time_str: str) -> None:
+    def _handle_timer_updated(self, time_str: str) -> None:
         """
         Handle timer updates.
         
@@ -77,7 +77,7 @@ class StatusIndicatorController(QObject):
         self.timer_updated.emit(time_str)
         
     @pyqtSlot(bool)
-    def _on_visibility_changed(self, visible: bool) -> None:
+    def _handle_visibility_changed(self, visible: bool) -> None:
         """
         Handle visibility changes.
         

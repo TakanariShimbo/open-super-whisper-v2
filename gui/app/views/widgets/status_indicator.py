@@ -105,9 +105,9 @@ class StatusIndicatorWindow(QWidget):
         Connect signals from controller to view methods.
         """
         # Connect controller signals to update view
-        self._controller.mode_changed.connect(self._on_mode_changed)
-        self._controller.timer_updated.connect(self._on_timer_updated)
-        self._controller.visibility_changed.connect(self._on_visibility_changed)
+        self._controller.mode_changed.connect(self._handle_mode_changed)
+        self._controller.timer_updated.connect(self._handle_timer_updated)
+        self._controller.visibility_changed.connect(self._handle_visibility_changed)
     
     def _update_position(self) -> None:
         """
@@ -137,7 +137,7 @@ class StatusIndicatorWindow(QWidget):
             self.timer_label.setText("")
     
     @pyqtSlot(int)
-    def _on_mode_changed(self, mode: int) -> None:
+    def _handle_mode_changed(self, mode: int) -> None:
         """
         Handle mode changes.
 
@@ -151,7 +151,7 @@ class StatusIndicatorWindow(QWidget):
             self._update_indicator()
     
     @pyqtSlot(str)
-    def _on_timer_updated(self, time_str: str) -> None:
+    def _handle_timer_updated(self, time_str: str) -> None:
         """
         Handle timer updates.
         
@@ -164,7 +164,7 @@ class StatusIndicatorWindow(QWidget):
     
     
     @pyqtSlot(bool)
-    def _on_visibility_changed(self, visible: bool) -> None:
+    def _handle_visibility_changed(self, visible: bool) -> None:
         """
         Handle visibility changes.
         

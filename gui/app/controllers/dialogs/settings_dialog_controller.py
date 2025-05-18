@@ -49,10 +49,10 @@ class SettingsDialogController(QObject):
         Connect signals from the model to controller handlers.
         """
         # Connect the model's settings_updated signal to our handler
-        self._dialog_model.settings_updated.connect(self._on_settings_updated)
+        self._dialog_model.settings_updated.connect(self._handle_settings_updated)
     
     @pyqtSlot()
-    def _on_settings_updated(self) -> None:
+    def _handle_settings_updated(self) -> None:
         """
         Handle any settings change from the model.
         

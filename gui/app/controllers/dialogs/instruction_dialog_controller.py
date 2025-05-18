@@ -81,14 +81,14 @@ class InstructionDialogController(QObject):
         Connect signals from the models.
         """
         # Connect dialog model signals
-        self._dialog_model.instruction_set_added.connect(self._on_instruction_set_added)
-        self._dialog_model.instruction_set_updated.connect(self._on_instruction_set_updated)
-        self._dialog_model.instruction_set_deleted.connect(self._on_instruction_set_deleted)
-        self._dialog_model.instruction_set_renamed.connect(self._on_instruction_set_renamed)
-        self._dialog_model.hotkey_updated.connect(self._on_hotkey_updated)
+        self._dialog_model.instruction_set_added.connect(self._handle_instruction_set_added)
+        self._dialog_model.instruction_set_updated.connect(self._handle_instruction_set_updated)
+        self._dialog_model.instruction_set_deleted.connect(self._handle_instruction_set_deleted)
+        self._dialog_model.instruction_set_renamed.connect(self._handle_instruction_set_renamed)
+        self._dialog_model.hotkey_updated.connect(self._handle_hotkey_updated)
     
     @pyqtSlot(InstructionSet)
-    def _on_instruction_set_added(self, instruction_set: InstructionSet) -> None:
+    def _handle_instruction_set_added(self, instruction_set: InstructionSet) -> None:
         """
         Handle instruction set added event.
         
@@ -107,7 +107,7 @@ class InstructionDialogController(QObject):
                 self.hotkey_conflict.emit(instruction_set.hotkey, "")
     
     @pyqtSlot(InstructionSet)
-    def _on_instruction_set_updated(self, instruction_set: InstructionSet) -> None:
+    def _handle_instruction_set_updated(self, instruction_set: InstructionSet) -> None:
         """
         Handle instruction set updated event.
         
@@ -120,7 +120,7 @@ class InstructionDialogController(QObject):
         self.instruction_set_updated.emit(instruction_set)
     
     @pyqtSlot(str)
-    def _on_instruction_set_deleted(self, name: str) -> None:
+    def _handle_instruction_set_deleted(self, name: str) -> None:
         """
         Handle instruction set deleted event.
         
@@ -137,7 +137,7 @@ class InstructionDialogController(QObject):
             self._selected_set_name = ""
     
     @pyqtSlot(str, str)
-    def _on_instruction_set_renamed(self, old_name: str, new_name: str) -> None:
+    def _handle_instruction_set_renamed(self, old_name: str, new_name: str) -> None:
         """
         Handle instruction set renamed event.
         
@@ -156,7 +156,7 @@ class InstructionDialogController(QObject):
             self._selected_set_name = new_name
     
     @pyqtSlot(str, str)
-    def _on_hotkey_updated(self, set_name: str, hotkey: str) -> None:
+    def _handle_hotkey_updated(self, set_name: str, hotkey: str) -> None:
         """
         Handle hotkey updated event.
         

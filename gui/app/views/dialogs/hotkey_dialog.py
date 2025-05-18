@@ -128,9 +128,9 @@ class HotkeyDialog(QDialog):
         """
         Connect signals from the controller.
         """
-        self._controller.hotkey_changed.connect(self._on_hotkey_changed)
-        self._controller.hotkey_captured.connect(self._on_hotkey_captured)
-        self._controller.validation_error.connect(self._on_validation_error)
+        self._controller.hotkey_changed.connect(self._handle_hotkey_changed)
+        self._controller.hotkey_captured.connect(self._handle_hotkey_captured)
+        self._controller.validation_error.connect(self._handle_validation_error)
     
     @pyqtSlot(bool)
     def _on_capture_toggled(self, checked: bool) -> None:
@@ -210,7 +210,7 @@ class HotkeyDialog(QDialog):
         self._controller.reset_hotkey()
     
     @pyqtSlot(str)
-    def _on_hotkey_changed(self, hotkey: str) -> None:
+    def _handle_hotkey_changed(self, hotkey: str) -> None:
         """
         Handle hotkey changed event from the controller.
         
@@ -222,7 +222,7 @@ class HotkeyDialog(QDialog):
         self._hotkey_display.setText(hotkey)
     
     @pyqtSlot(str)
-    def _on_hotkey_captured(self, hotkey: str) -> None:
+    def _handle_hotkey_captured(self, hotkey: str) -> None:
         """
         Handle hotkey captured event from the controller.
         
@@ -235,9 +235,9 @@ class HotkeyDialog(QDialog):
         self._hotkey_display.setText(hotkey)
     
     @pyqtSlot(str)
-    def _on_validation_error(self, message: str) -> None:
+    def _handle_validation_error(self, message: str) -> None:
         """
-        Display a validation error message.
+        Handle validation error event from the controller.
         
         Parameters
         ----------

@@ -308,13 +308,13 @@ class InstructionDialog(QDialog):
     def _connect_controller_signals(self) -> None:
         """Connect signals from the controller."""
         # Connect controller signals to local methods
-        self._controller.instruction_set_added.connect(self._on_instruction_set_added)
-        self._controller.instruction_set_updated.connect(self._on_instruction_set_updated)
-        self._controller.instruction_set_deleted.connect(self._on_instruction_set_deleted)
-        self._controller.instruction_set_renamed.connect(self._on_instruction_set_renamed)
-        self._controller.instruction_set_selected.connect(self._on_instruction_set_selected)
-        self._controller.hotkey_conflict.connect(self._on_hotkey_conflict)
-        self._controller.operation_result.connect(self._on_operation_result)
+        self._controller.instruction_set_added.connect(self._handle_instruction_set_added)
+        self._controller.instruction_set_updated.connect(self._handle_instruction_set_updated)
+        self._controller.instruction_set_deleted.connect(self._handle_instruction_set_deleted)
+        self._controller.instruction_set_renamed.connect(self._handle_instruction_set_renamed)
+        self._controller.instruction_set_selected.connect(self._handle_instruction_set_selected)
+        self._controller.hotkey_conflict.connect(self._handle_hotkey_conflict)
+        self._controller.operation_result.connect(self._handle_operation_result)
         
     def _load_instruction_sets(self) -> None:
         """Load instruction sets into the UI."""
@@ -343,7 +343,7 @@ class InstructionDialog(QDialog):
             if instruction_set:
                 self._sets_list.setCurrentRow(0)
                 # Explicitly call to update UI with the selected instruction set
-                self._on_instruction_set_selected(instruction_set)
+                self._handle_instruction_set_selected(instruction_set)
     
     def _load_languages(self) -> None:
         """Load available languages into the language combo box."""
@@ -414,7 +414,7 @@ class InstructionDialog(QDialog):
         self._controller.select_set(set_name)
     
     @pyqtSlot(InstructionSet)
-    def _on_instruction_set_selected(self, instruction_set: InstructionSet) -> None:
+    def _handle_instruction_set_selected(self, instruction_set: InstructionSet) -> None:
         """
         Handle the instruction set selected event from the controller.
         
@@ -571,7 +571,7 @@ class InstructionDialog(QDialog):
             self._controller.add_set(name)
     
     @pyqtSlot(InstructionSet)
-    def _on_instruction_set_added(self, instruction_set: InstructionSet) -> None:
+    def _handle_instruction_set_added(self, instruction_set: InstructionSet) -> None:
         """
         Handle instruction set added event from the controller.
         
@@ -611,7 +611,7 @@ class InstructionDialog(QDialog):
             self._controller.rename_set(old_name, new_name)
     
     @pyqtSlot(str, str)
-    def _on_instruction_set_renamed(self, old_name: str, new_name: str) -> None:
+    def _handle_instruction_set_renamed(self, old_name: str, new_name: str) -> None:
         """
         Handle instruction set renamed event from the controller.
         
@@ -650,7 +650,7 @@ class InstructionDialog(QDialog):
             self._controller.delete_set(name)
     
     @pyqtSlot(str)
-    def _on_instruction_set_deleted(self, name: str) -> None:
+    def _handle_instruction_set_deleted(self, name: str) -> None:
         """
         Handle instruction set deleted event from the controller.
         
@@ -700,7 +700,7 @@ class InstructionDialog(QDialog):
                 self._on_form_changed()
     
     @pyqtSlot(str, str)
-    def _on_hotkey_conflict(self, hotkey: str, conflict_set_name: str) -> None:
+    def _handle_hotkey_conflict(self, hotkey: str, conflict_set_name: str) -> None:
         """
         Handle hotkey conflict event from the controller.
         
@@ -877,7 +877,7 @@ class InstructionDialog(QDialog):
         )
     
     @pyqtSlot(InstructionSet)
-    def _on_instruction_set_updated(self, instruction_set: InstructionSet) -> None:
+    def _handle_instruction_set_updated(self, instruction_set: InstructionSet) -> None:
         """
         Handle instruction set updated event from the controller.
         
@@ -891,7 +891,7 @@ class InstructionDialog(QDialog):
         pass
     
     @pyqtSlot(bool, str)
-    def _on_operation_result(self, success: bool, message: str) -> None:
+    def _handle_operation_result(self, success: bool, message: str) -> None:
         """
         Handle operation result event from the controller.
         
@@ -1048,7 +1048,7 @@ class InstructionDialog(QDialog):
             instruction_set = self._controller.get_set_by_name(set_name)
             if instruction_set:
                 # Force refresh of UI with the selected instruction set
-                self._on_instruction_set_selected(instruction_set)
+                self._handle_instruction_set_selected(instruction_set)
     
     def closeEvent(self, event: QCloseEvent) -> None:
         """

@@ -58,12 +58,12 @@ class HotkeyDialogController(QObject):
         """
         Connect signals from the model to controller handlers.
         """
-        self._model.hotkey_changed.connect(self._on_hotkey_changed)
-        self._model.hotkey_captured.connect(self._on_hotkey_captured)
-        self._model.validation_failed.connect(self._on_validation_failed)
+        self._model.hotkey_changed.connect(self._handle_hotkey_changed)
+        self._model.hotkey_captured.connect(self._handle_hotkey_captured)
+        self._model.validation_failed.connect(self._handle_validation_failed)
     
     @pyqtSlot(str)
-    def _on_hotkey_changed(self, hotkey: str) -> None:
+    def _handle_hotkey_changed(self, hotkey: str) -> None:
         """
         Handle hotkey changed event from the model.
         
@@ -76,7 +76,7 @@ class HotkeyDialogController(QObject):
         self.hotkey_changed.emit(hotkey)
     
     @pyqtSlot(str)
-    def _on_hotkey_captured(self, hotkey: str) -> None:
+    def _handle_hotkey_captured(self, hotkey: str) -> None:
         """
         Handle hotkey captured event from the model.
         
@@ -89,7 +89,7 @@ class HotkeyDialogController(QObject):
         self.hotkey_captured.emit(hotkey)
     
     @pyqtSlot(str)
-    def _on_validation_failed(self, error_message: str) -> None:
+    def _handle_validation_failed(self, error_message: str) -> None:
         """
         Handle failed validation from the model.
         

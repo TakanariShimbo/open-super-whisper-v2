@@ -131,8 +131,8 @@ class APIKeyDialog(QDialog):
         Connect signals from the controller.
         """
         # Connect controller signals to view methods
-        self._controller.api_key_validated.connect(self._on_api_key_validated)
-        self._controller.api_key_invalid.connect(self._on_api_key_invalid)
+        self._controller.api_key_validated.connect(self._handle_api_key_validated)
+        self._controller.api_key_invalid.connect(self._handle_api_key_invalid)
     
     @pyqtSlot()
     def _on_key_visibility_toggled(self) -> None:
@@ -162,7 +162,7 @@ class APIKeyDialog(QDialog):
             return
         
         # Use controller to validate the key
-        self._controller.validate_key(entered_api_key)
+        self._controller.validate_api_key(entered_api_key)
     
     @pyqtSlot()
     def _on_reject(self) -> None:
@@ -176,7 +176,7 @@ class APIKeyDialog(QDialog):
         super().reject()
     
     @pyqtSlot()
-    def _on_api_key_validated(self) -> None:
+    def _handle_api_key_validated(self) -> None:
         """
         Handle successful API key validation.
         
@@ -192,7 +192,7 @@ class APIKeyDialog(QDialog):
         super().accept()
     
     @pyqtSlot()
-    def _on_api_key_invalid(self) -> None:
+    def _handle_api_key_invalid(self) -> None:
         """
         Handle failed API key validation.
         

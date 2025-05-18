@@ -43,10 +43,10 @@ class HotkeyModel(QObject):
         Connect signals from the manager to model handlers.
         """
         # Connect the manager's hotkey_triggered signal to our handler
-        self._keyboard_manager.hotkey_triggered.connect(self._on_hotkey_triggered)
+        self._keyboard_manager.hotkey_triggered.connect(self._handle_hotkey_triggered)
     
     @pyqtSlot(str)
-    def _on_hotkey_triggered(self, hotkey: str) -> None:
+    def _handle_hotkey_triggered(self, hotkey: str) -> None:
         """
         Handle any hotkey triggered from the manager.
         """

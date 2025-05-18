@@ -44,7 +44,7 @@ class APIKeyDialogController(QObject):
         self._parent_controller = parent_controller
 
     
-    def validate_key(self, api_key: str) -> bool:
+    def validate_api_key(self, api_key: str) -> bool:
         """
         Validate the given API key.
         
