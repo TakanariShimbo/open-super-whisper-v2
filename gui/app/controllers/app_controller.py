@@ -527,7 +527,7 @@ class AppController(QObject):
             The created instruction dialog
         """
         # Create instruction dialog model passing the app's instruction set model
-        dialog_model = InstructionDialogModel(self._instruction_set_model)
+        dialog_model = InstructionDialogModel()
         
         # Create instruction dialog controller
         dialog_controller = InstructionDialogController(
