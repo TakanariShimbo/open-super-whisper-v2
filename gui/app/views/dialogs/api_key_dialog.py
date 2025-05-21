@@ -223,7 +223,7 @@ class APIKeyDialog(QDialog):
             The message to display
         """
         self._status_label.setText(message)
-        self._status_label.setVisible(visible=True)
+        self._status_label.setVisible(True)
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """

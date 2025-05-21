@@ -9,7 +9,7 @@ import sys
 from PyQt6.QtWidgets import QApplication
 
 from .app.views.factories.api_key_dialog_factory import APIKeyDialogFactory
-from .app.views.main_window import MainWindow
+from .app.views.factories.main_window_factory import MainWindowFactory
 from .app.managers.icon_manager import IconManager
 from .app.managers.settings_manager import SettingsManager
 
@@ -52,8 +52,8 @@ def start_application() -> int:
             print("Application exiting: No API key provided.")
             return 1
 
-    # Create the main window
-    main_window = MainWindow()
+    # Create the main window using the factory
+    main_window = MainWindowFactory.create_window()
     main_window.show()
 
     # Start the event loop

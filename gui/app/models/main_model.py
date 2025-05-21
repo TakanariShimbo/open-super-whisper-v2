@@ -1,0 +1,637 @@
+"""
+Main Model
+
+This module provides the consolidated model component for the Open Super Whisper application,
+combining functionality of hotkey, instruction set, and pipeline models.
+"""
+
+from PyQt6.QtCore import QObject, pyqtSignal, QThread
+
+from core.pipelines.pipeline import Pipeline
+from core.pipelines.pipeline_result import PipelineResult
+from core.pipelines.instruction_set import InstructionSet
+
+from ..managers.keyboard_manager import KeyboardManager
+from ..managers.instruction_sets_manager import InstructionSetsManager
+from ..managers.settings_manager import SettingsManager
+
+
+class ProcessingThread(QThread):
+    """
+    Thread for processing audio files asynchronously.
+
+    This class is used to process audio files in a separate thread to
+    prevent the UI from freezing during processing.
+
+    Attributes
+    ----------
+    completed: pyqtSignal
+        Signal for handling completion of processing
+    failed: pyqtSignal
+        Signal for handling failure of processing
+    progress: pyqtSignal
+        Signal for handling streaming progress updates
+    """
+
+    completed = pyqtSignal(object)
+    failed = pyqtSignal(str)
+    progress = pyqtSignal(str)
+
+    def __init__(
+        self,
+        pipeline: Pipeline,
+        audio_file_path: str,
+        language: str | None = None,
+        clipboard_text: str | None = None,
+        clipboard_image: bytes | None = None,
+        parent: QObject | None = None,
+    ) -> None:
+        """
+        Initialize with processing parameters.
+
+        Parameters
+        ----------
+        pipeline: Pipeline
+            The pipeline to use for processing
+        audio_file_path: str
+            The path to the audio file to process
+        language: str | None
+            The language to use for processing
+        clipboard_text: str | None
+            The text to use for processing
+        clipboard_image: bytes | None
+            The image to use for processing
+        parent: QObject | None
+            The parent object
+        """
+        super().__init__(parent=parent)
+        self.pipeline = pipeline
+        self.audio_file_path = audio_file_path
+        self.language = language
+        self.clipboard_text = clipboard_text
+        self.clipboard_image = clipboard_image
+
+    def run(self) -> None:
+        """
+        Execute the processing task.
+        """
+        try:
+            # Process the audio file with streaming updates
+            result = self.pipeline.process(
+                audio_file_path=self.audio_file_path,
+                language=self.language,
+                clipboard_text=self.clipboard_text,
+                clipboard_image=self.clipboard_image,
+                stream_callback=self.progress.emit,
+            )
+            self.completed.emit(result)
+        except Exception as e:
+            self.failed.emit(str(e))
+
+
+class MainModel(QObject):
+    """
+    Consolidated model for the main application.
+
+    This class combines functionality from hotkey, instruction set, and pipeline models
+    to provide a unified interface for the controller.
+
+    Attributes
+    ----------
+    # Pipeline signals
+    processing_error: pyqtSignal
+        Signal emitted when an error occurs during processing
+    processing_started: pyqtSignal
+        Signal emitted when processing starts
+    processing_complete: pyqtSignal
+        Signal emitted when processing completes
+    processing_cancelled: pyqtSignal
+        Signal emitted when processing is cancelled
+    processing_state_changed: pyqtSignal
+        Signal emitted when the processing state changes
+    llm_stream_chunk: pyqtSignal
+        Signal emitted when a chunk is received from the LLM stream
+
+    # Instruction set signals
+    instruction_set_activated: pyqtSignal
+        Signal emitted when an instruction set is activated
+
+    # Hotkey signals
+    hotkey_triggered: pyqtSignal
+        Signal emitted when a hotkey is triggered
+    """
+
+    # Pipeline signals
+    processing_error = pyqtSignal(str)
+    processing_started = pyqtSignal()
+    processing_complete = pyqtSignal(PipelineResult)
+    processing_cancelled = pyqtSignal()
+    processing_state_changed = pyqtSignal(bool)
+    llm_stream_chunk = pyqtSignal(str)
+
+    # Instruction set signals
+    instruction_set_activated = pyqtSignal(InstructionSet)
+
+    # Hotkey signals
+    hotkey_triggered = pyqtSignal(str)
+
+    def __init__(
+        self,
+        api_key: str,
+        parent: QObject | None = None,
+    ) -> None:
+        """
+        Initialize the main model.
+
+        Parameters
+        ----------
+        api_key: str
+            The API key to use for the pipeline
+        parent: QObject | None, optional
+            The parent object, by default None
+        """
+        super().__init__(parent=parent)
+
+        # Store references to managers
+        self._settings_manager = SettingsManager.instance()
+        self._keyboard_manager = KeyboardManager.get_instance()
+        self._instruction_sets_manager = InstructionSetsManager.get_instance()
+
+        # Initialize pipeline components
+        self._pipeline = Pipeline(api_key=api_key)
+        self._processor = None
+
+        # Connect signals
+        self._connect_manager_signals()
+
+    def _connect_manager_signals(self) -> None:
+        """
+        Connect signals from managers to model handlers.
+        """
+        # Connect keyboard manager signals
+        self._keyboard_manager.hotkey_triggered.connect(self._on_hotkey_triggered)
+
+    #
+    # Pipeline methods
+    #
+    @property
+    def is_recording(self) -> bool:
+        """
+        Check if recording is in progress.
+
+        Returns
+        -------
+        bool
+            True if recording is in progress, False otherwise
+        """
+        return self._pipeline.is_recording
+
+    @property
+    def is_processing(self) -> bool:
+        """
+        Check if audio processing is in progress.
+
+        Returns
+        -------
+        bool
+            True if audio processing is in progress, False otherwise
+        """
+        return self._processor is not None
+
+    def reinitialize(self, api_key: str) -> None:
+        """
+        Reinitialize the pipeline with a new API key.
+
+        Parameters
+        ----------
+        api_key: str
+            The new API key to use
+        """
+        self._pipeline = Pipeline(api_key=api_key)
+
+        # Apply the selected instruction set if available
+        selected_set = self.get_selected_instruction_set()
+        if selected_set:
+            self.apply_instruction_set(instruction_set=selected_set)
+
+    def apply_instruction_set(self, instruction_set: InstructionSet) -> bool:
+        """
+        Apply an instruction set to the pipeline.
+
+        Parameters
+        ----------
+        instruction_set: InstructionSet
+            The instruction set to apply
+
+        Returns
+        -------
+        bool
+            True if the instruction set was applied successfully, False otherwise
+        """
+        try:
+            self._pipeline.apply_instruction_set(selected_set=instruction_set)
+            return True
+        except Exception as e:
+            self.processing_error.emit(f"Error applying instruction set: {str(e)}")
+            return False
+
+    def start_recording(self) -> bool:
+        """
+        Start recording audio.
+
+        Returns
+        -------
+        bool
+            True if recording started successfully, False otherwise
+        """
+        if not self._pipeline:
+            self.processing_error.emit("Pipeline not initialized")
+            return False
+        try:
+            self._pipeline.start_recording()
+            return True
+        except Exception as e:
+            self.processing_error.emit(f"Error starting recording: {str(e)}")
+            return False
+
+    def stop_recording(self) -> str | None:
+        """
+        Stop recording audio and return the file path.
+
+        Returns
+        -------
+        str | None
+            The file path of the recorded audio, or None if an error occurs
+        """
+        if not self._pipeline or not self._pipeline.is_recording:
+            return None
+        try:
+            return self._pipeline.stop_recording()
+        except Exception as e:
+            self.processing_error.emit(f"Error stopping recording: {str(e)}")
+            return None
+
+    def process_audio(
+        self,
+        audio_file_path: str,
+        language: str | None = None,
+        clipboard_text: str | None = None,
+        clipboard_image: bytes | None = None,
+    ) -> bool:
+        """
+        Process an audio file through the pipeline asynchronously.
+
+        Parameters
+        ----------
+        audio_file_path: str
+            The path to the audio file to process
+        language: str | None
+            The language to use for processing
+        clipboard_text: str | None
+            The text to use for processing
+        clipboard_image: bytes | None
+            The image to use for processing
+
+        Returns
+        -------
+        bool
+            True if processing started successfully, False otherwise
+        """
+        if not self._pipeline:
+            self.processing_error.emit("Pipeline not initialized")
+            return False
+
+        if self.is_processing:
+            self.processing_error.emit("Processing already in progress")
+            return False
+
+        try:
+            # Update state
+            self.processing_state_changed.emit(True)
+            self.processing_started.emit()
+
+            # Create and configure worker thread
+            self._processor = ProcessingThread(
+                pipeline=self._pipeline,
+                audio_file_path=audio_file_path,
+                language=language,
+                clipboard_text=clipboard_text,
+                clipboard_image=clipboard_image,
+            )
+
+            # Connect signals
+            self._processor.completed.connect(self._on_processing_completed)
+            self._processor.failed.connect(self._on_processing_failed)
+            self._processor.progress.connect(self.llm_stream_chunk)
+
+            # Start processing
+            self._processor.start()
+            return True
+
+        except Exception as e:
+            self.processing_state_changed.emit(False)
+            self.processing_error.emit(f"Error processing audio: {str(e)}")
+            self._processor = None
+            return False
+
+    def _on_processing_completed(self, result: PipelineResult) -> None:
+        """
+        Handle successful completion of processing.
+
+        Parameters
+        ----------
+        result: PipelineResult
+            The result of the processing
+        """
+        self.processing_state_changed.emit(False)
+
+        if self._processor:
+            self._processor.deleteLater()
+            self._processor = None
+
+        self.processing_complete.emit(result)
+
+    def _on_processing_failed(self, error: str) -> None:
+        """
+        Handle processing failure.
+
+        Parameters
+        ----------
+        error: str
+            The error message
+        """
+        self.processing_state_changed.emit(False)
+
+        if self._processor:
+            self._processor.deleteLater()
+            self._processor = None
+
+        self.processing_error.emit(f"Processing failed: {error}")
+
+    def cancel_processing(self) -> bool:
+        """
+        Cancel the current processing task if one is running.
+
+        Returns
+        -------
+        bool
+            True if processing is cancelled, False otherwise
+        """
+        if not self.is_processing:
+            return False
+
+        # Terminate and clean up
+        self._processor.terminate()
+        self._processor.wait(1000)
+        self._processor.deleteLater()
+        self._processor = None
+
+        # Update state
+        self.processing_state_changed.emit(False)
+        self.processing_cancelled.emit()
+
+        return True
+
+    #
+    # Instruction set methods
+    #
+    def get_instruction_sets(self) -> list[InstructionSet]:
+        """
+        Get all available instruction sets.
+
+        Returns
+        -------
+        list[InstructionSet]
+            List of all instruction sets
+        """
+        return self._instruction_sets_manager.get_all_sets()
+
+    def get_instruction_set_by_name(self, name: str) -> InstructionSet | None:
+        """
+        Get an instruction set by name.
+
+        Parameters
+        ----------
+        name: str
+            Name of the instruction set to find
+
+        Returns
+        -------
+        InstructionSet | None
+            The instruction set with the specified name, or None if not found
+        """
+        return self._instruction_sets_manager.find_set_by_name(name)
+
+    def get_instruction_set_by_hotkey(self, hotkey: str) -> InstructionSet | None:
+        """
+        Get an instruction set by hotkey.
+
+        Parameters
+        ----------
+        hotkey: str
+            Hotkey string to match
+
+        Returns
+        -------
+        InstructionSet | None
+            The instruction set with the specified hotkey, or None if not found
+        """
+        return self._instruction_sets_manager.find_set_by_hotkey(hotkey=hotkey)
+
+    def get_selected_instruction_set(self) -> InstructionSet | None:
+        """
+        Get the currently selected instruction set.
+
+        Returns
+        -------
+        InstructionSet | None
+            The currently selected instruction set, or None if none selected
+        """
+        return self._instruction_sets_manager.get_selected_set()
+
+    def get_selected_instruction_set_name(self) -> str:
+        """
+        Get the name of the currently selected instruction set.
+
+        Returns
+        -------
+        str
+            The name of the currently selected instruction set, or an empty string
+        """
+        return self._instruction_sets_manager.get_selected_set_name()
+
+    def set_selected_instruction_set(self, name: str) -> bool:
+        """
+        Set the selected instruction set by name.
+
+        Parameters
+        ----------
+        name: str
+            Name of the instruction set to select
+
+        Returns
+        -------
+        bool
+            True if successful, False if the named set doesn't exist
+        """
+        is_success = self._instruction_sets_manager.set_selected_set_name(instruction_set_name=name)
+        if not is_success:
+            return False
+
+        # Emit the instruction set activated signal
+        self.instruction_set_activated.emit(self._instruction_sets_manager.get_selected_set())
+
+        # Apply the instruction set to the pipeline
+        selected_set = self.get_selected_instruction_set()
+        if selected_set:
+            self.apply_instruction_set(instruction_set=selected_set)
+
+        return True
+
+    #
+    # Hotkey methods
+    #
+    def _on_hotkey_triggered(self, hotkey: str) -> None:
+        """
+        Handle hotkey triggered events from the keyboard manager.
+
+        Parameters
+        ----------
+        hotkey: str
+            The hotkey that was triggered
+        """
+        # Forward the hotkey triggered signal
+        self.hotkey_triggered.emit(hotkey)
+
+    @property
+    def is_filter_mode(self) -> bool:
+        """
+        Check if filter mode is active for hotkeys.
+
+        Returns
+        -------
+        bool
+            True if filter mode is active, False otherwise
+        """
+        return self._keyboard_manager.is_filter_mode
+
+    def get_active_hotkey(self) -> str | None:
+        """
+        Get the active hotkey.
+
+        Returns
+        -------
+        str | None
+            The active hotkey, or None if not in filter mode
+        """
+        return self._keyboard_manager.get_active_hotkey()
+
+    def enable_filtered_mode_and_start_listening(self, active_hotkey: str = "") -> None:
+        """
+        Enable filtered mode with the active hotkey.
+
+        In filter mode, only the active hotkey is enabled and all other hotkeys are filtered out.
+
+        Parameters
+        ----------
+        active_hotkey: str, optional
+            The hotkey that triggered filter mode, by default ""
+        """
+        self._keyboard_manager.enable_filtered_mode_and_start_listening(active_hotkey=active_hotkey)
+
+    def disable_filtered_mode_and_start_listening(self) -> None:
+        """
+        Disable filtered mode.
+
+        When disabled, all hotkeys are enabled again.
+        """
+        self._keyboard_manager.disable_filtered_mode_and_start_listening()
+
+    def register_hotkey(self, hotkey: str) -> bool:
+        """
+        Register a hotkey.
+
+        Parameters
+        ----------
+        hotkey: str
+            Hotkey string to register
+
+        Returns
+        -------
+        bool
+            True if registration was successful, False otherwise
+        """
+        result = self._keyboard_manager.register_hotkey(hotkey=hotkey)
+
+        # If successful and not already listening, start listening
+        if result and not self._keyboard_manager.is_filter_mode:
+            self._keyboard_manager.start_listening()
+
+        return result
+
+    def unregister_hotkey(self, hotkey: str) -> bool:
+        """
+        Unregister a hotkey.
+
+        Parameters
+        ----------
+        hotkey: str
+            Hotkey string to unregister
+
+        Returns
+        -------
+        bool
+            True if unregistration was successful, False otherwise
+        """
+        return self._keyboard_manager.unregister_hotkey(hotkey=hotkey)
+
+    def start_listening_for_hotkeys(self) -> bool:
+        """
+        Start listening for hotkeys.
+
+        Returns
+        -------
+        bool
+            True if listening started successfully, False otherwise
+        """
+        return self._keyboard_manager.start_listening()
+
+    def stop_listening_for_hotkeys(self) -> bool:
+        """
+        Stop listening for hotkeys.
+
+        Returns
+        -------
+        bool
+            True if listening was stopped, False if it wasn't active
+        """
+        return self._keyboard_manager.stop_listening()
+
+    def get_all_registered_hotkeys(self) -> list[str]:
+        """
+        Get a list of all registered hotkeys.
+
+        Returns
+        -------
+        list[str]
+            List of registered hotkey strings
+        """
+        return self._keyboard_manager.get_all_registered_hotkeys()
+
+    #
+    # Cleanup methods
+    #
+    def shutdown(self) -> None:
+        """
+        Clean up resources when the application is shutting down.
+        """
+        # Stop hotkey listening
+        self.stop_listening_for_hotkeys()
+
+        # If still recording, stop it
+        if self.is_recording:
+            self.stop_recording()
+
+        # If still processing, cancel it
+        if self.is_processing:
+            self.cancel_processing()

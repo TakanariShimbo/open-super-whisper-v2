@@ -28,7 +28,7 @@ from PyQt6.QtGui import QAction, QCloseEvent
 from core.pipelines.pipeline_result import PipelineResult
 from core.pipelines.instruction_set import InstructionSet
 
-from ..controllers.app_controller import AppController
+from ..controllers.main_controller import MainController
 from ..managers.icon_manager import IconManager
 from ..utils.clipboard_utils import ClipboardUtils
 from ..managers.audio_manager import AudioManager
@@ -47,33 +47,26 @@ class MainWindow(QMainWindow):
 
     Attributes
     ----------
-    controller : AppController
+    controller : MainController
         The application controller that manages the business logic
     """
 
     def __init__(self) -> None:
         """
         Initialize the MainWindow.
-
-        Parameters
-        ----------
-        controller : AppController
-            The application controller
         """
         super().__init__()
 
-        # Store references
-        self.controller = AppController()
+        # Initialize managers
         self.settings_manager = SettingsManager.instance()
+        self.icon_manager = IconManager.instance()
+        self.audio_manager = AudioManager.instance()
+
+        # Create controller
+        self.controller = MainController()
 
         # Get settings
         self.api_key = self.settings_manager.get_api_key()
-
-        # Initialize icon manager
-        self.icon_manager = IconManager.instance()
-
-        # Initialize audio manager (use singleton instance)
-        self.audio_manager = AudioManager.instance()
 
         # Set application icon
         self.setWindowIcon(self.icon_manager.get_app_icon())
@@ -159,12 +152,12 @@ class MainWindow(QMainWindow):
         # Add the header layout to the main layout
         stt_layout.addLayout(stt_header_layout)
 
-        # Use MarkdownTextBrowser instead of QTextEdit for consistency
+        # Use MarkdownTextBrowser for STT output
         self.stt_text = MarkdownTextBrowser()
         self.stt_text.setPlaceholderText("STT output will appear here...")
         stt_layout.addWidget(self.stt_text)
 
-        # LLM output tab (if LLM is enabled in instruction set)
+        # LLM output tab
         llm_tab = QWidget()
         llm_layout = QVBoxLayout(llm_tab)
 
@@ -181,7 +174,7 @@ class MainWindow(QMainWindow):
         # Add the header layout to the main layout
         llm_layout.addLayout(llm_header_layout)
 
-        # Use our custom markdown browser instead of QTextEdit
+        # Use MarkdownTextBrowser for LLM output
         self.llm_text = MarkdownTextBrowser()
         self.llm_text.setPlaceholderText("LLM output will appear here...")
         llm_layout.addWidget(self.llm_text)
@@ -302,7 +295,9 @@ class MainWindow(QMainWindow):
             # Add tooltip with hotkey if available
             if instruction_set.hotkey:
                 self.instruction_set_combo.setItemData(
-                    self.instruction_set_combo.count() - 1, f"Hotkey: {instruction_set.hotkey}", Qt.ItemDataRole.ToolTipRole
+                    self.instruction_set_combo.count() - 1, 
+                    f"Hotkey: {instruction_set.hotkey}", 
+                    Qt.ItemDataRole.ToolTipRole
                 )
 
         # Select the currently selected instruction set
@@ -325,9 +320,6 @@ class MainWindow(QMainWindow):
     def show_api_key_dialog(self) -> None:
         """
         Show dialog for API key entry.
-
-        This method uses the API key controller to show a user-friendly dialog
-        for entering and validating an API key.
         """
         # Use the controller's API key settings method
         if self.controller.show_api_key_settings(self):
@@ -425,7 +417,7 @@ class MainWindow(QMainWindow):
         # Re-enable instruction set selection
         self.instruction_set_combo.setEnabled(True)
         # Update system tray recording status
-        self.system_tray.update_recording_status("start_processing")
+        self.system_tray.update_recording_status("start_recording")
         # Play cancel processing sound
         self.audio_manager.play_cancel_processing()
 
@@ -439,7 +431,7 @@ class MainWindow(QMainWindow):
         result : PipelineResult
             The result of the processing
         """
-        # Update the STT output text using markdown text browser method
+        # Update the STT output text
         self.stt_text.set_markdown_text(markdown_text=result.stt_output)
 
         # For LLM text, if streaming was used, the text is already in the UI
@@ -521,9 +513,6 @@ class MainWindow(QMainWindow):
         """
         Handle streaming updates from the LLM processor.
 
-        This method updates the LLM output text in real-time as
-        chunks are received.
-
         Parameters
         ----------
         chunk : str
@@ -534,7 +523,6 @@ class MainWindow(QMainWindow):
             self.tab_widget.setCurrentIndex(1)
 
         # Append the new chunk to the LLM text
-        # We use append_markdown to properly render the content
         self.llm_text.append_markdown(text=chunk)
 
         # Update status indicator to show streaming progress
@@ -565,9 +553,6 @@ class MainWindow(QMainWindow):
     def copy_stt(self) -> None:
         """
         Copy the STT output text to the clipboard.
-
-        This method copies the original markdown text, not the rendered HTML,
-        consistent with how we handle LLM output copying.
         """
         ClipboardUtils.set_text(text=self.stt_text.markdown_text())
         self.status_bar.showMessage("STT output copied to clipboard", 2000)
@@ -575,8 +560,6 @@ class MainWindow(QMainWindow):
     def copy_llm(self) -> None:
         """
         Copy the LLM output text to the clipboard.
-
-        This method copies the original markdown text, not the rendered HTML.
         """
         ClipboardUtils.set_text(text=self.llm_text.markdown_text())
         self.status_bar.showMessage("LLM output copied to clipboard", 2000)
@@ -584,9 +567,6 @@ class MainWindow(QMainWindow):
     def show_instruction_sets_dialog(self) -> None:
         """
         Show the instruction sets management dialog.
-
-        This method creates and shows the instruction sets dialog,
-        using the controller to create the dialog.
         """
         # Create dialog using controller
         dialog = self.controller.create_instruction_dialog(self)
@@ -603,9 +583,6 @@ class MainWindow(QMainWindow):
     def show_settings_dialog(self) -> None:
         """
         Show the settings dialog.
-
-        This method creates and shows the settings dialog for configuring
-        application preferences using the SettingsDialogFactory.
         """
         # Create and show the settings dialog using the factory
         dialog = SettingsDialogFactory.create_dialog(self)
@@ -673,7 +650,7 @@ class MainWindow(QMainWindow):
             # Show a notification message
             self.system_tray.showMessage(
                 "Open Super Whisper App",
-                "The application is still running in the background. " "Click the tray icon to restore.",
+                "The application is still running in the background. Click the tray icon to restore.",
                 QSystemTrayIcon.MessageIcon.Information,
                 3000,
             )
