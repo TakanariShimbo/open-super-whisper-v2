@@ -28,22 +28,23 @@ class ProcessingThread(QThread):
     progress: pyqtSignal
         Signal for handling streaming progress updates
     """
-    
+
     completed = pyqtSignal(object)
     failed = pyqtSignal(str)
     progress = pyqtSignal(str)
-    
+
     def __init__(
-        self, 
-        pipeline: Pipeline, 
-        audio_file_path: str, 
-        language: str | None = None, 
-        clipboard_text: str | None = None, 
-        clipboard_image: bytes | None = None
+        self,
+        pipeline: Pipeline,
+        audio_file_path: str,
+        language: str | None = None,
+        clipboard_text: str | None = None,
+        clipboard_image: bytes | None = None,
+        parent: QObject | None = None,
     ) -> None:
         """
         Initialize with processing parameters.
-        
+
         Parameters
         ----------
         pipeline: Pipeline
@@ -52,14 +53,20 @@ class ProcessingThread(QThread):
             The path to the audio file to process
         language: str | None
             The language to use for processing
+        clipboard_text: str | None
+            The text to use for processing
+        clipboard_image: bytes | None
+            The image to use for processing
+        parent: QObject | None
+            The parent object
         """
-        super().__init__()
+        super().__init__(parent=parent)
         self.pipeline = pipeline
         self.audio_file_path = audio_file_path
         self.language = language
         self.clipboard_text = clipboard_text
         self.clipboard_image = clipboard_image
-        
+
     def run(self) -> None:
         """
         Execute the processing task.
@@ -67,11 +74,11 @@ class ProcessingThread(QThread):
         try:
             # Process the audio file with streaming updates
             result = self.pipeline.process(
-                self.audio_file_path,
-                self.language,
-                self.clipboard_text,
-                self.clipboard_image,
-                stream_callback=self.progress.emit
+                audio_file_path=self.audio_file_path,
+                language=self.language,
+                clipboard_text=self.clipboard_text,
+                clipboard_image=self.clipboard_image,
+                stream_callback=self.progress.emit,
             )
             self.completed.emit(result)
         except Exception as e:
@@ -100,7 +107,7 @@ class PipelineModel(QObject):
     llm_stream_chunk: pyqtSignal
         Signal for handling LLM stream chunks
     """
-    
+
     # Define signals
     processing_error = pyqtSignal(str)
     processing_started = pyqtSignal()
@@ -108,8 +115,12 @@ class PipelineModel(QObject):
     processing_cancelled = pyqtSignal()
     processing_state_changed = pyqtSignal(bool)
     llm_stream_chunk = pyqtSignal(str)
-    
-    def __init__(self, api_key: str):
+
+    def __init__(
+        self,
+        api_key: str,
+        parent: QObject | None = None,
+    ) -> None:
         """
         Initialize the pipeline model.
 
@@ -118,11 +129,11 @@ class PipelineModel(QObject):
         api_key: str
             The API key to use for the pipeline
         """
-        super().__init__()
+        super().__init__(parent=parent)
 
         self._pipeline = Pipeline(api_key=api_key)
         self._processor = None
-    
+
     @property
     def is_recording(self) -> bool:
         """
@@ -134,7 +145,7 @@ class PipelineModel(QObject):
             True if recording is in progress, False otherwise
         """
         return self._pipeline.is_recording
-    
+
     @property
     def is_processing(self) -> bool:
         """
@@ -146,13 +157,13 @@ class PipelineModel(QObject):
             True if audio processing is in progress, False otherwise
         """
         return self._processor is not None
-    
+
     def reinitialize(self, api_key: str) -> None:
         """
         Reinitialize the pipeline with a new API key.
         """
         self._pipeline = Pipeline(api_key=api_key)
-        
+
     def apply_instruction_set(self, instruction_set: InstructionSet) -> bool:
         """
         Apply an instruction set to the pipeline.
@@ -163,12 +174,12 @@ class PipelineModel(QObject):
             The instruction set to apply to the pipeline
         """
         try:
-            self._pipeline.apply_instruction_set(instruction_set)
+            self._pipeline.apply_instruction_set(selected_set=instruction_set)
             return True
         except Exception as e:
             self.processing_error.emit(f"Error applying instruction set: {str(e)}")
             return False
-    
+
     def start_recording(self) -> bool:
         """
         Start recording audio.
@@ -187,7 +198,7 @@ class PipelineModel(QObject):
         except Exception as e:
             self.processing_error.emit(f"Error starting recording: {str(e)}")
             return False
-    
+
     def stop_recording(self) -> str | None:
         """
         Stop recording audio and return the file path.
@@ -204,13 +215,13 @@ class PipelineModel(QObject):
         except Exception as e:
             self.processing_error.emit(f"Error stopping recording: {str(e)}")
             return None
-    
+
     def process_audio(
         self,
         audio_file_path: str,
         language: str | None = None,
         clipboard_text: str | None = None,
-        clipboard_image: bytes | None = None
+        clipboard_image: bytes | None = None,
     ) -> bool:
         """
         Process an audio file through the pipeline asynchronously.
@@ -234,40 +245,40 @@ class PipelineModel(QObject):
         if not self._pipeline:
             self.processing_error.emit("Pipeline not initialized")
             return False
-        
+
         if self.is_processing:
             self.processing_error.emit("Processing already in progress")
             return False
-            
+
         try:
             # Update state
             self.processing_state_changed.emit(True)
             self.processing_started.emit()
-            
+
             # Create and configure worker thread
             self._processor = ProcessingThread(
-                self._pipeline,
-                audio_file_path,
-                language,
-                clipboard_text,
-                clipboard_image
+                pipeline=self._pipeline,
+                audio_file_path=audio_file_path,
+                language=language,
+                clipboard_text=clipboard_text,
+                clipboard_image=clipboard_image,
             )
-            
+
             # Connect signals
             self._processor.completed.connect(self._on_processing_completed)
             self._processor.failed.connect(self._on_processing_failed)
             self._processor.progress.connect(self.llm_stream_chunk)
-            
+
             # Start processing
             self._processor.start()
             return True
-            
+
         except Exception as e:
             self.processing_state_changed.emit(False)
             self.processing_error.emit(f"Error processing audio: {str(e)}")
             self._processor = None
             return False
-    
+
     def _on_processing_completed(self, result: PipelineResult) -> None:
         """
         Handle successful completion of processing.
@@ -278,13 +289,13 @@ class PipelineModel(QObject):
             The result of the processing
         """
         self.processing_state_changed.emit(False)
-        
+
         if self._processor:
             self._processor.deleteLater()
             self._processor = None
-            
+
         self.processing_complete.emit(result)
-    
+
     def _on_processing_failed(self, error: str) -> None:
         """
         Handle processing failure.
@@ -295,13 +306,13 @@ class PipelineModel(QObject):
             The error message
         """
         self.processing_state_changed.emit(False)
-        
+
         if self._processor:
             self._processor.deleteLater()
             self._processor = None
-            
+
         self.processing_error.emit(f"Processing failed: {error}")
-    
+
     def cancel_processing(self) -> bool:
         """
         Cancel the current processing task if one is running.
@@ -313,15 +324,15 @@ class PipelineModel(QObject):
         """
         if not self.is_processing:
             return False
-        
+
         # Terminate and clean up
         self._processor.terminate()
         self._processor.wait(1000)
         self._processor.deleteLater()
         self._processor = None
-        
+
         # Update state
         self.processing_state_changed.emit(False)
         self.processing_cancelled.emit()
-        
+
         return True
