@@ -306,7 +306,7 @@ class InstructionDialog(QDialog):
         self._hotkey_input.setPlaceholderText("No hotkey set")
 
         hotkey_button = QPushButton("Set Hotkey")
-        hotkey_button.clicked.connect(self._on_set_hotkey)
+        hotkey_button.clicked.connect(self._on_click_hotkey)
 
         hotkey_layout = QHBoxLayout()
         hotkey_layout.addWidget(self._hotkey_input)
@@ -349,7 +349,6 @@ class InstructionDialog(QDialog):
         self._controller.instruction_set_deleted.connect(self._handle_instruction_set_deleted)
         self._controller.instruction_set_renamed.connect(self._handle_instruction_set_renamed)
         self._controller.instruction_set_selected.connect(self._handle_instruction_set_selected)
-        self._controller.hotkey_conflict.connect(self._handle_hotkey_conflict)
         self._controller.operation_result.connect(self._handle_operation_result)
 
     def _load_instruction_sets(self) -> None:
@@ -661,7 +660,7 @@ class InstructionDialog(QDialog):
             self._sets_list.setCurrentRow(min(i, self._sets_list.count() - 1))
 
     @pyqtSlot()
-    def _on_set_hotkey(self) -> None:
+    def _on_click_hotkey(self) -> None:
         """
         Handle setting a hotkey for the selected instruction set.
         """
@@ -678,36 +677,9 @@ class InstructionDialog(QDialog):
         if result:
             new_hotkey = dialog.get_hotkey()
             if new_hotkey != current_hotkey:
-                self._controller.update_hotkey(set_name, new_hotkey)
+                self._controller.update_hotkey(set_name=set_name, hotkey=new_hotkey)
                 self._hotkey_input.setText(new_hotkey)
                 self._on_form_changed()
-
-    @pyqtSlot(str, str)
-    def _handle_hotkey_conflict(self, hotkey: str, conflict_set_name: str) -> None:
-        """
-        Handle hotkey conflict event.
-
-        Parameters
-        ----------
-        hotkey : str
-            The hotkey that caused the conflict
-        conflict_set_name : str
-            The name of the instruction set that has the conflicting hotkey
-        """
-        if conflict_set_name:
-            QMessageBox.warning(
-                self,
-                "Hotkey Conflict",
-                f"The hotkey '{hotkey}' is already used by instruction set '{conflict_set_name}'.",
-                QMessageBox.StandardButton.Ok,
-            )
-        else:
-            QMessageBox.warning(
-                self,
-                "Hotkey Registration Failed",
-                f"Failed to register hotkey '{hotkey}'. It may be in use by another application.",
-                QMessageBox.StandardButton.Ok,
-            )
 
     @pyqtSlot()
     def _on_click_save(self) -> None:

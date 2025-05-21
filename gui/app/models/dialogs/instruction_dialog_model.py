@@ -45,7 +45,7 @@ class InstructionDialogModel(QObject):
     instruction_set_updated = pyqtSignal(InstructionSet)
     instruction_set_deleted = pyqtSignal(str)  # Name of deleted set
     instruction_set_renamed = pyqtSignal(str, str)  # Old name, new name
-    hotkey_updated = pyqtSignal(str, str)  # Set name, hotkey
+    hotkey_updated = pyqtSignal(str)  # Hotkey
 
     def __init__(self, parent: QObject | None = None) -> None:
         """
@@ -202,7 +202,7 @@ class InstructionDialogModel(QObject):
 
         # Emit hotkey updated signal if hotkey was updated
         if "hotkey" in kwargs:
-            self.hotkey_updated.emit(name, kwargs["hotkey"])
+            self.hotkey_updated.emit(kwargs["hotkey"])
 
         # Emit signal
         self.instruction_set_updated.emit(instruction_set)

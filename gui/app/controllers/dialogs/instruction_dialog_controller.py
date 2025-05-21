@@ -46,7 +46,6 @@ class InstructionDialogController(QObject):
     instruction_set_deleted = pyqtSignal(str)  # Name of deleted set
     instruction_set_renamed = pyqtSignal(str, str)  # Old name, new name
     instruction_set_selected = pyqtSignal(InstructionSet)
-    hotkey_conflict = pyqtSignal(str, str)  # Conflicting hotkey, set name with conflict
     operation_result = pyqtSignal(bool, str)  # Success/failure, message
 
     def __init__(self, parent: QObject | None = None) -> None:
@@ -94,9 +93,7 @@ class InstructionDialogController(QObject):
 
         # Register hotkey if set has one
         if instruction_set.hotkey:
-            success = self._model.register_hotkey(hotkey=instruction_set.hotkey)
-            if not success:
-                self.hotkey_conflict.emit(instruction_set.hotkey, "")
+            self._model.register_hotkey(hotkey=instruction_set.hotkey)
 
     @pyqtSlot(InstructionSet)
     def _handle_instruction_set_updated(self, instruction_set: InstructionSet) -> None:
@@ -147,27 +144,18 @@ class InstructionDialogController(QObject):
         if old_name == self._selected_set_name:
             self._selected_set_name = new_name
 
-    @pyqtSlot(str, str)
-    def _handle_hotkey_updated(self, set_name: str, hotkey: str) -> None:
+    @pyqtSlot(str)
+    def _handle_hotkey_updated(self, hotkey: str) -> None:
         """
         Handle hotkey updated event.
 
         Parameters
         ----------
-        set_name : str
-            Name of the set whose hotkey was updated
         hotkey : str
             The new hotkey
         """
         # Register new hotkey if not empty
         if hotkey:
-            # Check for conflicts first
-            conflicting_set = self._model.get_set_by_hotkey(hotkey=hotkey)
-            if conflicting_set and conflicting_set.name != set_name:
-                # Emit hotkey conflict signal
-                self.hotkey_conflict.emit(hotkey, conflicting_set.name)
-                return
-
             # Register the hotkey
             self._model.register_hotkey(hotkey=hotkey)
 
@@ -384,13 +372,6 @@ class InstructionDialogController(QObject):
         if not self._model.get_set_by_name(name=set_name):
             self.operation_result.emit(False, f"Instruction set '{set_name}' does not exist.")
             return False
-
-        # Check for conflicts
-        if hotkey:
-            conflicting_set = self._model.get_set_by_hotkey(hotkey=hotkey)
-            if conflicting_set and conflicting_set.name != set_name:
-                self.hotkey_conflict.emit(hotkey, conflicting_set.name)
-                return False
 
         # Update the hotkey
         result = self._model.update_set(name=set_name, hotkey=hotkey)
