@@ -35,7 +35,6 @@ from ..managers.audio_manager import AudioManager
 from ..managers.settings_manager import SettingsManager
 from .tray.system_tray import SystemTray
 from .widgets.markdown_text_browser import MarkdownTextBrowser
-from .factories.settings_dialog_factory import SettingsDialogFactory
 
 
 class MainWindow(QMainWindow):
@@ -295,9 +294,7 @@ class MainWindow(QMainWindow):
             # Add tooltip with hotkey if available
             if instruction_set.hotkey:
                 self.instruction_set_combo.setItemData(
-                    self.instruction_set_combo.count() - 1, 
-                    f"Hotkey: {instruction_set.hotkey}", 
-                    Qt.ItemDataRole.ToolTipRole
+                    self.instruction_set_combo.count() - 1, f"Hotkey: {instruction_set.hotkey}", Qt.ItemDataRole.ToolTipRole
                 )
 
         # Select the currently selected instruction set
@@ -568,28 +565,19 @@ class MainWindow(QMainWindow):
         """
         Show the instruction sets management dialog.
         """
-        # Create dialog using controller
-        dialog = self.controller.create_instruction_dialog(self)
-
-        # Show the dialog
-        dialog.exec()
-
-        # After dialog is closed, refresh instruction sets combo
-        self.populate_instruction_set_combo()
-
-        # Show status message
-        self.status_bar.showMessage("Instruction sets updated", 2000)
+        # Use controller to handle instruction dialog
+        if self.controller.show_instruction_dialog(parent=self):
+            # Dialog was accepted, refresh instruction sets combo
+            self.populate_instruction_set_combo()
+            self.status_bar.showMessage("Instruction sets updated", 2000)
 
     def show_settings_dialog(self) -> None:
         """
         Show the settings dialog.
         """
-        # Create and show the settings dialog using the factory
-        dialog = SettingsDialogFactory.create_dialog(self)
-        result = dialog.exec()
-
-        # Show status message if settings were updated
-        if result == dialog.DialogCode.Accepted:
+        # Use controller to handle settings dialog
+        if self.controller.show_settings_dialog(parent=self):
+            # Settings were updated
             self.status_bar.showMessage("Settings updated", 2000)
 
     @pyqtSlot()

@@ -12,13 +12,12 @@ from PyQt6.QtWidgets import QMessageBox, QWidget
 
 from core.pipelines.pipeline_result import PipelineResult
 from core.pipelines.instruction_set import InstructionSet
-from gui.app.views.dialogs.instruction_dialog import InstructionDialog
 
 from ..managers.settings_manager import SettingsManager
 from ..models.main_model import MainModel
-from ..views.factories.api_key_dialog_factory import APIKeyDialogFactory
 from ..views.factories.instruction_dialog_factory import InstructionDialogFactory
 from ..views.factories.status_indicator_factory import StatusIndicatorFactory
+from ..views.factories.settings_dialog_factory import SettingsDialogFactory
 from ..utils.clipboard_utils import ClipboardUtils
 
 
@@ -429,8 +428,7 @@ class MainController(QObject):
                 if not selected_set.llm_clipboard_image_enabled:
                     clipboard_image = None
 
-                print(f"Retrieved clipboard content: Text: {'Yes' if clipboard_text else 'No'}, " 
-                      f"Image: {'Yes' if clipboard_image else 'No'}")
+                print(f"Retrieved clipboard content: Text: {'Yes' if clipboard_text else 'No'}, " f"Image: {'Yes' if clipboard_image else 'No'}")
 
             # Process the audio with clipboard content asynchronously
             self._model.process_audio(
@@ -472,31 +470,12 @@ class MainController(QObject):
         # Forward to model to handle cleanup
         self._model.shutdown()
 
-    def create_instruction_dialog(self, parent: QWidget | None = None) -> InstructionDialog:
+    def show_instruction_dialog(self, parent: QWidget | None = None) -> bool:
         """
-        Create and return an instruction dialog.
+        Show the instruction dialog and handle the result.
 
-        This method creates an instruction dialog using the factory pattern.
-
-        Parameters
-        ----------
-        parent : QWidget, optional
-            Parent widget for the dialog, by default None
-
-        Returns
-        -------
-        InstructionDialog
-            The created instruction dialog
-        """
-        # Create instruction dialog using factory
-        return InstructionDialogFactory.create_dialog(parent=parent)
-
-    def show_api_key_settings(self, parent=None) -> bool:
-        """
-        Show the API key settings dialog.
-
-        This method creates and displays an API key settings dialog,
-        allowing the user to update their API key.
+        This method creates, displays, and handles the result of an instruction dialog,
+        encapsulating the dialog flow logic.
 
         Parameters
         ----------
@@ -506,24 +485,45 @@ class MainController(QObject):
         Returns
         -------
         bool
-            True if the API key was successfully updated, False otherwise
+            True if the dialog was accepted, False otherwise
         """
-        # Create and show the API key settings dialog through factory
-        dialog = APIKeyDialogFactory.create_settings_dialog(parent=parent)
+        # Create instruction dialog using factory
+        dialog = InstructionDialogFactory.create_dialog(parent=parent)
 
-        # Show dialog and handle result
+        # Show dialog and get result
         result = dialog.exec()
 
-        if result:
-            # Dialog was accepted, emit status update
-            self.status_update.emit("API key updated successfully", 3000)
-
-            # Get the new API key
-            api_key = self._settings_manager.get_api_key()
-
-            # Reinitialize model with the new API key
-            self.reinitialize(api_key=api_key)
-            
+        # Handle dialog result
+        if result == dialog.DialogCode.Accepted:
             return True
+        else:
+            return False
 
-        return False
+    def show_settings_dialog(self, parent: QWidget | None = None) -> bool:
+        """
+        Show the settings dialog and handle the result.
+
+        This method creates, displays, and handles the result of a settings dialog,
+        encapsulating the dialog flow logic.
+
+        Parameters
+        ----------
+        parent : QWidget, optional
+            Parent widget for the dialog, by default None
+
+        Returns
+        -------
+        bool
+            True if the dialog was accepted, False otherwise
+        """
+        # Create settings dialog using factory
+        dialog = SettingsDialogFactory.create_dialog(parent=parent)
+
+        # Show dialog and get result
+        result = dialog.exec()
+
+        # Handle dialog result
+        if result == dialog.DialogCode.Accepted:
+            return True
+        else:
+            return False
