@@ -1,17 +1,18 @@
 """
 App Controller
 
-This module provides the main controller component for the Super Whisper application,
+This module provides the main controller component for the Open Super Whisper application,
 coordinating between models and views.
 """
 
 import sys
 
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
-from PyQt6.QtWidgets import QMessageBox
+from PyQt6.QtWidgets import QMessageBox, QWidget
 
 from core.pipelines.pipeline_result import PipelineResult
 from core.pipelines.instruction_set import InstructionSet
+from gui.app.views.dialogs.instruction_dialog import InstructionDialog
 
 from ..models.pipeline_model import PipelineModel
 from ..models.instruction_set_model import InstructionSetModel
@@ -118,10 +119,12 @@ class AppController(QObject):
 
         # Initialize models
         try:
-            self._pipeline_model = PipelineModel(api_key)
+            self._pipeline_model = PipelineModel(api_key=api_key)
         except ValueError:
             QMessageBox.critical(
-                None, "Initialization Error", "Failed to initialize pipeline with the provided API key. The application will now exit."
+                None,
+                "Initialization Error",
+                "Failed to initialize pipeline with the provided API key. The application will now exit.",
             )
             sys.exit(1)
 
@@ -193,11 +196,11 @@ class AppController(QObject):
             # Copy the most appropriate output to clipboard
             if result.is_llm_processed and result.llm_output:
                 # If LLM was processed, copy LLM output
-                ClipboardUtils.set_text(result.llm_output)
+                ClipboardUtils.set_text(text=result.llm_output)
                 self.status_update.emit("LLM output copied to clipboard", 2000)
             elif result.stt_output:
                 # Otherwise, copy STT output
-                ClipboardUtils.set_text(result.stt_output)
+                ClipboardUtils.set_text(text=result.stt_output)
                 self.status_update.emit("STT output copied to clipboard", 2000)
 
         # Disable recording mode for hotkeys
@@ -231,7 +234,7 @@ class AppController(QObject):
         self.hotkey_triggered.emit(hotkey)
 
         # Get the instruction set associated with this hotkey
-        instruction_set = self._instruction_set_model.get_set_by_hotkey(hotkey)
+        instruction_set = self._instruction_set_model.get_set_by_hotkey(hotkey=hotkey)
 
         if not instruction_set:
             return
@@ -244,8 +247,8 @@ class AppController(QObject):
             self.stop_recording()
         else:
             # Not recording or processing, so this is a start request with the selected instruction set
-            self._instruction_set_model.set_selected_set_name(instruction_set.name)
-            self.start_recording_with_hotkey(hotkey)
+            self._instruction_set_model.set_selected_set_name(name=instruction_set.name)
+            self.start_recording_with_hotkey(hotkey=hotkey)
 
     def reinitialize(self, api_key: str) -> None:
         """
@@ -257,15 +260,15 @@ class AppController(QObject):
             The API key to use
         """
         # Reinitialize the pipeline with the new API key
-        self._pipeline_model.reinitialize(api_key)
+        self._pipeline_model.reinitialize(api_key=api_key)
 
         # Save API key to settings manager
-        self._settings_manager.set_api_key(api_key)
+        self._settings_manager.set_api_key(api_key=api_key)
 
         # Apply the selected instruction set if available
         selected_set = self._instruction_set_model.get_selected_set()
         if selected_set:
-            self._pipeline_model.apply_instruction_set(selected_set)
+            self._pipeline_model.apply_instruction_set(instruction_set=selected_set)
 
     def get_instruction_sets(self) -> list[InstructionSet]:
         """
@@ -303,7 +306,7 @@ class AppController(QObject):
         bool
             True if successful, False if the named set doesn't exist
         """
-        return self._instruction_set_model.set_selected_set_name(name)
+        return self._instruction_set_model.set_selected_set_name(name=name)
 
     def register_hotkey(self, hotkey: str) -> bool:
         """
@@ -319,7 +322,7 @@ class AppController(QObject):
         bool
             True if registration was successful, False otherwise
         """
-        result = self._hotkey_model.register_hotkey(hotkey)
+        result = self._hotkey_model.register_hotkey(hotkey=hotkey)
 
         # If successful and not already listening, start listening
         if result and not self._hotkey_model.is_filter_mode:
@@ -360,7 +363,7 @@ class AppController(QObject):
         # Apply selected instruction set if available
         selected_set = self._instruction_set_model.get_selected_set()
         if selected_set:
-            self._pipeline_model.apply_instruction_set(selected_set)
+            self._pipeline_model.apply_instruction_set(instruction_set=selected_set)
 
         if self._pipeline_model.start_recording():
             # Set recording mode for hotkeys (no active hotkey in this case)
@@ -394,14 +397,14 @@ class AppController(QObject):
             return False
 
         # Apply selected instruction set if available
-        selected_set = self._instruction_set_model.get_set_by_hotkey(hotkey)
+        selected_set = self._instruction_set_model.get_set_by_hotkey(hotkey=hotkey)
         if selected_set:
-            self._instruction_set_model.set_selected_set_name(selected_set.name)
-            self._pipeline_model.apply_instruction_set(selected_set)
+            self._instruction_set_model.set_selected_set_name(name=selected_set.name)
+            self._pipeline_model.apply_instruction_set(instruction_set=selected_set)
 
         if self._pipeline_model.start_recording():
             # Set recording mode for hotkeys with the active hotkey
-            self._hotkey_model.enable_filtered_mode_and_start_listening(hotkey)
+            self._hotkey_model.enable_filtered_mode_and_start_listening(active_hotkey=hotkey)
 
             # Start status indicator in recording mode
             self._status_indicator_controller.start_recording()
@@ -426,7 +429,7 @@ class AppController(QObject):
             return False
 
         # Stop recording
-        audio_file = self._pipeline_model.stop_recording()
+        audio_file_path = self._pipeline_model.stop_recording()
 
         # Update status indicator to processing mode
         self._status_indicator_controller.start_processing()
@@ -435,7 +438,7 @@ class AppController(QObject):
         self.recording_stopped.emit()
 
         # Process the audio if we have a file
-        if audio_file:
+        if audio_file_path:
             # Get language from selected instruction set
             language = None
             selected_set = self._instruction_set_model.get_selected_set()
@@ -456,7 +459,12 @@ class AppController(QObject):
                 print(f"Retrieved clipboard content: Text: {'Yes' if clipboard_text else 'No'}, " f"Image: {'Yes' if clipboard_image else 'No'}")
 
             # Process the audio with clipboard content asynchronously
-            self._pipeline_model.process_audio(audio_file, language, clipboard_text, clipboard_image)
+            self._pipeline_model.process_audio(
+                audio_file_path=audio_file_path,
+                language=language,
+                clipboard_text=clipboard_text,
+                clipboard_image=clipboard_image,
+            )
 
         return True
 
@@ -501,7 +509,7 @@ class AppController(QObject):
         if self.is_processing:
             self.cancel_processing()
 
-    def create_instruction_dialog(self, parent=None):
+    def create_instruction_dialog(self, parent: QWidget | None = None) -> InstructionDialog:
         """
         Create and return an instruction dialog.
 
@@ -518,7 +526,7 @@ class AppController(QObject):
             The created instruction dialog
         """
         # Create instruction dialog using factory
-        return InstructionDialogFactory.create_dialog(parent)
+        return InstructionDialogFactory.create_dialog(parent=parent)
 
     def show_api_key_settings(self, parent=None) -> bool:
         """
@@ -538,7 +546,7 @@ class AppController(QObject):
             True if the API key was successfully updated, False otherwise
         """
         # Create and show the API key settings dialog through factory
-        dialog = APIKeyDialogFactory.create_settings_dialog(parent)
+        dialog = APIKeyDialogFactory.create_settings_dialog(parent=parent)
 
         # Show dialog and handle result
         result = dialog.exec()
@@ -551,6 +559,6 @@ class AppController(QObject):
             api_key = self._settings_manager.get_api_key()
 
             # Reinitialize pipeline with the new API key
-            self.reinitialize(api_key)
+            self.reinitialize(api_key=api_key)
 
         return False
