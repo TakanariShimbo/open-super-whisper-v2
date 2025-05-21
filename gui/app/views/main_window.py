@@ -51,7 +51,7 @@ class MainWindow(QMainWindow):
         The application controller that manages the business logic
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initialize the MainWindow.
 
@@ -97,7 +97,7 @@ class MainWindow(QMainWindow):
         # Register instruction set hotkeys
         self.register_instruction_set_hotkeys()
 
-    def setup_ui(self):
+    def setup_ui(self) -> None:
         """
         Set up the user interface.
         """
@@ -206,7 +206,7 @@ class MainWindow(QMainWindow):
         # Populate instruction sets combo
         self.populate_instruction_set_combo()
 
-    def setup_system_tray(self):
+    def setup_system_tray(self) -> None:
         """
         Set up the system tray icon.
         """
@@ -225,7 +225,7 @@ class MainWindow(QMainWindow):
         # Show system tray icon
         self.system_tray.show()
 
-    def create_toolbar(self):
+    def create_toolbar(self) -> None:
         """
         Create the application toolbar.
         """
@@ -262,7 +262,7 @@ class MainWindow(QMainWindow):
         exit_action.triggered.connect(self.quit_application)
         self.toolbar.addAction(exit_action)
 
-    def connect_controller_signals(self):
+    def connect_controller_signals(self) -> None:
         """
         Connect signals from the controller to the view slots.
         """
@@ -288,7 +288,7 @@ class MainWindow(QMainWindow):
         # LLM streaming signal
         self.controller.llm_stream_update.connect(self.on_llm_stream_update)
 
-    def populate_instruction_set_combo(self):
+    def populate_instruction_set_combo(self) -> None:
         """
         Populate the instruction set combo box with available instruction sets.
         """
@@ -314,7 +314,7 @@ class MainWindow(QMainWindow):
 
         self.instruction_set_combo.blockSignals(False)
 
-    def register_instruction_set_hotkeys(self):
+    def register_instruction_set_hotkeys(self) -> None:
         """
         Register hotkeys for all instruction sets.
         """
@@ -322,7 +322,7 @@ class MainWindow(QMainWindow):
             if instruction_set.hotkey:
                 self.controller.register_hotkey(instruction_set.hotkey)
 
-    def show_api_key_dialog(self):
+    def show_api_key_dialog(self) -> None:
         """
         Show dialog for API key entry.
 
@@ -340,14 +340,14 @@ class MainWindow(QMainWindow):
                 QMessageBox.critical(self, "API Key Required", "A valid API key is required to use this application.")
 
     @pyqtSlot()
-    def on_record_button_click(self):
+    def on_record_button_click(self) -> None:
         """
         Handle the record button click event.
         """
         self.controller.toggle_recording()
 
     @pyqtSlot()
-    def on_recording_started(self):
+    def on_recording_started(self) -> None:
         """
         Handle the recording started event.
         """
@@ -361,7 +361,7 @@ class MainWindow(QMainWindow):
         self.audio_manager.play_start_recording()
 
     @pyqtSlot()
-    def on_recording_stopped(self):
+    def on_recording_stopped(self) -> None:
         """
         Handle the recording stopped event.
         """
@@ -372,7 +372,7 @@ class MainWindow(QMainWindow):
         self.audio_manager.play_stop_recording()
 
     @pyqtSlot()
-    def on_processing_started(self):
+    def on_processing_started(self) -> None:
         """
         Handle the processing started event.
         """
@@ -389,7 +389,7 @@ class MainWindow(QMainWindow):
         self.llm_text.clear()
 
     @pyqtSlot(bool)
-    def on_processing_state_changed(self, is_processing: bool):
+    def on_processing_state_changed(self, is_processing: bool) -> None:
         """
         Handle changes in processing state.
 
@@ -416,7 +416,7 @@ class MainWindow(QMainWindow):
             self.system_tray.update_recording_status("start_recording")
 
     @pyqtSlot()
-    def on_processing_cancelled(self):
+    def on_processing_cancelled(self) -> None:
         """
         Handle processing cancelled event.
         """
@@ -430,7 +430,7 @@ class MainWindow(QMainWindow):
         self.audio_manager.play_cancel_processing()
 
     @pyqtSlot(PipelineResult)
-    def on_processing_complete(self, result: PipelineResult):
+    def on_processing_complete(self, result: PipelineResult) -> None:
         """
         Handle the processing complete event.
 
@@ -440,14 +440,14 @@ class MainWindow(QMainWindow):
             The result of the processing
         """
         # Update the STT output text using markdown text browser method
-        self.stt_text.set_markdown_text(result.stt_output)
+        self.stt_text.set_markdown_text(markdown_text=result.stt_output)
 
         # For LLM text, if streaming was used, the text is already in the UI
         # Only update if it's different from the streaming result
         if result.is_llm_processed and result.llm_output:
             current_markdown = self.llm_text.markdown_text()
             if current_markdown != result.llm_output:
-                self.llm_text.set_markdown_text(result.llm_output)
+                self.llm_text.set_markdown_text(markdown_text=result.llm_output)
 
             # Stay on or switch to LLM tab
             self.tab_widget.setCurrentIndex(1)
@@ -470,7 +470,7 @@ class MainWindow(QMainWindow):
         self.audio_manager.play_complete_processing()
 
     @pyqtSlot(str, int)
-    def update_status(self, message: str, timeout: int = 0):
+    def update_status(self, message: str, timeout: int = 0) -> None:
         """
         Update the status bar message.
 
@@ -484,7 +484,7 @@ class MainWindow(QMainWindow):
         self.status_bar.showMessage(message, timeout)
 
     @pyqtSlot(InstructionSet)
-    def on_instruction_set_activated(self, instruction_set: InstructionSet):
+    def on_instruction_set_activated(self, instruction_set: InstructionSet) -> None:
         """
         Handle instruction set activation.
 
@@ -504,7 +504,7 @@ class MainWindow(QMainWindow):
         self.status_bar.showMessage(f"Instruction set activated: {instruction_set.name}", 3000)
 
     @pyqtSlot(str)
-    def on_hotkey_triggered(self, hotkey: str):
+    def on_hotkey_triggered(self, hotkey: str) -> None:
         """
         Handle hotkey trigger event.
 
@@ -517,7 +517,7 @@ class MainWindow(QMainWindow):
         self.status_bar.showMessage(f"Hotkey triggered: {hotkey}", 2000)
 
     @pyqtSlot(str)
-    def on_llm_stream_update(self, chunk: str):
+    def on_llm_stream_update(self, chunk: str) -> None:
         """
         Handle streaming updates from the LLM processor.
 
@@ -535,7 +535,7 @@ class MainWindow(QMainWindow):
 
         # Append the new chunk to the LLM text
         # We use append_markdown to properly render the content
-        self.llm_text.append_markdown(chunk)
+        self.llm_text.append_markdown(text=chunk)
 
         # Update status indicator to show streaming progress
         self.status_indicator.setText("LLM Streaming...")
@@ -544,7 +544,7 @@ class MainWindow(QMainWindow):
         self.status_bar.showMessage("Receiving LLM response...", 1000)
 
     @pyqtSlot(int)
-    def on_instruction_set_changed(self, index: int):
+    def on_instruction_set_changed(self, index: int) -> None:
         """
         Handle instruction set selection change.
 
@@ -560,28 +560,28 @@ class MainWindow(QMainWindow):
         name = self.instruction_set_combo.itemText(index)
 
         # Set the selected instruction set
-        self.controller.select_instruction_set(name)
+        self.controller.select_instruction_set(name=name)
 
-    def copy_stt(self):
+    def copy_stt(self) -> None:
         """
         Copy the STT output text to the clipboard.
 
         This method copies the original markdown text, not the rendered HTML,
         consistent with how we handle LLM output copying.
         """
-        ClipboardUtils.set_text(self.stt_text.markdown_text())
+        ClipboardUtils.set_text(text=self.stt_text.markdown_text())
         self.status_bar.showMessage("STT output copied to clipboard", 2000)
 
-    def copy_llm(self):
+    def copy_llm(self) -> None:
         """
         Copy the LLM output text to the clipboard.
 
         This method copies the original markdown text, not the rendered HTML.
         """
-        ClipboardUtils.set_text(self.llm_text.markdown_text())
+        ClipboardUtils.set_text(text=self.llm_text.markdown_text())
         self.status_bar.showMessage("LLM output copied to clipboard", 2000)
 
-    def show_instruction_sets_dialog(self):
+    def show_instruction_sets_dialog(self) -> None:
         """
         Show the instruction sets management dialog.
 
@@ -600,7 +600,7 @@ class MainWindow(QMainWindow):
         # Show status message
         self.status_bar.showMessage("Instruction sets updated", 2000)
 
-    def show_settings_dialog(self):
+    def show_settings_dialog(self) -> None:
         """
         Show the settings dialog.
 
@@ -616,7 +616,7 @@ class MainWindow(QMainWindow):
             self.status_bar.showMessage("Settings updated", 2000)
 
     @pyqtSlot()
-    def show_window(self):
+    def show_window(self) -> None:
         """
         Show and activate the application window.
         """
@@ -624,13 +624,13 @@ class MainWindow(QMainWindow):
         self.activateWindow()
 
     @pyqtSlot()
-    def hide_window(self):
+    def hide_window(self) -> None:
         """
         Hide the application window.
         """
         self.hide()
 
-    def quit_application(self):
+    def quit_application(self) -> None:
         """
         Completely exit the application.
         """
@@ -656,7 +656,7 @@ class MainWindow(QMainWindow):
             # Exit application
             sys.exit(0)
 
-    def closeEvent(self, event: QCloseEvent):
+    def closeEvent(self, event: QCloseEvent) -> None:
         """
         Handle window close event.
 

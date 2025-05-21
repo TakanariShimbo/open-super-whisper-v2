@@ -4,10 +4,7 @@ API Key Dialog View
 This module provides the view component for API key input dialog.
 """
 
-from PyQt6.QtWidgets import (
-    QDialog, QVBoxLayout, QPushButton, QHBoxLayout, QWidget,
-    QDialogButtonBox, QLabel, QLineEdit
-)
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QHBoxLayout, QWidget, QDialogButtonBox, QLabel, QLineEdit
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtGui import QCloseEvent
 
@@ -17,15 +14,19 @@ from ...controllers.dialogs.api_key_dialog_controller import APIKeyDialogControl
 class APIKeyDialog(QDialog):
     """
     Dialog for API key input.
-    
+
     This class provides a user-friendly dialog for entering an API key
     with proper explanation and validation feedback.
     """
-    
-    def __init__(self, initial_message: str, parent: QWidget | None = None) -> None:
+
+    def __init__(
+        self,
+        initial_message: str,
+        parent: QWidget | None = None,
+    ) -> None:
         """
         Initialize the API Key Dialog.
-        
+
         Parameters
         ----------
         initial_message : str
@@ -33,41 +34,41 @@ class APIKeyDialog(QDialog):
         parent : QWidget, optional
             Parent widget, by default None
         """
-        super().__init__(parent)
-        
+        super().__init__(parent=parent)
+
         # Create controller
         self._controller = APIKeyDialogController()
-        
+
         # Create UI components
         self._init_ui()
-        
+
         # Connect controller signals
         self._connect_controller_signals()
-        
+
         # Set initial message if provided
         if initial_message:
-            self.show_status_message(initial_message)
-        
+            self.show_status_message(message=initial_message)
+
         # Initialize API key field
         current_api_key = self._controller.get_api_key()
         if current_api_key:
             self._api_key_input.setText(current_api_key)
-    
+
     def _init_ui(self) -> None:
         """
         Initialize the dialog UI components.
         """
         # Set window title based on mode
-        self.setWindowTitle("API Key Settings")    
+        self.setWindowTitle("API Key Settings")
         self.setMinimumWidth(400)
 
         layout = QVBoxLayout()
-        
+
         # Title label
-        title_label = QLabel("OpenAI API Key Settings")    
+        title_label = QLabel("OpenAI API Key Settings")
         title_label.setStyleSheet("font-size: 14px; font-weight: bold;")
         layout.addWidget(title_label)
-        
+
         # Help text
         help_text = QLabel(
             "To use Open Super Whisper, you need a valid OpenAI API key.\n\n"
@@ -76,28 +77,28 @@ class APIKeyDialog(QDialog):
             "3. Create a new API key\n"
             "4. Copy and paste the key below"
         )
-            
+
         help_text.setWordWrap(True)
         layout.addWidget(help_text)
-        
+
         # API key input
         layout.addSpacing(10)
-        
+
         # Input label
         input_label = QLabel("OpenAI API key:")
-            
+
         layout.addWidget(input_label)
-        
+
         # Create a horizontal layout for input field and toggle button
         input_layout = QHBoxLayout()
-        
+
         # API key input field
         self._api_key_input = QLineEdit()
         self._api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
         self._api_key_input.setPlaceholderText("sk-...")
         self._api_key_input.returnPressed.connect(self._on_accept)
         input_layout.addWidget(self._api_key_input, 1)  # Use stretch factor 1
-        
+
         # Toggle visibility button
         self._toggle_button = QPushButton("👁️")
         self._toggle_button.setToolTip("Show/Hide API Key")
@@ -106,26 +107,24 @@ class APIKeyDialog(QDialog):
         self._toggle_button.setChecked(False)  # Initially not checked
         self._toggle_button.clicked.connect(self._on_key_visibility_toggled)
         input_layout.addWidget(self._toggle_button)
-        
+
         # Add the input layout to the main layout
         layout.addLayout(input_layout)
-        
+
         # Status label (initially hidden)
         self._status_label = QLabel("")
         self._status_label.setStyleSheet("color: red;")
         self._status_label.setVisible(False)
         layout.addWidget(self._status_label)
-        
+
         # Add button box
-        button_box = QDialogButtonBox(
-            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
-        )
+        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         button_box.accepted.connect(self._on_accept)
         button_box.rejected.connect(self._on_reject)
         layout.addWidget(button_box)
 
         self.setLayout(layout)
-    
+
     def _connect_controller_signals(self) -> None:
         """
         Connect signals from the controller.
@@ -133,7 +132,7 @@ class APIKeyDialog(QDialog):
         # Connect controller signals to view methods
         self._controller.api_key_validated.connect(self._handle_api_key_validated)
         self._controller.api_key_invalid.connect(self._handle_api_key_invalid)
-    
+
     @pyqtSlot()
     def _on_key_visibility_toggled(self) -> None:
         """
@@ -149,21 +148,21 @@ class APIKeyDialog(QDialog):
             self._api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
             self._toggle_button.setText("👁️")
             self._toggle_button.setToolTip("Show API Key")
-    
+
     @pyqtSlot()
     def _on_accept(self) -> None:
         """
         Handle dialog acceptance.
         """
         entered_api_key = self.get_entered_api_key()
-        
+
         if not entered_api_key:
-            self.show_status_message("API key cannot be empty")
+            self.show_status_message(message="API key cannot be empty")
             return
-        
+
         # Use controller to validate the key
-        self._controller.validate_api_key(entered_api_key)
-    
+        self._controller.validate_api_key(api_key=entered_api_key)
+
     @pyqtSlot()
     def _on_reject(self) -> None:
         """
@@ -171,15 +170,15 @@ class APIKeyDialog(QDialog):
         """
         # Restore original state
         self._controller.cancel()
-        
+
         # Reject the dialog
         super().reject()
-    
+
     @pyqtSlot()
     def _handle_api_key_validated(self) -> None:
         """
         Handle successful API key validation.
-        
+
         Parameters
         ----------
         api_key : str
@@ -187,49 +186,49 @@ class APIKeyDialog(QDialog):
         """
         # Save the valid API key
         self._controller.save_api_key()
-        
+
         # Accept the dialog
         super().accept()
-    
+
     @pyqtSlot()
     def _handle_api_key_invalid(self) -> None:
         """
         Handle failed API key validation.
-        
+
         Parameters
         ----------
         api_key : str
             The invalid API key
         """
-        self.show_status_message("Invalid API key. Please check and try again.")
-    
-    def get_entered_api_key(self):
+        self.show_status_message(message="Invalid API key. Please check and try again.")
+
+    def get_entered_api_key(self) -> str:
         """
         Get the entered API key.
-        
+
         Returns
         -------
         str
             The entered API key
         """
         return self._api_key_input.text().strip()
-    
+
     def show_status_message(self, message: str) -> None:
         """
         Display a message in the status label.
-        
+
         Parameters
         ----------
         message : str
             The message to display
         """
         self._status_label.setText(message)
-        self._status_label.setVisible(True)
-    
+        self._status_label.setVisible(visible=True)
+
     def closeEvent(self, event: QCloseEvent) -> None:
         """
         Handle dialog close event.
-        
+
         Parameters
         ----------
         event : QCloseEvent
@@ -237,6 +236,6 @@ class APIKeyDialog(QDialog):
         """
         # Restore original settings
         self._controller.cancel()
-        
+
         # Call parent class method
         super().closeEvent(event)
