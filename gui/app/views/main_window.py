@@ -22,7 +22,7 @@ from PyQt6.QtWidgets import (
     QSystemTrayIcon,
     QSizePolicy,
 )
-from PyQt6.QtCore import Qt, pyqtSlot, QTimer
+from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QAction, QCloseEvent
 
 from core.pipelines.pipeline_result import PipelineResult
@@ -287,7 +287,9 @@ class MainWindow(QMainWindow):
             # Add tooltip with hotkey if available
             if instruction_set.hotkey:
                 self.instruction_set_combo.setItemData(
-                    self.instruction_set_combo.count() - 1, f"Hotkey: {instruction_set.hotkey}", Qt.ItemDataRole.ToolTipRole
+                    self.instruction_set_combo.count() - 1,
+                    f"Hotkey: {instruction_set.hotkey}",
+                    Qt.ItemDataRole.ToolTipRole,
                 )
 
         # Select the currently selected instruction set
