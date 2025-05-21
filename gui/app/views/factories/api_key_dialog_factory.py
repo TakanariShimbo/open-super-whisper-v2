@@ -13,65 +13,80 @@ from ..dialogs.api_key_dialog import APIKeyDialog
 class APIKeyDialogFactory:
     """
     Factory class for creating API key dialog instances.
-    
+
     This class provides methods to create properly configured API key
     dialog instances with their controllers, following the MVC pattern.
     """
-    
+
     @staticmethod
-    def _create_dialog(initial_message: str, parent: QWidget | None = None) -> APIKeyDialog:
+    def _create_dialog(
+        initial_message: str,
+        parent: QWidget | None = None,
+    ) -> APIKeyDialog:
         """
         Create a generic API key dialog instance.
-        
+
         Parameters
         ----------
         parent : QWidget, optional
             Parent widget for the dialog, by default None
         initial_message : str, optional
             Initial message to display in the dialog, by default None
-            
+
         Returns
         -------
         APIKeyDialog
             The created API key dialog instance
-        """        
+        """
         # Create an API key dialog
-        dialog = APIKeyDialog(initial_message, parent)
-        
+        dialog = APIKeyDialog(
+            initial_message=initial_message,
+            parent=parent,
+        )
+
         return dialog
-    
+
     @classmethod
-    def create_initial_dialog(cls, parent: QWidget | None = None) -> APIKeyDialog:
+    def create_initial_dialog(
+        cls,
+        parent: QWidget | None = None,
+    ) -> APIKeyDialog:
         """
         Create an API key dialog for initial application setup.
-        
+
         Parameters
         ----------
         parent : QWidget, optional
             Parent widget for the dialog, by default None
-            
+
         Returns
         -------
         APIKeyDialog
             The created API key dialog instance
         """
         initial_message = "Welcome to Open Super Whisper! Please enter your OpenAI API key to get started."
-        return cls._create_dialog(initial_message, parent)
-    
+        return cls._create_dialog(
+            initial_message=initial_message,
+            parent=parent,
+        )
+
     @classmethod
     def create_settings_dialog(cls, parent: QWidget | None = None) -> APIKeyDialog:
         """
         Create an API key dialog for settings/update.
-        
+
         Parameters
         ----------
         parent : QWidget, optional
             Parent widget for the dialog, by default None
-            
+
         Returns
         -------
         APIKeyDialog
             The created API key dialog instance
         """
         initial_message = "Update your API key or enter a new one if needed."
-        return cls._create_dialog(initial_message, parent)
+        return cls._create_dialog(
+            initial_message=initial_message,
+            parent=parent,
+        )
