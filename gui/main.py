@@ -28,13 +28,13 @@ def start_application() -> int:
         The exit code of the application
     """
     # Create the application
-    app = QApplication(argv=sys.argv)
-    app.setApplicationName(application="OpenSuperWhisper")
-    app.setOrganizationName(orgName="OpenSuperWhisper")
+    app = QApplication(sys.argv)
+    app.setApplicationName("OpenSuperWhisper")
+    app.setOrganizationName("OpenSuperWhisper")
 
     # Set application icon using the IconManager
     icon_manager = IconManager.instance()
-    app.setWindowIcon(icon=icon_manager.get_app_icon())
+    app.setWindowIcon(icon_manager.get_app_icon())
 
     # Initialize settings manager
     SettingsManager.instance()
