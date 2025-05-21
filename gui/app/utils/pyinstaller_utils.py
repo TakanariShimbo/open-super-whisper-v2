@@ -1,7 +1,7 @@
 """
 Resource Helper Utilities
 
-This module provides helper functions for managing application resources. 
+This module provides helper functions for managing application resources.
 """
 
 import os
@@ -13,12 +13,12 @@ class PyInstallerUtils:
     def get_resource_path(relative_path: str) -> str:
         """
         Get the absolute path to a resource file for PyInstaller.
-        
+
         Parameters
         ----------
         relative_path : str
             Path relative to the application root or executable.
-        
+
         Returns
         -------
         str
@@ -29,5 +29,5 @@ class PyInstallerUtils:
             base_path = sys._MEIPASS  # type: ignore
         except Exception:
             base_path = os.getcwd()
-        
-        return os.path.normpath(os.path.join(base_path, relative_path))
+
+        return os.path.normpath(path=os.path.join(base_path, relative_path))
