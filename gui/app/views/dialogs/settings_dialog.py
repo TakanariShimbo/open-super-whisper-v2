@@ -62,17 +62,17 @@ class SettingsDialog(QDialog):
         # Sound toggle
         self.sound_checkbox = QCheckBox("Enable sound notifications")
         self.sound_checkbox.setToolTip("Play sounds when recording starts/stops and processing completes")
-        self.sound_checkbox.toggled.connect(self._on_sound_toggled)
+        self.sound_checkbox.toggled.connect(self._on_toggle_sound)
 
         # Indicator visibility toggle
         self.indicator_checkbox = QCheckBox("Show status indicator")
         self.indicator_checkbox.setToolTip("Show a visual indicator during recording and processing")
-        self.indicator_checkbox.toggled.connect(self._on_indicator_toggled)
+        self.indicator_checkbox.toggled.connect(self._on_toggle_indicator)
 
         # Auto clipboard toggle
         self.clipboard_checkbox = QCheckBox("Automatically copy results to clipboard")
         self.clipboard_checkbox.setToolTip("Copy transcription results to clipboard when processing completes")
-        self.clipboard_checkbox.toggled.connect(self._on_clipboard_toggled)
+        self.clipboard_checkbox.toggled.connect(self._on_toggle_clipboard)
 
         # Add checkboxes to grid layout
         settings_layout.addWidget(self.sound_checkbox, 0, 0)
@@ -122,7 +122,7 @@ class SettingsDialog(QDialog):
         self._update_ui_from_settings()
 
     @pyqtSlot(bool)
-    def _on_sound_toggled(self, enabled: bool) -> None:
+    def _on_toggle_sound(self, enabled: bool) -> None:
         """
         Handle sound checkbox toggle.
 
@@ -134,7 +134,7 @@ class SettingsDialog(QDialog):
         self._controller.set_sound_enabled(enabled=enabled)
 
     @pyqtSlot(bool)
-    def _on_indicator_toggled(self, visible: bool) -> None:
+    def _on_toggle_indicator(self, visible: bool) -> None:
         """
         Handle indicator checkbox toggle.
 
@@ -146,7 +146,7 @@ class SettingsDialog(QDialog):
         self._controller.set_indicator_visible(visible=visible)
 
     @pyqtSlot(bool)
-    def _on_clipboard_toggled(self, enabled: bool) -> None:
+    def _on_toggle_clipboard(self, enabled: bool) -> None:
         """
         Handle clipboard checkbox toggle.
 

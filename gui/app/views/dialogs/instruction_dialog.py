@@ -181,11 +181,11 @@ class InstructionDialog(QDialog):
         save_buttons_layout = QHBoxLayout()
 
         self._save_button = QPushButton("Save Changes")
-        self._save_button.clicked.connect(self._on_save_changes)
+        self._save_button.clicked.connect(self._on_click_save)
         save_buttons_layout.addWidget(self._save_button)
 
         self._discard_button = QPushButton("Discard Changes")
-        self._discard_button.clicked.connect(self._on_discard_changes)
+        self._discard_button.clicked.connect(self._on_click_discard)
         save_buttons_layout.addWidget(self._discard_button)
 
         right_layout.addLayout(save_buttons_layout)
@@ -456,7 +456,7 @@ class InstructionDialog(QDialog):
                 # Revert selection - this is handled by the controller
                 return
             elif result == QMessageBox.StandardButton.Save:
-                self._on_save_changes()
+                self._on_click_save()
 
         # Get selected set name and notify controller
         set_name = self._sets_list.item(row).text()
@@ -710,7 +710,7 @@ class InstructionDialog(QDialog):
             )
 
     @pyqtSlot()
-    def _on_save_changes(self) -> None:
+    def _on_click_save(self) -> None:
         """
         Handle saving changes to the current instruction set.
         """
@@ -742,7 +742,7 @@ class InstructionDialog(QDialog):
         self._update_ui_state()
 
     @pyqtSlot()
-    def _on_discard_changes(self) -> None:
+    def _on_click_discard(self) -> None:
         """
         Handle discarding changes to the current instruction set.
         """
@@ -838,7 +838,7 @@ class InstructionDialog(QDialog):
             if result == QMessageBox.StandardButton.Cancel:
                 return
             elif result == QMessageBox.StandardButton.Save:
-                self._on_save_changes()
+                self._on_click_save()
 
         self._restore_hotkeys()
         self.accept()
@@ -881,7 +881,7 @@ class InstructionDialog(QDialog):
                 event.ignore()
                 return
             elif result == QMessageBox.StandardButton.Save:
-                self._on_save_changes()
+                self._on_click_save()
 
         self._restore_hotkeys()
         event.accept()

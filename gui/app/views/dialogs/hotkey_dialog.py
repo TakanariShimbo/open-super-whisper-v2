@@ -97,12 +97,12 @@ class HotkeyDialog(QDialog):
         # Capture button
         self._capture_button = QPushButton("Capture")
         self._capture_button.setCheckable(True)
-        self._capture_button.clicked.connect(self._on_capture_toggled)
+        self._capture_button.clicked.connect(self._on_toggle_capture)
         button_container.addWidget(self._capture_button)
 
         # Reset button
         reset_button = QPushButton("Clear")
-        reset_button.clicked.connect(self._on_reset_clicked)
+        reset_button.clicked.connect(self._on_click_reset)
         button_container.addWidget(reset_button)
 
         # Add to grid layout
@@ -140,7 +140,7 @@ class HotkeyDialog(QDialog):
         self._controller.validation_error.connect(self._handle_validation_error)
 
     @pyqtSlot(bool)
-    def _on_capture_toggled(self, checked: bool) -> None:
+    def _on_toggle_capture(self, checked: bool) -> None:
         """
         Handle capture button toggle.
 
@@ -203,7 +203,7 @@ class HotkeyDialog(QDialog):
         self._controller.capture_keys()
 
     @pyqtSlot()
-    def _on_reset_clicked(self) -> None:
+    def _on_click_reset(self) -> None:
         """
         Handle reset button click.
         """
