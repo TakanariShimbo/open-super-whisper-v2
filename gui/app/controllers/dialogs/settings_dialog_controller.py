@@ -13,44 +13,43 @@ from ...models.dialogs.settings_dialog_model import SettingsDialogModel
 class SettingsDialogController(QObject):
     """
     Controller for the settings dialog.
-    
+
     This class mediates between the settings dialog view and model,
     handling user interactions and updating the model and view accordingly.
-    
+
     Attributes
     ----------
     settings_updated : pyqtSignal
         Signal emitted when any settings are updated
     """
-    
+
     # Define single signal for view communication
     settings_updated = pyqtSignal()
-    
-    def __init__(self, parent_controller: QObject | None = None) -> None:
+
+    def __init__(self, parent: QObject | None = None) -> None:
         """
         Initialize the SettingsDialogController.
-        
+
         Parameters
         ----------
-        parent_controller : QObject | None, optional
-            The parent controller, by default None
+        parent : QObject | None, optional
+            The parent object, by default None
         """
-        super().__init__()
-        
+        super().__init__(parent=parent)
+
         # Create model
         self._dialog_model = SettingsDialogModel()
-        self._parent_controller = parent_controller
-        
+
         # Connect model signals
         self._connect_model_signals()
-    
+
     def _connect_model_signals(self) -> None:
         """
         Connect signals from the model to controller handlers.
         """
         # Connect the model's settings_updated signal to our handler
         self._dialog_model.settings_updated.connect(self._handle_settings_updated)
-    
+
     @pyqtSlot()
     def _handle_settings_updated(self) -> None:
         """
@@ -58,73 +57,73 @@ class SettingsDialogController(QObject):
         """
         # Notify view that settings have changed
         self.settings_updated.emit()
-    
+
     def get_sound_enabled(self) -> bool:
         """
         Get current sound enabled setting.
-        
+
         Returns
         -------
         bool
             True if sound is enabled, False otherwise
         """
         return self._dialog_model.get_sound_enabled()
-    
+
     def set_sound_enabled(self, enabled: bool) -> None:
         """
         Set sound enabled setting.
-        
+
         Parameters
         ----------
         enabled : bool
             True to enable sound, False to disable
         """
-        self._dialog_model.set_sound_enabled(enabled)
-    
+        self._dialog_model.set_sound_enabled(value=enabled)
+
     def get_indicator_visible(self) -> bool:
         """
         Get current indicator visibility setting.
-        
+
         Returns
         -------
         bool
             True if indicator should be visible, False otherwise
         """
         return self._dialog_model.get_indicator_visible()
-    
+
     def set_indicator_visible(self, visible: bool) -> None:
         """
         Set indicator visibility setting.
-        
+
         Parameters
         ----------
         visible : bool
             True to make indicator visible, False to hide
         """
-        self._dialog_model.set_indicator_visible(visible)
-    
+        self._dialog_model.set_indicator_visible(value=visible)
+
     def get_auto_clipboard(self) -> bool:
         """
         Get current auto clipboard setting.
-        
+
         Returns
         -------
         bool
             True if auto-clipboard is enabled, False otherwise
         """
         return self._dialog_model.get_auto_clipboard()
-    
+
     def set_auto_clipboard(self, enabled: bool) -> None:
         """
         Set auto clipboard setting.
-        
+
         Parameters
         ----------
         enabled : bool
             True to enable auto-clipboard, False to disable
         """
-        self._dialog_model.set_auto_clipboard(enabled)
-    
+        self._dialog_model.set_auto_clipboard(value=enabled)
+
     def save_settings(self) -> None:
         """
         Save current settings to persistent storage and update related components.

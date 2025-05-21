@@ -32,7 +32,7 @@ class HotkeyDialogController(QObject):
     hotkey_captured = pyqtSignal(str)
     validation_error = pyqtSignal(str)  # error_message
 
-    def __init__(self, current_hotkey: str = "", parent_controller: QObject | None = None) -> None:
+    def __init__(self, current_hotkey: str = "", parent: QObject | None = None) -> None:
         """
         Initialize the HotkeyDialogController.
 
@@ -40,14 +40,13 @@ class HotkeyDialogController(QObject):
         ----------
         current_hotkey : str, optional
             Initial hotkey value, by default ""
-        parent_controller : QObject | None, optional
-            Parent controller for this controller, by default None
+        parent : QObject | None, optional
+            Parent object for this controller, by default None
         """
-        super().__init__()
+        super().__init__(parent=parent)
 
         # Create model
         self._model = HotkeyDialogModel(current_hotkey=current_hotkey)
-        self._parent_controller = parent_controller
 
         # Connect model signals
         self._connect_model_signals()
@@ -137,7 +136,7 @@ class HotkeyDialogController(QObject):
         hotkey : str
             The hotkey string to set
         """
-        self._model.set_hotkey(hotkey)
+        self._model.set_hotkey(value=hotkey)
 
     def reset_hotkey(self) -> None:
         """
