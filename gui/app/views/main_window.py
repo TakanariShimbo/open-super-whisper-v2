@@ -64,9 +64,6 @@ class MainWindow(QMainWindow):
         # Create controller
         self.controller = MainController()
 
-        # Get settings
-        self.api_key = self.settings_manager.get_api_key()
-
         # Set application icon
         self.setWindowIcon(self.icon_manager.get_app_icon())
 
@@ -81,10 +78,6 @@ class MainWindow(QMainWindow):
 
         # Connect signals from controller
         self.connect_controller_signals()
-
-        # Check API key
-        if not self.api_key:
-            QTimer.singleShot(100, self._on_click_api_key)
 
         # Register instruction set hotkeys
         self.register_instruction_set_hotkeys()
@@ -539,8 +532,6 @@ class MainWindow(QMainWindow):
         """
         # Use the controller's API key settings method
         if self.controller.show_api_key_dialog(parent=self):
-            # Update the stored API key
-            self.api_key = self.settings_manager.get_api_key()
             self.status_bar.showMessage("API key updated successfully", 2000)
         else:
             self.status_bar.showMessage("Failed to update API key", 2000)
