@@ -5,6 +5,8 @@ This module provides a factory for creating main window instances,
 following the factory design pattern to centralize window creation logic.
 """
 
+from PyQt6.QtWidgets import QWidget
+
 from ..main_window import MainWindow
 
 
@@ -17,16 +19,21 @@ class MainWindowFactory:
     """
 
     @staticmethod
-    def create_window() -> MainWindow:
+    def create_window(parent: QWidget | None = None) -> MainWindow:
         """
         Create a main window with associated controller and model.
+
+        Parameters
+        ----------
+        parent : QWidget, optional
+            Parent widget for the main window, by default None
 
         Returns
         -------
         MainWindow
             The created main window instance
         """
-        # Create the window
+        # Create the main window
         window = MainWindow()
-        
+
         return window
