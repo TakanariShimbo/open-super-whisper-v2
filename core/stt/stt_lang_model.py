@@ -12,10 +12,10 @@ from dataclasses import dataclass
 class STTLangModel:
     """
     Speech-to-text language model data.
-    
+
     This class represents a language with its essential properties for
     speech-to-text processing.
-    
+
     Attributes
     ----------
     code : str
@@ -23,24 +23,25 @@ class STTLangModel:
     name : str
         Display name in English (e.g., "English", "Japanese").
     """
+
     code: str
     name: str
-    
+
     def __str__(self) -> str:
         """
         Return the display name of the language.
-        
+
         Returns
         -------
         str
             The display name of the language.
         """
         return self.name
-    
+
     def __repr__(self) -> str:
         """
         Return a string representation of the language.
-        
+
         Returns
         -------
         str

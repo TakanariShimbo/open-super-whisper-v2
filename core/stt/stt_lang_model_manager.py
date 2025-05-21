@@ -14,12 +14,12 @@ from .stt_lang_model import STTLangModel
 class STTLangModelManager:
     """
     Manager for speech-to-text language data.
-    
+
     This class provides methods to access and manage language options
     for speech-to-text processing. It maintains a list of supported
     languages and provides utilities for lookup and validation.
     """
-    
+
     # Define supported languages
     # This list includes commonly supported languages by transcription services
     _SUPPORTED_LANGUAGES: ClassVar[list[STTLangModel]] = [
@@ -82,17 +82,15 @@ class STTLangModelManager:
         STTLangModel(code="vi", name="Vietnamese"),
         STTLangModel(code="cy", name="Welsh"),
     ]
-    
+
     # Create a lookup dictionary for efficient access by code
-    _LANGUAGE_CODE_MAP: ClassVar[dict[str, STTLangModel]] = {
-        lang.code: lang for lang in _SUPPORTED_LANGUAGES
-    }
-    
+    _LANGUAGE_CODE_MAP: ClassVar[dict[str, STTLangModel]] = {lang.code: lang for lang in _SUPPORTED_LANGUAGES}
+
     @classmethod
     def get_available_languages(cls) -> list[STTLangModel]:
         """
         Get all supported languages.
-        
+
         Returns
         -------
         list[STTLangModel]
@@ -100,17 +98,17 @@ class STTLangModelManager:
             The first element is always the auto-detect option.
         """
         return cls._SUPPORTED_LANGUAGES.copy()
-    
+
     @classmethod
     def get_language_by_code(cls, code: str) -> STTLangModel:
         """
         Get a language by its code.
-        
+
         Parameters
         ----------
         code : str
             The ISO 639-1 language code to look up.
-            
+
         Returns
         -------
         STTLangModel
@@ -118,12 +116,12 @@ class STTLangModelManager:
             Returns the auto-detect language if the code is not found.
         """
         return cls._LANGUAGE_CODE_MAP.get(code, cls._SUPPORTED_LANGUAGES[0])
-    
+
     @classmethod
     def to_api_format(cls) -> list[dict[str, str]]:
         """
         Convert languages to API format.
-        
+
         Returns
         -------
         list[dict[str, str]]
@@ -132,7 +130,7 @@ class STTLangModelManager:
         return [
             {
                 "code": lang.code,
-                "name": lang.name
+                "name": lang.name,
             }
             for lang in cls._SUPPORTED_LANGUAGES
         ]

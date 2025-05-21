@@ -13,10 +13,10 @@ from dataclasses import dataclass
 class STTModel:
     """
     Speech-to-text model data model.
-    
+
     This class represents a speech-to-text transcription model with its properties
     like ID, name, description, and other metadata.
-    
+
     Attributes
     ----------
     id : str
@@ -30,27 +30,28 @@ class STTModel:
     is_default : bool
         Whether this is the default model, by default False.
     """
+
     id: str
     name: str
     description: str
     performance_tier: str
     is_default: bool = False
-    
+
     def __str__(self) -> str:
         """
         Return the display name of the model.
-        
+
         Returns
         -------
         str
             The display name of the model.
         """
         return self.name
-    
+
     def __repr__(self) -> str:
         """
         Return a string representation of the model.
-        
+
         Returns
         -------
         str
