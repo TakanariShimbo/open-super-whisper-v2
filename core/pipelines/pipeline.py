@@ -18,47 +18,47 @@ from .pipeline_result import PipelineResult
 class Pipeline:
     """
     Unified pipeline for STT and LLM processing.
-    
+
     This class combines STTProcessor and LLMProcessor to provide
     a seamless processing pipeline, with optional LLM processing.
     """
-    
+
     def __init__(self, api_key: str) -> None:
         """
         Initialize the Pipeline.
-        
+
         Parameters
         ----------
         api_key : str
             API key.
-            
+
         Raises
         ------
         ValueError
             If no API key is provided and none is found in environment variables.
         """
         # Verify api key and create client
-        is_successful, client = APIClientFactory.create_client(api_key)
+        is_successful, client = APIClientFactory.create_client(api_key=api_key)
         if not is_successful:
             raise ValueError("Invalid API key. Please provide a valid API key.")
 
         # Initialize components
-        self._stt_processor = STTProcessor(client)
-        self._llm_processor = LLMProcessor(client)
+        self._stt_processor = STTProcessor(client=client)
+        self._llm_processor = LLMProcessor(client=client)
         self._audio_recorder = AudioRecorder()
-        
+
         # Processing state flag
         self._is_llm_processing_enabled = False
-    
+
     @property
     def is_recording(self) -> bool:
         """Check if the audio recorder is currently recording."""
         return self._audio_recorder.is_recording
-    
+
     def _set_llm_processing(self, enabled: bool = True) -> None:
         """
         Enable or disable LLM processing.
-        
+
         Parameters
         ----------
         enabled : bool, optional
@@ -77,27 +77,27 @@ class Pipeline:
         """
         # Apply vocabulary
         self._stt_processor.clear_custom_vocabulary()
-        self._stt_processor.set_custom_vocabulary(selected_set.stt_vocabulary)
-        
+        self._stt_processor.set_custom_vocabulary(vocabulary=selected_set.stt_vocabulary)
+
         # Apply STT instructions
         self._stt_processor.clear_system_instruction()
-        self._stt_processor.set_system_instruction(selected_set.stt_instructions)
-        
+        self._stt_processor.set_system_instruction(instruction=selected_set.stt_instructions)
+
         # Set whisper model
         if selected_set.stt_model:
-            self._stt_processor.set_model(selected_set.stt_model)
-        
+            self._stt_processor.set_model(model_id=selected_set.stt_model)
+
         # LLM settings
-        self._set_llm_processing(selected_set.llm_enabled)
-        
+        self._set_llm_processing(enabled=selected_set.llm_enabled)
+
         # Set LLM model
         if selected_set.llm_model:
-            self._llm_processor.set_model(selected_set.llm_model)
-        
+            self._llm_processor.set_model(model_id=selected_set.llm_model)
+
         # Apply LLM instructions
         self._llm_processor.clear_system_instruction()
-        self._llm_processor.set_system_instruction(selected_set.llm_instructions)
-        
+        self._llm_processor.set_system_instruction(instruction=selected_set.llm_instructions)
+
     def start_recording(self) -> None:
         """
         Start recording audio from the microphone.
@@ -114,9 +114,13 @@ class Pipeline:
             The path to the audio file.
         """
         return self._audio_recorder.stop_recording()
-    
-    def _prepare_prompt(self, stt_output: str, clipboard_text: str | None = None, 
-                        clipboard_image: bytes | None = None) -> str:
+
+    def _prepare_prompt(
+        self,
+        stt_output: str,
+        clipboard_text: str | None = None,
+        clipboard_image: bytes | None = None,
+    ) -> str:
         """
         Prepare the prompt for LLM processing based on available inputs.
 
@@ -128,7 +132,7 @@ class Pipeline:
             The text to be added to the clipboard, by default None.
         clipboard_image : bytes | None, optional
             The image to be added to the clipboard, by default None.
-            
+
         Returns
         -------
         str
@@ -136,11 +140,11 @@ class Pipeline:
         """
         # Start with just the STT output
         prompt = f"Transcription:\n{stt_output}"
-        
+
         # Add clipboard text if provided
         if clipboard_text and not clipboard_image:
             prompt = f"Clipboard Content:\n{clipboard_text}\n\nTranscription:\n{stt_output}"
-        
+
         # Add image context if there's an image but no clipboard text
         if not clipboard_text and clipboard_image:
             prompt = f"Analyze this image along with the following.\n\nTranscription:\n{stt_output}"
@@ -148,11 +152,15 @@ class Pipeline:
         # Add both clipboard text and image context if both are provided
         if clipboard_text and clipboard_image:
             prompt = f"Analyze this image along with the following.\n\nClipboard Content:\n{clipboard_text}\n\nTranscription:\n{stt_output}"
-        
+
         return prompt
-    
-    def _process_with_text(self, prompt: str, clipboard_image: bytes | None = None,
-                           stream_callback: Callable[[str], None] | None = None) -> str:
+
+    def _process_with_text(
+        self,
+        prompt: str,
+        clipboard_image: bytes | None = None,
+        stream_callback: Callable[[str], None] | None = None,
+    ) -> str:
         """
         Process text through LLM with appropriate method based on parameters.
 
@@ -164,7 +172,7 @@ class Pipeline:
             The image to be added to the clipboard, by default None.
         stream_callback : Callable[[str], None] | None, optional
             A callback function to handle streaming responses, by default None.
-            
+
         Returns
         -------
         str
@@ -173,20 +181,30 @@ class Pipeline:
         # Determine if we're using streaming
         if stream_callback:
             if clipboard_image:
-                return self._llm_processor.process_text_with_stream(prompt, stream_callback, clipboard_image)
+                return self._llm_processor.process_text_with_stream(
+                    text=prompt,
+                    callback=stream_callback,
+                    image_data=clipboard_image,
+                )
             else:
-                return self._llm_processor.process_text_with_stream(prompt, stream_callback)
+                return self._llm_processor.process_text_with_stream(
+                    text=prompt,
+                    callback=stream_callback,
+                )
         else:
             if clipboard_image:
-                return self._llm_processor.process_text(prompt, clipboard_image)
+                return self._llm_processor.process_text(
+                    text=prompt,
+                    image_data=clipboard_image,
+                )
             else:
-                return self._llm_processor.process_text(prompt)
-    
+                return self._llm_processor.process_text(text=prompt)
+
     def process(
-        self, 
-        audio_file_path: str, 
-        language: str | None = None, 
-        clipboard_text: str | None = None, 
+        self,
+        audio_file_path: str,
+        language: str | None = None,
+        clipboard_text: str | None = None,
         clipboard_image: bytes | None = None,
         stream_callback: Callable[[str], None] | None = None,
     ) -> PipelineResult:
@@ -205,28 +223,39 @@ class Pipeline:
             The image to be added to the clipboard, by default None.
         stream_callback : Callable[[str], None] | None, optional
             A callback function to handle streaming responses, by default None.
-            
+
         Returns
         -------
         PipelineResult
             The result of the pipeline processing.
         """
         # Perform STT
-        stt_output = self._stt_processor.transcribe_file_with_chunks(audio_file_path, language)
-        
+        stt_output = self._stt_processor.transcribe_file_with_chunks(
+            audio_file_path=audio_file_path,
+            language=language,
+        )
+
         # Create result object
         result = PipelineResult(stt_output=stt_output)
-        
+
         # If LLM is enabled, process the STT output
         if self._is_llm_processing_enabled:
             # Prepare the prompt
-            prompt = self._prepare_prompt(stt_output, clipboard_text, clipboard_image)
-            
+            prompt = self._prepare_prompt(
+                stt_output=stt_output,
+                clipboard_text=clipboard_text,
+                clipboard_image=clipboard_image,
+            )
+
             # Process with LLM
-            llm_output = self._process_with_text(prompt, clipboard_image, stream_callback)
-            
+            llm_output = self._process_with_text(
+                prompt=prompt,
+                clipboard_image=clipboard_image,
+                stream_callback=stream_callback,
+            )
+
             # Update result
             result.llm_output = llm_output
             result.is_llm_processed = True
-        
+
         return result

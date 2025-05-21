@@ -16,14 +16,14 @@ from ..llm.llm_processor import LLMProcessor
 class InstructionSet:
     """
     A set of custom vocabulary, instructions, language, model, and LLM settings for processing.
-    
+
     This class represents a named collection of settings that can be applied
     to a processing request, including custom vocabulary, system instructions,
     preferred language, transcription model, and LLM processing options.
-    
+
     The class also includes a hotkey setting that allows users to quickly switch
     between instruction sets using keyboard shortcuts.
-    
+
     Attributes
     ----------
     name : str
@@ -49,6 +49,7 @@ class InstructionSet:
     hotkey : str
         Hotkey string for quick activation (e.g., "ctrl+shift+1"), by default empty string.
     """
+
     name: str
 
     # STT settings
@@ -56,19 +57,19 @@ class InstructionSet:
     stt_instructions: str = ""
     stt_language: str | None = None  # Language code (e.g., "en", "ja"), None for auto-detection
     stt_model: str = STTProcessor.DEFAULT_MODEL_ID
-    
+
     # LLM settings
     llm_enabled: bool = False
     llm_model: str = LLMProcessor.DEFAULT_MODEL_ID
     llm_instructions: str = ""
     llm_clipboard_text_enabled: bool = False
     llm_clipboard_image_enabled: bool = False
-    
+
     # Hotkey setting
     hotkey: str = ""  # Hotkey string (e.g., "ctrl+shift+1", "alt+f1")
 
     @classmethod
-    def get_default(cls) -> 'InstructionSet':
+    def get_default(cls) -> "InstructionSet":
         """
         Get the default instruction set.
 
@@ -78,17 +79,17 @@ class InstructionSet:
             The default instruction set.
         """
         return cls(name="Default")
-    
+
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> 'InstructionSet':
+    def from_dict(cls, data: dict[str, Any]) -> "InstructionSet":
         """
         Create an InstructionSet instance from a dictionary.
-        
+
         Parameters
         ----------
         data : dict[str, Any]
             Dictionary containing instruction set data.
-            
+
         Returns
         -------
         InstructionSet
@@ -101,7 +102,7 @@ class InstructionSet:
         """
         if data.get("name", "") == "":
             raise ValueError("Name is required")
-        
+
         # Get default values
         default_set = cls.get_default()
         return cls(
@@ -115,13 +116,13 @@ class InstructionSet:
             llm_instructions=data.get("llm_instructions", default_set.llm_instructions),
             llm_clipboard_text_enabled=data.get("llm_clipboard_text_enabled", default_set.llm_clipboard_text_enabled),
             llm_clipboard_image_enabled=data.get("llm_clipboard_image_enabled", default_set.llm_clipboard_image_enabled),
-            hotkey=data.get("hotkey", default_set.hotkey)
+            hotkey=data.get("hotkey", default_set.hotkey),
         )
 
     def to_dict(self) -> dict[str, Any]:
         """
         Convert this InstructionSet instance to a dictionary.
-        
+
         Returns
         -------
         dict[str, Any]
@@ -138,17 +139,25 @@ class InstructionSet:
             "llm_instructions": self.llm_instructions,
             "llm_clipboard_text_enabled": self.llm_clipboard_text_enabled,
             "llm_clipboard_image_enabled": self.llm_clipboard_image_enabled,
-            "hotkey": self.hotkey
+            "hotkey": self.hotkey,
         }
-    
-    def update(self, stt_vocabulary: str | None = None, stt_instructions: str | None = None,
-              stt_language: str | None = None, stt_model: str | None = None,
-              llm_enabled: bool | None = None, llm_model: str | None = None,
-              llm_instructions: str | None = None, llm_clipboard_text_enabled: bool | None = None,
-              llm_clipboard_image_enabled: bool | None = None, hotkey: str | None = None) -> None:
+
+    def update(
+        self,
+        stt_vocabulary: str | None = None,
+        stt_instructions: str | None = None,
+        stt_language: str | None = None,
+        stt_model: str | None = None,
+        llm_enabled: bool | None = None,
+        llm_model: str | None = None,
+        llm_instructions: str | None = None,
+        llm_clipboard_text_enabled: bool | None = None,
+        llm_clipboard_image_enabled: bool | None = None,
+        hotkey: str | None = None,
+    ) -> None:
         """
         Update this instruction set with new values.
-        
+
         Parameters
         ----------
         stt_vocabulary : str, optional
@@ -174,30 +183,30 @@ class InstructionSet:
         """
         if stt_vocabulary is not None:
             self.stt_vocabulary = stt_vocabulary
-        
+
         if stt_instructions is not None:
             self.stt_instructions = stt_instructions
-            
+
         if stt_language is not None:
             self.stt_language = stt_language
-            
+
         if stt_model is not None:
             self.stt_model = stt_model
-            
+
         if llm_enabled is not None:
             self.llm_enabled = llm_enabled
-            
+
         if llm_model is not None:
             self.llm_model = llm_model
-            
+
         if llm_instructions is not None:
             self.llm_instructions = llm_instructions
-            
+
         if llm_clipboard_text_enabled is not None:
             self.llm_clipboard_text_enabled = llm_clipboard_text_enabled
-            
+
         if llm_clipboard_image_enabled is not None:
             self.llm_clipboard_image_enabled = llm_clipboard_image_enabled
-            
+
         if hotkey is not None:
             self.hotkey = hotkey
