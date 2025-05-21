@@ -95,9 +95,10 @@ class InstructionSetsManager:
             return False
 
         # Create a new entry with the same contents but different name
-        instruction_set_dict = self._sets[old_name].to_dict()
-        instruction_set_dict["name"] = new_name
-        self.add_set(instruction_set=InstructionSet.from_dict(data=instruction_set_dict))
+        old_instruction_set_dict = self._sets[old_name].to_dict()
+        old_instruction_set_dict["name"] = new_name
+        new_instruction_set = InstructionSet.from_dict(data=old_instruction_set_dict)
+        self.add_set(instruction_set=new_instruction_set)
 
         # Remove old entry
         self.delete_set(name=old_name)
