@@ -12,14 +12,14 @@ import openai
 class APIClientFactory:
     """
     Factory class for API client creation.
-    
+
     This class provides static methods to create API clients with
     proper error handling for connection issues.
-    
+
     Examples
     --------
     Creating an API client:
-    
+
     >>> is_successful, client = APIClientFactory.create_client("your_api_key")
     >>> if is_successful:
     ...     print("Client created successfully!")
@@ -27,17 +27,17 @@ class APIClientFactory:
     ... else:
     ...     print("Failed to create client")
     """
-    
+
     @staticmethod
     def create_client(api_key: str) -> tuple[bool, openai.OpenAI | None]:
         """
         Create an API client with the provided API key.
-        
+
         Parameters
         ----------
         api_key : str
             The API key to use for client creation.
-            
+
         Returns
         -------
         Tuple[bool, openai.OpenAI | None]
@@ -48,10 +48,10 @@ class APIClientFactory:
         try:
             # Create the client
             client = openai.OpenAI(api_key=api_key)
-            
+
             # Verify the client works by listing models
             client.models.list()
-            
+
             # Return success and the client
             return True, client
         except Exception:
