@@ -198,7 +198,7 @@ class MainModel(QObject):
         """
         return self._processor is not None
 
-    def reinitialize(self, api_key: str) -> None:
+    def reinit_pipeline(self, api_key: str) -> None:
         """
         Reinitialize the pipeline with a new API key.
 

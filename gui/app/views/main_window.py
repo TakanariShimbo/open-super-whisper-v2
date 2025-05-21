@@ -314,20 +314,6 @@ class MainWindow(QMainWindow):
             if instruction_set.hotkey:
                 self.controller.register_hotkey(instruction_set.hotkey)
 
-    def show_api_key_dialog(self) -> None:
-        """
-        Show dialog for API key entry.
-        """
-        # Use the controller's API key settings method
-        if self.controller.show_api_key_settings(self):
-            # Update the stored API key
-            self.api_key = self.settings_manager.get_api_key()
-        else:
-            # If initializing with a new API key failed
-            if not self.api_key:
-                # If we still don't have an API key, show a message
-                QMessageBox.critical(self, "API Key Required", "A valid API key is required to use this application.")
-
     @pyqtSlot()
     def on_record_button_click(self) -> None:
         """
@@ -547,19 +533,17 @@ class MainWindow(QMainWindow):
         # Set the selected instruction set
         self.controller.select_instruction_set(name=name)
 
-    def copy_stt(self) -> None:
+    def show_api_key_dialog(self) -> None:
         """
-        Copy the STT output text to the clipboard.
+        Show dialog for API key entry.
         """
-        ClipboardUtils.set_text(text=self.stt_text.markdown_text())
-        self.status_bar.showMessage("STT output copied to clipboard", 2000)
-
-    def copy_llm(self) -> None:
-        """
-        Copy the LLM output text to the clipboard.
-        """
-        ClipboardUtils.set_text(text=self.llm_text.markdown_text())
-        self.status_bar.showMessage("LLM output copied to clipboard", 2000)
+        # Use the controller's API key settings method
+        if self.controller.show_api_key_dialog(parent=self):
+            # Update the stored API key
+            self.api_key = self.settings_manager.get_api_key()
+            self.status_bar.showMessage("API key updated successfully", 2000)
+        else:
+            self.status_bar.showMessage("Failed to update API key", 2000)
 
     def show_instruction_sets_dialog(self) -> None:
         """
@@ -579,6 +563,20 @@ class MainWindow(QMainWindow):
         if self.controller.show_settings_dialog(parent=self):
             # Settings were updated
             self.status_bar.showMessage("Settings updated", 2000)
+
+    def copy_stt(self) -> None:
+        """
+        Copy the STT output text to the clipboard.
+        """
+        ClipboardUtils.set_text(text=self.stt_text.markdown_text())
+        self.status_bar.showMessage("STT output copied to clipboard", 2000)
+
+    def copy_llm(self) -> None:
+        """
+        Copy the LLM output text to the clipboard.
+        """
+        ClipboardUtils.set_text(text=self.llm_text.markdown_text())
+        self.status_bar.showMessage("LLM output copied to clipboard", 2000)
 
     @pyqtSlot()
     def show_window(self) -> None:

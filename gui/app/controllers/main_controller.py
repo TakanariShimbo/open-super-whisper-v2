@@ -15,8 +15,9 @@ from core.pipelines.instruction_set import InstructionSet
 
 from ..managers.settings_manager import SettingsManager
 from ..models.main_model import MainModel
-from ..views.factories.instruction_dialog_factory import InstructionDialogFactory
 from ..views.factories.status_indicator_factory import StatusIndicatorFactory
+from ..views.factories.api_key_dialog_factory import APIKeyDialogFactory
+from ..views.factories.instruction_dialog_factory import InstructionDialogFactory
 from ..views.factories.settings_dialog_factory import SettingsDialogFactory
 from ..utils.clipboard_utils import ClipboardUtils
 
@@ -249,7 +250,7 @@ class MainController(QObject):
             The API key to use
         """
         # Reinitialize the model with the new API key
-        self._model.reinitialize(api_key=api_key)
+        self._model.reinit_pipeline(api_key=api_key)
 
         # Save API key to settings manager
         self._settings_manager.set_api_key(api_key=api_key)
@@ -469,6 +470,41 @@ class MainController(QObject):
         """
         # Forward to model to handle cleanup
         self._model.shutdown()
+
+    def show_api_key_dialog(self, parent: QWidget | None = None) -> bool:
+        """
+        Show the API key dialog.
+
+        This method creates and displays an API key dialog,
+        allowing the user to update their API key.
+
+        Parameters
+        ----------
+        parent : QWidget, optional
+            Parent widget for the dialog, by default None
+
+        Returns
+        -------
+        bool
+            True if the API key was successfully updated, False otherwise
+        """
+        # Create and show the API key settings dialog through factory
+        dialog = APIKeyDialogFactory.create_settings_dialog(parent=parent)
+
+        # Show dialog and handle result
+        result = dialog.exec()
+
+        # Handle dialog result
+        if result == dialog.DialogCode.Accepted:
+            # Get the new API key
+            api_key = self._settings_manager.get_api_key()
+
+            # Reinitialize model with the new API key
+            self.reinitialize(api_key=api_key)
+
+            return True
+        else:
+            return False
 
     def show_instruction_dialog(self, parent: QWidget | None = None) -> bool:
         """
