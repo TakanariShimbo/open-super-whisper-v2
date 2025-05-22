@@ -38,7 +38,6 @@ class HotkeyDialogFactory:
         HotkeyDialog
             The created hotkey dialog instance
         """
-        # Create a hotkey dialog with the controller
         dialog = HotkeyDialog(
             current_hotkey=current_hotkey,
             instruction_dialog=instruction_dialog,

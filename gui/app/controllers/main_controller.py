@@ -92,7 +92,7 @@ class MainController(QObject):
         self._setup_model_connections()
 
         # Create status indicator view using factory and get controller
-        self._status_indicator_view = StatusIndicatorFactory.create_status_indicator(main_window=main_window)
+        self._status_indicator_view = StatusIndicatorFactory.create_indicator(main_window=main_window)
         self._status_indicator_controller = self._status_indicator_view.get_controller()
 
     def _setup_model_connections(self) -> None:

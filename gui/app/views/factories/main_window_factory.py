@@ -26,7 +26,6 @@ class MainWindowFactory:
         MainWindow
             The created main window instance
         """
-        # Create the main window
         window = MainWindow()
 
         return window

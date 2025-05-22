@@ -33,7 +33,6 @@ class InstructionDialogFactory:
         InstructionDialog
             The created instruction dialog instance
         """
-        # Create dialog with controller
         dialog = InstructionDialog(main_window=main_window)
 
         return dialog

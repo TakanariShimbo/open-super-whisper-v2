@@ -33,7 +33,6 @@ class SettingsDialogFactory:
         SettingsDialog
             The created settings dialog instance
         """
-        # Create a settings dialog with the controller
         dialog = SettingsDialog(main_window=main_window)
 
         return dialog

@@ -38,7 +38,6 @@ class APIKeyDialogFactory:
         APIKeyDialog
             The created API key dialog instance
         """
-        # Create an API key dialog
         dialog = APIKeyDialog(
             initial_message=initial_message,
             main_window=main_window,

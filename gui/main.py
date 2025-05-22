@@ -41,10 +41,7 @@ def start_application() -> int:
 
     # Check for API key and show dialog if not available
     settings_manager = SettingsManager.instance()
-    has_valid_api_key = settings_manager.has_valid_api_key()
-
-    # If no API key is available or it's invalid, prompt for one
-    if not has_valid_api_key:
+    if not settings_manager.has_valid_api_key():
         # Create and show initial API key dialog
         dialog = APIKeyDialogFactory.create_initial_dialog()
 

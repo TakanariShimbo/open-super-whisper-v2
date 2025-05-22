@@ -19,7 +19,7 @@ class StatusIndicatorFactory:
     """
 
     @staticmethod
-    def create_status_indicator(main_window: QWidget | None = None) -> StatusIndicatorWindow:
+    def create_indicator(main_window: QWidget | None = None) -> StatusIndicatorWindow:
         """
         Create a status indicator instance.
 
@@ -33,7 +33,6 @@ class StatusIndicatorFactory:
         StatusIndicatorWindow
             The created status indicator view
         """
-        # Create view (controller will be created by the caller)
-        view = StatusIndicatorWindow(main_window=main_window)
+        indicator = StatusIndicatorWindow(main_window=main_window)
 
-        return view
+        return indicator
