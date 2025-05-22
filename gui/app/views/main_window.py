@@ -52,7 +52,6 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         # Initialize managers
-        self._settings_manager = SettingsManager.instance()
         self._icon_manager = IconManager.instance()
         self._audio_manager = AudioManager.instance()
 
