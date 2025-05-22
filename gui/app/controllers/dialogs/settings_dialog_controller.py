@@ -38,7 +38,7 @@ class SettingsDialogController(QObject):
         super().__init__(parent=settings_dialog)
 
         # Create model
-        self._dialog_model = SettingsDialogModel()
+        self._dialog_model = SettingsDialogModel(settings_dialog=settings_dialog)
 
         # Connect model signals
         self._connect_model_signals()

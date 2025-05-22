@@ -60,7 +60,7 @@ class InstructionDialogController(QObject):
         super().__init__(parent=instruction_dialog)
 
         # Create model
-        self._model = InstructionDialogModel()
+        self._model = InstructionDialogModel(instruction_dialog=instruction_dialog)
 
         # Connect model signals
         self._connect_model_signals()

@@ -40,7 +40,7 @@ class APIKeyDialogController(QObject):
         super().__init__(parent=api_key_dialog)
 
         # Initialize the model
-        self._model = APIKeyDialogModel()
+        self._model = APIKeyDialogModel(api_key_dialog=api_key_dialog)
 
     def validate_api_key(self, api_key: str) -> bool:
         """

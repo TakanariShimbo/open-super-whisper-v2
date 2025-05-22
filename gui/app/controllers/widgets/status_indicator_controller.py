@@ -36,7 +36,7 @@ class StatusIndicatorController(QObject):
         super().__init__(parent=status_indicator)
 
         # Create model
-        self._model = StatusIndicatorModel()
+        self._model = StatusIndicatorModel(status_indicator=status_indicator)
 
         # Connect model signals to controller handlers
         self._connect_model_signals()

@@ -46,7 +46,7 @@ class HotkeyDialogController(QObject):
         super().__init__(parent=hotkey_dialog)
 
         # Create model
-        self._model = HotkeyDialogModel(current_hotkey=current_hotkey)
+        self._model = HotkeyDialogModel(current_hotkey=current_hotkey, hotkey_dialog=hotkey_dialog)
 
         # Connect model signals
         self._connect_model_signals()
