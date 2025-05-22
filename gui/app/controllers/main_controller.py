@@ -234,20 +234,16 @@ class MainController(QObject):
             self._model.set_selected_instruction_set(name=instruction_set.name)
             self.start_recording_with_hotkey(hotkey=hotkey)
 
-    def reinitialize(self, api_key: str) -> None:
+    def apply_new_api_key(self, api_key: str) -> None:
         """
-        Reinitialize the model with a new API key.
+        Apply a new API key to the model.
 
         Parameters
         ----------
         api_key : str
             The API key to use
         """
-        # Reinitialize the model with the new API key
         self._model.reinit_pipeline(api_key=api_key)
-
-        # Save API key to settings manager
-        self._settings_manager.set_api_key(api_key=api_key)
 
     def get_instruction_sets(self) -> list[InstructionSet]:
         """
@@ -491,10 +487,10 @@ class MainController(QObject):
         # Handle dialog result
         if result == dialog.DialogCode.Accepted:
             # Get the new API key
-            api_key = self._settings_manager.get_api_key()
+            new_api_key = self._settings_manager.get_api_key()
 
             # Reinitialize model with the new API key
-            self.reinitialize(api_key=api_key)
+            self.apply_new_api_key(api_key=new_api_key)
 
             return True
         else:
