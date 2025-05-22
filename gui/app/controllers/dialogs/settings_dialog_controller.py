@@ -26,16 +26,16 @@ class SettingsDialogController(QObject):
     # Define single signal for view communication
     settings_updated = pyqtSignal()
 
-    def __init__(self, parent: QObject | None = None) -> None:
+    def __init__(self, settings_dialog: QObject | None = None) -> None:
         """
         Initialize the SettingsDialogController.
 
         Parameters
         ----------
-        parent : QObject | None, optional
+        settings_dialog : QObject | None, optional
             The parent object, by default None
         """
-        super().__init__(parent=parent)
+        super().__init__(parent=settings_dialog)
 
         # Create model
         self._dialog_model = SettingsDialogModel()

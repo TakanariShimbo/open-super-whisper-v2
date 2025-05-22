@@ -43,11 +43,6 @@ class MainWindow(QMainWindow):
 
     This class represents the main user interface for the Open Super Whisper application.
     It presents the recording controls, STT output, and application settings.
-
-    Attributes
-    ----------
-    controller : MainController
-        The application controller that manages the business logic
     """
 
     def __init__(self) -> None:
@@ -62,7 +57,7 @@ class MainWindow(QMainWindow):
         self.audio_manager = AudioManager.instance()
 
         # Create controller
-        self.controller = MainController()
+        self.controller = MainController(main_window=self)
 
         # Set application icon
         self.setWindowIcon(self.icon_manager.get_app_icon())
@@ -145,7 +140,7 @@ class MainWindow(QMainWindow):
         stt_layout.addLayout(stt_header_layout)
 
         # Use MarkdownTextBrowser for STT output
-        self.stt_text = MarkdownTextBrowser()
+        self.stt_text = MarkdownTextBrowser(main_window=self)
         self.stt_text.setPlaceholderText("STT output will appear here...")
         stt_layout.addWidget(self.stt_text)
 
@@ -167,7 +162,7 @@ class MainWindow(QMainWindow):
         llm_layout.addLayout(llm_header_layout)
 
         # Use MarkdownTextBrowser for LLM output
-        self.llm_text = MarkdownTextBrowser()
+        self.llm_text = MarkdownTextBrowser(main_window=self)
         self.llm_text.setPlaceholderText("LLM output will appear here...")
         llm_layout.addWidget(self.llm_text)
 
@@ -533,7 +528,7 @@ class MainWindow(QMainWindow):
         Show dialog for API key entry.
         """
         # Use the controller's API key settings method
-        if self.controller.show_api_key_dialog(parent=self):
+        if self.controller.show_api_key_dialog(main_window=self):
             self.status_bar.showMessage("API key updated successfully", 2000)
         else:
             self.status_bar.showMessage("Failed to update API key", 2000)
@@ -543,7 +538,7 @@ class MainWindow(QMainWindow):
         Show the instruction sets management dialog.
         """
         # Use controller to handle instruction dialog
-        if self.controller.show_instruction_dialog(parent=self):
+        if self.controller.show_instruction_dialog(main_window=self):
             # Dialog was accepted, refresh instruction sets combo
             self.populate_instruction_set_combo()
             self.status_bar.showMessage("Instruction sets updated", 2000)
@@ -553,7 +548,7 @@ class MainWindow(QMainWindow):
         Show the settings dialog.
         """
         # Use controller to handle settings dialog
-        if self.controller.show_settings_dialog(parent=self):
+        if self.controller.show_settings_dialog(main_window=self):
             # Settings were updated
             self.status_bar.showMessage("Settings updated", 2000)
 

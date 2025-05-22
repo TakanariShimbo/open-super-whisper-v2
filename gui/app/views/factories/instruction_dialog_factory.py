@@ -19,13 +19,13 @@ class InstructionDialogFactory:
     """
 
     @staticmethod
-    def create_dialog(parent: QWidget | None = None) -> InstructionDialog:
+    def create_dialog(main_window: QWidget | None = None) -> InstructionDialog:
         """
         Create an instruction dialog instance.
 
         Parameters
         ----------
-        parent : QWidget, optional
+        main_window : QWidget, optional
             Parent widget for the dialog, by default None
 
         Returns
@@ -34,6 +34,6 @@ class InstructionDialogFactory:
             The created instruction dialog instance
         """
         # Create dialog with controller
-        dialog = InstructionDialog(parent=parent)
+        dialog = InstructionDialog(main_window=main_window)
 
         return dialog

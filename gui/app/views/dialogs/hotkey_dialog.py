@@ -33,7 +33,7 @@ class HotkeyDialog(QDialog):
     capture method for accurate hotkey detection.
     """
 
-    def __init__(self, current_hotkey: str = "", parent: QWidget | None = None) -> None:
+    def __init__(self, current_hotkey: str = "", instruction_dialog: QWidget | None = None) -> None:
         """
         Initialize the HotkeyDialog.
 
@@ -41,11 +41,11 @@ class HotkeyDialog(QDialog):
         ----------
         current_hotkey : str, optional
             Current hotkey string, by default ""
-        parent : QWidget, optional
+        instruction_dialog : QWidget, optional
             Parent widget, by default None
 
         """
-        super().__init__(parent=parent)
+        super().__init__(parent=instruction_dialog)
 
         # Create controller
         self._controller = HotkeyDialogController(current_hotkey=current_hotkey)

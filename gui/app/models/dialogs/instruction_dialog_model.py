@@ -47,16 +47,16 @@ class InstructionDialogModel(QObject):
     instruction_set_renamed = pyqtSignal(str, str)  # Old name, new name
     hotkey_updated = pyqtSignal(str)  # Hotkey
 
-    def __init__(self, parent: QObject | None = None) -> None:
+    def __init__(self, instruction_dialog: QObject | None = None) -> None:
         """
         Initialize the InstructionDialogModel.
 
         Parameters
         ----------
-        parent : QObject, optional
+        instruction_dialog : QObject, optional
             Parent object, by default None
         """
-        super().__init__(parent=parent)
+        super().__init__(parent=instruction_dialog)
 
         # Get managers
         self._keyboard_manager = KeyboardManager.get_instance()

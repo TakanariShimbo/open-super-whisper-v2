@@ -21,16 +21,16 @@ class SettingsDialog(QDialog):
     - Automatic clipboard copy after processing
     """
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(self, main_window: QWidget | None = None) -> None:
         """
         Initialize the SettingsDialog.
 
         Parameters
         ----------
-        parent : QWidget, optional
+        main_window : QWidget, optional
             Parent widget, by default None
         """
-        super().__init__(parent=parent)
+        super().__init__(parent=main_window)
 
         # Create controller
         self._controller = SettingsDialogController()

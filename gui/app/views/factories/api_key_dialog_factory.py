@@ -21,14 +21,14 @@ class APIKeyDialogFactory:
     @staticmethod
     def _create_dialog(
         initial_message: str,
-        parent: QWidget | None = None,
+        main_window: QWidget | None = None,
     ) -> APIKeyDialog:
         """
         Create a generic API key dialog instance.
 
         Parameters
         ----------
-        parent : QWidget, optional
+        main_window : QWidget, optional
             Parent widget for the dialog, by default None
         initial_message : str, optional
             Initial message to display in the dialog, by default None
@@ -41,23 +41,15 @@ class APIKeyDialogFactory:
         # Create an API key dialog
         dialog = APIKeyDialog(
             initial_message=initial_message,
-            parent=parent,
+            main_window=main_window,
         )
 
         return dialog
 
     @classmethod
-    def create_initial_dialog(
-        cls,
-        parent: QWidget | None = None,
-    ) -> APIKeyDialog:
+    def create_initial_dialog(cls) -> APIKeyDialog:
         """
         Create an API key dialog for initial application setup.
-
-        Parameters
-        ----------
-        parent : QWidget, optional
-            Parent widget for the dialog, by default None
 
         Returns
         -------
@@ -65,19 +57,16 @@ class APIKeyDialogFactory:
             The created API key dialog instance
         """
         initial_message = "Welcome to Open Super Whisper! Please enter your OpenAI API key to get started."
-        return cls._create_dialog(
-            initial_message=initial_message,
-            parent=parent,
-        )
+        return cls._create_dialog(initial_message=initial_message)
 
     @classmethod
-    def create_settings_dialog(cls, parent: QWidget | None = None) -> APIKeyDialog:
+    def create_settings_dialog(cls, main_window: QWidget | None = None) -> APIKeyDialog:
         """
         Create an API key dialog for settings/update.
 
         Parameters
         ----------
-        parent : QWidget, optional
+        main_window : QWidget, optional
             Parent widget for the dialog, by default None
 
         Returns
@@ -88,5 +77,5 @@ class APIKeyDialogFactory:
         initial_message = "Update your API key or enter a new one if needed."
         return cls._create_dialog(
             initial_message=initial_message,
-            parent=parent,
+            main_window=main_window,
         )

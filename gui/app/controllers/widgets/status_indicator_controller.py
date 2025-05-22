@@ -24,16 +24,16 @@ class StatusIndicatorController(QObject):
     timer_updated = pyqtSignal(str)  # time_string
     visibility_changed = pyqtSignal(bool)  # visible
 
-    def __init__(self, parent: QObject | None = None) -> None:
+    def __init__(self, status_indicator: QObject | None = None) -> None:
         """
         Initialize the controller.
 
         Parameters
         ----------
-        parent : QObject, optional
+        status_indicator : QObject, optional
             Parent object, by default None
         """
-        super().__init__(parent=parent)
+        super().__init__(parent=status_indicator)
 
         # Create model
         self._model = StatusIndicatorModel()

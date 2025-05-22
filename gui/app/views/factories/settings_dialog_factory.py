@@ -19,13 +19,13 @@ class SettingsDialogFactory:
     """
 
     @staticmethod
-    def create_dialog(parent: QWidget | None = None) -> SettingsDialog:
+    def create_dialog(main_window: QWidget | None = None) -> SettingsDialog:
         """
         Create a settings dialog instance.
 
         Parameters
         ----------
-        parent : QWidget, optional
+        main_window : QWidget, optional
             Parent widget for the dialog, by default None
 
         Returns
@@ -34,6 +34,6 @@ class SettingsDialogFactory:
             The created settings dialog instance
         """
         # Create a settings dialog with the controller
-        dialog = SettingsDialog(parent=parent)
+        dialog = SettingsDialog(main_window=main_window)
 
         return dialog

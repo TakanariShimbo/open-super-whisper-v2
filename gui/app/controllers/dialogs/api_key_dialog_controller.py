@@ -28,16 +28,16 @@ class APIKeyDialogController(QObject):
     api_key_validated = pyqtSignal()
     api_key_invalid = pyqtSignal()
 
-    def __init__(self, parent: QObject | None = None) -> None:
+    def __init__(self, api_key_dialog: QObject | None = None) -> None:
         """
         Initialize the API Key Controller.
 
         Parameters
         ----------
-        parent : QObject | None, optional
+        api_key_dialog : QObject | None, optional
             The parent object, by default None
         """
-        super().__init__(parent=parent)
+        super().__init__(parent=api_key_dialog)
 
         # Initialize the model
         self._model = APIKeyDialogModel()

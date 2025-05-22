@@ -19,16 +19,16 @@ class APIKeyDialogModel(QObject):
     storage, and retrieval.
     """
 
-    def __init__(self, parent: QObject | None = None) -> None:
+    def __init__(self, api_key_dialog: QObject | None = None) -> None:
         """
         Initialize the API Key Model.
 
         Parameters
         ----------
-        parent : QObject | None, optional
+        api_key_dialog : QObject | None, optional
             The parent object, by default None
         """
-        super().__init__(parent=parent)
+        super().__init__(parent=api_key_dialog)
 
         self._settings_manager = SettingsManager.instance()
 

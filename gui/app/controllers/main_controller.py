@@ -66,16 +66,16 @@ class MainController(QObject):
     hotkey_triggered = pyqtSignal(str)
     llm_stream_update = pyqtSignal(str)  # Signal for streaming LLM updates
 
-    def __init__(self, parent: QObject | None = None) -> None:
+    def __init__(self, main_window: QObject | None = None) -> None:
         """
         Initialize the MainController.
 
         Parameters
         ----------
-        parent : QObject | None, optional
+        main_window : QObject | None, optional
             The parent object, by default None
         """
-        super().__init__(parent=parent)
+        super().__init__(parent=main_window)
 
         # Get the settings manager
         self._settings_manager = SettingsManager.instance()
@@ -84,21 +84,15 @@ class MainController(QObject):
         api_key = self._settings_manager.get_api_key()
 
         # Initialize the model
-        try:
-            self._model = MainModel(api_key=api_key)
-        except ValueError:
-            QMessageBox.critical(
-                None,
-                "Initialization Error",
-                "Failed to initialize application with the provided API key. The application will now exit.",
-            )
-            sys.exit(1)
-
+        self._model = MainModel(
+            api_key=api_key,
+            main_window=main_window,
+        )
         # Set up model connections
         self._setup_model_connections()
 
         # Create status indicator view using factory and get controller
-        self._status_indicator_view = StatusIndicatorFactory.create_status_indicator()
+        self._status_indicator_view = StatusIndicatorFactory.create_status_indicator(main_window=main_window)
         self._status_indicator_controller = self._status_indicator_view.get_controller()
 
     def _setup_model_connections(self) -> None:
@@ -471,7 +465,7 @@ class MainController(QObject):
         # Forward to model to handle cleanup
         self._model.shutdown()
 
-    def show_api_key_dialog(self, parent: QWidget | None = None) -> bool:
+    def show_api_key_dialog(self, main_window: QWidget | None = None) -> bool:
         """
         Show the API key dialog.
 
@@ -480,7 +474,7 @@ class MainController(QObject):
 
         Parameters
         ----------
-        parent : QWidget, optional
+        main_window : QWidget, optional
             Parent widget for the dialog, by default None
 
         Returns
@@ -489,7 +483,7 @@ class MainController(QObject):
             True if the API key was successfully updated, False otherwise
         """
         # Create and show the API key settings dialog through factory
-        dialog = APIKeyDialogFactory.create_settings_dialog(parent=parent)
+        dialog = APIKeyDialogFactory.create_settings_dialog(main_window=main_window)
 
         # Show dialog and handle result
         result = dialog.exec()
@@ -506,7 +500,7 @@ class MainController(QObject):
         else:
             return False
 
-    def show_instruction_dialog(self, parent: QWidget | None = None) -> bool:
+    def show_instruction_dialog(self, main_window: QWidget | None = None) -> bool:
         """
         Show the instruction dialog and handle the result.
 
@@ -515,7 +509,7 @@ class MainController(QObject):
 
         Parameters
         ----------
-        parent : QWidget, optional
+        main_window : QWidget, optional
             Parent widget for the dialog, by default None
 
         Returns
@@ -524,7 +518,7 @@ class MainController(QObject):
             True if the dialog was accepted, False otherwise
         """
         # Create instruction dialog using factory
-        dialog = InstructionDialogFactory.create_dialog(parent=parent)
+        dialog = InstructionDialogFactory.create_dialog(main_window=main_window)
 
         # Show dialog and get result
         result = dialog.exec()
@@ -535,7 +529,7 @@ class MainController(QObject):
         else:
             return False
 
-    def show_settings_dialog(self, parent: QWidget | None = None) -> bool:
+    def show_settings_dialog(self, main_window: QWidget | None = None) -> bool:
         """
         Show the settings dialog and handle the result.
 
@@ -544,7 +538,7 @@ class MainController(QObject):
 
         Parameters
         ----------
-        parent : QWidget, optional
+        main_window : QWidget, optional
             Parent widget for the dialog, by default None
 
         Returns
@@ -553,7 +547,7 @@ class MainController(QObject):
             True if the dialog was accepted, False otherwise
         """
         # Create settings dialog using factory
-        dialog = SettingsDialogFactory.create_dialog(parent=parent)
+        dialog = SettingsDialogFactory.create_dialog(main_window=main_window)
 
         # Show dialog and get result
         result = dialog.exec()

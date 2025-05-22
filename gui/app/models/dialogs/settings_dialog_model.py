@@ -28,16 +28,16 @@ class SettingsDialogModel(QObject):
     # Define a single signal for any settings change
     settings_updated = pyqtSignal()
 
-    def __init__(self, parent: QObject | None = None) -> None:
+    def __init__(self, settings_dialog: QObject | None = None) -> None:
         """
         Initialize the SettingsDialogModel.
 
         Parameters
         ----------
-        parent : QObject, optional
+        settings_dialog : QObject, optional
             Parent object, by default None
         """
-        super().__init__(parent=parent)
+        super().__init__(parent=settings_dialog)
 
         # Get settings manager instance
         self._audio_manager = AudioManager.instance()

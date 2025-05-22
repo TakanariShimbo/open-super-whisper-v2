@@ -48,16 +48,16 @@ class InstructionDialogController(QObject):
     instruction_set_selected = pyqtSignal(InstructionSet)
     operation_result = pyqtSignal(bool, str)  # Success/failure, message
 
-    def __init__(self, parent: QObject | None = None) -> None:
+    def __init__(self, instruction_dialog: QObject | None = None) -> None:
         """
         Initialize the InstructionDialogController.
 
         Parameters
         ----------
-        parent : QObject | None, optional
+        instruction_dialog : QObject | None, optional
             The parent object, by default None
         """
-        super().__init__(parent=parent)
+        super().__init__(parent=instruction_dialog)
 
         # Create model
         self._model = InstructionDialogModel()

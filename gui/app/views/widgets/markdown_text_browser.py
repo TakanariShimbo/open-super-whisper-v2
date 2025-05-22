@@ -95,23 +95,23 @@ class MarkdownTextBrowser(QWebEngineView):
 
     markdown_text_changed = pyqtSignal(str)
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(self, main_window: QWidget | None = None) -> None:
         """
         Initialize the MarkdownTextBrowser.
 
         Parameters
         ----------
-        parent : QWidget | None
+        main_window : QWidget | None
             The parent widget for the MarkdownTextBrowser
         """
-        super().__init__(parent=parent)
+        super().__init__(parent=main_window)
 
         # Set size policy
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         # Create web channel
-        self._channel = QWebChannel(self)
-        self._document = Document(self)
+        self._channel = QWebChannel(parent=main_window)
+        self._document = Document(parent=main_window)
         self._channel.registerObject("content", self._document)
         self.page().setWebChannel(self._channel)
 

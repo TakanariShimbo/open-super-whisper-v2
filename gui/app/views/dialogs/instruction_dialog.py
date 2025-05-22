@@ -42,16 +42,16 @@ class InstructionDialog(QDialog):
     language/model selection, and LLM settings.
     """
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(self, main_window: QWidget | None = None) -> None:
         """
         Initialize the InstructionDialog.
 
         Parameters
         ----------
-        parent : QWidget, optional
+        main_window : QWidget, optional
             Parent widget, by default None
         """
-        super().__init__(parent)
+        super().__init__(parent=main_window)
 
         # Create controller
         self._controller = InstructionDialogController()
@@ -557,7 +557,11 @@ class InstructionDialog(QDialog):
         """
         Handle adding a new instruction set.
         """
-        name, ok = QInputDialog.getText(self, "New Instruction Set", "Enter a name for the new instruction set:")
+        name, ok = QInputDialog.getText(
+            self,
+            "New Instruction Set",
+            "Enter a name for the new instruction set:",
+        )
 
         if ok and name:
             self._controller.add_set(name)
@@ -593,7 +597,11 @@ class InstructionDialog(QDialog):
         old_name = self._sets_list.item(row).text()
 
         new_name, ok = QInputDialog.getText(
-            self, "Rename Instruction Set", "Enter a new name for the instruction set:", QLineEdit.EchoMode.Normal, old_name
+            self,
+            "Rename Instruction Set",
+            "Enter a new name for the instruction set:",
+            QLineEdit.EchoMode.Normal,
+            old_name,
         )
 
         if ok and new_name and new_name != old_name:
@@ -671,7 +679,10 @@ class InstructionDialog(QDialog):
         set_name = self._sets_list.item(row).text()
         current_hotkey = self._hotkey_input.text()
 
-        dialog = HotkeyDialogFactory.create_dialog(current_hotkey=current_hotkey, parent=self)
+        dialog = HotkeyDialogFactory.create_dialog(
+            current_hotkey=current_hotkey,
+            instruction_dialog=self,
+        )
         result = dialog.exec()
 
         if result:
@@ -728,7 +739,12 @@ class InstructionDialog(QDialog):
         if instruction_set:
             self._handle_instruction_set_selected(instruction_set)
 
-        QMessageBox.information(self, "Changes Discarded", "Changes have been discarded.", QMessageBox.StandardButton.Ok)
+        QMessageBox.information(
+            self,
+            "Changes Discarded",
+            "Changes have been discarded.",
+            QMessageBox.StandardButton.Ok,
+        )
 
     @pyqtSlot(InstructionSet)
     def _handle_instruction_set_updated(self, instruction_set: InstructionSet) -> None:
@@ -754,9 +770,19 @@ class InstructionDialog(QDialog):
             True if the operation was successful, False otherwise
         """
         if success:
-            QMessageBox.information(self, "Success", message, QMessageBox.StandardButton.Ok)
+            QMessageBox.information(
+                self,
+                "Success",
+                message,
+                QMessageBox.StandardButton.Ok,
+            )
         else:
-            QMessageBox.warning(self, "Error", message, QMessageBox.StandardButton.Ok)
+            QMessageBox.warning(
+                self,
+                "Error",
+                message,
+                QMessageBox.StandardButton.Ok,
+            )
 
     @pyqtSlot(int)
     def _on_llm_enabled_changed(self, state: int) -> None:

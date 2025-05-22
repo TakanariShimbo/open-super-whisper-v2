@@ -36,7 +36,7 @@ class HotkeyDialogModel(QObject):
     def __init__(
         self,
         current_hotkey: str = "",
-        parent: QObject | None = None,
+        hotkey_dialog: QObject | None = None,
     ) -> None:
         """
         Initialize the HotkeyDialogModel.
@@ -45,10 +45,10 @@ class HotkeyDialogModel(QObject):
         ----------
         current_hotkey : str, optional
             Initial hotkey value, by default ""
-        parent : QObject | None, optional
+        hotkey_dialog : QObject | None, optional
             The parent object, by default None
         """
-        super().__init__(parent=parent)
+        super().__init__(parent=hotkey_dialog)
 
         # Store the current and original hotkey values
         self._hotkey = current_hotkey

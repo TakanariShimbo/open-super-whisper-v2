@@ -26,17 +26,17 @@ class StatusIndicatorWindow(QWidget):
     _MODE_COMPLETED = 3
     _MODE_CANCELLED = 4
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(self, main_window: QWidget | None = None) -> None:
         """
         Initialize the StatusIndicatorWindow.
 
         Parameters
         ----------
-        parent : QWidget, optional
+        main_window : QWidget, optional
             Parent widget, by default None
         """
         super().__init__(
-            parent=parent,
+            parent=main_window,
             flags=Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint,
         )
 

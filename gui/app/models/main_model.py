@@ -44,7 +44,7 @@ class ProcessingThread(QThread):
         language: str | None = None,
         clipboard_text: str | None = None,
         clipboard_image: bytes | None = None,
-        parent: QObject | None = None,
+        main_window: QObject | None = None,
     ) -> None:
         """
         Initialize with processing parameters.
@@ -61,10 +61,10 @@ class ProcessingThread(QThread):
             The text to use for processing
         clipboard_image: bytes | None
             The image to use for processing
-        parent: QObject | None
+        main_window: QObject | None
             The parent object
         """
-        super().__init__(parent=parent)
+        super().__init__(parent=main_window)
         self.pipeline = pipeline
         self.audio_file_path = audio_file_path
         self.language = language
@@ -138,7 +138,7 @@ class MainModel(QObject):
     def __init__(
         self,
         api_key: str,
-        parent: QObject | None = None,
+        main_window: QObject | None = None,
     ) -> None:
         """
         Initialize the main model.
@@ -147,10 +147,11 @@ class MainModel(QObject):
         ----------
         api_key: str
             The API key to use for the pipeline
-        parent: QObject | None, optional
+        main_window: QObject | None, optional
             The parent object, by default None
         """
-        super().__init__(parent=parent)
+        super().__init__(parent=main_window)
+        self._main_window = main_window
 
         # Store references to managers
         self._settings_manager = SettingsManager.instance()
@@ -317,6 +318,7 @@ class MainModel(QObject):
                 language=language,
                 clipboard_text=clipboard_text,
                 clipboard_image=clipboard_image,
+                main_window=self._main_window,
             )
 
             # Connect signals

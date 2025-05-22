@@ -21,7 +21,7 @@ class HotkeyDialogFactory:
     @staticmethod
     def create_dialog(
         current_hotkey: str = "",
-        parent: QWidget | None = None,
+        instruction_dialog: QWidget | None = None,
     ) -> HotkeyDialog:
         """
         Create a hotkey dialog instance.
@@ -30,7 +30,7 @@ class HotkeyDialogFactory:
         ----------
         current_hotkey : str, optional
             Current hotkey value, by default ""
-        parent : QWidget, optional
+        instruction_dialog : QWidget, optional
             Parent widget for the dialog, by default None
 
         Returns
@@ -41,7 +41,7 @@ class HotkeyDialogFactory:
         # Create a hotkey dialog with the controller
         dialog = HotkeyDialog(
             current_hotkey=current_hotkey,
-            parent=parent,
+            instruction_dialog=instruction_dialog,
         )
 
         return dialog

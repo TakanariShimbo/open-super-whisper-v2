@@ -22,7 +22,7 @@ class APIKeyDialog(QDialog):
     def __init__(
         self,
         initial_message: str,
-        parent: QWidget | None = None,
+        main_window: QWidget | None = None,
     ) -> None:
         """
         Initialize the API Key Dialog.
@@ -31,10 +31,10 @@ class APIKeyDialog(QDialog):
         ----------
         initial_message : str
             Initial message to display as error/info
-        parent : QWidget, optional
+        main_window : QWidget, optional
             Parent widget, by default None
         """
-        super().__init__(parent=parent)
+        super().__init__(parent=main_window)
 
         # Create controller
         self._controller = APIKeyDialogController()
