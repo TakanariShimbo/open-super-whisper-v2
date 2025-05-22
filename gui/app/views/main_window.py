@@ -52,15 +52,15 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         # Initialize managers
-        self.settings_manager = SettingsManager.instance()
-        self.icon_manager = IconManager.instance()
-        self.audio_manager = AudioManager.instance()
+        self._settings_manager = SettingsManager.instance()
+        self._icon_manager = IconManager.instance()
+        self._audio_manager = AudioManager.instance()
 
         # Create controller
-        self.controller = MainController(main_window=self)
+        self._controller = MainController(main_window=self)
 
         # Set application icon
-        self.setWindowIcon(self.icon_manager.get_app_icon())
+        self.setWindowIcon(self._icon_manager.get_app_icon())
 
         # Flag to track if the application is actually closing
         self._is_closing = False
@@ -97,22 +97,22 @@ class MainWindow(QMainWindow):
         control_layout = QGridLayout(control_panel)
 
         # Record button
-        self.record_button = QPushButton("Start Recording")
-        self.record_button.setMinimumHeight(50)
-        self.record_button.clicked.connect(self._on_click_record)
+        self._record_button = QPushButton("Start Recording")
+        self._record_button.setMinimumHeight(50)
+        self._record_button.clicked.connect(self._on_click_record)
 
         # Instruction set selection
         instruction_set_form = QWidget()
         form_layout = QFormLayout(instruction_set_form)
 
         instruction_set_label = QLabel("Instruction Set:")
-        self.instruction_set_combo = QComboBox()
-        self.instruction_set_combo.setMinimumWidth(200)
-        self.instruction_set_combo.currentIndexChanged.connect(self._on_instruction_set_changed)
-        form_layout.addRow(instruction_set_label, self.instruction_set_combo)
+        self._instruction_set_combo = QComboBox()
+        self._instruction_set_combo.setMinimumWidth(200)
+        self._instruction_set_combo.currentIndexChanged.connect(self._on_instruction_set_changed)
+        form_layout.addRow(instruction_set_label, self._instruction_set_combo)
 
         # Add to layout
-        control_layout.addWidget(self.record_button, 0, 0, 2, 1)
+        control_layout.addWidget(self._record_button, 0, 0, 2, 1)
         control_layout.addWidget(instruction_set_form, 0, 1, 2, 5)
         control_layout.setColumnStretch(0, 1)
         control_layout.setColumnStretch(1, 3)
@@ -120,7 +120,7 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(control_panel)
 
         # Create tab widget for outputs
-        self.tab_widget = QTabWidget()
+        self._tab_widget = QTabWidget()
 
         # STT output tab
         stt_tab = QWidget()
@@ -132,17 +132,17 @@ class MainWindow(QMainWindow):
         stt_header_layout.addWidget(stt_label, 0, 0)
 
         # Add copy button for STT output
-        self.stt_copy_button = QPushButton("Copy")
-        self.stt_copy_button.clicked.connect(self._on_click_copy_stt)
-        stt_header_layout.addWidget(self.stt_copy_button, 0, 1, Qt.AlignmentFlag.AlignRight)
+        self._stt_copy_button = QPushButton("Copy")
+        self._stt_copy_button.clicked.connect(self._on_click_copy_stt)
+        stt_header_layout.addWidget(self._stt_copy_button, 0, 1, Qt.AlignmentFlag.AlignRight)
 
         # Add the header layout to the main layout
         stt_layout.addLayout(stt_header_layout)
 
         # Use MarkdownTextBrowser for STT output
-        self.stt_text = MarkdownTextBrowser(main_window=self)
-        self.stt_text.setPlaceholderText("STT output will appear here...")
-        stt_layout.addWidget(self.stt_text)
+        self._stt_text = MarkdownTextBrowser(main_window=self)
+        self._stt_text.setPlaceholderText("STT output will appear here...")
+        stt_layout.addWidget(self._stt_text)
 
         # LLM output tab
         llm_tab = QWidget()
@@ -154,31 +154,31 @@ class MainWindow(QMainWindow):
         llm_header_layout.addWidget(llm_label, 0, 0)
 
         # Add copy button for LLM output
-        self.llm_copy_button = QPushButton("Copy")
-        self.llm_copy_button.clicked.connect(self._on_click_copy_llm)
-        llm_header_layout.addWidget(self.llm_copy_button, 0, 1, Qt.AlignmentFlag.AlignRight)
+        self._llm_copy_button = QPushButton("Copy")
+        self._llm_copy_button.clicked.connect(self._on_click_copy_llm)
+        llm_header_layout.addWidget(self._llm_copy_button, 0, 1, Qt.AlignmentFlag.AlignRight)
 
         # Add the header layout to the main layout
         llm_layout.addLayout(llm_header_layout)
 
         # Use MarkdownTextBrowser for LLM output
-        self.llm_text = MarkdownTextBrowser(main_window=self)
-        self.llm_text.setPlaceholderText("LLM output will appear here...")
-        llm_layout.addWidget(self.llm_text)
+        self._llm_text = MarkdownTextBrowser(main_window=self)
+        self._llm_text.setPlaceholderText("LLM output will appear here...")
+        llm_layout.addWidget(self._llm_text)
 
         # Add tabs
-        self.tab_widget.addTab(stt_tab, "STT Output")
-        self.tab_widget.addTab(llm_tab, "LLM Output")
+        self._tab_widget.addTab(stt_tab, "STT Output")
+        self._tab_widget.addTab(llm_tab, "LLM Output")
 
-        main_layout.addWidget(self.tab_widget, 1)
+        main_layout.addWidget(self._tab_widget, 1)
 
         # Status bar
-        self.status_bar = QStatusBar()
-        self.setStatusBar(self.status_bar)
+        self._status_bar = QStatusBar()
+        self.setStatusBar(self._status_bar)
 
         # Status indicator
-        self.status_indicator = QLabel("Ready")
-        self.status_bar.addPermanentWidget(self.status_indicator)
+        self._status_indicator = QLabel("Ready")
+        self._status_bar.addPermanentWidget(self._status_indicator)
 
         # Set central widget
         self.setCentralWidget(central_widget)
@@ -191,16 +191,16 @@ class MainWindow(QMainWindow):
         Set up the system tray icon.
         """
         # Create system tray with the icon
-        self.system_tray = SystemTray(main_window=self)
+        self._system_tray = SystemTray(main_window=self)
 
         # Connect system tray signals
-        self.system_tray.show_window_signal.connect(self._on_click_show_window)
-        self.system_tray.hide_window_signal.connect(self._on_click_hide_window)
-        self.system_tray.quit_application_signal.connect(self._on_click_quit_application)
-        self.system_tray.toggle_recording_signal.connect(self._on_click_record)
+        self._system_tray.show_window_signal.connect(self._on_click_show_window)
+        self._system_tray.hide_window_signal.connect(self._on_click_hide_window)
+        self._system_tray.quit_application_signal.connect(self._on_click_quit_application)
+        self._system_tray.toggle_recording_signal.connect(self._on_click_record)
 
         # Show system tray icon
-        self.system_tray.show()
+        self._system_tray.show()
 
     def _create_toolbar(self) -> None:
         """
@@ -244,76 +244,76 @@ class MainWindow(QMainWindow):
         Connect signals from the controller to the view slots.
         """
         # Recording signals
-        self.controller.recording_started.connect(self._handle_recording_started)
-        self.controller.recording_stopped.connect(self._handle_recording_stopped)
+        self._controller.recording_started.connect(self._handle_recording_started)
+        self._controller.recording_stopped.connect(self._handle_recording_stopped)
 
         # Processing signals
-        self.controller.processing_started.connect(self._handle_processing_started)
-        self.controller.processing_complete.connect(self._handle_processing_complete)
-        self.controller.processing_cancelled.connect(self._handle_processing_cancelled)
-        self.controller.processing_state_changed.connect(self._handle_processing_state_changed)
+        self._controller.processing_started.connect(self._handle_processing_started)
+        self._controller.processing_complete.connect(self._handle_processing_complete)
+        self._controller.processing_cancelled.connect(self._handle_processing_cancelled)
+        self._controller.processing_state_changed.connect(self._handle_processing_state_changed)
 
         # Status update signal
-        self.controller.status_update.connect(self._handle_update_status)
+        self._controller.status_update.connect(self._handle_update_status)
 
         # Instruction set activation signal
-        self.controller.instruction_set_activated.connect(self._handle_instruction_set_activated)
+        self._controller.instruction_set_activated.connect(self._handle_instruction_set_activated)
 
         # Hotkey triggered signal
-        self.controller.hotkey_triggered.connect(self._handle_hotkey_triggered)
+        self._controller.hotkey_triggered.connect(self._handle_hotkey_triggered)
 
         # LLM streaming signal
-        self.controller.llm_stream_update.connect(self._handle_llm_stream_update)
+        self._controller.llm_stream_update.connect(self._handle_llm_stream_update)
 
     def _populate_instruction_set_combo(self) -> None:
         """
         Populate the instruction set combo box with available instruction sets.
         """
-        self.instruction_set_combo.blockSignals(True)
-        self.instruction_set_combo.clear()
+        self._instruction_set_combo.blockSignals(True)
+        self._instruction_set_combo.clear()
 
         # Add all instruction sets
-        for instruction_set in self.controller.get_instruction_sets():
-            self.instruction_set_combo.addItem(instruction_set.name)
+        for instruction_set in self._controller.get_instruction_sets():
+            self._instruction_set_combo.addItem(instruction_set.name)
 
             # Add tooltip with hotkey if available
             if instruction_set.hotkey:
-                self.instruction_set_combo.setItemData(
-                    self.instruction_set_combo.count() - 1,
+                self._instruction_set_combo.setItemData(
+                    self._instruction_set_combo.count() - 1,
                     f"Hotkey: {instruction_set.hotkey}",
                     Qt.ItemDataRole.ToolTipRole,
                 )
 
         # Select the currently selected instruction set
-        selected_set = self.controller.get_selected_instruction_set()
+        selected_set = self._controller.get_selected_instruction_set()
         if selected_set:
-            index = self.instruction_set_combo.findText(selected_set.name)
+            index = self._instruction_set_combo.findText(selected_set.name)
             if index >= 0:
-                self.instruction_set_combo.setCurrentIndex(index)
+                self._instruction_set_combo.setCurrentIndex(index)
 
-        self.instruction_set_combo.blockSignals(False)
+        self._instruction_set_combo.blockSignals(False)
 
     def _register_hotkeys(self) -> None:
         """
         Register hotkeys for all instruction sets.
         """
-        for instruction_set in self.controller.get_instruction_sets():
+        for instruction_set in self._controller.get_instruction_sets():
             if instruction_set.hotkey:
-                self.controller.register_hotkey(hotkey=instruction_set.hotkey)
+                self._controller.register_hotkey(hotkey=instruction_set.hotkey)
 
     @pyqtSlot()
     def _handle_recording_started(self) -> None:
         """
         Handle the recording started event.
         """
-        self.record_button.setText("Stop Recording")
-        self.status_indicator.setText("Recording...")
+        self._record_button.setText("Stop Recording")
+        self._status_indicator.setText("Recording...")
 
         # Update system tray recording status
-        self.system_tray.update_recording_status("stop_recording")
+        self._system_tray.update_recording_status("stop_recording")
 
         # Play recording start sound
-        self.audio_manager.play_start_recording()
+        self._audio_manager.play_start_recording()
 
     @pyqtSlot()
     def _handle_recording_stopped(self) -> None:
@@ -321,27 +321,27 @@ class MainWindow(QMainWindow):
         Handle the recording stopped event.
         """
         # Don't update button text here since we might be going into processing state
-        self.status_indicator.setText("Processing...")
+        self._status_indicator.setText("Processing...")
 
         # Play recording stop sound
-        self.audio_manager.play_stop_recording()
+        self._audio_manager.play_stop_recording()
 
     @pyqtSlot()
     def _handle_processing_started(self) -> None:
         """
         Handle the processing started event.
         """
-        self.record_button.setText("Cancel Processing")
-        self.status_indicator.setText("Processing...")
+        self._record_button.setText("Cancel Processing")
+        self._status_indicator.setText("Processing...")
 
         # Update system tray recording status
-        self.system_tray.update_recording_status("cancel_processing")
+        self._system_tray.update_recording_status("cancel_processing")
 
         # Disable instruction set selection during processing
-        self.instruction_set_combo.setEnabled(False)
+        self._instruction_set_combo.setEnabled(False)
 
         # Clear the LLM text to prepare for streaming updates
-        self.llm_text.clear()
+        self._llm_text.clear()
 
     @pyqtSlot(bool)
     def _handle_processing_state_changed(self, is_processing: bool) -> None:
@@ -355,34 +355,34 @@ class MainWindow(QMainWindow):
         """
         if is_processing:
             # Processing started
-            self.record_button.setText("Cancel Processing")
-            self.status_indicator.setText("Processing...")
+            self._record_button.setText("Cancel Processing")
+            self._status_indicator.setText("Processing...")
             # Disable instruction set selection during processing
-            self.instruction_set_combo.setEnabled(False)
+            self._instruction_set_combo.setEnabled(False)
             # Update system tray recording status
-            self.system_tray.update_recording_status("cancel_processing")
+            self._system_tray.update_recording_status("cancel_processing")
         else:
             # Processing stopped
-            self.record_button.setText("Start Recording")
-            self.status_indicator.setText("Ready")
+            self._record_button.setText("Start Recording")
+            self._status_indicator.setText("Ready")
             # Re-enable instruction set selection
-            self.instruction_set_combo.setEnabled(True)
+            self._instruction_set_combo.setEnabled(True)
             # Update system tray recording status
-            self.system_tray.update_recording_status("start_recording")
+            self._system_tray.update_recording_status("start_recording")
 
     @pyqtSlot()
     def _handle_processing_cancelled(self) -> None:
         """
         Handle processing cancelled event.
         """
-        self.record_button.setText("Start Recording")
-        self.status_indicator.setText("Cancelled")
+        self._record_button.setText("Start Recording")
+        self._status_indicator.setText("Cancelled")
         # Re-enable instruction set selection
-        self.instruction_set_combo.setEnabled(True)
+        self._instruction_set_combo.setEnabled(True)
         # Update system tray recording status
-        self.system_tray.update_recording_status("start_recording")
+        self._system_tray.update_recording_status("start_recording")
         # Play cancel processing sound
-        self.audio_manager.play_cancel_processing()
+        self._audio_manager.play_cancel_processing()
 
     @pyqtSlot(PipelineResult)
     def _handle_processing_complete(self, result: PipelineResult) -> None:
@@ -395,34 +395,34 @@ class MainWindow(QMainWindow):
             The result of the processing
         """
         # Update the STT output text
-        self.stt_text.set_markdown_text(markdown_text=result.stt_output)
+        self._stt_text.set_markdown_text(markdown_text=result.stt_output)
 
         # For LLM text, if streaming was used, the text is already in the UI
         # Only update if it's different from the streaming result
         if result.is_llm_processed and result.llm_output:
-            current_markdown = self.llm_text.markdown_text()
+            current_markdown = self._llm_text.markdown_text()
             if current_markdown != result.llm_output:
-                self.llm_text.set_markdown_text(markdown_text=result.llm_output)
+                self._llm_text.set_markdown_text(markdown_text=result.llm_output)
 
             # Stay on or switch to LLM tab
-            self.tab_widget.setCurrentIndex(1)
+            self._tab_widget.setCurrentIndex(1)
         else:
             # No LLM processing, clear any existing text
-            self.llm_text.clear()
-            self.tab_widget.setCurrentIndex(0)  # Switch to STT output tab
+            self._llm_text.clear()
+            self._tab_widget.setCurrentIndex(0)  # Switch to STT output tab
 
         # Reset button state and status indicator
-        self.record_button.setText("Start Recording")
-        self.status_indicator.setText("Ready")
+        self._record_button.setText("Start Recording")
+        self._status_indicator.setText("Ready")
         # Re-enable instruction set selection
-        self.instruction_set_combo.setEnabled(True)
+        self._instruction_set_combo.setEnabled(True)
         # Update system tray recording status
-        self.system_tray.update_recording_status("start_recording")
+        self._system_tray.update_recording_status("start_recording")
         # Update status bar to show completion
-        self.status_bar.showMessage("Processing complete", 3000)
+        self._status_bar.showMessage("Processing complete", 3000)
 
         # Play completion sound
-        self.audio_manager.play_complete_processing()
+        self._audio_manager.play_complete_processing()
 
     @pyqtSlot(str, int)
     def _handle_update_status(self, message: str, timeout: int = 0) -> None:
@@ -436,7 +436,7 @@ class MainWindow(QMainWindow):
         timeout : int, optional
             Timeout in milliseconds, 0 means no timeout, by default 0
         """
-        self.status_bar.showMessage(message, timeout)
+        self._status_bar.showMessage(message, timeout)
 
     @pyqtSlot(InstructionSet)
     def _handle_instruction_set_activated(self, instruction_set: InstructionSet) -> None:
@@ -449,14 +449,14 @@ class MainWindow(QMainWindow):
             The activated instruction set
         """
         # Update the combo box
-        self.instruction_set_combo.blockSignals(True)
-        index = self.instruction_set_combo.findText(instruction_set.name)
+        self._instruction_set_combo.blockSignals(True)
+        index = self._instruction_set_combo.findText(instruction_set.name)
         if index >= 0:
-            self.instruction_set_combo.setCurrentIndex(index)
-        self.instruction_set_combo.blockSignals(False)
+            self._instruction_set_combo.setCurrentIndex(index)
+        self._instruction_set_combo.blockSignals(False)
 
         # Show status message
-        self.status_bar.showMessage(f"Instruction set activated: {instruction_set.name}", 3000)
+        self._status_bar.showMessage(f"Instruction set activated: {instruction_set.name}", 3000)
 
     @pyqtSlot(str)
     def _handle_hotkey_triggered(self, hotkey: str) -> None:
@@ -469,7 +469,7 @@ class MainWindow(QMainWindow):
             The hotkey that was triggered
         """
         # The controller will handle the actual logic, this is for UI feedback
-        self.status_bar.showMessage(f"Hotkey triggered: {hotkey}", 2000)
+        self._status_bar.showMessage(f"Hotkey triggered: {hotkey}", 2000)
 
     @pyqtSlot(str)
     def _handle_llm_stream_update(self, chunk: str) -> None:
@@ -482,17 +482,17 @@ class MainWindow(QMainWindow):
             The text chunk from the LLM stream
         """
         # Switch to the LLM tab if not already active
-        if self.tab_widget.currentIndex() != 1:
-            self.tab_widget.setCurrentIndex(1)
+        if self._tab_widget.currentIndex() != 1:
+            self._tab_widget.setCurrentIndex(1)
 
         # Append the new chunk to the LLM text
-        self.llm_text.append_markdown(text=chunk)
+        self._llm_text.append_markdown(text=chunk)
 
         # Update status indicator to show streaming progress
-        self.status_indicator.setText("LLM Streaming...")
+        self._status_indicator.setText("LLM Streaming...")
 
         # Update status bar with a message
-        self.status_bar.showMessage("Receiving LLM response...", 1000)
+        self._status_bar.showMessage("Receiving LLM response...", 1000)
 
     @pyqtSlot()
     def _on_click_api_key(self) -> None:
@@ -500,10 +500,10 @@ class MainWindow(QMainWindow):
         Show dialog for API key entry.
         """
         # Use the controller's API key settings method
-        if self.controller.show_api_key_dialog(main_window=self):
-            self.status_bar.showMessage("API key updated successfully", 2000)
+        if self._controller.show_api_key_dialog(main_window=self):
+            self._status_bar.showMessage("API key updated successfully", 2000)
         else:
-            self.status_bar.showMessage("Failed to update API key", 2000)
+            self._status_bar.showMessage("Failed to update API key", 2000)
 
     @pyqtSlot()
     def _on_click_instruction_sets(self) -> None:
@@ -511,10 +511,10 @@ class MainWindow(QMainWindow):
         Show the instruction sets management dialog.
         """
         # Use controller to handle instruction dialog
-        if self.controller.show_instruction_dialog(main_window=self):
+        if self._controller.show_instruction_dialog(main_window=self):
             # Dialog was accepted, refresh instruction sets combo
             self._populate_instruction_set_combo()
-            self.status_bar.showMessage("Instruction sets updated", 2000)
+            self._status_bar.showMessage("Instruction sets updated", 2000)
 
     @pyqtSlot()
     def _on_click_settings(self) -> None:
@@ -522,9 +522,9 @@ class MainWindow(QMainWindow):
         Show the settings dialog.
         """
         # Use controller to handle settings dialog
-        if self.controller.show_settings_dialog(main_window=self):
+        if self._controller.show_settings_dialog(main_window=self):
             # Settings were updated
-            self.status_bar.showMessage("Settings updated", 2000)
+            self._status_bar.showMessage("Settings updated", 2000)
 
     @pyqtSlot(int)
     def _on_instruction_set_changed(self, index: int) -> None:
@@ -540,33 +540,33 @@ class MainWindow(QMainWindow):
             return
 
         # Get the selected instruction set name
-        name = self.instruction_set_combo.itemText(index)
+        name = self._instruction_set_combo.itemText(index)
 
         # Set the selected instruction set
-        self.controller.select_instruction_set(name=name)
+        self._controller.select_instruction_set(name=name)
 
     @pyqtSlot()
     def _on_click_record(self) -> None:
         """
         Handle the record button click event.
         """
-        self.controller.toggle_recording()
+        self._controller.toggle_recording()
 
     @pyqtSlot()
     def _on_click_copy_stt(self) -> None:
         """
         Copy the STT output text to the clipboard.
         """
-        ClipboardUtils.set_text(text=self.stt_text.markdown_text())
-        self.status_bar.showMessage("STT output copied to clipboard", 2000)
+        ClipboardUtils.set_text(text=self._stt_text.markdown_text())
+        self._status_bar.showMessage("STT output copied to clipboard", 2000)
 
     @pyqtSlot()
     def _on_click_copy_llm(self) -> None:
         """
         Copy the LLM output text to the clipboard.
         """
-        ClipboardUtils.set_text(text=self.llm_text.markdown_text())
-        self.status_bar.showMessage("LLM output copied to clipboard", 2000)
+        ClipboardUtils.set_text(text=self._llm_text.markdown_text())
+        self._status_bar.showMessage("LLM output copied to clipboard", 2000)
 
     @pyqtSlot()
     def _on_click_show_window(self) -> None:
@@ -602,10 +602,10 @@ class MainWindow(QMainWindow):
 
             # Hide the system tray icon
             if hasattr(self, "system_tray"):
-                self.system_tray.hide()
+                self._system_tray.hide()
 
             # Shut down the controller cleanly
-            self.controller.shutdown()
+            self._controller.shutdown()
 
             # Exit application
             sys.exit(0)
@@ -625,7 +625,7 @@ class MainWindow(QMainWindow):
             self._on_click_hide_window()
 
             # Show a notification message
-            self.system_tray.showMessage(
+            self._system_tray.showMessage(
                 "Open Super Whisper App",
                 "The application is still running in the background. Click the tray icon to restore.",
                 QSystemTrayIcon.MessageIcon.Information,
