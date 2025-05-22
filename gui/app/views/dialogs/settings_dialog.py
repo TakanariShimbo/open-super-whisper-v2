@@ -33,7 +33,7 @@ class SettingsDialog(QDialog):
         super().__init__(parent=main_window)
 
         # Create controller
-        self._controller = SettingsDialogController()
+        self._controller = SettingsDialogController(settings_dialog=self)
 
         # Set up UI
         self._init_ui()

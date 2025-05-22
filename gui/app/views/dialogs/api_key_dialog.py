@@ -37,7 +37,7 @@ class APIKeyDialog(QDialog):
         super().__init__(parent=main_window)
 
         # Create controller
-        self._controller = APIKeyDialogController()
+        self._controller = APIKeyDialogController(api_key_dialog=self)
 
         # Create UI components
         self._init_ui()

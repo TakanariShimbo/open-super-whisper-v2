@@ -54,7 +54,7 @@ class InstructionDialog(QDialog):
         super().__init__(parent=main_window)
 
         # Create controller
-        self._controller = InstructionDialogController()
+        self._controller = InstructionDialogController(instruction_dialog=self)
 
         # Track changes and hotkey state
         self._changes_made = False

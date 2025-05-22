@@ -41,7 +41,7 @@ class StatusIndicatorWindow(QWidget):
         )
 
         # Create controller
-        self._controller = StatusIndicatorController()
+        self._controller = StatusIndicatorController(status_indicator=self)
 
         # Set initial mode
         self._current_mode = self._MODE_RECORDING
