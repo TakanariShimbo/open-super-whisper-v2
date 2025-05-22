@@ -30,7 +30,6 @@ from PyQt6.QtGui import QCloseEvent, QShowEvent
 from core.pipelines.instruction_set import InstructionSet
 
 from ...controllers.dialogs.instruction_dialog_controller import InstructionDialogController
-from ..factories.hotkey_dialog_factory import HotkeyDialogFactory
 
 
 class InstructionDialog(QDialog):
@@ -507,7 +506,7 @@ class InstructionDialog(QDialog):
         is_signal_blocked : bool
             True to block signals, False to unblock
         """
-        editor_widget = [
+        editor_widget: list[QWidget] = [
             self._stt_vocabulary_edit,
             self._stt_instructions_edit,
             self._llm_instructions_edit,
@@ -538,6 +537,87 @@ class InstructionDialog(QDialog):
                 combo.setCurrentIndex(i)
                 return
         combo.setCurrentIndex(0)  # Default to first item
+
+    @pyqtSlot(str)
+    def _handle_instruction_set_added(self, name: str) -> None:
+        """
+        Handle instruction set added event.
+
+        Parameters
+        ----------
+        name : str
+            The name of the added instruction set
+        """
+        # Add to list
+        self._sets_list.addItem(name)
+
+        # Select new item
+        for i in range(self._sets_list.count()):
+            if self._sets_list.item(i).text() == name:
+                self._sets_list.setCurrentRow(i)
+                break
+
+    @pyqtSlot(str, str)
+    def _handle_instruction_set_renamed(self, old_name: str, new_name: str) -> None:
+        """
+        Handle instruction set renamed event.
+
+        Parameters
+        ----------
+        old_name : str
+            The old name of the instruction set
+        new_name : str
+            The new name of the instruction set
+        """
+        # Find and update item
+        for i in range(self._sets_list.count()):
+            if self._sets_list.item(i).text() == old_name:
+                self._sets_list.item(i).setText(new_name)
+                break
+
+    @pyqtSlot(str)
+    def _handle_instruction_set_deleted(self, name: str) -> None:
+        """
+        Handle instruction set deleted event.
+
+        Parameters
+        ----------
+        name : str
+            The name of the instruction set that was deleted
+        """
+        # Find and remove item
+        for i in range(self._sets_list.count()):
+            if self._sets_list.item(i).text() == name:
+                self._sets_list.takeItem(i)
+                break
+
+        # Select next item if available
+        self._sets_list.setCurrentRow(0)
+
+    @pyqtSlot(bool, str)
+    def _handle_operation_result(self, success: bool, message: str) -> None:
+        """
+        Handle operation result event.
+
+        Parameters
+        ----------
+        success : bool
+            True if the operation was successful, False otherwise
+        """
+        if success:
+            QMessageBox.information(
+                self,
+                "Success",
+                message,
+                QMessageBox.StandardButton.Ok,
+            )
+        else:
+            QMessageBox.warning(
+                self,
+                "Error",
+                message,
+                QMessageBox.StandardButton.Ok,
+            )
 
     @pyqtSlot()
     def _on_form_changed(self) -> None:
@@ -660,18 +740,15 @@ class InstructionDialog(QDialog):
         set_name = self._sets_list.item(row).text()
         current_hotkey = self._hotkey_input.text()
 
-        dialog = HotkeyDialogFactory.create_dialog(
+        new_hotkey = self._controller.show_hotkey_dialog(
             current_hotkey=current_hotkey,
+            set_name=set_name,
             instruction_dialog=self,
         )
-        result = dialog.exec()
 
-        if result:
-            new_hotkey = dialog.get_hotkey()
-            if new_hotkey != current_hotkey:
-                self._controller.update_hotkey(set_name=set_name, hotkey=new_hotkey)
-                self._hotkey_input.setText(new_hotkey)
-                self._on_form_changed()
+        if new_hotkey is not None:
+            self._hotkey_input.setText(new_hotkey)
+            self._on_form_changed()
 
     @pyqtSlot()
     def _on_click_save(self) -> None:
@@ -743,87 +820,6 @@ class InstructionDialog(QDialog):
 
         self._restore_hotkeys()
         self.accept()
-
-    @pyqtSlot(str)
-    def _handle_instruction_set_added(self, name: str) -> None:
-        """
-        Handle instruction set added event.
-
-        Parameters
-        ----------
-        name : str
-            The name of the added instruction set
-        """
-        # Add to list
-        self._sets_list.addItem(name)
-
-        # Select new item
-        for i in range(self._sets_list.count()):
-            if self._sets_list.item(i).text() == name:
-                self._sets_list.setCurrentRow(i)
-                break
-
-    @pyqtSlot(str, str)
-    def _handle_instruction_set_renamed(self, old_name: str, new_name: str) -> None:
-        """
-        Handle instruction set renamed event.
-
-        Parameters
-        ----------
-        old_name : str
-            The old name of the instruction set
-        new_name : str
-            The new name of the instruction set
-        """
-        # Find and update item
-        for i in range(self._sets_list.count()):
-            if self._sets_list.item(i).text() == old_name:
-                self._sets_list.item(i).setText(new_name)
-                break
-
-    @pyqtSlot(str)
-    def _handle_instruction_set_deleted(self, name: str) -> None:
-        """
-        Handle instruction set deleted event.
-
-        Parameters
-        ----------
-        name : str
-            The name of the instruction set that was deleted
-        """
-        # Find and remove item
-        for i in range(self._sets_list.count()):
-            if self._sets_list.item(i).text() == name:
-                self._sets_list.takeItem(i)
-                break
-
-        # Select next item if available
-        self._sets_list.setCurrentRow(0)
-
-    @pyqtSlot(bool, str)
-    def _handle_operation_result(self, success: bool, message: str) -> None:
-        """
-        Handle operation result event.
-
-        Parameters
-        ----------
-        success : bool
-            True if the operation was successful, False otherwise
-        """
-        if success:
-            QMessageBox.information(
-                self,
-                "Success",
-                message,
-                QMessageBox.StandardButton.Ok,
-            )
-        else:
-            QMessageBox.warning(
-                self,
-                "Error",
-                message,
-                QMessageBox.StandardButton.Ok,
-            )
 
     def showEvent(self, event: QShowEvent) -> None:
         """

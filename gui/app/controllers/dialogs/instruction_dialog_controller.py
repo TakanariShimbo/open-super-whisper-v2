@@ -13,6 +13,7 @@ from core.llm.llm_model import LLMModel
 from core.pipelines.instruction_set import InstructionSet
 
 from ...models.dialogs.instruction_dialog_model import InstructionDialogModel
+from ...views.factories.hotkey_dialog_factory import HotkeyDialogFactory
 
 
 class InstructionDialogController(QObject):
@@ -134,6 +135,77 @@ class InstructionDialogController(QObject):
         if hotkey:
             # Register the hotkey
             self._model.register_hotkey(hotkey=hotkey)
+
+    def get_available_stt_languages(self) -> list[STTLangModel]:
+        """
+        Get available languages for speech recognition.
+
+        Returns
+        -------
+        list[STTLangModel]
+            List of available language objects
+        """
+        return self._model.get_available_stt_languages()
+
+    def get_available_stt_models(self) -> list[STTModel]:
+        """
+        Get available speech recognition models.
+
+        Returns
+        -------
+        list[STTModel]
+            List of available STT model objects
+        """
+        return self._model.get_available_stt_models()
+
+    def get_available_llm_models(self) -> list[LLMModel]:
+        """
+        Get available LLM models.
+
+        Returns
+        -------
+        list[LLMModel]
+            List of available LLM model objects
+        """
+        return self._model.get_available_llm_models()
+
+    def check_image_input_supported(self, model_id: str) -> bool:
+        """
+        Check if an LLM model supports image input.
+
+        Parameters
+        ----------
+        model_id : str
+            ID of the LLM model to check
+
+        Returns
+        -------
+        bool
+            True if the model supports image input, False otherwise
+        """
+        return self._model.check_image_input_supported(model_id=model_id)
+
+    def start_listening(self) -> bool:
+        """
+        Start listening for hotkeys.
+
+        Returns
+        -------
+        bool
+            True if listening started successfully, False otherwise
+        """
+        return self._model.start_listening()
+
+    def stop_listening(self) -> bool:
+        """
+        Stop listening for hotkeys.
+
+        Returns
+        -------
+        bool
+            True if listening stopped successfully, False otherwise
+        """
+        return self._model.stop_listening()
 
     def get_all_sets(self) -> list[InstructionSet]:
         """
@@ -327,7 +399,7 @@ class InstructionDialogController(QObject):
 
         return result
 
-    def update_hotkey(self, set_name: str, hotkey: str) -> bool:
+    def _update_hotkey(self, set_name: str, hotkey: str) -> bool:
         """
         Update the hotkey for an instruction set.
 
@@ -343,91 +415,63 @@ class InstructionDialogController(QObject):
         bool
             True if successful, False otherwise
         """
-        # Check if set exists
-        if not self._model.get_set_by_name(name=set_name):
-            self.operation_result.emit(False, f"Instruction set '{set_name}' does not exist.")
-            return False
-
         # Update the hotkey
         result = self._model.update_set(name=set_name, hotkey=hotkey)
 
-        if result:
-            if hotkey:
-                self.operation_result.emit(True, f"Hotkey for '{set_name}' set to '{hotkey}' successfully.")
-            else:
-                self.operation_result.emit(True, f"Hotkey for '{set_name}' cleared successfully.")
-        else:
+        # Emit the result
+        if not result:
             self.operation_result.emit(False, f"Failed to update hotkey for '{set_name}'.")
+            return False
+        if hotkey:
+            self.operation_result.emit(True, f"Hotkey for '{set_name}' set to '{hotkey}' successfully.")
+        else:
+            self.operation_result.emit(True, f"Hotkey for '{set_name}' cleared successfully.")
+        return True
 
-        return result
-
-    def get_available_stt_languages(self) -> list[STTLangModel]:
+    def show_hotkey_dialog(
+        self,
+        current_hotkey: str,
+        set_name: str,
+        instruction_dialog: QObject | None = None,
+    ) -> str | None:
         """
-        Get available languages for speech recognition.
+        Show the hotkey dialog and handle the result.
 
-        Returns
-        -------
-        list[STTLangModel]
-            List of available language objects
-        """
-        return self._model.get_available_stt_languages()
-
-    def get_available_stt_models(self) -> list[STTModel]:
-        """
-        Get available speech recognition models.
-
-        Returns
-        -------
-        list[STTModel]
-            List of available STT model objects
-        """
-        return self._model.get_available_stt_models()
-
-    def get_available_llm_models(self) -> list[LLMModel]:
-        """
-        Get available LLM models.
-
-        Returns
-        -------
-        list[LLMModel]
-            List of available LLM model objects
-        """
-        return self._model.get_available_llm_models()
-
-    def check_image_input_supported(self, model_id: str) -> bool:
-        """
-        Check if an LLM model supports image input.
+        This method creates, displays, and handles the result of a hotkey dialog,
+        encapsulating the dialog flow logic.
 
         Parameters
         ----------
-        model_id : str
-            ID of the LLM model to check
+        current_hotkey : str
+            The current hotkey
+        set_name : str
+            The name of the instruction set
+        instruction_dialog : QObject | None, optional
+            The instruction dialog, by default None
 
         Returns
         -------
-        bool
-            True if the model supports image input, False otherwise
+        str | None
+            The new hotkey if it has changed, None otherwise
         """
-        return self._model.check_image_input_supported(model_id=model_id)
+        # Create hotkey dialog using factory
+        dialog = HotkeyDialogFactory.create_dialog(
+            current_hotkey=current_hotkey,
+            instruction_dialog=instruction_dialog,
+        )
+        result = dialog.exec()
 
-    def start_listening(self) -> bool:
-        """
-        Start listening for hotkeys.
+        # Show dialog and get result
+        result = dialog.exec()
 
-        Returns
-        -------
-        bool
-            True if listening started successfully, False otherwise
-        """
-        return self._model.start_listening()
-
-    def stop_listening(self) -> bool:
-        """
-        Stop listening for hotkeys.
-
-        Returns
-        -------
-        bool
-            True if listening stopped successfully, False otherwise
-        """
-        return self._model.stop_listening()
+        # Handle dialog result
+        if result == dialog.DialogCode.Accepted:
+            # Update hotkey if it has changed
+            new_hotkey = dialog.get_hotkey()
+            if new_hotkey != current_hotkey:
+                self._update_hotkey(set_name=set_name, hotkey=new_hotkey)
+                return new_hotkey
+            else:
+                return None
+        else:
+            return None

@@ -66,18 +66,18 @@ class MainWindow(QMainWindow):
         self._is_closing = False
 
         # Set up UI
-        self.setup_ui()
+        self._setup_ui()
 
         # Set up system tray
-        self.setup_system_tray()
+        self._setup_system_tray()
 
         # Connect signals from controller
-        self.connect_controller_signals()
+        self._connect_controller_signals()
 
         # Register instruction set hotkeys
-        self.register_instruction_set_hotkeys()
+        self._register_hotkeys()
 
-    def setup_ui(self) -> None:
+    def _setup_ui(self) -> None:
         """
         Set up the user interface.
         """
@@ -90,7 +90,7 @@ class MainWindow(QMainWindow):
         main_layout = QVBoxLayout(central_widget)
 
         # Create toolbar
-        self.create_toolbar()
+        self._create_toolbar()
 
         # Create control panel
         control_panel = QWidget()
@@ -108,7 +108,7 @@ class MainWindow(QMainWindow):
         instruction_set_label = QLabel("Instruction Set:")
         self.instruction_set_combo = QComboBox()
         self.instruction_set_combo.setMinimumWidth(200)
-        self.instruction_set_combo.currentIndexChanged.connect(self.on_instruction_set_changed)
+        self.instruction_set_combo.currentIndexChanged.connect(self._on_instruction_set_changed)
         form_layout.addRow(instruction_set_label, self.instruction_set_combo)
 
         # Add to layout
@@ -184,9 +184,9 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
 
         # Populate instruction sets combo
-        self.populate_instruction_set_combo()
+        self._populate_instruction_set_combo()
 
-    def setup_system_tray(self) -> None:
+    def _setup_system_tray(self) -> None:
         """
         Set up the system tray icon.
         """
@@ -199,13 +199,13 @@ class MainWindow(QMainWindow):
         # Connect system tray signals
         self.system_tray.show_window_signal.connect(self._on_click_show_window)
         self.system_tray.hide_window_signal.connect(self._on_click_hide_window)
-        self.system_tray.quit_application_signal.connect(self.quit_application)
+        self.system_tray.quit_application_signal.connect(self._on_click_quit_application)
         self.system_tray.toggle_recording_signal.connect(self._on_click_record)
 
         # Show system tray icon
         self.system_tray.show()
 
-    def create_toolbar(self) -> None:
+    def _create_toolbar(self) -> None:
         """
         Create the application toolbar.
         """
@@ -239,10 +239,10 @@ class MainWindow(QMainWindow):
 
         # Exit action (right-aligned)
         exit_action = QAction("Exit", self)
-        exit_action.triggered.connect(self.quit_application)
+        exit_action.triggered.connect(self._on_click_quit_application)
         self.toolbar.addAction(exit_action)
 
-    def connect_controller_signals(self) -> None:
+    def _connect_controller_signals(self) -> None:
         """
         Connect signals from the controller to the view slots.
         """
@@ -268,7 +268,7 @@ class MainWindow(QMainWindow):
         # LLM streaming signal
         self.controller.llm_stream_update.connect(self._handle_llm_stream_update)
 
-    def populate_instruction_set_combo(self) -> None:
+    def _populate_instruction_set_combo(self) -> None:
         """
         Populate the instruction set combo box with available instruction sets.
         """
@@ -296,20 +296,13 @@ class MainWindow(QMainWindow):
 
         self.instruction_set_combo.blockSignals(False)
 
-    def register_instruction_set_hotkeys(self) -> None:
+    def _register_hotkeys(self) -> None:
         """
         Register hotkeys for all instruction sets.
         """
         for instruction_set in self.controller.get_instruction_sets():
             if instruction_set.hotkey:
-                self.controller.register_hotkey(instruction_set.hotkey)
-
-    @pyqtSlot()
-    def _on_click_record(self) -> None:
-        """
-        Handle the record button click event.
-        """
-        self.controller.toggle_recording()
+                self.controller.register_hotkey(hotkey=instruction_set.hotkey)
 
     @pyqtSlot()
     def _handle_recording_started(self) -> None:
@@ -504,8 +497,40 @@ class MainWindow(QMainWindow):
         # Update status bar with a message
         self.status_bar.showMessage("Receiving LLM response...", 1000)
 
+    @pyqtSlot()
+    def _on_click_api_key(self) -> None:
+        """
+        Show dialog for API key entry.
+        """
+        # Use the controller's API key settings method
+        if self.controller.show_api_key_dialog(main_window=self):
+            self.status_bar.showMessage("API key updated successfully", 2000)
+        else:
+            self.status_bar.showMessage("Failed to update API key", 2000)
+
+    @pyqtSlot()
+    def _on_click_instruction_sets(self) -> None:
+        """
+        Show the instruction sets management dialog.
+        """
+        # Use controller to handle instruction dialog
+        if self.controller.show_instruction_dialog(main_window=self):
+            # Dialog was accepted, refresh instruction sets combo
+            self._populate_instruction_set_combo()
+            self.status_bar.showMessage("Instruction sets updated", 2000)
+
+    @pyqtSlot()
+    def _on_click_settings(self) -> None:
+        """
+        Show the settings dialog.
+        """
+        # Use controller to handle settings dialog
+        if self.controller.show_settings_dialog(main_window=self):
+            # Settings were updated
+            self.status_bar.showMessage("Settings updated", 2000)
+
     @pyqtSlot(int)
-    def on_instruction_set_changed(self, index: int) -> None:
+    def _on_instruction_set_changed(self, index: int) -> None:
         """
         Handle instruction set selection change.
 
@@ -523,35 +548,14 @@ class MainWindow(QMainWindow):
         # Set the selected instruction set
         self.controller.select_instruction_set(name=name)
 
-    def _on_click_api_key(self) -> None:
+    @pyqtSlot()
+    def _on_click_record(self) -> None:
         """
-        Show dialog for API key entry.
+        Handle the record button click event.
         """
-        # Use the controller's API key settings method
-        if self.controller.show_api_key_dialog(main_window=self):
-            self.status_bar.showMessage("API key updated successfully", 2000)
-        else:
-            self.status_bar.showMessage("Failed to update API key", 2000)
+        self.controller.toggle_recording()
 
-    def _on_click_instruction_sets(self) -> None:
-        """
-        Show the instruction sets management dialog.
-        """
-        # Use controller to handle instruction dialog
-        if self.controller.show_instruction_dialog(main_window=self):
-            # Dialog was accepted, refresh instruction sets combo
-            self.populate_instruction_set_combo()
-            self.status_bar.showMessage("Instruction sets updated", 2000)
-
-    def _on_click_settings(self) -> None:
-        """
-        Show the settings dialog.
-        """
-        # Use controller to handle settings dialog
-        if self.controller.show_settings_dialog(main_window=self):
-            # Settings were updated
-            self.status_bar.showMessage("Settings updated", 2000)
-
+    @pyqtSlot()
     def _on_click_copy_stt(self) -> None:
         """
         Copy the STT output text to the clipboard.
@@ -559,6 +563,7 @@ class MainWindow(QMainWindow):
         ClipboardUtils.set_text(text=self.stt_text.markdown_text())
         self.status_bar.showMessage("STT output copied to clipboard", 2000)
 
+    @pyqtSlot()
     def _on_click_copy_llm(self) -> None:
         """
         Copy the LLM output text to the clipboard.
@@ -581,7 +586,8 @@ class MainWindow(QMainWindow):
         """
         self.hide()
 
-    def quit_application(self) -> None:
+    @pyqtSlot()
+    def _on_click_quit_application(self) -> None:
         """
         Completely exit the application.
         """
