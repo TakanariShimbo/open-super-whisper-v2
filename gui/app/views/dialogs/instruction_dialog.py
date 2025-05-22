@@ -57,7 +57,7 @@ class InstructionDialog(QDialog):
         self._controller = InstructionDialogController(instruction_dialog=self)
 
         # Track changes and hotkey state
-        self._changes_made = False
+        self._is_editing_mode = False
         self._hotkeys_disabled = False
 
         # Set up UI
@@ -66,8 +66,8 @@ class InstructionDialog(QDialog):
         # Connect controller signals
         self._connect_controller_signals()
 
-        # Load instruction sets
-        self._load_instruction_sets()
+        # Load sets and options
+        self._load_sets_and_options()
 
     def _init_ui(self) -> None:
         """
@@ -106,7 +106,7 @@ class InstructionDialog(QDialog):
         layout.addWidget(button_box)
 
         # Set initial state
-        self._update_editor_widget()
+        self._set_editing_mode(is_editing_mode=False)
 
     def _create_list_widget(self) -> QWidget:
         """
@@ -349,9 +349,9 @@ class InstructionDialog(QDialog):
         self._controller.instruction_set_renamed.connect(self._handle_instruction_set_renamed)
         self._controller.operation_result.connect(self._handle_operation_result)
 
-    def _load_instruction_sets(self) -> None:
+    def _load_sets_and_options(self) -> None:
         """
-        Load instruction sets into the UI.
+        Load sets and options into the UI.
         """
         # Clear list
         self._sets_list.clear()
@@ -361,7 +361,7 @@ class InstructionDialog(QDialog):
             self._sets_list.addItem(instruction_set.name)
 
         # Load available options
-        self._load_languages()
+        self._load_stt_languages()
         self._load_stt_models()
         self._load_llm_models()
 
@@ -369,18 +369,24 @@ class InstructionDialog(QDialog):
         if self._sets_list.count() > 0:
             self._sets_list.setCurrentRow(0)
 
-    def _load_languages(self) -> None:
+    def _load_stt_languages(self) -> None:
         """
-        Load available languages into the combo box.
+        Load available STT languages into the combo box.
         """
         self._stt_language_combo.clear()
 
-        languages = self._controller.get_available_languages()
-        for lang in languages:
+        stt_languages = self._controller.get_available_stt_languages()
+        for lang in stt_languages:
             if lang.code:
-                self._stt_language_combo.addItem(f"{lang.name} ({lang.code})", lang.code)
+                self._stt_language_combo.addItem(
+                    f"{lang.name} ({lang.code})",
+                    lang.code,
+                )
             else:
-                self._stt_language_combo.addItem(lang.name, lang.code)
+                self._stt_language_combo.addItem(
+                    lang.name,
+                    lang.code,
+                )
 
     def _load_stt_models(self) -> None:
         """
@@ -388,10 +394,17 @@ class InstructionDialog(QDialog):
         """
         self._stt_model_combo.clear()
 
-        models = self._controller.get_available_stt_models()
-        for model in models:
-            self._stt_model_combo.addItem(model.name, model.id)
-            self._stt_model_combo.setItemData(self._stt_model_combo.count() - 1, model.description, Qt.ItemDataRole.ToolTipRole)
+        stt_models = self._controller.get_available_stt_models()
+        for stt_model in stt_models:
+            self._stt_model_combo.addItem(
+                stt_model.name,
+                stt_model.id,
+            )
+            self._stt_model_combo.setItemData(
+                self._stt_model_combo.count() - 1,
+                stt_model.description,
+                Qt.ItemDataRole.ToolTipRole,
+            )
 
     def _load_llm_models(self) -> None:
         """
@@ -399,42 +412,21 @@ class InstructionDialog(QDialog):
         """
         self._llm_model_combo.clear()
 
-        models = self._controller.get_available_llm_models()
-        for model in models:
-            self._llm_model_combo.addItem(model.name, model.id)
-            self._llm_model_combo.setItemData(self._llm_model_combo.count() - 1, model.description, Qt.ItemDataRole.ToolTipRole)
+        llm_models = self._controller.get_available_llm_models()
+        for llm_model in llm_models:
+            self._llm_model_combo.addItem(
+                llm_model.name,
+                llm_model.id,
+            )
+            self._llm_model_combo.setItemData(
+                self._llm_model_combo.count() - 1,
+                llm_model.description,
+                Qt.ItemDataRole.ToolTipRole,
+            )
 
-    @pyqtSlot(int)
-    def _on_set_selected(self, row: int) -> None:
+    def _apply_set_to_editor_widget(self, instruction_set: InstructionSet) -> None:
         """
-        Handle selection of an instruction set.
-
-        Parameters
-        ----------
-        row : int
-            The row index of the selected instruction set
-        """
-        if row < 0:
-            return
-
-        # Check for unsaved changes
-        if self._changes_made:
-            result = self._show_unsaved_changes_dialog()
-            if result == QMessageBox.StandardButton.Cancel:
-                # Revert selection - this is handled by the controller
-                return
-            elif result == QMessageBox.StandardButton.Save:
-                self._on_click_save()
-
-        # Get selected set name and notify controller
-        set_name = self._sets_list.item(row).text()
-        selected_set = self._controller.select_set(name=set_name)
-        if selected_set:
-            self._reinit_editor_widget(instruction_set=selected_set)
-
-    def _reinit_editor_widget(self, instruction_set: InstructionSet) -> None:
-        """
-        Reinitialize the editor widget with the selected instruction set.
+        Apply the selected instruction set to the editor widget.
 
         Parameters
         ----------
@@ -442,7 +434,7 @@ class InstructionDialog(QDialog):
             The instruction set that was selected
         """
         # Block signals to prevent triggering change events
-        self._block_signals(True)
+        self._block_signals_from_editor_widget(is_signal_blocked=True)
 
         # Update UI with instruction set data
         self._stt_vocabulary_edit.setPlainText(instruction_set.stt_vocabulary)
@@ -465,53 +457,57 @@ class InstructionDialog(QDialog):
         self._hotkey_input.setText(instruction_set.hotkey)
 
         # Unblock signals
-        self._block_signals(False)
+        self._block_signals_from_editor_widget(is_signal_blocked=False)
 
-        # Reset changes flag
-        self._changes_made = False
+        # Set editing mode to False
+        self._set_editing_mode(is_editing_mode=False)
 
-        # Update UI state
-        self._update_editor_widget()
-
-    def _update_editor_widget(self) -> None:
+    def _set_editing_mode(self, is_editing_mode: bool = False) -> None:
         """
-        Update the editor widget based on current settings.
+        Set the editing mode of the dialog.
+
+        Parameters
+        ----------
+        is_editing_mode : bool
+            True if the dialog is in editing mode, False otherwise
         """
         # Enable/disable operation buttons based on changes
-        operations_enabled = not self._changes_made
+        self._is_editing_mode = is_editing_mode
 
-        self._add_button.setEnabled(operations_enabled)
-        self._rename_button.setEnabled(operations_enabled)
-        self._delete_button.setEnabled(operations_enabled)
-        self._sets_list.setEnabled(operations_enabled)
+        is_ui_enabled = not is_editing_mode
+
+        self._add_button.setEnabled(is_ui_enabled)
+        self._rename_button.setEnabled(is_ui_enabled)
+        self._delete_button.setEnabled(is_ui_enabled)
+        self._sets_list.setEnabled(is_ui_enabled)
 
         # Enable/disable save/discard buttons
-        self._save_button.setEnabled(self._changes_made)
-        self._discard_button.setEnabled(self._changes_made)
+        self._save_button.setEnabled(not is_ui_enabled)
+        self._discard_button.setEnabled(not is_ui_enabled)
 
         # Update LLM UI state
         is_llm_enabled = self._llm_enabled_checkbox.isChecked()
         selected_model_id = self._llm_model_combo.currentData()
-        supports_image = False
+        is_image_supported = False
 
         if selected_model_id:
-            supports_image = self._controller.check_image_input_supported(selected_model_id)
+            is_image_supported = self._controller.check_image_input_supported(model_id=selected_model_id)
 
         self._llm_model_combo.setEnabled(is_llm_enabled)
         self._llm_clipboard_text_checkbox.setEnabled(is_llm_enabled)
-        self._llm_clipboard_image_checkbox.setEnabled(is_llm_enabled and supports_image)
+        self._llm_clipboard_image_checkbox.setEnabled(is_llm_enabled and is_image_supported)
         self._llm_instructions_edit.setEnabled(is_llm_enabled)
 
-    def _block_signals(self, block: bool) -> None:
+    def _block_signals_from_editor_widget(self, is_signal_blocked: bool) -> None:
         """
-        Block or unblock signals from form elements.
+        Block or unblock signals from editor widgets.
 
         Parameters
         ----------
-        block : bool
+        is_signal_blocked : bool
             True to block signals, False to unblock
         """
-        widgets = [
+        editor_widget = [
             self._stt_vocabulary_edit,
             self._stt_instructions_edit,
             self._llm_instructions_edit,
@@ -523,8 +519,8 @@ class InstructionDialog(QDialog):
             self._llm_clipboard_image_checkbox,
         ]
 
-        for widget in widgets:
-            widget.blockSignals(block)
+        for widget in editor_widget:
+            widget.blockSignals(is_signal_blocked)
 
     def _set_combo_value(self, combo: QComboBox, value: str) -> None:
         """
@@ -543,13 +539,56 @@ class InstructionDialog(QDialog):
                 return
         combo.setCurrentIndex(0)  # Default to first item
 
+    @pyqtSlot()
     def _on_form_changed(self) -> None:
         """
         Handle form value changes.
         """
-        if self.isVisible():  # Only mark changes if dialog is visible
-            self._changes_made = True
-            self._update_editor_widget()
+        # Set editing mode to True
+        self._set_editing_mode(is_editing_mode=True)
+
+    @pyqtSlot(int)
+    def _on_llm_enabled_changed(self, state: int) -> None:
+        """
+        Handle changes to the LLM enabled checkbox.
+
+        Parameters
+        ----------
+        state : int
+            The state of the LLM enabled checkbox
+        """
+        self._on_form_changed()
+
+    @pyqtSlot(int)
+    def _on_llm_model_changed(self, index: int) -> None:
+        """
+        Handle changes to the LLM model selection.
+
+        Parameters
+        ----------
+        index : int
+            The index of the selected LLM model
+        """
+        self._on_form_changed()
+
+    @pyqtSlot(int)
+    def _on_set_selected(self, row: int) -> None:
+        """
+        Handle selection of an instruction set.
+
+        Parameters
+        ----------
+        row : int
+            The row index of the selected instruction set
+        """
+        if row < 0:
+            return
+
+        # Get selected set name and notify controller
+        set_name = self._sets_list.item(row).text()
+        selected_set = self._controller.select_set(name=set_name)
+        if selected_set:
+            self._apply_set_to_editor_widget(instruction_set=selected_set)
 
     @pyqtSlot()
     def _on_click_add(self) -> None:
@@ -564,25 +603,6 @@ class InstructionDialog(QDialog):
 
         if ok and name:
             self._controller.add_set(name=name)
-
-    @pyqtSlot(str)
-    def _handle_instruction_set_added(self, name: str) -> None:
-        """
-        Handle instruction set added event.
-
-        Parameters
-        ----------
-        name : str
-            The name of the added instruction set
-        """
-        # Add to list
-        self._sets_list.addItem(name)
-
-        # Select new item
-        for i in range(self._sets_list.count()):
-            if self._sets_list.item(i).text() == name:
-                self._sets_list.setCurrentRow(i)
-                break
 
     @pyqtSlot()
     def _on_click_rename(self) -> None:
@@ -606,24 +626,6 @@ class InstructionDialog(QDialog):
         if ok and new_name and new_name != old_name:
             self._controller.rename_set(old_name=old_name, new_name=new_name)
 
-    @pyqtSlot(str, str)
-    def _handle_instruction_set_renamed(self, old_name: str, new_name: str) -> None:
-        """
-        Handle instruction set renamed event.
-
-        Parameters
-        ----------
-        old_name : str
-            The old name of the instruction set
-        new_name : str
-            The new name of the instruction set
-        """
-        # Find and update item
-        for i in range(self._sets_list.count()):
-            if self._sets_list.item(i).text() == old_name:
-                self._sets_list.item(i).setText(new_name)
-                break
-
     @pyqtSlot()
     def _on_click_delete(self) -> None:
         """
@@ -645,26 +647,6 @@ class InstructionDialog(QDialog):
 
         if result == QMessageBox.StandardButton.Yes:
             self._controller.delete_set(name=name)
-
-    @pyqtSlot(str)
-    def _handle_instruction_set_deleted(self, name: str) -> None:
-        """
-        Handle instruction set deleted event.
-
-        Parameters
-        ----------
-        name : str
-            The name of the instruction set that was deleted
-        """
-        # Find and remove item
-        for i in range(self._sets_list.count()):
-            if self._sets_list.item(i).text() == name:
-                self._sets_list.takeItem(i)
-                break
-
-        # Select next item if available
-        if self._sets_list.count() > 0:
-            self._sets_list.setCurrentRow(min(i, self._sets_list.count() - 1))
 
     @pyqtSlot()
     def _on_click_hotkey(self) -> None:
@@ -722,9 +704,8 @@ class InstructionDialog(QDialog):
             **kwargs,
         )
 
-        # Reset changes flag
-        self._changes_made = False
-        self._update_editor_widget()
+        # Set editing mode to False
+        self._set_editing_mode(is_editing_mode=False)
 
     @pyqtSlot()
     def _on_click_discard(self) -> None:
@@ -737,9 +718,9 @@ class InstructionDialog(QDialog):
 
         # Get current instruction set and refresh UI
         set_name = self._sets_list.item(row).text()
-        instruction_set = self._controller.get_set_by_name(set_name)
+        instruction_set = self._controller.get_set_by_name(name=set_name)
         if instruction_set:
-            self._reinit_editor_widget(instruction_set)
+            self._apply_set_to_editor_widget(instruction_set=instruction_set)
 
         QMessageBox.information(
             self,
@@ -747,6 +728,77 @@ class InstructionDialog(QDialog):
             "Changes have been discarded.",
             QMessageBox.StandardButton.Ok,
         )
+
+    @pyqtSlot()
+    def _on_click_close(self) -> None:
+        """
+        Handle dialog close event.
+        """
+        if self._is_editing_mode:
+            result = self._show_unsaved_changes_dialog()
+            if result == QMessageBox.StandardButton.Cancel:
+                return
+            elif result == QMessageBox.StandardButton.Save:
+                self._on_click_save()
+
+        self._restore_hotkeys()
+        self.accept()
+
+    @pyqtSlot(str)
+    def _handle_instruction_set_added(self, name: str) -> None:
+        """
+        Handle instruction set added event.
+
+        Parameters
+        ----------
+        name : str
+            The name of the added instruction set
+        """
+        # Add to list
+        self._sets_list.addItem(name)
+
+        # Select new item
+        for i in range(self._sets_list.count()):
+            if self._sets_list.item(i).text() == name:
+                self._sets_list.setCurrentRow(i)
+                break
+
+    @pyqtSlot(str, str)
+    def _handle_instruction_set_renamed(self, old_name: str, new_name: str) -> None:
+        """
+        Handle instruction set renamed event.
+
+        Parameters
+        ----------
+        old_name : str
+            The old name of the instruction set
+        new_name : str
+            The new name of the instruction set
+        """
+        # Find and update item
+        for i in range(self._sets_list.count()):
+            if self._sets_list.item(i).text() == old_name:
+                self._sets_list.item(i).setText(new_name)
+                break
+
+    @pyqtSlot(str)
+    def _handle_instruction_set_deleted(self, name: str) -> None:
+        """
+        Handle instruction set deleted event.
+
+        Parameters
+        ----------
+        name : str
+            The name of the instruction set that was deleted
+        """
+        # Find and remove item
+        for i in range(self._sets_list.count()):
+            if self._sets_list.item(i).text() == name:
+                self._sets_list.takeItem(i)
+                break
+
+        # Select next item if available
+        self._sets_list.setCurrentRow(0)
 
     @pyqtSlot(bool, str)
     def _handle_operation_result(self, success: bool, message: str) -> None:
@@ -773,63 +825,6 @@ class InstructionDialog(QDialog):
                 QMessageBox.StandardButton.Ok,
             )
 
-    @pyqtSlot(int)
-    def _on_llm_enabled_changed(self, state: int) -> None:
-        """
-        Handle changes to the LLM enabled checkbox.
-
-        Parameters
-        ----------
-        state : int
-            The state of the LLM enabled checkbox
-        """
-        self._on_form_changed()
-        self._update_editor_widget()
-
-    @pyqtSlot(int)
-    def _on_llm_model_changed(self, index: int) -> None:
-        """
-        Handle changes to the LLM model selection.
-
-        Parameters
-        ----------
-        index : int
-            The index of the selected LLM model
-        """
-        self._on_form_changed()
-        self._update_editor_widget()
-
-    def _show_unsaved_changes_dialog(self) -> QMessageBox.StandardButton:
-        """
-        Show dialog asking if unsaved changes should be saved.
-
-        Returns
-        -------
-        QMessageBox.StandardButton
-            The button that was clicked
-        """
-        return QMessageBox.question(
-            self,
-            "Unsaved Changes",
-            "You have unsaved changes. Do you want to save them?",
-            QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel,
-            QMessageBox.StandardButton.Save,
-        )
-
-    def _on_click_close(self) -> None:
-        """
-        Handle dialog close event.
-        """
-        if self._changes_made:
-            result = self._show_unsaved_changes_dialog()
-            if result == QMessageBox.StandardButton.Cancel:
-                return
-            elif result == QMessageBox.StandardButton.Save:
-                self._on_click_save()
-
-        self._restore_hotkeys()
-        self.accept()
-
     def showEvent(self, event: QShowEvent) -> None:
         """
         Handle dialog show event.
@@ -849,9 +844,9 @@ class InstructionDialog(QDialog):
         row = self._sets_list.currentRow()
         if row >= 0:
             set_name = self._sets_list.item(row).text()
-            instruction_set = self._controller.get_set_by_name(set_name)
+            instruction_set = self._controller.get_set_by_name(name=set_name)
             if instruction_set:
-                self._reinit_editor_widget(instruction_set)
+                self._apply_set_to_editor_widget(instruction_set=instruction_set)
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """
@@ -862,7 +857,7 @@ class InstructionDialog(QDialog):
         event : QCloseEvent
             The close event
         """
-        if self._changes_made:
+        if self._is_editing_mode:
             result = self._show_unsaved_changes_dialog()
             if result == QMessageBox.StandardButton.Cancel:
                 event.ignore()
@@ -886,6 +881,23 @@ class InstructionDialog(QDialog):
         """
         self._restore_hotkeys()
         super().reject()
+
+    def _show_unsaved_changes_dialog(self) -> QMessageBox.StandardButton:
+        """
+        Show dialog asking if unsaved changes should be saved.
+
+        Returns
+        -------
+        QMessageBox.StandardButton
+            The button that was clicked
+        """
+        return QMessageBox.question(
+            self,
+            "Unsaved Changes",
+            "You have unsaved changes. Do you want to save them?",
+            QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel,
+            QMessageBox.StandardButton.Save,
+        )
 
     def _restore_hotkeys(self) -> None:
         """

@@ -361,7 +361,7 @@ class InstructionDialogController(QObject):
 
         return result
 
-    def get_available_languages(self) -> list[STTLangModel]:
+    def get_available_stt_languages(self) -> list[STTLangModel]:
         """
         Get available languages for speech recognition.
 
@@ -370,7 +370,7 @@ class InstructionDialogController(QObject):
         list[STTLangModel]
             List of available language objects
         """
-        return self._model.get_available_languages()
+        return self._model.get_available_stt_languages()
 
     def get_available_stt_models(self) -> list[STTModel]:
         """
