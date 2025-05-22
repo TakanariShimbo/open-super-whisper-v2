@@ -146,23 +146,6 @@ class HotkeyDialog(QDialog):
         self._controller.hotkey_captured.connect(self._handle_hotkey_captured)
         self._controller.validation_error.connect(self._handle_validation_error)
 
-    @pyqtSlot(bool)
-    def _on_toggle_capture(self, checked: bool) -> None:
-        """
-        Handle capture button toggle.
-
-        Parameters
-        ----------
-        checked : bool
-            Whether the button is checked
-        """
-        if checked:
-            # Start capture mode
-            self._start_capture_mode()
-        else:
-            # Stop capture mode
-            self._stop_capture_mode()
-
     def _start_capture_mode(self) -> None:
         """
         Start key capture mode.
@@ -201,26 +184,9 @@ class HotkeyDialog(QDialog):
         # Stop capture timer
         self._capture_timer.stop()
 
-    @pyqtSlot()
-    def _on_capture_timer(self) -> None:
-        """
-        Handle capture timer tick.
-        """
-        # Capture current keys
-        self._controller.capture_keys()
-
-    @pyqtSlot()
-    def _on_click_reset(self) -> None:
-        """
-        Handle reset button click.
-        """
-        # Stop capture mode if active
-        if self._capture_button.isChecked():
-            self._stop_capture_mode()
-
-        # Reset hotkey in controller
-        self._controller.reset_hotkey()
-
+    #
+    # Controller Events
+    #
     @pyqtSlot(str)
     def _handle_hotkey_changed(self, hotkey: str) -> None:
         """
@@ -262,6 +228,65 @@ class HotkeyDialog(QDialog):
             message,
         )
 
+    #
+    # UI Events
+    #
+    @pyqtSlot(bool)
+    def _on_toggle_capture(self, checked: bool) -> None:
+        """
+        Handle capture button toggle.
+
+        Parameters
+        ----------
+        checked : bool
+            Whether the button is checked
+        """
+        if checked:
+            # Start capture mode
+            self._start_capture_mode()
+        else:
+            # Stop capture mode
+            self._stop_capture_mode()
+
+    @pyqtSlot()
+    def _on_capture_timer(self) -> None:
+        """
+        Handle capture timer tick.
+        """
+        # Capture current keys
+        self._controller.capture_keys()
+
+    @pyqtSlot()
+    def _on_click_reset(self) -> None:
+        """
+        Handle reset button click.
+        """
+        # Stop capture mode if active
+        if self._capture_button.isChecked():
+            self._stop_capture_mode()
+
+        # Reset hotkey in controller
+        self._controller.reset_hotkey()
+
+    #
+    # UI Events
+    #
+
+    def get_hotkey(self) -> str:
+        """
+        Get the hotkey string.
+
+        Returns
+        -------
+        str
+            The hotkey combination as a string.
+        """
+        return self._controller.get_hotkey()
+
+    #
+    # Open/Close Events
+    #
+    @pyqtSlot()
     def _on_accept(self) -> None:
         """
         Handle dialog acceptance.
@@ -280,6 +305,7 @@ class HotkeyDialog(QDialog):
         # Accept the dialog
         super().accept()
 
+    @pyqtSlot()
     def _on_reject(self) -> None:
         """
         Handle dialog rejection.
@@ -293,17 +319,6 @@ class HotkeyDialog(QDialog):
 
         # Reject the dialog
         super().reject()
-
-    def get_hotkey(self) -> str:
-        """
-        Get the hotkey string.
-
-        Returns
-        -------
-        str
-            The hotkey combination as a string.
-        """
-        return self._controller.get_hotkey()
 
     def showEvent(self, event: QShowEvent) -> None:
         """

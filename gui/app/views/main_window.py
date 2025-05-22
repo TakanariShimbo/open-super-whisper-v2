@@ -190,11 +190,8 @@ class MainWindow(QMainWindow):
         """
         Set up the system tray icon.
         """
-        # Get the icon path from the icon manager
-        icon_path = self.icon_manager.get_icon_path("app")
-
         # Create system tray with the icon
-        self.system_tray = SystemTray(icon_path)
+        self.system_tray = SystemTray(main_window=self)
 
         # Connect system tray signals
         self.system_tray.show_window_signal.connect(self._on_click_show_window)

@@ -128,23 +128,3 @@ class IconManager:
             The application icon
         """
         return self._app_icon
-
-    def get_icon_path(self, icon_name: str) -> str | None:
-        """
-        Get the path to a named icon.
-
-        Parameters
-        ----------
-        icon_name : str
-            The name of the icon
-
-        Returns
-        -------
-        str | None
-            The path to the icon, or None if it doesn't exist
-        """
-        if icon_name in self._icon_paths:
-            return self._icon_paths[icon_name]
-
-        # If not in the predefined paths, try to find it
-        return self._get_icon_path(icon_name=icon_name)

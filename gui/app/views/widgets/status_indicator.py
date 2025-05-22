@@ -139,6 +139,20 @@ class StatusIndicatorWindow(QWidget):
             self.status_label.setStyleSheet("color: #bbbbbb; font-weight: bold;")
             self.timer_label.setText("")
 
+    def get_controller(self) -> StatusIndicatorController:
+        """
+        Get the controller associated with this view.
+
+        Returns
+        -------
+        StatusIndicatorController
+            The controller for this view
+        """
+        return self._controller
+
+    #
+    # Controller Events
+    #
     @pyqtSlot(int)
     def _handle_mode_changed(self, mode: int) -> None:
         """
@@ -180,6 +194,9 @@ class StatusIndicatorWindow(QWidget):
         else:
             self.hide()
 
+    #
+    # Open/Close Events
+    #
     def showEvent(self, event: QShowEvent) -> None:
         """
         Handle show event by updating position.
@@ -191,14 +208,3 @@ class StatusIndicatorWindow(QWidget):
         """
         super().showEvent(event)
         self._update_position()
-
-    def get_controller(self) -> StatusIndicatorController:
-        """
-        Get the controller associated with this view.
-
-        Returns
-        -------
-        StatusIndicatorController
-            The controller for this view
-        """
-        return self._controller

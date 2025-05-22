@@ -5,12 +5,11 @@ This module implements a system tray icon for the Open Super Whisper application
 allowing it to run in the background while maintaining accessibility.
 """
 
-import os
 from typing import Literal
 
-from PyQt6.QtWidgets import QSystemTrayIcon, QMenu
-from PyQt6.QtGui import QIcon, QAction
-from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtWidgets import QSystemTrayIcon, QMenu, QWidget
+from PyQt6.QtGui import QAction
+from PyQt6.QtCore import pyqtSignal, pyqtSlot
 
 from ...managers.icon_manager import IconManager
 
@@ -40,46 +39,36 @@ class SystemTray(QSystemTrayIcon):
     quit_application_signal = pyqtSignal()
     toggle_recording_signal = pyqtSignal()
 
-    def __init__(self, icon_path: str = None) -> None:
+    def __init__(
+        self,
+        main_window: QWidget | None = None,
+    ) -> None:
         """
         Initialize the SystemTray.
 
         Parameters
         ----------
-        icon_path : str, optional
-            Path to the icon file to be displayed in the system tray
+        main_window : QWidget, optional
+            The main window of the application
         """
-        super().__init__()
+        super().__init__(parent=main_window)
+
+        # Initialize managers
+        self._icon_manager = IconManager.instance()
 
         # Set the icon
-        self._set_icon(icon_path=icon_path)
+        self._set_icon()
 
         self.setToolTip("Open Super Whisper App")
 
         # Create the tray menu
         self._create_tray_menu()
 
-    def _set_icon(self, icon_path: str = None) -> None:
+    def _set_icon(self) -> None:
         """
         Set the system tray icon.
-
-        Parameters
-        ----------
-        icon_path : str, optional
-            Path to the icon file
         """
-        icon = None
-
-        # Try to use the specified icon if provided and exists
-        if icon_path and os.path.exists(path=icon_path):
-            icon = QIcon(icon_path)
-
-        # If no valid icon, use a standard system icon
-        if not icon or icon.isNull():
-            # Try to use IconManager as fallback
-            icon_manager = IconManager.instance()
-            icon = icon_manager.get_app_icon()
-
+        icon = self._icon_manager.get_app_icon()
         self.setIcon(icon)
 
     def _create_tray_menu(self) -> None:
@@ -117,30 +106,38 @@ class SystemTray(QSystemTrayIcon):
         # Connect tray icon signals
         self.activated.connect(self._handle_tray_icon_activated)
 
+    #
+    # UI Events
+    #
+    @pyqtSlot()
     def _on_show_window(self) -> None:
         """
         Handle show window action.
         """
         self.show_window_signal.emit()
 
+    @pyqtSlot()
     def _on_hide_window(self) -> None:
         """
         Handle hide window action.
         """
         self.hide_window_signal.emit()
 
+    @pyqtSlot()
     def _on_toggle_recording(self) -> None:
         """
         Handle toggle recording action.
         """
         self.toggle_recording_signal.emit()
 
+    @pyqtSlot()
     def _on_quit_application(self) -> None:
         """
         Handle quit application action.
         """
         self.quit_application_signal.emit()
 
+    @pyqtSlot(QSystemTrayIcon.ActivationReason)
     def _handle_tray_icon_activated(self, reason: QSystemTrayIcon.ActivationReason) -> None:
         """
         Handle activation of the tray icon.

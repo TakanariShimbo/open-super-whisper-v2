@@ -133,47 +133,32 @@ class APIKeyDialog(QDialog):
         self._controller.api_key_validated.connect(self._handle_api_key_validated)
         self._controller.api_key_invalid.connect(self._handle_api_key_invalid)
 
-    @pyqtSlot()
-    def _on_toggle_key_visibility(self) -> None:
+    def _get_entered_api_key(self) -> str:
         """
-        Handle key visibility toggle.
+        Get the entered API key.
+
+        Returns
+        -------
+        str
+            The entered API key
         """
-        if self._toggle_button.isChecked():
-            # Show API key
-            self._api_key_input.setEchoMode(QLineEdit.EchoMode.Normal)
-            self._toggle_button.setText("🔒")
-            self._toggle_button.setToolTip("Hide API Key")
-        else:
-            # Hide API key
-            self._api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
-            self._toggle_button.setText("👁️")
-            self._toggle_button.setToolTip("Show API Key")
+        return self._api_key_input.text().strip()
 
-    @pyqtSlot()
-    def _on_accept(self) -> None:
+    def _show_status_message(self, message: str) -> None:
         """
-        Handle dialog acceptance.
+        Display a message in the status label.
+
+        Parameters
+        ----------
+        message : str
+            The message to display
         """
-        entered_api_key = self._get_entered_api_key()
+        self._status_label.setText(message)
+        self._status_label.setVisible(True)
 
-        if not entered_api_key:
-            self._show_status_message(message="API key cannot be empty")
-            return
-
-        # Use controller to validate the key
-        self._controller.validate_api_key(api_key=entered_api_key)
-
-    @pyqtSlot()
-    def _on_reject(self) -> None:
-        """
-        Handle dialog rejection.
-        """
-        # Restore original state
-        self._controller.cancel()
-
-        # Reject the dialog
-        super().reject()
-
+    #
+    # Controller Events
+    #
     @pyqtSlot()
     def _handle_api_key_validated(self) -> None:
         """
@@ -202,28 +187,52 @@ class APIKeyDialog(QDialog):
         """
         self._show_status_message(message="Invalid API key. Please check and try again.")
 
-    def _get_entered_api_key(self) -> str:
+    #
+    # UI Events
+    #
+    @pyqtSlot()
+    def _on_toggle_key_visibility(self) -> None:
         """
-        Get the entered API key.
+        Handle key visibility toggle.
+        """
+        if self._toggle_button.isChecked():
+            # Show API key
+            self._api_key_input.setEchoMode(QLineEdit.EchoMode.Normal)
+            self._toggle_button.setText("🔒")
+            self._toggle_button.setToolTip("Hide API Key")
+        else:
+            # Hide API key
+            self._api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
+            self._toggle_button.setText("👁️")
+            self._toggle_button.setToolTip("Show API Key")
 
-        Returns
-        -------
-        str
-            The entered API key
+    #
+    # Open/Close Events
+    #
+    @pyqtSlot()
+    def _on_accept(self) -> None:
         """
-        return self._api_key_input.text().strip()
+        Handle dialog acceptance.
+        """
+        entered_api_key = self._get_entered_api_key()
 
-    def _show_status_message(self, message: str) -> None:
-        """
-        Display a message in the status label.
+        if not entered_api_key:
+            self._show_status_message(message="API key cannot be empty")
+            return
 
-        Parameters
-        ----------
-        message : str
-            The message to display
+        # Use controller to validate the key
+        self._controller.validate_api_key(api_key=entered_api_key)
+
+    @pyqtSlot()
+    def _on_reject(self) -> None:
         """
-        self._status_label.setText(message)
-        self._status_label.setVisible(True)
+        Handle dialog rejection.
+        """
+        # Restore original state
+        self._controller.cancel()
+
+        # Reject the dialog
+        super().reject()
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """

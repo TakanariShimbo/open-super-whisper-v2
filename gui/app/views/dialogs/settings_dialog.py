@@ -8,6 +8,7 @@ It allows users to configure application preferences like sound, indicator visib
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QWidget, QCheckBox, QDialogButtonBox, QGroupBox, QGridLayout
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtGui import QCloseEvent
+
 from ...controllers.dialogs.settings_dialog_controller import SettingsDialogController
 
 
@@ -42,7 +43,7 @@ class SettingsDialog(QDialog):
         self._connect_controller_signals()
 
         # Initialize UI states from controller
-        self._update_ui_from_settings()
+        self._update_checkboxes()
 
     def _init_ui(self) -> None:
         """
@@ -95,11 +96,11 @@ class SettingsDialog(QDialog):
         # Connect the controller's settings_updated signal to refresh the entire view
         self._controller.settings_updated.connect(self._handle_settings_updated)
 
-    def _update_ui_from_settings(self) -> None:
+    def _update_checkboxes(self) -> None:
         """
-        Update UI controls to reflect current settings.
+        Update the checkboxes to reflect the current settings.
         """
-        # Block signals to prevent feedback loops
+        # Block signals from the checkboxes
         self.sound_checkbox.blockSignals(True)
         self.indicator_checkbox.blockSignals(True)
         self.clipboard_checkbox.blockSignals(True)
@@ -109,18 +110,24 @@ class SettingsDialog(QDialog):
         self.indicator_checkbox.setChecked(self._controller.get_indicator_visible())
         self.clipboard_checkbox.setChecked(self._controller.get_auto_clipboard())
 
-        # Unblock signals
+        # Unblock signals from the checkboxes
         self.sound_checkbox.blockSignals(False)
         self.indicator_checkbox.blockSignals(False)
         self.clipboard_checkbox.blockSignals(False)
 
+    #
+    # Controller Events
+    #
     @pyqtSlot()
     def _handle_settings_updated(self) -> None:
         """
         Handle settings updated event.
         """
-        self._update_ui_from_settings()
+        self._update_checkboxes()
 
+    #
+    # UI Events
+    #
     @pyqtSlot(bool)
     def _on_toggle_sound(self, enabled: bool) -> None:
         """
@@ -157,6 +164,9 @@ class SettingsDialog(QDialog):
         """
         self._controller.set_auto_clipboard(enabled=enabled)
 
+    #
+    # Open/Close Events
+    #
     @pyqtSlot()
     def _on_accept(self) -> None:
         """
