@@ -47,7 +47,7 @@ class APIKeyDialog(QDialog):
 
         # Set initial message if provided
         if initial_message:
-            self.show_status_message(message=initial_message)
+            self._show_status_message(message=initial_message)
 
         # Initialize API key field
         current_api_key = self._controller.get_api_key()
@@ -154,10 +154,10 @@ class APIKeyDialog(QDialog):
         """
         Handle dialog acceptance.
         """
-        entered_api_key = self.get_entered_api_key()
+        entered_api_key = self._get_entered_api_key()
 
         if not entered_api_key:
-            self.show_status_message(message="API key cannot be empty")
+            self._show_status_message(message="API key cannot be empty")
             return
 
         # Use controller to validate the key
@@ -200,9 +200,9 @@ class APIKeyDialog(QDialog):
         api_key : str
             The invalid API key
         """
-        self.show_status_message(message="Invalid API key. Please check and try again.")
+        self._show_status_message(message="Invalid API key. Please check and try again.")
 
-    def get_entered_api_key(self) -> str:
+    def _get_entered_api_key(self) -> str:
         """
         Get the entered API key.
 
@@ -213,7 +213,7 @@ class APIKeyDialog(QDialog):
         """
         return self._api_key_input.text().strip()
 
-    def show_status_message(self, message: str) -> None:
+    def _show_status_message(self, message: str) -> None:
         """
         Display a message in the status label.
 

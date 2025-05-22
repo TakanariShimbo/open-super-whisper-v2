@@ -28,10 +28,8 @@ class InstructionDialogModel(QObject):
 
     Attributes
     -------
-    instruction_set_added : pyqtSignal(InstructionSet)
+    instruction_set_added : pyqtSignal(str)
         Signal emitted when an instruction set is added
-    instruction_set_updated : pyqtSignal(InstructionSet)
-        Signal emitted when an instruction set is updated
     instruction_set_deleted : pyqtSignal(str)
         Signal emitted when an instruction set is deleted
     instruction_set_renamed : pyqtSignal(str, str)
@@ -41,8 +39,7 @@ class InstructionDialogModel(QObject):
     """
 
     # Define signals
-    instruction_set_added = pyqtSignal(InstructionSet)
-    instruction_set_updated = pyqtSignal(InstructionSet)
+    instruction_set_added = pyqtSignal(str)  # Name of added set
     instruction_set_deleted = pyqtSignal(str)  # Name of deleted set
     instruction_set_renamed = pyqtSignal(str, str)  # Old name, new name
     hotkey_updated = pyqtSignal(str)  # Hotkey
@@ -169,7 +166,7 @@ class InstructionDialogModel(QObject):
             self._instruction_manager.save_to_settings()
 
             # Emit signal
-            self.instruction_set_added.emit(instruction_set)
+            self.instruction_set_added.emit(name)
 
         return result
 
@@ -203,9 +200,6 @@ class InstructionDialogModel(QObject):
         # Emit hotkey updated signal if hotkey was updated
         if "hotkey" in kwargs:
             self.hotkey_updated.emit(kwargs["hotkey"])
-
-        # Emit signal
-        self.instruction_set_updated.emit(instruction_set)
 
         return True
 
