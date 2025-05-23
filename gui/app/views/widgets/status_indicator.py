@@ -55,6 +55,9 @@ class StatusIndicatorWindow(QWidget):
         # Connect controller signals
         self._connect_controller_signals()
 
+    #
+    # UI Setup
+    #
     def _init_ui(self) -> None:
         """
         Initialize user interface components.
@@ -103,15 +106,6 @@ class StatusIndicatorWindow(QWidget):
         # Update indicator based on initial mode
         self._update_indicator()
 
-    def _connect_controller_signals(self) -> None:
-        """
-        Connect signals from controller to view methods.
-        """
-        # Connect controller signals to update view
-        self._controller.mode_changed.connect(self._handle_mode_changed)
-        self._controller.timer_updated.connect(self._handle_timer_updated)
-        self._controller.visibility_changed.connect(self._handle_visibility_changed)
-
     def _update_position(self) -> None:
         """
         Update window position to bottom right corner of screen.
@@ -139,16 +133,17 @@ class StatusIndicatorWindow(QWidget):
             self.status_label.setStyleSheet("color: #bbbbbb; font-weight: bold;")
             self.timer_label.setText("")
 
-    def get_controller(self) -> StatusIndicatorController:
+    #
+    # Controller Signals
+    #
+    def _connect_controller_signals(self) -> None:
         """
-        Get the controller associated with this view.
-
-        Returns
-        -------
-        StatusIndicatorController
-            The controller for this view
+        Connect signals from controller to view methods.
         """
-        return self._controller
+        # Connect controller signals to update view
+        self._controller.mode_changed.connect(self._handle_mode_changed)
+        self._controller.timer_updated.connect(self._handle_timer_updated)
+        self._controller.visibility_changed.connect(self._handle_visibility_changed)
 
     #
     # Controller Events
@@ -208,3 +203,17 @@ class StatusIndicatorWindow(QWidget):
         """
         super().showEvent(event)
         self._update_position()
+
+    #
+    # Get Controller
+    #
+    def get_controller(self) -> StatusIndicatorController:
+        """
+        Get the controller associated with this view.
+
+        Returns
+        -------
+        StatusIndicatorController
+            The controller for this view
+        """
+        return self._controller

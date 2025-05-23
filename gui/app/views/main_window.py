@@ -65,12 +65,15 @@ class MainWindow(QMainWindow):
         # Set up system tray
         self._setup_system_tray()
 
-        # Connect signals from controller
-        self._connect_controller_signals()
-
         # Register instruction set hotkeys
         self._register_hotkeys()
 
+        # Connect signals from controller
+        self._connect_controller_signals()
+
+    #
+    # UI Setup
+    #
     def _setup_ui(self) -> None:
         """
         Set up the user interface.
@@ -309,36 +312,6 @@ class MainWindow(QMainWindow):
         self._status_indicator = QLabel("Ready")
         self._status_bar.addPermanentWidget(self._status_indicator)
 
-    def _setup_system_tray(self) -> None:
-        """
-        Set up the system tray icon.
-        """
-        # Create system tray with the icon
-        self._system_tray = SystemTray(main_window=self)
-
-        # Connect system tray signals
-        self._system_tray.show_window_signal.connect(self._on_click_show_window)
-        self._system_tray.hide_window_signal.connect(self._on_click_hide_window)
-        self._system_tray.quit_application_signal.connect(self._on_click_quit_application)
-        self._system_tray.toggle_recording_signal.connect(self._on_click_record)
-
-        # Show system tray icon
-        self._system_tray.show()
-
-    def _connect_controller_signals(self) -> None:
-        """
-        Connect signals from the controller to the view slots.
-        """
-        self._controller.recording_started.connect(self._handle_recording_started)
-        self._controller.processing_started.connect(self._handle_processing_started)
-        self._controller.processing_completed.connect(self._handle_processing_completed)
-        self._controller.processing_cancelled.connect(self._handle_processing_cancelled)
-        self._controller.streaming_llm_chunk.connect(self._handle_streaming_llm_chunk)
-
-        self._controller.instruction_set_activated.connect(self._handle_instruction_set_activated)
-
-        self._controller.showing_message.connect(self._handle_showing_message)
-
     def _populate_instruction_set_combo(self) -> None:
         """
         Populate the instruction set combo box with available instruction sets.
@@ -367,6 +340,28 @@ class MainWindow(QMainWindow):
 
         self._instruction_set_combo.blockSignals(False)
 
+    #
+    # Tray Setup
+    #
+    def _setup_system_tray(self) -> None:
+        """
+        Set up the system tray icon.
+        """
+        # Create system tray with the icon
+        self._system_tray = SystemTray(main_window=self)
+
+        # Connect system tray signals
+        self._system_tray.show_window_signal.connect(self._on_click_show_window)
+        self._system_tray.hide_window_signal.connect(self._on_click_hide_window)
+        self._system_tray.quit_application_signal.connect(self._on_click_quit_application)
+        self._system_tray.toggle_recording_signal.connect(self._on_click_record)
+
+        # Show system tray icon
+        self._system_tray.show()
+
+    #
+    # Hotkeys
+    #
     def _register_hotkeys(self) -> None:
         """
         Register hotkeys for all instruction sets.
@@ -375,6 +370,26 @@ class MainWindow(QMainWindow):
             if instruction_set.hotkey:
                 self._controller.register_hotkey(hotkey=instruction_set.hotkey)
 
+    #
+    # Controller Signals
+    #
+    def _connect_controller_signals(self) -> None:
+        """
+        Connect signals from the controller to the view slots.
+        """
+        self._controller.recording_started.connect(self._handle_recording_started)
+        self._controller.processing_started.connect(self._handle_processing_started)
+        self._controller.processing_completed.connect(self._handle_processing_completed)
+        self._controller.processing_cancelled.connect(self._handle_processing_cancelled)
+        self._controller.streaming_llm_chunk.connect(self._handle_streaming_llm_chunk)
+
+        self._controller.instruction_set_activated.connect(self._handle_instruction_set_activated)
+
+        self._controller.showing_message.connect(self._handle_showing_message)
+
+    #
+    # Controller Events
+    #
     @pyqtSlot()
     def _handle_recording_started(self) -> None:
         """
@@ -519,6 +534,9 @@ class MainWindow(QMainWindow):
         """
         self._status_bar.showMessage(message, timeout)
 
+    #
+    # UI Events
+    #
     @pyqtSlot()
     def _on_click_api_key(self) -> None:
         """
@@ -592,6 +610,9 @@ class MainWindow(QMainWindow):
         ClipboardUtils.set_text(text=self._llm_text.markdown_text())
         self._status_bar.showMessage("LLM output copied to clipboard", 2000)
 
+    #
+    # Open/Close Events
+    #
     @pyqtSlot()
     def _on_click_show_window(self) -> None:
         """

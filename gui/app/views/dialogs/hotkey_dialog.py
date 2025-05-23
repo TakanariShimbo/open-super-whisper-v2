@@ -68,6 +68,9 @@ class HotkeyDialog(QDialog):
         self._capture_timer.setInterval(100)  # 100ms interval
         self._capture_timer.timeout.connect(self._on_capture_timer)
 
+    #
+    # UI Setup
+    #
     def _init_ui(self) -> None:
         """
         Initialize the user interface.
@@ -138,6 +141,9 @@ class HotkeyDialog(QDialog):
         layout.addWidget(tips_label)
         layout.addWidget(button_box)
 
+    #
+    # Controller Signals
+    #
     def _connect_controller_signals(self) -> None:
         """
         Connect signals from the controller.
@@ -145,44 +151,6 @@ class HotkeyDialog(QDialog):
         self._controller.hotkey_changed.connect(self._handle_hotkey_changed)
         self._controller.hotkey_captured.connect(self._handle_hotkey_captured)
         self._controller.validation_error.connect(self._handle_validation_error)
-
-    def _start_capture_mode(self) -> None:
-        """
-        Start key capture mode.
-        """
-        # Update button text
-        self._capture_button.setText("Stop Capturing")
-
-        # Apply capture style to input field
-        self._hotkey_display.setStyleSheet(self._capture_style)
-        self._hotkey_display.setPlaceholderText("Press keys to capture hotkey...")
-
-        # Give focus to the display field
-        self._hotkey_display.setFocus()
-
-        # Start key capture in controller
-        self._controller.start_capturing()
-
-        # Start capture timer
-        self._capture_timer.start()
-
-    def _stop_capture_mode(self) -> None:
-        """
-        Stop key capture mode.
-        """
-        # Update button state and text
-        self._capture_button.setChecked(False)
-        self._capture_button.setText("Capture")
-
-        # Restore normal style
-        self._hotkey_display.setStyleSheet(self._normal_style)
-        self._hotkey_display.setPlaceholderText("Click to capture keys")
-
-        # Stop key capture in controller
-        self._controller.stop_capturing()
-
-        # Stop capture timer
-        self._capture_timer.stop()
 
     #
     # Controller Events
@@ -231,6 +199,44 @@ class HotkeyDialog(QDialog):
     #
     # UI Events
     #
+    def _start_capture_mode(self) -> None:
+        """
+        Start key capture mode.
+        """
+        # Update button text
+        self._capture_button.setText("Stop Capturing")
+
+        # Apply capture style to input field
+        self._hotkey_display.setStyleSheet(self._capture_style)
+        self._hotkey_display.setPlaceholderText("Press keys to capture hotkey...")
+
+        # Give focus to the display field
+        self._hotkey_display.setFocus()
+
+        # Start key capture in controller
+        self._controller.start_capturing()
+
+        # Start capture timer
+        self._capture_timer.start()
+
+    def _stop_capture_mode(self) -> None:
+        """
+        Stop key capture mode.
+        """
+        # Update button state and text
+        self._capture_button.setChecked(False)
+        self._capture_button.setText("Capture")
+
+        # Restore normal style
+        self._hotkey_display.setStyleSheet(self._normal_style)
+        self._hotkey_display.setPlaceholderText("Click to capture keys")
+
+        # Stop key capture in controller
+        self._controller.stop_capturing()
+
+        # Stop capture timer
+        self._capture_timer.stop()
+
     @pyqtSlot(bool)
     def _on_toggle_capture(self, checked: bool) -> None:
         """

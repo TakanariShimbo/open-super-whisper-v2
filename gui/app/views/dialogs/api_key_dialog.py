@@ -54,6 +54,21 @@ class APIKeyDialog(QDialog):
         if current_api_key:
             self._api_key_input.setText(current_api_key)
 
+    def _show_status_message(self, message: str) -> None:
+        """
+        Display a message in the status label.
+
+        Parameters
+        ----------
+        message : str
+            The message to display
+        """
+        self._status_label.setText(message)
+        self._status_label.setVisible(True)
+
+    #
+    # UI Setup
+    #
     def _init_ui(self) -> None:
         """
         Initialize the dialog UI components.
@@ -125,6 +140,9 @@ class APIKeyDialog(QDialog):
 
         self.setLayout(layout)
 
+    #
+    # Controller Signals
+    #
     def _connect_controller_signals(self) -> None:
         """
         Connect signals from the controller.
@@ -132,29 +150,6 @@ class APIKeyDialog(QDialog):
         # Connect controller signals to view methods
         self._controller.api_key_validated.connect(self._handle_api_key_validated)
         self._controller.api_key_invalid.connect(self._handle_api_key_invalid)
-
-    def _get_entered_api_key(self) -> str:
-        """
-        Get the entered API key.
-
-        Returns
-        -------
-        str
-            The entered API key
-        """
-        return self._api_key_input.text().strip()
-
-    def _show_status_message(self, message: str) -> None:
-        """
-        Display a message in the status label.
-
-        Parameters
-        ----------
-        message : str
-            The message to display
-        """
-        self._status_label.setText(message)
-        self._status_label.setVisible(True)
 
     #
     # Controller Events
@@ -209,6 +204,17 @@ class APIKeyDialog(QDialog):
     #
     # Open/Close Events
     #
+    def _get_entered_api_key(self) -> str:
+        """
+        Get the entered API key.
+
+        Returns
+        -------
+        str
+            The entered API key
+        """
+        return self._api_key_input.text().strip()
+
     @pyqtSlot()
     def _on_accept(self) -> None:
         """

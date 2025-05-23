@@ -39,12 +39,15 @@ class SettingsDialog(QDialog):
         # Set up UI
         self._init_ui()
 
-        # Connect controller signals
-        self._connect_controller_signals()
-
         # Initialize UI states from controller
         self._update_checkboxes()
 
+        # Connect controller signals
+        self._connect_controller_signals()
+
+    #
+    # UI Setup
+    #
     def _init_ui(self) -> None:
         """
         Initialize the dialog UI components.
@@ -89,13 +92,6 @@ class SettingsDialog(QDialog):
         layout.addWidget(settings_group)
         layout.addWidget(button_box)
 
-    def _connect_controller_signals(self) -> None:
-        """
-        Connect signals from the controller.
-        """
-        # Connect the controller's settings_updated signal to refresh the entire view
-        self._controller.settings_updated.connect(self._handle_settings_updated)
-
     def _update_checkboxes(self) -> None:
         """
         Update the checkboxes to reflect the current settings.
@@ -114,6 +110,16 @@ class SettingsDialog(QDialog):
         self.sound_checkbox.blockSignals(False)
         self.indicator_checkbox.blockSignals(False)
         self.clipboard_checkbox.blockSignals(False)
+
+    #
+    # Controller Signals
+    #
+    def _connect_controller_signals(self) -> None:
+        """
+        Connect signals from the controller.
+        """
+        # Connect the controller's settings_updated signal to refresh the entire view
+        self._controller.settings_updated.connect(self._handle_settings_updated)
 
     #
     # Controller Events

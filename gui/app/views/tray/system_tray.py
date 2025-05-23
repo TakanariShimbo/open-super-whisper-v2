@@ -64,6 +64,9 @@ class SystemTray(QSystemTrayIcon):
         # Create the tray menu
         self._create_tray_menu()
 
+    #
+    # UI Setup
+    #
     def _set_icon(self) -> None:
         """
         Set the system tray icon.
@@ -151,6 +154,9 @@ class SystemTray(QSystemTrayIcon):
             # Single click - toggle window visibility
             self.show_window_signal.emit()
 
+    #
+    # Controller Methods
+    #
     def update_recording_status(self, status: Literal["start_recording", "stop_recording", "cancel_processing"]) -> None:
         """
         Update the recording action text based on recording status.
