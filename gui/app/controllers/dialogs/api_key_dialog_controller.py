@@ -24,7 +24,9 @@ class APIKeyDialogController(QObject):
         Signal emitted when an API key validation fails
     """
 
-    # Define signals
+    #
+    # Signals
+    #
     api_key_validated = pyqtSignal()
     api_key_invalid = pyqtSignal()
 
@@ -42,6 +44,9 @@ class APIKeyDialogController(QObject):
         # Initialize the model
         self._model = APIKeyDialogModel(api_key_dialog=api_key_dialog)
 
+    #
+    # Controller Methods
+    #
     def validate_api_key(self, api_key: str) -> bool:
         """
         Validate the given API key.

@@ -17,9 +17,20 @@ class StatusIndicatorController(QObject):
     This class handles interactions between the status indicator model
     and provides methods for the view to control the status indicator.
     It serves as a mediator between the model and the view.
+
+    Attributes
+    ----------
+    mode_changed : pyqtSignal
+        Signal emitted when the mode changes
+    timer_updated : pyqtSignal
+        Signal emitted when the timer updates
+    visibility_changed : pyqtSignal
+        Signal emitted when the visibility changes
     """
 
-    # Define signals for view communication
+    #
+    # Signals
+    #
     mode_changed = pyqtSignal(int)  # mode
     timer_updated = pyqtSignal(str)  # time_string
     visibility_changed = pyqtSignal(bool)  # visible
@@ -41,6 +52,9 @@ class StatusIndicatorController(QObject):
         # Connect model signals to controller handlers
         self._connect_model_signals()
 
+    #
+    # Model Signals
+    #
     def _connect_model_signals(self) -> None:
         """
         Connect signals from the model to controller handlers.
@@ -50,6 +64,9 @@ class StatusIndicatorController(QObject):
         self._model.timer_updated.connect(self._handle_timer_updated)
         self._model.visibility_changed.connect(self._handle_visibility_changed)
 
+    #
+    # Model Events
+    #
     @pyqtSlot(int)
     def _handle_mode_changed(self, mode: int) -> None:
         """
@@ -88,6 +105,9 @@ class StatusIndicatorController(QObject):
         """
         self.visibility_changed.emit(visible)
 
+    #
+    # Controller Methods
+    #
     def start_recording(self) -> None:
         """
         Start recording mode and timer.

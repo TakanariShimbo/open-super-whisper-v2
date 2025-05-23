@@ -46,6 +46,9 @@ class MainController(QObject):
         Signal emitted when there's a message to show in the UI
     """
 
+    #
+    # Signals
+    #
     # Pipeline signals
     recording_started = pyqtSignal()
     processing_started = pyqtSignal()
@@ -81,16 +84,20 @@ class MainController(QObject):
             api_key=api_key,
             main_window=main_window,
         )
-        # Set up model connections
-        self._setup_model_connections()
 
-        # Create status indicator view using factory and get controller
+        # Connect model signals
+        self._connect_model_signals()
+
+        # Create status indicator view and controller
         self._status_indicator_view = StatusIndicatorFactory.create_indicator(main_window=main_window)
         self._status_indicator_controller = self._status_indicator_view.get_controller()
 
-    def _setup_model_connections(self) -> None:
+    #
+    # Model Signals
+    #
+    def _connect_model_signals(self) -> None:
         """
-        Set up connections between model and controller.
+        Connect signals from the model to the controller.
         """
         # Pipeline signals
         self._model.processing_started.connect(self.processing_started)
@@ -105,30 +112,9 @@ class MainController(QObject):
         # Hotkey signals
         self._model.hotkey_triggered.connect(self._handle_hotkey_triggered)
 
-    @property
-    def is_recording(self) -> bool:
-        """
-        Check if recording is in progress.
-
-        Returns
-        -------
-        bool
-            True if recording is in progress, False otherwise
-        """
-        return self._model.is_recording
-
-    @property
-    def is_processing(self) -> bool:
-        """
-        Check if audio processing is in progress.
-
-        Returns
-        -------
-        bool
-            True if processing is in progress, False otherwise
-        """
-        return self._model.is_processing
-
+    #
+    # Model Events
+    #
     @pyqtSlot(str)
     def _handle_instruction_set_activated(self, set_name: str) -> None:
         """
@@ -216,6 +202,33 @@ class MainController(QObject):
         if instruction_set is None:
             return
         self.start_recording(set_name=instruction_set.name, hotkey=hotkey)
+
+    #
+    # Controller Methods
+    #
+    @property
+    def is_recording(self) -> bool:
+        """
+        Check if recording is in progress.
+
+        Returns
+        -------
+        bool
+            True if recording is in progress, False otherwise
+        """
+        return self._model.is_recording
+
+    @property
+    def is_processing(self) -> bool:
+        """
+        Check if audio processing is in progress.
+
+        Returns
+        -------
+        bool
+            True if processing is in progress, False otherwise
+        """
+        return self._model.is_processing
 
     def reinit_pipeline(self, api_key: str) -> None:
         """
@@ -389,13 +402,6 @@ class MainController(QObject):
 
         return result
 
-    def shutdown(self) -> None:
-        """
-        Clean up resources when the application is shutting down.
-        """
-        # Forward to model to handle cleanup
-        self._model.shutdown()
-
     def show_api_key_dialog(self, main_window: QWidget | None = None) -> bool:
         """
         Show the API key dialog.
@@ -488,3 +494,10 @@ class MainController(QObject):
             return True
         else:
             return False
+
+    def shutdown(self) -> None:
+        """
+        Clean up resources when the application is shutting down.
+        """
+        # Forward to model to handle cleanup
+        self._model.shutdown()

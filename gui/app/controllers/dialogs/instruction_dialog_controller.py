@@ -37,7 +37,9 @@ class InstructionDialogController(QObject):
         Signal emitted with the result of an operation
     """
 
-    # Define signals
+    #
+    # Signals
+    #
     instruction_set_added = pyqtSignal(str)  # Name of added set
     instruction_set_deleted = pyqtSignal(str)  # Name of deleted set
     instruction_set_renamed = pyqtSignal(str, str)  # Old name, new name
@@ -63,6 +65,9 @@ class InstructionDialogController(QObject):
         # Currently selected set name
         self._selected_set_name = ""
 
+    #
+    # Model Signals
+    #
     def _connect_model_signals(self) -> None:
         """
         Connect signals from the model.
@@ -72,6 +77,9 @@ class InstructionDialogController(QObject):
         self._model.instruction_set_renamed.connect(self._handle_instruction_set_renamed)
         self._model.hotkey_updated.connect(self._handle_hotkey_updated)
 
+    #
+    # Model Events
+    #
     @pyqtSlot(str)
     def _handle_instruction_set_added(self, name: str) -> None:
         """
@@ -136,6 +144,9 @@ class InstructionDialogController(QObject):
             # Register the hotkey
             self._model.register_hotkey(hotkey=hotkey)
 
+    #
+    # Controller Methods
+    #
     def get_available_stt_languages(self) -> list[STTLangModel]:
         """
         Get available languages for speech recognition.

@@ -23,7 +23,9 @@ class SettingsDialogController(QObject):
         Signal emitted when any settings are updated
     """
 
-    # Define single signal for view communication
+    #
+    # Signals
+    #
     settings_updated = pyqtSignal()
 
     def __init__(self, settings_dialog: QObject | None = None) -> None:
@@ -43,6 +45,9 @@ class SettingsDialogController(QObject):
         # Connect model signals
         self._connect_model_signals()
 
+    #
+    # Model Signals
+    #
     def _connect_model_signals(self) -> None:
         """
         Connect signals from the model to controller handlers.
@@ -50,6 +55,9 @@ class SettingsDialogController(QObject):
         # Connect the model's settings_updated signal to our handler
         self._dialog_model.settings_updated.connect(self._handle_settings_updated)
 
+    #
+    # Model Events
+    #
     @pyqtSlot()
     def _handle_settings_updated(self) -> None:
         """
@@ -58,6 +66,9 @@ class SettingsDialogController(QObject):
         # Notify view that settings have changed
         self.settings_updated.emit()
 
+    #
+    # Controller Methods
+    #
     def get_sound_enabled(self) -> bool:
         """
         Get current sound enabled setting.
