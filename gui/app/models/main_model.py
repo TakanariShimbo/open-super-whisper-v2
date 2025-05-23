@@ -115,12 +115,15 @@ class MainModel(QObject):
     # Pipeline signals
     processing_error = pyqtSignal(str)
     processing_started = pyqtSignal()
-    processing_complete = pyqtSignal(PipelineResult)
+    processing_completed = pyqtSignal(PipelineResult)
     processing_cancelled = pyqtSignal()
     streaming_llm_chunk = pyqtSignal(str)
 
     # Instruction set signals
     instruction_set_activated = pyqtSignal(str)
+
+    # Hotkey signals
+    hotkey_triggered = pyqtSignal(str)
 
     def __init__(
         self,
@@ -308,7 +311,7 @@ class MainModel(QObject):
             self._processor.deleteLater()
             self._processor = None
 
-        self.processing_complete.emit(result)
+        self.processing_completed.emit(result)
 
     def _on_processing_failed(self, error: str) -> None:
         """
@@ -453,6 +456,18 @@ class MainModel(QObject):
     #
     # Hotkey methods
     #
+    def _on_hotkey_triggered(self, hotkey: str) -> None:
+        """
+        Handle hotkey triggered events from the keyboard manager.
+
+        Parameters
+        ----------
+        hotkey: str
+            The hotkey that was triggered
+        """
+        # Forward the hotkey triggered signal
+        self.hotkey_triggered.emit(hotkey)
+
     @property
     def is_filter_mode(self) -> bool:
         """

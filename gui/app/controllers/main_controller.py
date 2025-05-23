@@ -49,7 +49,7 @@ class MainController(QObject):
     # Pipeline signals
     recording_started = pyqtSignal()
     processing_started = pyqtSignal()
-    processing_complete = pyqtSignal(PipelineResult)
+    processing_completed = pyqtSignal(PipelineResult)
     processing_cancelled = pyqtSignal()
     streaming_llm_chunk = pyqtSignal(str)
 
@@ -94,13 +94,16 @@ class MainController(QObject):
         """
         # Pipeline signals
         self._model.processing_started.connect(self.processing_started)
-        self._model.processing_complete.connect(self._handle_processing_complete)
+        self._model.processing_completed.connect(self._handle_processing_completed)
         self._model.processing_cancelled.connect(self._handle_processing_cancelled)
         self._model.processing_error.connect(lambda error: self.showing_message.emit(f"Error: {error}", 3000))
         self._model.streaming_llm_chunk.connect(self._handle_streamling_llm_chunk)
 
         # Instruction set signals
         self._model.instruction_set_activated.connect(self._handle_instruction_set_activated)
+
+        # Hotkey signals
+        self._model.hotkey_triggered.connect(self._handle_hotkey_triggered)
 
     @property
     def is_recording(self) -> bool:
@@ -147,7 +150,7 @@ class MainController(QObject):
         self.streaming_llm_chunk.emit(chunk)
 
     @pyqtSlot(PipelineResult)
-    def _handle_processing_complete(self, result: PipelineResult) -> None:
+    def _handle_processing_completed(self, result: PipelineResult) -> None:
         """
         Handle processing completion.
 
@@ -175,7 +178,7 @@ class MainController(QObject):
         self._model.disable_filtered_mode_and_start_listening()
 
         # Forward the signal to views
-        self.processing_complete.emit(result)
+        self.processing_completed.emit(result)
 
     @pyqtSlot()
     def _handle_processing_cancelled(self) -> None:

@@ -331,7 +331,7 @@ class MainWindow(QMainWindow):
         """
         self._controller.recording_started.connect(self._handle_recording_started)
         self._controller.processing_started.connect(self._handle_processing_started)
-        self._controller.processing_complete.connect(self._handle_processing_complete)
+        self._controller.processing_completed.connect(self._handle_processing_completed)
         self._controller.processing_cancelled.connect(self._handle_processing_cancelled)
         self._controller.streaming_llm_chunk.connect(self._handle_streaming_llm_chunk)
 
@@ -431,9 +431,9 @@ class MainWindow(QMainWindow):
         self._audio_manager.play_cancel_processing()
 
     @pyqtSlot(PipelineResult)
-    def _handle_processing_complete(self, result: PipelineResult) -> None:
+    def _handle_processing_completed(self, result: PipelineResult) -> None:
         """
-        Handle the processing complete event.
+        Handle the processing completed event.
 
         Parameters
         ----------
@@ -464,7 +464,7 @@ class MainWindow(QMainWindow):
         self._system_tray.update_recording_status("start_recording")
 
         # Update status bar to show completion
-        self._status_bar.showMessage("Processing complete", 3000)
+        self._status_bar.showMessage("Processing completed", 3000)
 
         # Play completion sound
         self._audio_manager.play_complete_processing()
