@@ -49,7 +49,7 @@ class SingleInstance:
                 # Shared memory already exists - another instance is running
                 return True
             else:
-                # Create new shared memory segment
+                # Create only 1 byte shared memory segment to indicate that the application is running
                 self._shared_memory.create(1)
                 return False
         except Exception:
