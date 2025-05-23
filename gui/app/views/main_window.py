@@ -187,7 +187,6 @@ class MainWindow(QMainWindow):
         instruction_set_label = QLabel("Instruction Set:")
         self._instruction_set_combo = QComboBox()
         self._instruction_set_combo.setMinimumWidth(200)
-        self._instruction_set_combo.currentIndexChanged.connect(self._on_instruction_set_changed)
         form_layout.addRow(instruction_set_label, self._instruction_set_combo)
 
         return instruction_set_form
@@ -370,13 +369,11 @@ class MainWindow(QMainWindow):
         """
         # Recording signals
         self._controller.recording_started.connect(self._handle_recording_started)
-        self._controller.recording_stopped.connect(self._handle_recording_stopped)
 
         # Processing signals
         self._controller.processing_started.connect(self._handle_processing_started)
         self._controller.processing_complete.connect(self._handle_processing_complete)
         self._controller.processing_cancelled.connect(self._handle_processing_cancelled)
-        self._controller.processing_state_changed.connect(self._handle_processing_state_changed)
 
         # Status update signal
         self._controller.status_update.connect(self._handle_update_status)
@@ -431,81 +428,53 @@ class MainWindow(QMainWindow):
         """
         Handle the recording started event.
         """
+        # Update button and indicator text
         self._record_button.setText("Stop Recording")
         self._status_indicator.setText("Recording...")
 
         # Update system tray recording status
         self._system_tray.update_recording_status("stop_recording")
 
+        # Disable instruction set selection during processing
+        self._instruction_set_combo.setEnabled(False)
+
         # Play recording start sound
         self._audio_manager.play_start_recording()
-
-    @pyqtSlot()
-    def _handle_recording_stopped(self) -> None:
-        """
-        Handle the recording stopped event.
-        """
-        # Don't update button text here since we might be going into processing state
-        self._status_indicator.setText("Processing...")
-
-        # Play recording stop sound
-        self._audio_manager.play_stop_recording()
 
     @pyqtSlot()
     def _handle_processing_started(self) -> None:
         """
         Handle the processing started event.
         """
+        # Update button and indicator text
         self._record_button.setText("Cancel Processing")
         self._status_indicator.setText("Processing...")
 
         # Update system tray recording status
         self._system_tray.update_recording_status("cancel_processing")
 
-        # Disable instruction set selection during processing
-        self._instruction_set_combo.setEnabled(False)
-
         # Clear the LLM text to prepare for streaming updates
+        self._stt_text.clear()
         self._llm_text.clear()
 
-    @pyqtSlot(bool)
-    def _handle_processing_state_changed(self, is_processing: bool) -> None:
-        """
-        Handle changes in processing state.
-
-        Parameters
-        ----------
-        is_processing : bool
-            Whether processing is currently active
-        """
-        if is_processing:
-            # Processing started
-            self._record_button.setText("Cancel Processing")
-            self._status_indicator.setText("Processing...")
-            # Disable instruction set selection during processing
-            self._instruction_set_combo.setEnabled(False)
-            # Update system tray recording status
-            self._system_tray.update_recording_status("cancel_processing")
-        else:
-            # Processing stopped
-            self._record_button.setText("Start Recording")
-            self._status_indicator.setText("Ready")
-            # Re-enable instruction set selection
-            self._instruction_set_combo.setEnabled(True)
-            # Update system tray recording status
-            self._system_tray.update_recording_status("start_recording")
+        # Play recording stop sound
+        self._audio_manager.play_stop_recording()
 
     @pyqtSlot()
     def _handle_processing_cancelled(self) -> None:
         """
         Handle processing cancelled event.
         """
+        # Update button and indicator text
         self._record_button.setText("Start Recording")
         self._status_indicator.setText("Cancelled")
+
         # Re-enable instruction set selection
         self._instruction_set_combo.setEnabled(True)
+
         # Update system tray recording status
         self._system_tray.update_recording_status("start_recording")
+
         # Play cancel processing sound
         self._audio_manager.play_cancel_processing()
 
@@ -522,27 +491,26 @@ class MainWindow(QMainWindow):
         # Update the STT output text
         self._stt_text.set_markdown_text(markdown_text=result.stt_output)
 
-        # For LLM text, if streaming was used, the text is already in the UI
-        # Only update if it's different from the streaming result
         if result.is_llm_processed and result.llm_output:
-            current_markdown = self._llm_text.markdown_text()
-            if current_markdown != result.llm_output:
-                self._llm_text.set_markdown_text(markdown_text=result.llm_output)
+            # Set the LLM output text
+            self._llm_text.set_markdown_text(markdown_text=result.llm_output)
 
             # Stay on or switch to LLM tab
             self._tab_widget.setCurrentIndex(1)
         else:
-            # No LLM processing, clear any existing text
-            self._llm_text.clear()
-            self._tab_widget.setCurrentIndex(0)  # Switch to STT output tab
+            # No LLM processing, switch to STT output tab
+            self._tab_widget.setCurrentIndex(0)
 
         # Reset button state and status indicator
         self._record_button.setText("Start Recording")
         self._status_indicator.setText("Ready")
+
         # Re-enable instruction set selection
         self._instruction_set_combo.setEnabled(True)
+
         # Update system tray recording status
         self._system_tray.update_recording_status("start_recording")
+
         # Update status bar to show completion
         self._status_bar.showMessage("Processing complete", 3000)
 
@@ -563,25 +531,22 @@ class MainWindow(QMainWindow):
         """
         self._status_bar.showMessage(message, timeout)
 
-    @pyqtSlot(InstructionSet)
-    def _handle_instruction_set_activated(self, instruction_set: InstructionSet) -> None:
+    @pyqtSlot(str)
+    def _handle_instruction_set_activated(self, set_name: str) -> None:
         """
         Handle instruction set activation.
 
         Parameters
         ----------
-        instruction_set : InstructionSet
-            The activated instruction set
+        set_name : str
+            The name of the activated instruction set
         """
         # Update the combo box
         self._instruction_set_combo.blockSignals(True)
-        index = self._instruction_set_combo.findText(instruction_set.name)
+        index = self._instruction_set_combo.findText(set_name)
         if index >= 0:
             self._instruction_set_combo.setCurrentIndex(index)
         self._instruction_set_combo.blockSignals(False)
-
-        # Show status message
-        self._status_bar.showMessage(f"Instruction set activated: {instruction_set.name}", 3000)
 
     @pyqtSlot(str)
     def _handle_hotkey_triggered(self, hotkey: str) -> None:
@@ -613,12 +578,6 @@ class MainWindow(QMainWindow):
         # Append the new chunk to the LLM text
         self._llm_text.append_markdown(text=chunk)
 
-        # Update status indicator to show streaming progress
-        self._status_indicator.setText("LLM Streaming...")
-
-        # Update status bar with a message
-        self._status_bar.showMessage("Receiving LLM response...", 1000)
-
     @pyqtSlot()
     def _on_click_api_key(self) -> None:
         """
@@ -626,7 +585,7 @@ class MainWindow(QMainWindow):
         """
         # Use the controller's API key settings method
         if self._controller.show_api_key_dialog(main_window=self):
-            self._status_bar.showMessage("API key updated successfully", 2000)
+            self._status_bar.showMessage("API key updated", 2000)
         else:
             self._status_bar.showMessage("Failed to update API key", 2000)
 
@@ -651,31 +610,30 @@ class MainWindow(QMainWindow):
             # Settings were updated
             self._status_bar.showMessage("Settings updated", 2000)
 
-    @pyqtSlot(int)
-    def _on_instruction_set_changed(self, index: int) -> None:
-        """
-        Handle instruction set selection change.
-
-        Parameters
-        ----------
-        index : int
-            The index of the selected item
-        """
-        if index < 0:
-            return
-
-        # Get the selected instruction set name
-        name = self._instruction_set_combo.itemText(index)
-
-        # Set the selected instruction set
-        self._controller.select_instruction_set(name=name)
-
     @pyqtSlot()
     def _on_click_record(self) -> None:
         """
         Handle the record button click event.
         """
-        self._controller.toggle_recording()
+        # If processing is active, cancel it
+        if self._controller.is_processing:
+            self._controller.cancel_processing()
+            return
+
+        # If recording is active, stop it
+        if self._controller.is_recording:
+            self._controller.stop_recording()
+            return
+
+        # Otherwise start recording
+        index = self._instruction_set_combo.currentIndex()
+        if index < 0:
+            return
+        name = self._instruction_set_combo.itemText(index)
+        instruction_set = self._controller.get_instruction_set_by_name(name=name)
+        if instruction_set is None:
+            return
+        self._controller.start_recording(set_name=name, hotkey=instruction_set.hotkey)
 
     @pyqtSlot()
     def _on_click_copy_stt(self) -> None:

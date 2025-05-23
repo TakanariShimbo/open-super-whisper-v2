@@ -112,10 +112,6 @@ class MainModel(QObject):
     llm_stream_chunk: pyqtSignal
         Signal emitted when a chunk is received from the LLM stream
 
-    # Instruction set signals
-    instruction_set_activated: pyqtSignal
-        Signal emitted when an instruction set is activated
-
     # Hotkey signals
     hotkey_triggered: pyqtSignal
         Signal emitted when a hotkey is triggered
@@ -126,11 +122,10 @@ class MainModel(QObject):
     processing_started = pyqtSignal()
     processing_complete = pyqtSignal(PipelineResult)
     processing_cancelled = pyqtSignal()
-    processing_state_changed = pyqtSignal(bool)
     llm_stream_chunk = pyqtSignal(str)
 
     # Instruction set signals
-    instruction_set_activated = pyqtSignal(InstructionSet)
+    instruction_set_activated = pyqtSignal(str)
 
     # Hotkey signals
     hotkey_triggered = pyqtSignal(str)
@@ -209,11 +204,6 @@ class MainModel(QObject):
             The new API key to use
         """
         self._pipeline = Pipeline(api_key=api_key)
-
-        # Apply the selected instruction set if available
-        selected_set = self.get_selected_instruction_set()
-        if selected_set:
-            self.apply_instruction_set(instruction_set=selected_set)
 
     def apply_instruction_set(self, instruction_set: InstructionSet) -> bool:
         """
@@ -308,7 +298,6 @@ class MainModel(QObject):
 
         try:
             # Update state
-            self.processing_state_changed.emit(True)
             self.processing_started.emit()
 
             # Create and configure worker thread
@@ -331,7 +320,6 @@ class MainModel(QObject):
             return True
 
         except Exception as e:
-            self.processing_state_changed.emit(False)
             self.processing_error.emit(f"Error processing audio: {str(e)}")
             self._processor = None
             return False
@@ -345,8 +333,6 @@ class MainModel(QObject):
         result: PipelineResult
             The result of the processing
         """
-        self.processing_state_changed.emit(False)
-
         if self._processor:
             self._processor.deleteLater()
             self._processor = None
@@ -362,8 +348,6 @@ class MainModel(QObject):
         error: str
             The error message
         """
-        self.processing_state_changed.emit(False)
-
         if self._processor:
             self._processor.deleteLater()
             self._processor = None
@@ -389,7 +373,6 @@ class MainModel(QObject):
         self._processor = None
 
         # Update state
-        self.processing_state_changed.emit(False)
         self.processing_cancelled.emit()
 
         return True
@@ -422,7 +405,7 @@ class MainModel(QObject):
         InstructionSet | None
             The instruction set with the specified name, or None if not found
         """
-        return self._instruction_sets_manager.find_set_by_name(name)
+        return self._instruction_sets_manager.find_set_by_name(name=name)
 
     def get_instruction_set_by_hotkey(self, hotkey: str) -> InstructionSet | None:
         """
@@ -480,13 +463,13 @@ class MainModel(QObject):
         if not is_success:
             return False
 
-        # Emit the instruction set activated signal
-        self.instruction_set_activated.emit(self._instruction_sets_manager.get_selected_set())
-
         # Apply the instruction set to the pipeline
         selected_set = self.get_selected_instruction_set()
         if selected_set:
             self.apply_instruction_set(instruction_set=selected_set)
+
+        # Emit the instruction set activated signal
+        self.instruction_set_activated.emit(name)
 
         return True
 

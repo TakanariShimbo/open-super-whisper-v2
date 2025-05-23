@@ -34,20 +34,14 @@ class MainController(QObject):
     ----------
     recording_started : pyqtSignal
         Signal emitted when recording starts
-    recording_stopped : pyqtSignal
-        Signal emitted when recording stops
     processing_started : pyqtSignal
         Signal emitted when audio processing starts
     processing_complete : pyqtSignal
         Signal emitted when processing completes with results
     processing_cancelled : pyqtSignal
         Signal emitted when processing is cancelled
-    processing_state_changed : pyqtSignal
-        Signal emitted when processing state changes (is_processing)
     status_update : pyqtSignal
         Signal emitted when there's a status update for the UI
-    instruction_set_activated : pyqtSignal
-        Signal emitted when an instruction set is activated
     hotkey_triggered : pyqtSignal
         Signal emitted when a hotkey is triggered
     llm_stream_update : pyqtSignal
@@ -56,13 +50,11 @@ class MainController(QObject):
 
     # Define signals for view communication
     recording_started = pyqtSignal()
-    recording_stopped = pyqtSignal()
     processing_started = pyqtSignal()
     processing_complete = pyqtSignal(PipelineResult)
     processing_cancelled = pyqtSignal()
-    processing_state_changed = pyqtSignal(bool)  # is_processing
     status_update = pyqtSignal(str, int)  # message, timeout
-    instruction_set_activated = pyqtSignal(InstructionSet)
+    instruction_set_activated = pyqtSignal(str)
     hotkey_triggered = pyqtSignal(str)
     llm_stream_update = pyqtSignal(str)  # Signal for streaming LLM updates
 
@@ -103,12 +95,11 @@ class MainController(QObject):
         self._model.processing_started.connect(self.processing_started)
         self._model.processing_complete.connect(self._handle_processing_complete)
         self._model.processing_cancelled.connect(self._handle_processing_cancelled)
-        self._model.processing_state_changed.connect(self._handle_processing_state_change)
         self._model.processing_error.connect(lambda error: self.status_update.emit(f"Error: {error}", 3000))
         self._model.llm_stream_chunk.connect(self._handle_llm_stream_chunk)
 
         # Instruction set signals
-        self._model.instruction_set_activated.connect(self.instruction_set_activated)
+        self._model.instruction_set_activated.connect(self._handle_instruction_set_activated)
 
         # Hotkey signals
         self._model.hotkey_triggered.connect(self._handle_hotkey_triggered)
@@ -138,6 +129,13 @@ class MainController(QObject):
         return self._model.is_processing
 
     @pyqtSlot(str)
+    def _handle_instruction_set_activated(self, set_name: str) -> None:
+        """
+        Handle instruction set activation.
+        """
+        self.instruction_set_activated.emit(set_name)
+
+    @pyqtSlot(str)
     def _handle_llm_stream_chunk(self, chunk: str) -> None:
         """
         Handle streaming chunks from the LLM processor.
@@ -149,18 +147,6 @@ class MainController(QObject):
         """
         # Forward the stream chunk to any listening views
         self.llm_stream_update.emit(chunk)
-
-    @pyqtSlot(bool)
-    def _handle_processing_state_change(self, is_processing: bool) -> None:
-        """
-        Handle changes in processing state.
-
-        Parameters
-        ----------
-        is_processing : bool
-            Whether processing is currently active
-        """
-        self.processing_state_changed.emit(is_processing)
 
     @pyqtSlot(PipelineResult)
     def _handle_processing_complete(self, result: PipelineResult) -> None:
@@ -217,26 +203,25 @@ class MainController(QObject):
         # Emit the hotkey_triggered signal for view to handle
         self.hotkey_triggered.emit(hotkey)
 
-        # Get the instruction set associated with this hotkey
-        instruction_set = self._model.get_instruction_set_by_hotkey(hotkey=hotkey)
-
-        if not instruction_set:
+        # If processing is active, cancel it
+        if self.is_processing:
+            self.cancel_processing()
             return
 
-        if self.is_processing:
-            # If we're processing, this might be a cancel request
-            self.cancel_processing()
-        elif self.is_recording:
-            # If we're recording, this might be a stop request
+        # If recording is active, stop it
+        if self.is_recording:
             self.stop_recording()
-        else:
-            # Not recording or processing, so this is a start request with the selected instruction set
-            self._model.set_selected_instruction_set(name=instruction_set.name)
-            self.start_recording_with_hotkey(hotkey=hotkey)
+            return
 
-    def apply_new_api_key(self, api_key: str) -> None:
+        # Otherwise start recording with the selected instruction set
+        instruction_set = self._model.get_instruction_set_by_hotkey(hotkey=hotkey)
+        if instruction_set is None:
+            return
+        self.start_recording(set_name=instruction_set.name, hotkey=hotkey)
+
+    def reinit_pipeline(self, api_key: str) -> None:
         """
-        Apply a new API key to the model.
+        Reinitialize the pipeline with a new API key.
 
         Parameters
         ----------
@@ -267,21 +252,21 @@ class MainController(QObject):
         """
         return self._model.get_selected_instruction_set()
 
-    def select_instruction_set(self, name: str) -> bool:
+    def get_instruction_set_by_name(self, name: str) -> InstructionSet | None:
         """
-        Select an instruction set by name.
+        Get an instruction set by name.
 
         Parameters
         ----------
         name : str
-            The name of the instruction set to select
+            The name of the instruction set to get
 
         Returns
         -------
-        bool
-            True if successful, False if the named set doesn't exist
+        InstructionSet | None
+            The instruction set with the given name, or None if not found
         """
-        return self._model.set_selected_instruction_set(name=name)
+        return self._model.get_instruction_set_by_name(name=name)
 
     def register_hotkey(self, hotkey: str) -> bool:
         """
@@ -299,56 +284,14 @@ class MainController(QObject):
         """
         return self._model.register_hotkey(hotkey=hotkey)
 
-    def toggle_recording(self) -> bool:
-        """
-        Toggle recording state.
-
-        If recording is in progress, it stops recording.
-        If processing is in progress, it cancels processing (only if initiated via UI, not via hotkey).
-        If not recording or processing, it starts recording.
-        """
-        # If processing is active, cancel it (this is from UI, not hotkey, so allowed)
-        if self.is_processing:
-            return self.cancel_processing()
-
-        # Otherwise toggle recording
-        if self.is_recording:
-            self.stop_recording()
-        else:
-            self.start_recording()
-
-    def start_recording(self) -> bool:
-        """
-        Start recording audio.
-
-        Returns
-        -------
-        bool
-            True if recording started successfully, False otherwise
-        """
-        if self.is_recording or self.is_processing:
-            return False
-
-        if self._model.start_recording():
-            # Set recording mode for hotkeys (no active hotkey in this case)
-            self._model.enable_filtered_mode_and_start_listening()
-
-            # Start status indicator in recording mode
-            self._status_indicator_controller.start_recording()
-
-            # Emit recording started signal
-            self.recording_started.emit()
-
-            return True
-        else:
-            return False
-
-    def start_recording_with_hotkey(self, hotkey: str) -> bool:
+    def start_recording(self, set_name: str, hotkey: str) -> bool:
         """
         Start recording audio with a specific hotkey as the trigger.
 
         Parameters
         ----------
+        set_name : str
+            The name of the instruction set to use
         hotkey : str
             The hotkey that triggered recording
 
@@ -357,27 +300,24 @@ class MainController(QObject):
         bool
             True if recording started successfully, False otherwise
         """
-        if self.is_recording or self.is_processing:
+        # Set the selected instruction set
+        is_set = self._model.set_selected_instruction_set(name=set_name)
+        if not is_set:
             return False
 
-        # Get the instruction set associated with this hotkey
-        instruction_set = self._model.get_instruction_set_by_hotkey(hotkey=hotkey)
-        if instruction_set:
-            self._model.set_selected_instruction_set(name=instruction_set.name)
-
-        if self._model.start_recording():
-            # Set recording mode for hotkeys with the active hotkey
-            self._model.enable_filtered_mode_and_start_listening(active_hotkey=hotkey)
-
-            # Start status indicator in recording mode
-            self._status_indicator_controller.start_recording()
-
-            # Emit recording started signal
-            self.recording_started.emit()
-
-            return True
-        else:
+        # Start recording
+        is_started = self._model.start_recording()
+        if not is_started:
             return False
+
+        # Set recording mode for hotkeys with the active hotkey
+        self._model.enable_filtered_mode_and_start_listening(active_hotkey=hotkey)
+
+        # Start status indicator in recording mode
+        self._status_indicator_controller.start_recording()
+
+        # Emit recording started signal
+        self.recording_started.emit()
 
     def stop_recording(self) -> bool:
         """
@@ -396,9 +336,6 @@ class MainController(QObject):
 
         # Update status indicator to processing mode
         self._status_indicator_controller.start_processing()
-
-        # Emit recording stopped signal
-        self.recording_stopped.emit()
 
         # Process the audio if we have a file
         if audio_file_path:
@@ -490,7 +427,7 @@ class MainController(QObject):
             new_api_key = self._settings_manager.get_api_key()
 
             # Reinitialize model with the new API key
-            self.apply_new_api_key(api_key=new_api_key)
+            self.reinit_pipeline(api_key=new_api_key)
 
             return True
         else:
