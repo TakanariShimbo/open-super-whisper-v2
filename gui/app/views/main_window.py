@@ -26,13 +26,11 @@ from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QAction, QCloseEvent
 
 from core.pipelines.pipeline_result import PipelineResult
-from core.pipelines.instruction_set import InstructionSet
 
 from ..controllers.main_controller import MainController
 from ..managers.icon_manager import IconManager
 from ..utils.clipboard_utils import ClipboardUtils
 from ..managers.audio_manager import AudioManager
-from ..managers.settings_manager import SettingsManager
 from .tray.system_tray import SystemTray
 from .widgets.markdown_text_browser import MarkdownTextBrowser
 
@@ -58,9 +56,6 @@ class MainWindow(QMainWindow):
         # Create controller
         self._controller = MainController(main_window=self)
 
-        # Set application icon
-        self.setWindowIcon(self._icon_manager.get_app_icon())
-
         # Flag to track if the application is actually closing
         self._is_closing = False
 
@@ -83,6 +78,10 @@ class MainWindow(QMainWindow):
         # Set window properties
         self.setWindowTitle("Open Super Whisper App")
         self.setMinimumSize(700, 500)
+
+        # Set window icon
+        icon = self._icon_manager.get_app_icon()
+        self.setWindowIcon(icon)
 
         # Create central widget and main layout
         central_widget = QWidget()
@@ -381,9 +380,6 @@ class MainWindow(QMainWindow):
         # Instruction set activation signal
         self._controller.instruction_set_activated.connect(self._handle_instruction_set_activated)
 
-        # Hotkey triggered signal
-        self._controller.hotkey_triggered.connect(self._handle_hotkey_triggered)
-
         # LLM streaming signal
         self._controller.llm_stream_update.connect(self._handle_llm_stream_update)
 
@@ -547,19 +543,6 @@ class MainWindow(QMainWindow):
         if index >= 0:
             self._instruction_set_combo.setCurrentIndex(index)
         self._instruction_set_combo.blockSignals(False)
-
-    @pyqtSlot(str)
-    def _handle_hotkey_triggered(self, hotkey: str) -> None:
-        """
-        Handle hotkey trigger event.
-
-        Parameters
-        ----------
-        hotkey : str
-            The hotkey that was triggered
-        """
-        # The controller will handle the actual logic, this is for UI feedback
-        self._status_bar.showMessage(f"Hotkey triggered: {hotkey}", 2000)
 
     @pyqtSlot(str)
     def _handle_llm_stream_update(self, chunk: str) -> None:

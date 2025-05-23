@@ -205,27 +205,6 @@ class MainModel(QObject):
         """
         self._pipeline = Pipeline(api_key=api_key)
 
-    def apply_instruction_set(self, instruction_set: InstructionSet) -> bool:
-        """
-        Apply an instruction set to the pipeline.
-
-        Parameters
-        ----------
-        instruction_set: InstructionSet
-            The instruction set to apply
-
-        Returns
-        -------
-        bool
-            True if the instruction set was applied successfully, False otherwise
-        """
-        try:
-            self._pipeline.apply_instruction_set(selected_set=instruction_set)
-            return True
-        except Exception as e:
-            self.processing_error.emit(f"Error applying instruction set: {str(e)}")
-            return False
-
     def start_recording(self) -> bool:
         """
         Start recording audio.
@@ -459,14 +438,20 @@ class MainModel(QObject):
         bool
             True if successful, False if the named set doesn't exist
         """
+        # Set the selected instruction set
         is_success = self._instruction_sets_manager.set_selected_set_name(instruction_set_name=name)
         if not is_success:
+            self.processing_error.emit(f"Error setting selected instruction set: {name}")
             return False
 
         # Apply the instruction set to the pipeline
         selected_set = self.get_selected_instruction_set()
         if selected_set:
-            self.apply_instruction_set(instruction_set=selected_set)
+            try:
+                self._pipeline.apply_instruction_set(selected_set=selected_set)
+            except Exception as e:
+                self.processing_error.emit(f"Error applying instruction set: {str(e)}")
+                return False
 
         # Emit the instruction set activated signal
         self.instruction_set_activated.emit(name)

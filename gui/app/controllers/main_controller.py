@@ -55,7 +55,6 @@ class MainController(QObject):
     processing_cancelled = pyqtSignal()
     status_update = pyqtSignal(str, int)  # message, timeout
     instruction_set_activated = pyqtSignal(str)
-    hotkey_triggered = pyqtSignal(str)
     llm_stream_update = pyqtSignal(str)  # Signal for streaming LLM updates
 
     def __init__(self, main_window: QObject | None = None) -> None:
@@ -200,9 +199,6 @@ class MainController(QObject):
         hotkey : str
             The hotkey that was triggered
         """
-        # Emit the hotkey_triggered signal for view to handle
-        self.hotkey_triggered.emit(hotkey)
-
         # If processing is active, cancel it
         if self.is_processing:
             self.cancel_processing()
