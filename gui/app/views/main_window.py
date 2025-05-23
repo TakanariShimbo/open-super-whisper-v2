@@ -92,6 +92,67 @@ class MainWindow(QMainWindow):
         self._create_toolbar()
 
         # Create control panel
+        control_panel = self._create_control_panel()
+        main_layout.addWidget(control_panel)
+
+        # Create output tabs
+        output_tabs = self._create_output_tabs()
+        main_layout.addWidget(output_tabs, 1)
+
+        # Create status bar
+        self._create_status_bar()
+
+        # Set central widget
+        self.setCentralWidget(central_widget)
+
+        # Populate instruction sets combo
+        self._populate_instruction_set_combo()
+
+    def _create_toolbar(self) -> None:
+        """
+        Create the application toolbar.
+        """
+        self.toolbar = self.addToolBar("Main Toolbar")
+        self.toolbar.setMovable(False)
+
+        # API key action
+        api_action = QAction("API Key", self)
+        api_action.triggered.connect(self._on_click_api_key)
+        self.toolbar.addAction(api_action)
+        self.toolbar.addSeparator()
+
+        # Instruction sets action
+        instruction_sets_action = QAction("Instruction Sets", self)
+        instruction_sets_action.triggered.connect(self._on_click_instruction_sets)
+        self.toolbar.addAction(instruction_sets_action)
+        self.toolbar.addSeparator()
+
+        # Settings action
+        settings_action = QAction("Settings", self)
+        settings_action.triggered.connect(self._on_click_settings)
+        self.toolbar.addAction(settings_action)
+        self.toolbar.addSeparator()
+
+        # Add a spacer widget to push the exit button to the right
+        spacer = QWidget()
+        spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.toolbar.addWidget(spacer)
+        self.toolbar.addSeparator()
+
+        # Exit action (right-aligned)
+        exit_action = QAction("Exit", self)
+        exit_action.triggered.connect(self._on_click_exit)
+        self.toolbar.addAction(exit_action)
+
+    def _create_control_panel(self) -> QWidget:
+        """
+        Create the control panel with record button and instruction set selection.
+
+        Returns
+        -------
+        QWidget
+            The control panel widget
+        """
         control_panel = QWidget()
         control_layout = QGridLayout(control_panel)
 
@@ -101,6 +162,25 @@ class MainWindow(QMainWindow):
         self._record_button.clicked.connect(self._on_click_record)
 
         # Instruction set selection
+        instruction_set_form = self._create_instruction_set_form()
+
+        # Add to layout
+        control_layout.addWidget(self._record_button, 0, 0, 2, 1)
+        control_layout.addWidget(instruction_set_form, 0, 1, 2, 5)
+        control_layout.setColumnStretch(0, 1)
+        control_layout.setColumnStretch(1, 3)
+
+        return control_panel
+
+    def _create_instruction_set_form(self) -> QWidget:
+        """
+        Create the instruction set selection form.
+
+        Returns
+        -------
+        QWidget
+            The instruction set form widget
+        """
         instruction_set_form = QWidget()
         form_layout = QFormLayout(instruction_set_form)
 
@@ -110,32 +190,46 @@ class MainWindow(QMainWindow):
         self._instruction_set_combo.currentIndexChanged.connect(self._on_instruction_set_changed)
         form_layout.addRow(instruction_set_label, self._instruction_set_combo)
 
-        # Add to layout
-        control_layout.addWidget(self._record_button, 0, 0, 2, 1)
-        control_layout.addWidget(instruction_set_form, 0, 1, 2, 5)
-        control_layout.setColumnStretch(0, 1)
-        control_layout.setColumnStretch(1, 3)
+        return instruction_set_form
 
-        main_layout.addWidget(control_panel)
+    def _create_output_tabs(self) -> QWidget:
+        """
+        Create the tab widget for STT and LLM outputs.
 
-        # Create tab widget for outputs
+        Returns
+        -------
+        QTabWidget
+            The tab widget containing output tabs
+        """
         self._tab_widget = QTabWidget()
 
-        # STT output tab
+        # Create STT output tab
+        stt_tab = self._create_stt_output_tab()
+        self._tab_widget.addTab(stt_tab, "STT Output")
+
+        # Create LLM output tab
+        llm_tab = self._create_llm_output_tab()
+        self._tab_widget.addTab(llm_tab, "LLM Output")
+
+        return self._tab_widget
+
+    def _create_stt_output_tab(self) -> QWidget:
+        """
+        Create the STT output tab.
+
+        Returns
+        -------
+        QWidget
+            The STT output tab widget
+        """
         stt_tab = QWidget()
         stt_layout = QVBoxLayout(stt_tab)
 
-        # Create a header layout with label and copy button
-        stt_header_layout = QGridLayout()
-        stt_label = QLabel("STT Output:")
-        stt_header_layout.addWidget(stt_label, 0, 0)
-
-        # Add copy button for STT output
-        self._stt_copy_button = QPushButton("Copy")
-        self._stt_copy_button.clicked.connect(self._on_click_copy_stt)
-        stt_header_layout.addWidget(self._stt_copy_button, 0, 1, Qt.AlignmentFlag.AlignRight)
-
-        # Add the header layout to the main layout
+        # Create header with label and copy button
+        stt_header_layout = self._create_output_header(
+            label_text="STT Output:",
+            copy_button_slot=self._on_click_copy_stt,
+        )
         stt_layout.addLayout(stt_header_layout)
 
         # Use MarkdownTextBrowser for STT output
@@ -143,21 +237,25 @@ class MainWindow(QMainWindow):
         self._stt_text.setPlaceholderText("STT output will appear here...")
         stt_layout.addWidget(self._stt_text)
 
-        # LLM output tab
+        return stt_tab
+
+    def _create_llm_output_tab(self) -> QWidget:
+        """
+        Create the LLM output tab.
+
+        Returns
+        -------
+        QWidget
+            The LLM output tab widget
+        """
         llm_tab = QWidget()
         llm_layout = QVBoxLayout(llm_tab)
 
-        # Create a header layout with label and copy button
-        llm_header_layout = QGridLayout()
-        llm_label = QLabel("LLM Output:")
-        llm_header_layout.addWidget(llm_label, 0, 0)
-
-        # Add copy button for LLM output
-        self._llm_copy_button = QPushButton("Copy")
-        self._llm_copy_button.clicked.connect(self._on_click_copy_llm)
-        llm_header_layout.addWidget(self._llm_copy_button, 0, 1, Qt.AlignmentFlag.AlignRight)
-
-        # Add the header layout to the main layout
+        # Create header with label and copy button
+        llm_header_layout = self._create_output_header(
+            label_text="LLM Output:",
+            copy_button_slot=self._on_click_copy_llm,
+        )
         llm_layout.addLayout(llm_header_layout)
 
         # Use MarkdownTextBrowser for LLM output
@@ -165,25 +263,53 @@ class MainWindow(QMainWindow):
         self._llm_text.setPlaceholderText("LLM output will appear here...")
         llm_layout.addWidget(self._llm_text)
 
-        # Add tabs
-        self._tab_widget.addTab(stt_tab, "STT Output")
-        self._tab_widget.addTab(llm_tab, "LLM Output")
+        return llm_tab
 
-        main_layout.addWidget(self._tab_widget, 1)
+    def _create_output_header(self, label_text: str, copy_button_slot) -> QGridLayout:
+        """
+        Create a header layout with label and copy button for output tabs.
 
-        # Status bar
+        Parameters
+        ----------
+        label_text : str
+            Text for the header label
+        copy_button_slot : callable
+            Slot to connect to the copy button
+
+        Returns
+        -------
+        QGridLayout
+            The header layout with label and copy button
+        """
+        header_layout = QGridLayout()
+
+        # Create label
+        label = QLabel(label_text)
+        header_layout.addWidget(label, 0, 0)
+
+        # Create copy button
+        copy_button = QPushButton("Copy")
+        copy_button.clicked.connect(copy_button_slot)
+        header_layout.addWidget(copy_button, 0, 1, Qt.AlignmentFlag.AlignRight)
+
+        # Store copy button reference for later use
+        if "STT" in label_text:
+            self._stt_copy_button = copy_button
+        else:
+            self._llm_copy_button = copy_button
+
+        return header_layout
+
+    def _create_status_bar(self) -> None:
+        """
+        Create the status bar with status indicator.
+        """
         self._status_bar = QStatusBar()
         self.setStatusBar(self._status_bar)
 
         # Status indicator
         self._status_indicator = QLabel("Ready")
         self._status_bar.addPermanentWidget(self._status_indicator)
-
-        # Set central widget
-        self.setCentralWidget(central_widget)
-
-        # Populate instruction sets combo
-        self._populate_instruction_set_combo()
 
     def _setup_system_tray(self) -> None:
         """
@@ -195,7 +321,7 @@ class MainWindow(QMainWindow):
         # Connect system tray signals
         self._system_tray.show_window_signal.connect(self._on_click_show_window)
         self._system_tray.hide_window_signal.connect(self._on_click_hide_window)
-        self._system_tray.quit_application_signal.connect(self._on_click_quit_application)
+        self._system_tray.quit_application_signal.connect(self._on_click_exit)
         self._system_tray.toggle_recording_signal.connect(self._on_click_record)
 
         # Show system tray icon
@@ -235,7 +361,7 @@ class MainWindow(QMainWindow):
 
         # Exit action (right-aligned)
         exit_action = QAction("Exit", self)
-        exit_action.triggered.connect(self._on_click_quit_application)
+        exit_action.triggered.connect(self._on_click_exit)
         self.toolbar.addAction(exit_action)
 
     def _connect_controller_signals(self) -> None:
@@ -583,7 +709,7 @@ class MainWindow(QMainWindow):
         self.hide()
 
     @pyqtSlot()
-    def _on_click_quit_application(self) -> None:
+    def _on_click_exit(self) -> None:
         """
         Completely exit the application.
         """
