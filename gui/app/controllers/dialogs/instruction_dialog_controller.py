@@ -470,7 +470,6 @@ class InstructionDialogController(QObject):
             current_hotkey=current_hotkey,
             instruction_dialog=instruction_dialog,
         )
-        result = dialog.exec()
 
         # Show dialog and get result
         result = dialog.exec()
