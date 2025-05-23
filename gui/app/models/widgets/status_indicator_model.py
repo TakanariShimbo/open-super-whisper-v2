@@ -77,13 +77,20 @@ class StatusIndicatorModel(QObject):
         visible : bool
             Whether the indicator should be visible
         """
+        # If the indicator is already in the desired state, do nothing
         if self._visible == visible:
             return
 
-        # Check if indicator should be visible based on settings
-        indicator_visible_setting = self._settings_manager.get_indicator_visible()
+        # If the indicator is not visible and the mode is recording or processing, do nothing
+        if not visible and self._mode == self._MODE_RECORDING:
+            return
+        if not visible and self._mode == self._MODE_PROCESSING:
+            return
 
-        if indicator_visible_setting:
+        # Check if the indicator should be visible based on settings
+        is_visible_setting_enabled = self._settings_manager.get_indicator_visible()
+
+        if is_visible_setting_enabled:
             self._visible = visible
             self.visibility_changed.emit(visible)
 
