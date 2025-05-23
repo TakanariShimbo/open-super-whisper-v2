@@ -538,6 +538,9 @@ class InstructionDialog(QDialog):
                 return
         combo.setCurrentIndex(0)  # Default to first item
 
+    #
+    # Controller Events
+    #
     @pyqtSlot(str)
     def _handle_instruction_set_added(self, name: str) -> None:
         """
@@ -619,57 +622,9 @@ class InstructionDialog(QDialog):
                 QMessageBox.StandardButton.Ok,
             )
 
-    @pyqtSlot()
-    def _on_form_changed(self) -> None:
-        """
-        Handle form value changes.
-        """
-        # Set editing mode to True
-        self._set_editing_mode(is_editing_mode=True)
-
-    @pyqtSlot(int)
-    def _on_llm_enabled_changed(self, state: int) -> None:
-        """
-        Handle changes to the LLM enabled checkbox.
-
-        Parameters
-        ----------
-        state : int
-            The state of the LLM enabled checkbox
-        """
-        self._on_form_changed()
-
-    @pyqtSlot(int)
-    def _on_llm_model_changed(self, index: int) -> None:
-        """
-        Handle changes to the LLM model selection.
-
-        Parameters
-        ----------
-        index : int
-            The index of the selected LLM model
-        """
-        self._on_form_changed()
-
-    @pyqtSlot(int)
-    def _on_set_selected(self, row: int) -> None:
-        """
-        Handle selection of an instruction set.
-
-        Parameters
-        ----------
-        row : int
-            The row index of the selected instruction set
-        """
-        if row < 0:
-            return
-
-        # Get selected set name and notify controller
-        set_name = self._sets_list.item(row).text()
-        selected_set = self._controller.select_set(name=set_name)
-        if selected_set:
-            self._apply_set_to_editor_widget(instruction_set=selected_set)
-
+    #
+    # UI Events
+    #
     @pyqtSlot()
     def _on_click_add(self) -> None:
         """
@@ -727,6 +682,57 @@ class InstructionDialog(QDialog):
 
         if result == QMessageBox.StandardButton.Yes:
             self._controller.delete_set(name=name)
+
+    @pyqtSlot(int)
+    def _on_set_selected(self, row: int) -> None:
+        """
+        Handle selection of an instruction set.
+
+        Parameters
+        ----------
+        row : int
+            The row index of the selected instruction set
+        """
+        if row < 0:
+            return
+
+        # Get selected set name and notify controller
+        set_name = self._sets_list.item(row).text()
+        selected_set = self._controller.select_set(name=set_name)
+        if selected_set:
+            self._apply_set_to_editor_widget(instruction_set=selected_set)
+
+    @pyqtSlot()
+    def _on_form_changed(self) -> None:
+        """
+        Handle form value changes.
+        """
+        # Set editing mode to True
+        self._set_editing_mode(is_editing_mode=True)
+
+    @pyqtSlot(int)
+    def _on_llm_enabled_changed(self, state: int) -> None:
+        """
+        Handle changes to the LLM enabled checkbox.
+
+        Parameters
+        ----------
+        state : int
+            The state of the LLM enabled checkbox
+        """
+        self._on_form_changed()
+
+    @pyqtSlot(int)
+    def _on_llm_model_changed(self, index: int) -> None:
+        """
+        Handle changes to the LLM model selection.
+
+        Parameters
+        ----------
+        index : int
+            The index of the selected LLM model
+        """
+        self._on_form_changed()
 
     @pyqtSlot()
     def _on_click_hotkey(self) -> None:
@@ -806,6 +812,9 @@ class InstructionDialog(QDialog):
             QMessageBox.StandardButton.Ok,
         )
 
+    #
+    # Open/Close Events
+    #
     @pyqtSlot()
     def _on_click_close(self) -> None:
         """
