@@ -366,22 +366,15 @@ class MainWindow(QMainWindow):
         """
         Connect signals from the controller to the view slots.
         """
-        # Recording signals
         self._controller.recording_started.connect(self._handle_recording_started)
-
-        # Processing signals
         self._controller.processing_started.connect(self._handle_processing_started)
         self._controller.processing_complete.connect(self._handle_processing_complete)
         self._controller.processing_cancelled.connect(self._handle_processing_cancelled)
+        self._controller.streaming_llm_chunk.connect(self._handle_streaming_llm_chunk)
 
-        # Status update signal
-        self._controller.status_update.connect(self._handle_update_status)
-
-        # Instruction set activation signal
         self._controller.instruction_set_activated.connect(self._handle_instruction_set_activated)
 
-        # LLM streaming signal
-        self._controller.llm_stream_update.connect(self._handle_llm_stream_update)
+        self._controller.showing_message.connect(self._handle_showing_message)
 
     def _populate_instruction_set_combo(self) -> None:
         """
@@ -513,41 +506,10 @@ class MainWindow(QMainWindow):
         # Play completion sound
         self._audio_manager.play_complete_processing()
 
-    @pyqtSlot(str, int)
-    def _handle_update_status(self, message: str, timeout: int = 0) -> None:
-        """
-        Update the status bar message.
-
-        Parameters
-        ----------
-        message : str
-            The message to display
-        timeout : int, optional
-            Timeout in milliseconds, 0 means no timeout, by default 0
-        """
-        self._status_bar.showMessage(message, timeout)
-
     @pyqtSlot(str)
-    def _handle_instruction_set_activated(self, set_name: str) -> None:
+    def _handle_streaming_llm_chunk(self, chunk: str) -> None:
         """
-        Handle instruction set activation.
-
-        Parameters
-        ----------
-        set_name : str
-            The name of the activated instruction set
-        """
-        # Update the combo box
-        self._instruction_set_combo.blockSignals(True)
-        index = self._instruction_set_combo.findText(set_name)
-        if index >= 0:
-            self._instruction_set_combo.setCurrentIndex(index)
-        self._instruction_set_combo.blockSignals(False)
-
-    @pyqtSlot(str)
-    def _handle_llm_stream_update(self, chunk: str) -> None:
-        """
-        Handle streaming updates from the LLM processor.
+        Handle streaming LLM chunks.
 
         Parameters
         ----------
@@ -560,6 +522,39 @@ class MainWindow(QMainWindow):
 
         # Append the new chunk to the LLM text
         self._llm_text.append_markdown(text=chunk)
+
+    @pyqtSlot(str)
+    def _handle_instruction_set_activated(self, set_name: str) -> None:
+        """
+        Handle instruction set activation.
+
+        Parameters
+        ----------
+        set_name : str
+            The name of the activated instruction set
+        """
+        self._instruction_set_combo.blockSignals(True)
+
+        # Update the combo box
+        index = self._instruction_set_combo.findText(set_name)
+        if index >= 0:
+            self._instruction_set_combo.setCurrentIndex(index)
+
+        self._instruction_set_combo.blockSignals(False)
+
+    @pyqtSlot(str, int)
+    def _handle_showing_message(self, message: str, timeout: int = 0) -> None:
+        """
+        Show a message in the status bar.
+
+        Parameters
+        ----------
+        message : str
+            The message to display
+        timeout : int, optional
+            Timeout in milliseconds, 0 means no timeout, by default 0
+        """
+        self._status_bar.showMessage(message, timeout)
 
     @pyqtSlot()
     def _on_click_api_key(self) -> None:

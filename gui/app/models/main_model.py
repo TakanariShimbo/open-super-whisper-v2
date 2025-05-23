@@ -98,7 +98,6 @@ class MainModel(QObject):
 
     Attributes
     ----------
-    # Pipeline signals
     processing_error: pyqtSignal
         Signal emitted when an error occurs during processing
     processing_started: pyqtSignal
@@ -107,14 +106,10 @@ class MainModel(QObject):
         Signal emitted when processing completes
     processing_cancelled: pyqtSignal
         Signal emitted when processing is cancelled
-    processing_state_changed: pyqtSignal
-        Signal emitted when the processing state changes
-    llm_stream_chunk: pyqtSignal
+    streaming_llm_chunk: pyqtSignal
         Signal emitted when a chunk is received from the LLM stream
-
-    # Hotkey signals
-    hotkey_triggered: pyqtSignal
-        Signal emitted when a hotkey is triggered
+    instruction_set_activated: pyqtSignal
+        Signal emitted when an instruction set is activated
     """
 
     # Pipeline signals
@@ -122,13 +117,10 @@ class MainModel(QObject):
     processing_started = pyqtSignal()
     processing_complete = pyqtSignal(PipelineResult)
     processing_cancelled = pyqtSignal()
-    llm_stream_chunk = pyqtSignal(str)
+    streaming_llm_chunk = pyqtSignal(str)
 
     # Instruction set signals
     instruction_set_activated = pyqtSignal(str)
-
-    # Hotkey signals
-    hotkey_triggered = pyqtSignal(str)
 
     def __init__(
         self,
@@ -292,7 +284,7 @@ class MainModel(QObject):
             # Connect signals
             self._processor.completed.connect(self._on_processing_completed)
             self._processor.failed.connect(self._on_processing_failed)
-            self._processor.progress.connect(self.llm_stream_chunk)
+            self._processor.progress.connect(self.streaming_llm_chunk)
 
             # Start processing
             self._processor.start()
@@ -461,18 +453,6 @@ class MainModel(QObject):
     #
     # Hotkey methods
     #
-    def _on_hotkey_triggered(self, hotkey: str) -> None:
-        """
-        Handle hotkey triggered events from the keyboard manager.
-
-        Parameters
-        ----------
-        hotkey: str
-            The hotkey that was triggered
-        """
-        # Forward the hotkey triggered signal
-        self.hotkey_triggered.emit(hotkey)
-
     @property
     def is_filter_mode(self) -> bool:
         """

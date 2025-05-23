@@ -38,22 +38,26 @@ class MainController(QObject):
         Signal emitted when processing completes with results
     processing_cancelled : pyqtSignal
         Signal emitted when processing is cancelled
-    status_update : pyqtSignal
-        Signal emitted when there's a status update for the UI
-    hotkey_triggered : pyqtSignal
-        Signal emitted when a hotkey is triggered
-    llm_stream_update : pyqtSignal
-        Signal emitted when a streaming chunk is received from the LLM
+    streaming_llm_chunk : pyqtSignal
+        Signal emitted when a chunk is received from the LLM stream
+    instruction_set_activated : pyqtSignal
+        Signal emitted when an instruction set is activated
+    showing_message : pyqtSignal
+        Signal emitted when there's a message to show in the UI
     """
 
-    # Define signals for view communication
+    # Pipeline signals
     recording_started = pyqtSignal()
     processing_started = pyqtSignal()
     processing_complete = pyqtSignal(PipelineResult)
     processing_cancelled = pyqtSignal()
-    status_update = pyqtSignal(str, int)  # message, timeout
+    streaming_llm_chunk = pyqtSignal(str)
+
+    # Instruction set signals
     instruction_set_activated = pyqtSignal(str)
-    llm_stream_update = pyqtSignal(str)  # Signal for streaming LLM updates
+
+    # UI signals
+    showing_message = pyqtSignal(str, int)
 
     def __init__(self, main_window: QObject | None = None) -> None:
         """
@@ -92,14 +96,11 @@ class MainController(QObject):
         self._model.processing_started.connect(self.processing_started)
         self._model.processing_complete.connect(self._handle_processing_complete)
         self._model.processing_cancelled.connect(self._handle_processing_cancelled)
-        self._model.processing_error.connect(lambda error: self.status_update.emit(f"Error: {error}", 3000))
-        self._model.llm_stream_chunk.connect(self._handle_llm_stream_chunk)
+        self._model.processing_error.connect(lambda error: self.showing_message.emit(f"Error: {error}", 3000))
+        self._model.streaming_llm_chunk.connect(self._handle_streamling_llm_chunk)
 
         # Instruction set signals
         self._model.instruction_set_activated.connect(self._handle_instruction_set_activated)
-
-        # Hotkey signals
-        self._model.hotkey_triggered.connect(self._handle_hotkey_triggered)
 
     @property
     def is_recording(self) -> bool:
@@ -133,7 +134,7 @@ class MainController(QObject):
         self.instruction_set_activated.emit(set_name)
 
     @pyqtSlot(str)
-    def _handle_llm_stream_chunk(self, chunk: str) -> None:
+    def _handle_streamling_llm_chunk(self, chunk: str) -> None:
         """
         Handle streaming chunks from the LLM processor.
 
@@ -143,7 +144,7 @@ class MainController(QObject):
             The text chunk from the LLM stream
         """
         # Forward the stream chunk to any listening views
-        self.llm_stream_update.emit(chunk)
+        self.streaming_llm_chunk.emit(chunk)
 
     @pyqtSlot(PipelineResult)
     def _handle_processing_complete(self, result: PipelineResult) -> None:
@@ -164,11 +165,11 @@ class MainController(QObject):
             if result.is_llm_processed and result.llm_output:
                 # If LLM was processed, copy LLM output
                 ClipboardUtils.set_text(text=result.llm_output)
-                self.status_update.emit("LLM output copied to clipboard", 2000)
+                self.showing_message.emit("LLM output copied to clipboard", 2000)
             elif result.stt_output:
                 # Otherwise, copy STT output
                 ClipboardUtils.set_text(text=result.stt_output)
-                self.status_update.emit("STT output copied to clipboard", 2000)
+                self.showing_message.emit("STT output copied to clipboard", 2000)
 
         # Disable recording mode for hotkeys
         self._model.disable_filtered_mode_and_start_listening()
@@ -381,7 +382,7 @@ class MainController(QObject):
             # Show cancelled status in indicator
             self._status_indicator_controller.cancel_processing()
 
-            self.status_update.emit("Processing cancelled", 3000)
+            self.showing_message.emit("Processing cancelled", 3000)
 
         return result
 
