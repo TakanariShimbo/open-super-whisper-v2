@@ -38,7 +38,9 @@ class InstructionDialogModel(QObject):
         Signal emitted when a hotkey is updated
     """
 
-    # Define signals
+    #
+    # Signals
+    #
     instruction_set_added = pyqtSignal(str)  # Name of added set
     instruction_set_deleted = pyqtSignal(str)  # Name of deleted set
     instruction_set_renamed = pyqtSignal(str, str)  # Old name, new name
@@ -59,6 +61,9 @@ class InstructionDialogModel(QObject):
         self._keyboard_manager = KeyboardManager.get_instance()
         self._instruction_manager = InstructionSetsManager.get_instance()
 
+    #
+    # Model Methods
+    #
     def register_hotkey(self, hotkey: str) -> bool:
         """
         Register a hotkey.

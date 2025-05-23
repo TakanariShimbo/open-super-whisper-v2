@@ -25,7 +25,9 @@ class SettingsDialogModel(QObject):
         Signal emitted when any setting changes
     """
 
-    # Define a single signal for any settings change
+    #
+    # Signals
+    #
     settings_updated = pyqtSignal()
 
     def __init__(self, settings_dialog: QObject | None = None) -> None:
@@ -53,6 +55,9 @@ class SettingsDialogModel(QObject):
         self._original_indicator_visible = self._indicator_visible
         self._original_auto_clipboard = self._auto_clipboard
 
+    #
+    # Model Methods
+    #
     def get_sound_enabled(self) -> bool:
         """
         Get if sound notifications are enabled.

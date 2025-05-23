@@ -28,7 +28,9 @@ class HotkeyDialogModel(QObject):
         Signal emitted when hotkey validation fails, with error message
     """
 
-    # Define signals
+    #
+    # Signals
+    #
     hotkey_changed = pyqtSignal(str)
     hotkey_captured = pyqtSignal(str)
     validation_failed = pyqtSignal(str)  # error_message
@@ -58,6 +60,21 @@ class HotkeyDialogModel(QObject):
         self._instruction_sets_manager = InstructionSetsManager.get_instance()
         self._keyboard_manager = KeyboardManager.get_instance()
 
+    #
+    # Model Methods
+    #
+    @property
+    def is_capturing(self) -> bool:
+        """
+        Check if key capture mode is active.
+
+        Returns
+        -------
+        bool
+            True if capturing key inputs, False otherwise
+        """
+        return self._keyboard_manager.is_monitoring
+
     def get_hotkey(self) -> str:
         """
         Get the current hotkey.
@@ -81,18 +98,6 @@ class HotkeyDialogModel(QObject):
         if self._hotkey != value:
             self._hotkey = value
             self.hotkey_changed.emit(value)
-
-    @property
-    def is_capturing(self) -> bool:
-        """
-        Check if key capture mode is active.
-
-        Returns
-        -------
-        bool
-            True if capturing key inputs, False otherwise
-        """
-        return self._keyboard_manager.is_monitoring
 
     def start_capturing(self) -> None:
         """
@@ -126,6 +131,25 @@ class HotkeyDialogModel(QObject):
         # Emit the captured signal
         self.hotkey_captured.emit(hotkey_string)
 
+    def _check_hotkey_conflict(self, hotkey: str) -> str | None:
+        """
+        Check if the hotkey conflicts with any existing hotkeys.
+
+        Parameters
+        ----------
+        hotkey : str
+            The hotkey to check for conflicts
+
+        Returns
+        -------
+        str | None
+            None if no conflict, or the name of the conflicting instruction set if there is a conflict
+        """
+        conflicting_set = self._instruction_sets_manager.find_set_by_hotkey(hotkey=hotkey)
+        if conflicting_set:
+            return conflicting_set.name
+        return None
+
     def validate_hotkey(self) -> bool:
         """
         Validate the current hotkey.
@@ -152,25 +176,6 @@ class HotkeyDialogModel(QObject):
                 self.validation_failed.emit(f"The hotkey '{self._hotkey}' is already used by instruction set '{conflicting_set_name}'.")
                 return False
         return True
-
-    def _check_hotkey_conflict(self, hotkey: str) -> str | None:
-        """
-        Check if the hotkey conflicts with any existing hotkeys.
-
-        Parameters
-        ----------
-        hotkey : str
-            The hotkey to check for conflicts
-
-        Returns
-        -------
-        str | None
-            None if no conflict, or the name of the conflicting instruction set if there is a conflict
-        """
-        conflicting_set = self._instruction_sets_manager.find_set_by_hotkey(hotkey=hotkey)
-        if conflicting_set:
-            return conflicting_set.name
-        return None
 
     def reset(self) -> None:
         """

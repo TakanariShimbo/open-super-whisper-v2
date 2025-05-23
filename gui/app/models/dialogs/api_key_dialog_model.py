@@ -38,6 +38,9 @@ class APIKeyDialogModel(QObject):
         # Store original value to support cancel operation
         self._original_api_key = self._api_key
 
+    #
+    # Model Methods
+    #
     def validate_api_key(self, api_key: str) -> bool:
         """
         Validate an API key using the API client factory.

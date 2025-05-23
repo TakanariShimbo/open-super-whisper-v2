@@ -5,7 +5,7 @@ This module provides the consolidated model component for the Open Super Whisper
 combining functionality of hotkey, instruction set, and pipeline models.
 """
 
-from PyQt6.QtCore import QObject, pyqtSignal, QThread
+from PyQt6.QtCore import QObject, pyqtSignal, QThread, pyqtSlot
 
 from core.pipelines.pipeline import Pipeline
 from core.pipelines.pipeline_result import PipelineResult
@@ -33,6 +33,9 @@ class ProcessingThread(QThread):
         Signal for handling streaming progress updates
     """
 
+    #
+    # Signals
+    #
     completed = pyqtSignal(object)
     failed = pyqtSignal(str)
     progress = pyqtSignal(str)
@@ -71,6 +74,9 @@ class ProcessingThread(QThread):
         self.clipboard_text = clipboard_text
         self.clipboard_image = clipboard_image
 
+    #
+    # Thread Methods
+    #
     def run(self) -> None:
         """
         Execute the processing task.
@@ -112,6 +118,9 @@ class MainModel(QObject):
         Signal emitted when an instruction set is activated
     """
 
+    #
+    # Signals
+    #
     # Pipeline signals
     processing_error = pyqtSignal(str)
     processing_started = pyqtSignal()
@@ -155,15 +164,34 @@ class MainModel(QObject):
         # Connect signals
         self._connect_manager_signals()
 
+    #
+    # Manager Signals
+    #
     def _connect_manager_signals(self) -> None:
         """
         Connect signals from managers to model handlers.
         """
         # Connect keyboard manager signals
-        self._keyboard_manager.hotkey_triggered.connect(self._on_hotkey_triggered)
+        self._keyboard_manager.hotkey_triggered.connect(self._handle_hotkey_triggered)
 
     #
-    # Pipeline methods
+    # Manager Events
+    #
+    @pyqtSlot(str)
+    def _handle_hotkey_triggered(self, hotkey: str) -> None:
+        """
+        Handle hotkey triggered events from the keyboard manager.
+
+        Parameters
+        ----------
+        hotkey: str
+            The hotkey that was triggered
+        """
+        # Forward the hotkey triggered signal
+        self.hotkey_triggered.emit(hotkey)
+
+    #
+    # Model Methods (Pipeline)
     #
     @property
     def is_recording(self) -> bool:
@@ -352,7 +380,7 @@ class MainModel(QObject):
         return True
 
     #
-    # Instruction set methods
+    # Model Methods (Instruction Sets)
     #
     def get_instruction_sets(self) -> list[InstructionSet]:
         """
@@ -454,20 +482,8 @@ class MainModel(QObject):
         return True
 
     #
-    # Hotkey methods
+    # Model Methods (Hotkeys)
     #
-    def _on_hotkey_triggered(self, hotkey: str) -> None:
-        """
-        Handle hotkey triggered events from the keyboard manager.
-
-        Parameters
-        ----------
-        hotkey: str
-            The hotkey that was triggered
-        """
-        # Forward the hotkey triggered signal
-        self.hotkey_triggered.emit(hotkey)
-
     @property
     def is_filter_mode(self) -> bool:
         """
@@ -584,7 +600,7 @@ class MainModel(QObject):
         return self._keyboard_manager.get_all_registered_hotkeys()
 
     #
-    # Cleanup methods
+    # Model Methods (Cleanup)
     #
     def shutdown(self) -> None:
         """

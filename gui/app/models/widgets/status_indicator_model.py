@@ -7,7 +7,7 @@ Super Whisper application, following the MVC architecture.
 
 import time
 
-from PyQt6.QtCore import QObject, pyqtSignal, QTimer
+from PyQt6.QtCore import QObject, pyqtSignal, QTimer, pyqtSlot
 
 from ...managers.settings_manager import SettingsManager
 
@@ -26,7 +26,9 @@ class StatusIndicatorModel(QObject):
     _MODE_COMPLETED = 3
     _MODE_CANCELLED = 4
 
+    #
     # Signals
+    #
     mode_changed = pyqtSignal(int)  # mode
     timer_updated = pyqtSignal(str)  # time_string
     visibility_changed = pyqtSignal(bool)  # visible
@@ -55,6 +57,35 @@ class StatusIndicatorModel(QObject):
         self._timer.timeout.connect(self._update_timer)
         self._timer.setInterval(1000)  # Update every second
 
+    @pyqtSlot()
+    def _update_timer(self) -> None:
+        """
+        Update timer display based on elapsed recording time.
+        """
+        self.update_timer()
+
+    def update_timer(self, elapsed_time: float | None = None) -> None:
+        """
+        Update the timer display.
+
+        Parameters
+        ----------
+        elapsed_time : float | None, optional
+            Elapsed time in seconds, by default calculates from recording start time
+        """
+        if elapsed_time is None and self._recording_start_time > 0:
+            elapsed_time = time.time() - self._recording_start_time
+
+        if elapsed_time is not None:
+            elapsed = int(elapsed_time)
+            minutes = elapsed // 60
+            seconds = elapsed % 60
+            time_str = f"{minutes:02d}:{seconds:02d}"
+            self.timer_updated.emit(time_str)
+
+    #
+    # Model Methods
+    #
     def set_mode(self, mode: int) -> None:
         """
         Set the indicator mode.
@@ -93,31 +124,6 @@ class StatusIndicatorModel(QObject):
         if is_visible_setting_enabled:
             self._visible = visible
             self.visibility_changed.emit(visible)
-
-    def update_timer(self, elapsed_time: float | None = None) -> None:
-        """
-        Update the timer display.
-
-        Parameters
-        ----------
-        elapsed_time : float | None, optional
-            Elapsed time in seconds, by default calculates from recording start time
-        """
-        if elapsed_time is None and self._recording_start_time > 0:
-            elapsed_time = time.time() - self._recording_start_time
-
-        if elapsed_time is not None:
-            elapsed = int(elapsed_time)
-            minutes = elapsed // 60
-            seconds = elapsed % 60
-            time_str = f"{minutes:02d}:{seconds:02d}"
-            self.timer_updated.emit(time_str)
-
-    def _update_timer(self) -> None:
-        """
-        Update timer display based on elapsed recording time.
-        """
-        self.update_timer()
 
     def start_recording(self) -> None:
         """
