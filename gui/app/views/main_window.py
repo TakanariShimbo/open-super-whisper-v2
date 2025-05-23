@@ -139,9 +139,9 @@ class MainWindow(QMainWindow):
         self.toolbar.addSeparator()
 
         # Exit action (right-aligned)
-        exit_action = QAction("Exit", self)
-        exit_action.triggered.connect(self._on_click_exit)
-        self.toolbar.addAction(exit_action)
+        quit_action = QAction("Quit Application", self)
+        quit_action.triggered.connect(self._on_click_quit_application)
+        self.toolbar.addAction(quit_action)
 
     def _create_control_panel(self) -> QWidget:
         """
@@ -319,48 +319,11 @@ class MainWindow(QMainWindow):
         # Connect system tray signals
         self._system_tray.show_window_signal.connect(self._on_click_show_window)
         self._system_tray.hide_window_signal.connect(self._on_click_hide_window)
-        self._system_tray.quit_application_signal.connect(self._on_click_exit)
+        self._system_tray.quit_application_signal.connect(self._on_click_quit_application)
         self._system_tray.toggle_recording_signal.connect(self._on_click_record)
 
         # Show system tray icon
         self._system_tray.show()
-
-    def _create_toolbar(self) -> None:
-        """
-        Create the application toolbar.
-        """
-        self.toolbar = self.addToolBar("Main Toolbar")
-        self.toolbar.setMovable(False)
-
-        # Toolbar actions start with instruction sets
-        # API key action
-        api_action = QAction("API Key", self)
-        api_action.triggered.connect(self._on_click_api_key)
-        self.toolbar.addAction(api_action)
-        self.toolbar.addSeparator()
-
-        # Instruction sets action
-        instruction_sets_action = QAction("Instruction Sets", self)
-        instruction_sets_action.triggered.connect(self._on_click_instruction_sets)
-        self.toolbar.addAction(instruction_sets_action)
-        self.toolbar.addSeparator()
-
-        # Settings action
-        settings_action = QAction("Settings", self)
-        settings_action.triggered.connect(self._on_click_settings)
-        self.toolbar.addAction(settings_action)
-        self.toolbar.addSeparator()
-
-        # Add a spacer widget to push the exit button to the right
-        spacer = QWidget()
-        spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.toolbar.addWidget(spacer)
-        self.toolbar.addSeparator()
-
-        # Exit action (right-aligned)
-        exit_action = QAction("Exit", self)
-        exit_action.triggered.connect(self._on_click_exit)
-        self.toolbar.addAction(exit_action)
 
     def _connect_controller_signals(self) -> None:
         """
@@ -645,7 +608,7 @@ class MainWindow(QMainWindow):
         self.hide()
 
     @pyqtSlot()
-    def _on_click_exit(self) -> None:
+    def _on_click_quit_application(self) -> None:
         """
         Completely exit the application.
         """
