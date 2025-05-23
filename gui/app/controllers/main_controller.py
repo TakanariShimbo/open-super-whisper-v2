@@ -5,10 +5,8 @@ This module provides the controller component for the main application window,
 mediating between the main model and main window view.
 """
 
-import sys
-
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
-from PyQt6.QtWidgets import QMessageBox, QWidget
+from PyQt6.QtWidgets import QWidget
 
 from core.pipelines.pipeline_result import PipelineResult
 from core.pipelines.instruction_set import InstructionSet
