@@ -25,7 +25,6 @@ class AudioRecorder:
     Examples
     --------
     Basic usage:
-
     >>> recorder = AudioRecorder()
     >>> # Start recording audio
     >>> recorder.start_recording()
@@ -33,24 +32,6 @@ class AudioRecorder:
     >>> # Stop recording and get the path to the saved file
     >>> file_path = recorder.stop_recording()
     >>> print(f"Recording saved to: {file_path}")
-
-    Custom configuration:
-
-    >>> # Create recorder with default settings
-    >>> recorder = AudioRecorder()
-    >>> # Set custom parameters before recording
-    >>> recorder.set_recording_parameters(
-    >>>     sample_rate=AudioRecorder.SAMPLE_RATES['high'],  # 44100 Hz
-    >>>     channels=AudioRecorder.CHANNEL_MODES['stereo']   # 2 channels
-    >>> )
-    >>> # Set a different device
-    >>> devices = AudioRecorder.get_available_microphones()
-    >>> if len(devices) > 1:
-    >>>     recorder.set_recording_device(devices[1]['index'])
-    >>> # Start recording
-    >>> recorder.start_recording()
-    >>> # Later, stop recording
-    >>> file_path = recorder.stop_recording()
     """
 
     # Class constants for commonly used settings
