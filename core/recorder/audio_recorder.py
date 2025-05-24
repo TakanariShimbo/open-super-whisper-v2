@@ -98,235 +98,6 @@ class AudioRecorder:
         """
         return self._audio_stream is not None and self._audio_stream.active
 
-    def get_current_device(self) -> dict[str, Any] | None:
-        """
-        Get information about the currently selected recording device.
-
-        Returns
-        -------
-        dict[str, Any] | None
-            Dictionary with device information, or None if using the default device.
-        """
-        if self._device_id is None:
-            return None
-
-        devices = self.get_available_microphones()
-        for device in devices:
-            if device.get("index") == self._device_id:
-                return device
-
-        return None
-
-    @staticmethod
-    def check_microphone_availability() -> bool:
-        """
-        Check if any microphone is available on the system.
-
-        Returns
-        -------
-        bool
-            True if at least one input device is available, False otherwise.
-        """
-        devices = sd.query_devices()
-
-        # Check if there's at least one input device
-        for device in devices:
-            if device["max_input_channels"] > 0:
-                return True
-
-        # No input device found
-        return False
-
-    @staticmethod
-    def get_available_microphones() -> list[dict[str, Any]]:
-        """
-        Get all available microphone devices on the system.
-
-        Returns
-        -------
-        list[dict[str, Any]]
-            List of microphone devices with their details
-
-        Examples
-        --------
-        >>> mics = AudioRecorder.get_available_microphones()
-        >>> for mic in mics:
-        >>>     print(f"{mic['index']}. {mic['name']} ({mic['max_input_channels']} channels)")
-        """
-        devices = sd.query_devices()
-
-        # Filter for input devices
-        input_devices = [device for device in devices if device["max_input_channels"] > 0]
-
-        return input_devices
-
-    def set_recording_parameters(
-        self,
-        sample_rate: int,
-        channels: int,
-    ) -> None:
-        """
-        Set new recording parameters.
-
-        Parameters
-        ----------
-        sample_rate : int
-            Sample rate for recording in Hertz
-        channels : int
-            Number of audio channels
-
-        Returns
-        -------
-        None
-
-        Raises
-        ------
-        RuntimeError
-            If recording is currently in progress.
-        ValueError
-            If invalid parameters are provided.
-        """
-        # Check if recording is in progress
-        if self.is_recording:
-            raise RuntimeError("Cannot change recording parameters while recording is active.")
-
-        # Validate parameters
-        if sample_rate <= 0:
-            raise ValueError(f"Invalid sample rate: {sample_rate}. Must be positive.")
-        if channels <= 0:
-            raise ValueError(f"Invalid channels: {channels}. Must be positive.")
-
-        # Set new parameters
-        self._sample_rate = sample_rate
-        self._channels = channels
-
-    def set_recording_device(self, device_id: int | None) -> bool:
-        """
-        Set the device to use for recording.
-
-        Parameters
-        ----------
-        device_id : int | None
-            Device ID to use for recording, or None to use the default device.
-
-        Returns
-        -------
-        bool
-            True if the device was set successfully, False otherwise.
-
-        Raises
-        ------
-        RuntimeError
-            If recording is currently in progress.
-        """
-        # Check if recording is in progress
-        if self.is_recording:
-            raise RuntimeError("Cannot change recording device while recording is active.")
-
-        # If None is passed, use the default device
-        if device_id is None:
-            self._device_id = None
-            return True
-
-        # Validate device ID
-        devices = self.get_available_microphones()
-        device_indices = [device.get("index") for device in devices]
-
-        if device_id not in device_indices:
-            return False
-
-        # Set device ID
-        self._device_id = device_id
-        return True
-
-    def clear_recorded_data(self) -> None:
-        """
-        Clear any recorded audio data without saving.
-
-        This method clears the internal buffer of recorded audio frames
-        but does not affect any already saved recordings.
-
-        Returns
-        -------
-        None
-
-        Raises
-        ------
-        RuntimeError
-            If recording is currently in progress.
-        """
-        # Check if recording is in progress
-        if self.is_recording:
-            raise RuntimeError("Cannot clear recorded data while recording is active.")
-
-        # Clear the recorded frames
-        self._recorded_audio_frames = []
-
-    def start_recording(self) -> None:
-        """
-        Start recording audio from the microphone.
-
-        This method will start recording audio using a callback-based approach
-        and set the internal recording flag to True.
-
-        Returns
-        -------
-        None
-
-        Raises
-        ------
-        RuntimeError
-            If recording is already in progress.
-        """
-        # Check if already recording
-        if self.is_recording:
-            raise RuntimeError("Recording is already in progress.")
-
-        # Reset audio data
-        self._recorded_audio_frames = []
-
-        # Setup the recording path
-        self._setup_recording_path()
-
-        # Start recording using sounddevice with callback
-        try:
-            self._audio_stream = sd.InputStream(
-                samplerate=self._sample_rate,
-                channels=self._channels,
-                device=self._device_id,
-                callback=self._audio_callback,
-            )
-            self._audio_stream.start()
-        except Exception as e:
-            self._audio_stream = None
-            raise RuntimeError(f"Failed to start recording: {str(e)}")
-
-    def stop_recording(self) -> str | None:
-        """
-        Stop recording audio and return the path to the recorded file.
-
-        Returns
-        -------
-        str | None
-            Path to the recorded audio file, or None if no recording was in progress
-            or if saving the recording failed.
-        """
-        # Check if not recording
-        if not self.is_recording:
-            return None
-
-        # Store current stream to close it
-        stream = self._audio_stream
-        self._audio_stream = None
-
-        # Stop and close the audio stream
-        if stream is not None:
-            stream.stop()
-            stream.close()
-
-        # Save the recording
-        return self._save_recording()
-
     def _audio_callback(
         self,
         indata: np.ndarray,
@@ -399,3 +170,235 @@ class AudioRecorder:
         except Exception as e:
             print(f"Error saving recording: {str(e)}")
             return None
+
+    def start_recording(self) -> None:
+        """
+        Start recording audio from the microphone.
+
+        This method will start recording audio using a callback-based approach
+        and set the internal recording flag to True.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        RuntimeError
+            If recording is already in progress.
+        """
+        # Check if already recording
+        if self.is_recording:
+            raise RuntimeError("Recording is already in progress.")
+
+        # Reset audio data
+        self._recorded_audio_frames = []
+
+        # Setup the recording path
+        self._setup_recording_path()
+
+        # Start recording using sounddevice with callback
+        try:
+            self._audio_stream = sd.InputStream(
+                samplerate=self._sample_rate,
+                channels=self._channels,
+                device=self._device_id,
+                callback=self._audio_callback,
+            )
+            self._audio_stream.start()
+        except Exception as e:
+            self._audio_stream = None
+            raise RuntimeError(f"Failed to start recording: {str(e)}")
+
+    def stop_recording(self) -> str | None:
+        """
+        Stop recording audio and return the path to the recorded file.
+
+        Returns
+        -------
+        str | None
+            Path to the recorded audio file, or None if no recording was in progress
+            or if saving the recording failed.
+        """
+        # Check if not recording
+        if not self.is_recording:
+            return None
+
+        # Store current stream to close it
+        stream = self._audio_stream
+        self._audio_stream = None
+
+        # Stop and close the audio stream
+        if stream is not None:
+            stream.stop()
+            stream.close()
+
+        # Save the recording
+        return self._save_recording()
+
+    #
+    # Not used in GUI yet
+    #
+    def set_recording_parameters(
+        self,
+        sample_rate: int,
+        channels: int,
+    ) -> None:
+        """
+        Set new recording parameters.
+
+        Parameters
+        ----------
+        sample_rate : int
+            Sample rate for recording in Hertz
+        channels : int
+            Number of audio channels
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        RuntimeError
+            If recording is currently in progress.
+        ValueError
+            If invalid parameters are provided.
+        """
+        # Check if recording is in progress
+        if self.is_recording:
+            raise RuntimeError("Cannot change recording parameters while recording is active.")
+
+        # Validate parameters
+        if sample_rate <= 0:
+            raise ValueError(f"Invalid sample rate: {sample_rate}. Must be positive.")
+        if channels <= 0:
+            raise ValueError(f"Invalid channels: {channels}. Must be positive.")
+
+        # Set new parameters
+        self._sample_rate = sample_rate
+        self._channels = channels
+
+    def clear_recorded_data(self) -> None:
+        """
+        Clear any recorded audio data without saving.
+
+        This method clears the internal buffer of recorded audio frames
+        but does not affect any already saved recordings.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        RuntimeError
+            If recording is currently in progress.
+        """
+        # Check if recording is in progress
+        if self.is_recording:
+            raise RuntimeError("Cannot clear recorded data while recording is active.")
+
+        # Clear the recorded frames
+        self._recorded_audio_frames = []
+
+    def get_current_device(self) -> dict[str, Any] | None:
+        """
+        Get information about the currently selected recording device.
+
+        Returns
+        -------
+        dict[str, Any] | None
+            Dictionary with device information, or None if using the default device.
+        """
+        if self._device_id is None:
+            return None
+
+        devices = self.get_available_microphones()
+        for device in devices:
+            if device.get("index") == self._device_id:
+                return device
+
+        return None
+
+    def set_recording_device(self, device_id: int | None) -> bool:
+        """
+        Set the device to use for recording.
+
+        Parameters
+        ----------
+        device_id : int | None
+            Device ID to use for recording, or None to use the default device.
+
+        Returns
+        -------
+        bool
+            True if the device was set successfully, False otherwise.
+
+        Raises
+        ------
+        RuntimeError
+            If recording is currently in progress.
+        """
+        # Check if recording is in progress
+        if self.is_recording:
+            raise RuntimeError("Cannot change recording device while recording is active.")
+
+        # If None is passed, use the default device
+        if device_id is None:
+            self._device_id = None
+            return True
+
+        # Validate device ID
+        devices = self.get_available_microphones()
+        device_indices = [device.get("index") for device in devices]
+
+        if device_id not in device_indices:
+            return False
+
+        # Set device ID
+        self._device_id = device_id
+        return True
+
+    @staticmethod
+    def check_microphone_availability() -> bool:
+        """
+        Check if any microphone is available on the system.
+
+        Returns
+        -------
+        bool
+            True if at least one input device is available, False otherwise.
+        """
+        devices = sd.query_devices()
+
+        # Check if there's at least one input device
+        for device in devices:
+            if device["max_input_channels"] > 0:
+                return True
+
+        # No input device found
+        return False
+
+    @staticmethod
+    def get_available_microphones() -> list[dict[str, Any]]:
+        """
+        Get all available microphone devices on the system.
+
+        Returns
+        -------
+        list[dict[str, Any]]
+            List of microphone devices with their details
+
+        Examples
+        --------
+        >>> mics = AudioRecorder.get_available_microphones()
+        >>> for mic in mics:
+        >>>     print(f"{mic['index']}. {mic['name']} ({mic['max_input_channels']} channels)")
+        """
+        devices = sd.query_devices()
+
+        # Filter for input devices
+        input_devices = [device for device in devices if device["max_input_channels"] > 0]
+
+        return input_devices
