@@ -22,7 +22,7 @@ class STTModel:
     id : str
         Model identifier used for API calls (e.g., "gpt-4o-transcribe").
     name : str
-        Display name (e.g., "Whisper-1").
+        Display name (e.g., "GPT-4o Transcribe").
     description : str
         Description of the model's capabilities and characteristics.
     performance_tier : str
