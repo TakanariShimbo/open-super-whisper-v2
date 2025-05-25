@@ -9,6 +9,83 @@ from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtGui import QCloseEvent
 
 from ...controllers.dialogs.api_key_dialog_controller import APIKeyDialogController
+from ...managers.settings_manager import SettingsManager
+
+
+class LabelManager:
+    """
+    Manages application labels for internationalization support.
+    """
+
+    ALL_LABELS = {
+        "English": {
+            "window_title": "API Key Settings",
+            "title_label": "OpenAI API Key Settings",
+            "help_text": (
+                "To use Open Super Whisper, you need a valid OpenAI API key.\n\n"
+                "1. Create an account at https://platform.openai.com\n"
+                "2. Navigate to API Keys section\n"
+                "3. Create a new API key\n"
+                "4. Copy and paste the key below"
+            ),
+            "input_label": "OpenAI API key:",
+            "placeholder": "sk-...",
+            "tooltip_show_hide": "Show/Hide API Key",
+            "tooltip_hide": "Hide API Key",
+            "tooltip_show": "Show API Key",
+            "error_invalid_key": "Invalid API key. Please check and try again.",
+            "error_empty_key": "API key cannot be empty",
+        },
+        # Future: Add other languages here
+    }
+
+    def __init__(self) -> None:
+        # load language from settings manager
+        settings_manager = SettingsManager.instance()
+        language = settings_manager.get_language()
+
+        # set labels based on language
+        self._labels = self.ALL_LABELS[language]
+
+    @property
+    def window_title(self) -> str:
+        return self._labels["window_title"]
+
+    @property
+    def title_label(self) -> str:
+        return self._labels["title_label"]
+
+    @property
+    def help_text(self) -> str:
+        return self._labels["help_text"]
+
+    @property
+    def input_label(self) -> str:
+        return self._labels["input_label"]
+
+    @property
+    def placeholder(self) -> str:
+        return self._labels["placeholder"]
+
+    @property
+    def tooltip_show_hide(self) -> str:
+        return self._labels["tooltip_show_hide"]
+
+    @property
+    def tooltip_hide(self) -> str:
+        return self._labels["tooltip_hide"]
+
+    @property
+    def tooltip_show(self) -> str:
+        return self._labels["tooltip_show"]
+
+    @property
+    def error_invalid_key(self) -> str:
+        return self._labels["error_invalid_key"]
+
+    @property
+    def error_empty_key(self) -> str:
+        return self._labels["error_empty_key"]
 
 
 class APIKeyDialog(QDialog):
@@ -35,6 +112,9 @@ class APIKeyDialog(QDialog):
             Parent widget, by default None
         """
         super().__init__(parent=main_window)
+
+        # Initialize label manager
+        self._label_manager = LabelManager()
 
         # Create controller
         self._controller = APIKeyDialogController(api_key_dialog=self)
@@ -74,25 +154,18 @@ class APIKeyDialog(QDialog):
         Initialize the dialog UI components.
         """
         # Set window title based on mode
-        self.setWindowTitle("API Key Settings")
+        self.setWindowTitle(self._label_manager.window_title)
         self.setMinimumWidth(400)
 
         layout = QVBoxLayout()
 
         # Title label
-        title_label = QLabel("OpenAI API Key Settings")
+        title_label = QLabel(self._label_manager.title_label)
         title_label.setStyleSheet("font-size: 14px; font-weight: bold;")
         layout.addWidget(title_label)
 
         # Help text
-        help_text = QLabel(
-            "To use Open Super Whisper, you need a valid OpenAI API key.\n\n"
-            "1. Create an account at https://platform.openai.com\n"
-            "2. Navigate to API Keys section\n"
-            "3. Create a new API key\n"
-            "4. Copy and paste the key below"
-        )
-
+        help_text = QLabel(self._label_manager.help_text)
         help_text.setWordWrap(True)
         layout.addWidget(help_text)
 
@@ -100,8 +173,7 @@ class APIKeyDialog(QDialog):
         layout.addSpacing(10)
 
         # Input label
-        input_label = QLabel("OpenAI API key:")
-
+        input_label = QLabel(self._label_manager.input_label)
         layout.addWidget(input_label)
 
         # Create a horizontal layout for input field and toggle button
@@ -110,13 +182,13 @@ class APIKeyDialog(QDialog):
         # API key input field
         self._api_key_input = QLineEdit()
         self._api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
-        self._api_key_input.setPlaceholderText("sk-...")
+        self._api_key_input.setPlaceholderText(self._label_manager.placeholder)
         self._api_key_input.returnPressed.connect(self._on_accept)
         input_layout.addWidget(self._api_key_input, 1)  # Use stretch factor 1
 
         # Toggle visibility button
         self._toggle_button = QPushButton("👁️")
-        self._toggle_button.setToolTip("Show/Hide API Key")
+        self._toggle_button.setToolTip(self._label_manager.tooltip_show_hide)
         self._toggle_button.setFixedWidth(30)  # Fixed width for the button
         self._toggle_button.setCheckable(True)  # Make it a toggle button
         self._toggle_button.setChecked(False)  # Initially not checked
@@ -180,7 +252,7 @@ class APIKeyDialog(QDialog):
         api_key : str
             The invalid API key
         """
-        self._show_status_message(message="Invalid API key. Please check and try again.")
+        self._show_status_message(message=self._label_manager.error_invalid_key)
 
     #
     # UI Events
@@ -194,12 +266,12 @@ class APIKeyDialog(QDialog):
             # Show API key
             self._api_key_input.setEchoMode(QLineEdit.EchoMode.Normal)
             self._toggle_button.setText("🔒")
-            self._toggle_button.setToolTip("Hide API Key")
+            self._toggle_button.setToolTip(self._label_manager.tooltip_hide)
         else:
             # Hide API key
             self._api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
             self._toggle_button.setText("👁️")
-            self._toggle_button.setToolTip("Show API Key")
+            self._toggle_button.setToolTip(self._label_manager.tooltip_show)
 
     #
     # Open/Close Events
@@ -223,7 +295,7 @@ class APIKeyDialog(QDialog):
         entered_api_key = self._get_entered_api_key()
 
         if not entered_api_key:
-            self._show_status_message(message="API key cannot be empty")
+            self._show_status_message(message=self._label_manager.error_empty_key)
             return
 
         # Use controller to validate the key

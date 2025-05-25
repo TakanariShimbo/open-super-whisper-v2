@@ -30,7 +30,12 @@ class LabelManager:
         # Future: Add other languages here
     }
 
-    def __init__(self, language: str = "English") -> None:
+    def __init__(self) -> None:
+        # load language from settings manager
+        settings_manager = SettingsManager.instance()
+        language = settings_manager.get_language()
+
+        # set labels based on language
         self._labels = self.ALL_LABELS[language]
 
     @property
@@ -140,11 +145,8 @@ def start_application() -> int:
         app.setApplicationName("OpenSuperWhisper")
         app.setOrganizationName("OpenSuperWhisper")
 
-        # Initialize settings manager
-        settings_manager = SettingsManager.instance()
-
         # Initialize label manager
-        label_manager = LabelManager(language=settings_manager.get_language())
+        label_manager = LabelManager()
 
         # Set application icon using the IconManager
         icon_manager = IconManager.instance()

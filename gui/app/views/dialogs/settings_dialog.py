@@ -10,6 +10,77 @@ from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtGui import QCloseEvent
 
 from ...controllers.dialogs.settings_dialog_controller import SettingsDialogController
+from ...managers.settings_manager import SettingsManager
+
+
+class LabelManager:
+    """
+    Manages application labels for internationalization support.
+    """
+
+    ALL_LABELS = {
+        "English": {
+            "window_title": "Settings",
+            "group_title": "Application Settings",
+            "sound_checkbox": "Enable sound notifications",
+            "sound_tooltip": "Play sounds when recording starts/stops and processing completes",
+            "indicator_checkbox": "Show status indicator",
+            "indicator_tooltip": "Show a visual indicator during recording and processing",
+            "clipboard_checkbox": "Automatically copy results to clipboard",
+            "clipboard_tooltip": "Copy transcription results to clipboard when processing completes",
+            "language_label": "Language:",
+            "language_tooltip": "Select the application language",
+        },
+        # Future: Add other languages here
+    }
+
+    def __init__(self) -> None:
+        # load language from settings manager
+        settings_manager = SettingsManager.instance()
+        language = settings_manager.get_language()
+
+        # set labels based on language
+        self._labels = self.ALL_LABELS[language]
+
+    @property
+    def window_title(self) -> str:
+        return self._labels["window_title"]
+
+    @property
+    def group_title(self) -> str:
+        return self._labels["group_title"]
+
+    @property
+    def sound_checkbox(self) -> str:
+        return self._labels["sound_checkbox"]
+
+    @property
+    def sound_tooltip(self) -> str:
+        return self._labels["sound_tooltip"]
+
+    @property
+    def indicator_checkbox(self) -> str:
+        return self._labels["indicator_checkbox"]
+
+    @property
+    def indicator_tooltip(self) -> str:
+        return self._labels["indicator_tooltip"]
+
+    @property
+    def clipboard_checkbox(self) -> str:
+        return self._labels["clipboard_checkbox"]
+
+    @property
+    def clipboard_tooltip(self) -> str:
+        return self._labels["clipboard_tooltip"]
+
+    @property
+    def language_label(self) -> str:
+        return self._labels["language_label"]
+
+    @property
+    def language_tooltip(self) -> str:
+        return self._labels["language_tooltip"]
 
 
 class SettingsDialog(QDialog):
@@ -33,6 +104,9 @@ class SettingsDialog(QDialog):
         """
         super().__init__(parent=main_window)
 
+        # Initialize label manager
+        self._label_manager = LabelManager()
+
         # Create controller
         self._controller = SettingsDialogController(settings_dialog=self)
 
@@ -53,36 +127,36 @@ class SettingsDialog(QDialog):
         Initialize the dialog UI components.
         """
         # Set dialog properties
-        self.setWindowTitle("Settings")
+        self.setWindowTitle(self._label_manager.window_title)
         self.setMinimumWidth(450)
 
         # Create main layout
         layout = QVBoxLayout(self)
 
         # Create settings group box
-        settings_group = QGroupBox("Application Settings")
+        settings_group = QGroupBox(self._label_manager.group_title)
         settings_layout = QGridLayout(settings_group)
 
         # Sound toggle
-        self.sound_checkbox = QCheckBox("Enable sound notifications")
-        self.sound_checkbox.setToolTip("Play sounds when recording starts/stops and processing completes")
+        self.sound_checkbox = QCheckBox(self._label_manager.sound_checkbox)
+        self.sound_checkbox.setToolTip(self._label_manager.sound_tooltip)
         self.sound_checkbox.toggled.connect(self._on_toggle_sound)
 
         # Indicator visibility toggle
-        self.indicator_checkbox = QCheckBox("Show status indicator")
-        self.indicator_checkbox.setToolTip("Show a visual indicator during recording and processing")
+        self.indicator_checkbox = QCheckBox(self._label_manager.indicator_checkbox)
+        self.indicator_checkbox.setToolTip(self._label_manager.indicator_tooltip)
         self.indicator_checkbox.toggled.connect(self._on_toggle_indicator)
 
         # Auto clipboard toggle
-        self.clipboard_checkbox = QCheckBox("Automatically copy results to clipboard")
-        self.clipboard_checkbox.setToolTip("Copy transcription results to clipboard when processing completes")
+        self.clipboard_checkbox = QCheckBox(self._label_manager.clipboard_checkbox)
+        self.clipboard_checkbox.setToolTip(self._label_manager.clipboard_tooltip)
         self.clipboard_checkbox.toggled.connect(self._on_toggle_clipboard)
 
         # Language selection
-        language_label = QLabel("Language:")
+        language_label = QLabel(self._label_manager.language_label)
         self.language_combobox = QComboBox()
         self.language_combobox.addItems(self._controller.get_available_languages())
-        self.language_combobox.setToolTip("Select the application language")
+        self.language_combobox.setToolTip(self._label_manager.language_tooltip)
         self.language_combobox.currentTextChanged.connect(self._on_language_changed)
 
         # Add widgets to grid layout
