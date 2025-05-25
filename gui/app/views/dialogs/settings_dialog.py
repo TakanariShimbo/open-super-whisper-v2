@@ -5,7 +5,7 @@ This module provides the view component for the settings dialog in the Open Supe
 It allows users to configure application preferences like sound, indicator visibility, and auto-clipboard.
 """
 
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QWidget, QCheckBox, QDialogButtonBox, QGroupBox, QGridLayout
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QWidget, QCheckBox, QDialogButtonBox, QGroupBox, QGridLayout, QComboBox, QLabel
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtGui import QCloseEvent
 
@@ -40,7 +40,7 @@ class SettingsDialog(QDialog):
         self._init_ui()
 
         # Initialize UI states from controller
-        self._update_checkboxes()
+        self._update_ui_elements()
 
         # Connect controller signals
         self._connect_controller_signals()
@@ -78,10 +78,19 @@ class SettingsDialog(QDialog):
         self.clipboard_checkbox.setToolTip("Copy transcription results to clipboard when processing completes")
         self.clipboard_checkbox.toggled.connect(self._on_toggle_clipboard)
 
-        # Add checkboxes to grid layout
-        settings_layout.addWidget(self.sound_checkbox, 0, 0)
-        settings_layout.addWidget(self.indicator_checkbox, 1, 0)
-        settings_layout.addWidget(self.clipboard_checkbox, 2, 0)
+        # Language selection
+        language_label = QLabel("Language:")
+        self.language_combobox = QComboBox()
+        self.language_combobox.addItems(self._controller.get_available_languages())
+        self.language_combobox.setToolTip("Select the application language")
+        self.language_combobox.currentTextChanged.connect(self._on_language_changed)
+
+        # Add widgets to grid layout
+        settings_layout.addWidget(self.sound_checkbox, 0, 0, 1, 2)
+        settings_layout.addWidget(self.indicator_checkbox, 1, 0, 1, 2)
+        settings_layout.addWidget(self.clipboard_checkbox, 2, 0, 1, 2)
+        settings_layout.addWidget(language_label, 3, 0)
+        settings_layout.addWidget(self.language_combobox, 3, 1)
 
         # Add button box
         button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
@@ -92,24 +101,29 @@ class SettingsDialog(QDialog):
         layout.addWidget(settings_group)
         layout.addWidget(button_box)
 
-    def _update_checkboxes(self) -> None:
+    def _update_ui_elements(self) -> None:
         """
-        Update the checkboxes to reflect the current settings.
+        Update the UI elements to reflect the current settings.
         """
-        # Block signals from the checkboxes
+        # Block signals from the UI elements
         self.sound_checkbox.blockSignals(True)
         self.indicator_checkbox.blockSignals(True)
         self.clipboard_checkbox.blockSignals(True)
+        self.language_combobox.blockSignals(True)
 
         # Set checkbox states
         self.sound_checkbox.setChecked(self._controller.get_sound_enabled())
         self.indicator_checkbox.setChecked(self._controller.get_indicator_visible())
         self.clipboard_checkbox.setChecked(self._controller.get_auto_clipboard())
 
-        # Unblock signals from the checkboxes
+        # Set language selection
+        self.language_combobox.setCurrentText(self._controller.get_language())
+
+        # Unblock signals from the UI elements
         self.sound_checkbox.blockSignals(False)
         self.indicator_checkbox.blockSignals(False)
         self.clipboard_checkbox.blockSignals(False)
+        self.language_combobox.blockSignals(False)
 
     #
     # Controller Signals
@@ -129,7 +143,7 @@ class SettingsDialog(QDialog):
         """
         Handle settings updated event.
         """
-        self._update_checkboxes()
+        self._update_ui_elements()
 
     #
     # UI Events
@@ -169,6 +183,18 @@ class SettingsDialog(QDialog):
             New checkbox state
         """
         self._controller.set_auto_clipboard(enabled=enabled)
+
+    @pyqtSlot(str)
+    def _on_language_changed(self, language: str) -> None:
+        """
+        Handle language selection change.
+
+        Parameters
+        ----------
+        language : str
+            The selected language name
+        """
+        self._controller.set_language(language=language)
 
     #
     # Open/Close Events

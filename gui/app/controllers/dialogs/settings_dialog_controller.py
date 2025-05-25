@@ -135,6 +135,39 @@ class SettingsDialogController(QObject):
         """
         self._dialog_model.set_auto_clipboard(value=enabled)
 
+    def get_language(self) -> str:
+        """
+        Get current application language setting.
+
+        Returns
+        -------
+        str
+            The selected language name
+        """
+        return self._dialog_model.get_language()
+
+    def set_language(self, language: str) -> None:
+        """
+        Set application language setting.
+
+        Parameters
+        ----------
+        language : str
+            The language name to set
+        """
+        self._dialog_model.set_language(value=language)
+
+    def get_available_languages(self) -> list[str]:
+        """
+        Get the list of available languages.
+
+        Returns
+        -------
+        list[str]
+            List of available language names
+        """
+        return self._dialog_model.get_available_languages()
+
     def save_settings(self) -> None:
         """
         Save current settings to persistent storage and update related components.

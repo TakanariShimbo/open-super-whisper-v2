@@ -25,6 +25,11 @@ class SettingsDialogModel(QObject):
         Signal emitted when any setting changes
     """
 
+    # Available language options
+    AVAILABLE_LANGUAGES = [
+        "English",
+    ]
+
     #
     # Signals
     #
@@ -49,11 +54,14 @@ class SettingsDialogModel(QObject):
         self._sound_enabled = self._settings_manager.get_audio_notifications_enabled()
         self._indicator_visible = self._settings_manager.get_indicator_visible()
         self._auto_clipboard = self._settings_manager.get_auto_clipboard()
+        language = self._settings_manager.get_language()
+        self._language = language if language in self.AVAILABLE_LANGUAGES else self.AVAILABLE_LANGUAGES[0]
 
         # Store original values to support cancel operation
         self._original_sound_enabled = self._sound_enabled
         self._original_indicator_visible = self._indicator_visible
         self._original_auto_clipboard = self._auto_clipboard
+        self._original_language = self._language
 
     #
     # Model Methods
@@ -130,6 +138,41 @@ class SettingsDialogModel(QObject):
             self._auto_clipboard = value
             self.settings_updated.emit()
 
+    def get_language(self) -> str:
+        """
+        Get the selected application language.
+
+        Returns
+        -------
+        str
+            The selected language name
+        """
+        return self._language
+
+    def set_language(self, value: str) -> None:
+        """
+        Set the application language.
+
+        Parameters
+        ----------
+        value : str
+            The language name to set
+        """
+        if self._language != value:
+            self._language = value
+            self.settings_updated.emit()
+
+    def get_available_languages(self) -> list[str]:
+        """
+        Get the list of available languages.
+
+        Returns
+        -------
+        list[str]
+            List of available language names
+        """
+        return self.AVAILABLE_LANGUAGES.copy()
+
     def save_settings(self) -> None:
         """
         Save current settings to persistent storage.
@@ -137,11 +180,13 @@ class SettingsDialogModel(QObject):
         self._audio_manager.set_enabled(value=self._sound_enabled)
         self._settings_manager.set_indicator_visible(visible=self._indicator_visible)
         self._settings_manager.set_auto_clipboard(enabled=self._auto_clipboard)
+        self._settings_manager.set_language(language=self._language)
 
         # Update original values
         self._original_sound_enabled = self._sound_enabled
         self._original_indicator_visible = self._indicator_visible
         self._original_auto_clipboard = self._auto_clipboard
+        self._original_language = self._language
 
     def restore_original(self) -> None:
         """
@@ -150,3 +195,4 @@ class SettingsDialogModel(QObject):
         self.set_sound_enabled(value=self._original_sound_enabled)
         self.set_indicator_visible(value=self._original_indicator_visible)
         self.set_auto_clipboard(value=self._original_auto_clipboard)
+        self.set_language(value=self._original_language)

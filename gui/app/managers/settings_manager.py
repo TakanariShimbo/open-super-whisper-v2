@@ -34,6 +34,7 @@ class SettingsManager:
     KEY_AUDIO_NOTIFICATIONS_VOLUME = "audio_notifications_volume"
     KEY_INDICATOR_VISIBLE = "indicator_visible"
     KEY_AUTO_CLIPBOARD = "auto_clipboard"
+    KEY_LANGUAGE = "language"
 
     # Directory and file constants
     CONFIG_DIR_NAME = ".open_super_whisper"
@@ -130,6 +131,7 @@ class SettingsManager:
             self.KEY_AUDIO_NOTIFICATIONS_VOLUME: 0.7,
             self.KEY_INDICATOR_VISIBLE: True,
             self.KEY_AUTO_CLIPBOARD: False,
+            self.KEY_LANGUAGE: None,
         }
 
     def _get_value(self, key: str, default: Any = None) -> Any:
@@ -367,3 +369,27 @@ class SettingsManager:
             True to enable auto-clipboard, False to disable
         """
         self._set_value(key=self.KEY_AUTO_CLIPBOARD, value=enabled)
+
+    # Language methods
+
+    def get_language(self) -> str | None:
+        """
+        Get the selected application language.
+
+        Returns
+        -------
+        str | None
+            The selected language name, or None if not set
+        """
+        return self._get_value(key=self.KEY_LANGUAGE, default=None)
+
+    def set_language(self, language: str | None) -> None:
+        """
+        Set the application language.
+
+        Parameters
+        ----------
+        language : str | None
+            The language name to set, or None for no preference
+        """
+        self._set_value(key=self.KEY_LANGUAGE, value=language)
