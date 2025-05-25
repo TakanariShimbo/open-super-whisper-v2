@@ -44,7 +44,8 @@ Transform your voice into intelligent, actionable text with this powerful PyQt6-
 .
 ├── run_open_super_whisper.py                      # Application entry point
 ├── README.md                                      # Project description
-├── pyproject.toml                                 # Project configuration and dependencies
+├── pyproject.toml                                 # Project configuration and dependencies for uv
+├── uv.lock                                        # Project configuration and dependencies for uv
 ├── assets/                                        # Assets (icons, audio files, etc.)
 │   ├── cancel_processing.wav                      # Sound played when processing completed
 │   ├── complete_processing.wav                    # Sound played when processing canceled
