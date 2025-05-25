@@ -131,7 +131,7 @@ class SettingsManager:
             self.KEY_AUDIO_NOTIFICATIONS_VOLUME: 0.7,
             self.KEY_INDICATOR_VISIBLE: True,
             self.KEY_AUTO_CLIPBOARD: False,
-            self.KEY_LANGUAGE: None,
+            self.KEY_LANGUAGE: "English",
         }
 
     def _get_value(self, key: str, default: Any = None) -> Any:
@@ -372,7 +372,7 @@ class SettingsManager:
 
     # Language methods
 
-    def get_language(self) -> str | None:
+    def get_language(self) -> str:
         """
         Get the selected application language.
 
@@ -381,15 +381,15 @@ class SettingsManager:
         str | None
             The selected language name, or None if not set
         """
-        return self._get_value(key=self.KEY_LANGUAGE, default=None)
+        return self._get_value(key=self.KEY_LANGUAGE, default="English")
 
-    def set_language(self, language: str | None) -> None:
+    def set_language(self, language: str) -> None:
         """
         Set the application language.
 
         Parameters
         ----------
-        language : str | None
-            The language name to set, or None for no preference
+        language : str
+            The language name to set
         """
         self._set_value(key=self.KEY_LANGUAGE, value=language)
