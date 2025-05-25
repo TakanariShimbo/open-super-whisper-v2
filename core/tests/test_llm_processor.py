@@ -243,8 +243,8 @@ def test_multimodal_processing() -> bool:
         # Create processor
         processor = LLMProcessor(client)
 
-        # Load sample image from core/tests/sample.png
-        sample_image_path = Path(__file__).parent / "sample.png"
+        # Load sample image from core/tests/programmer.png
+        sample_image_path = Path(__file__).parent / "programmer.png"
 
         if not sample_image_path.exists():
             print(f"❌ Sample image not found at: {sample_image_path}")
@@ -353,7 +353,7 @@ def main() -> int:
             - Basic Text Processing: Test basic text-to-text processing
             - System Instruction: Test custom system instructions/prompts  
             - Streaming: Test real-time streaming responses
-            - Multimodal: Test text + image processing with sample.png
+            - Multimodal: Test text + image processing with programmer.png
         """,
     )
 
