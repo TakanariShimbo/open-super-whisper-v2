@@ -339,21 +339,21 @@ def main() -> int:
         description="LLMProcessor Test Suite (using real OpenAI API)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-This test suite verifies LLMProcessor functionality using real OpenAI API calls.
-A valid OpenAI API key is required for all tests.
+            This test suite verifies LLMProcessor functionality using real OpenAI API calls.
+            A valid OpenAI API key is required for all tests.
 
-Examples:
-  %(prog)s                    # Run all tests (default)
-  %(prog)s --basic            # Run basic text processing test only
-  %(prog)s --system           # Run system instruction test only
-  %(prog)s --streaming        # Run streaming functionality test only
-  %(prog)s --multimodal       # Run multimodal processing test only
+            Examples:
+            %(prog)s                    # Run all tests (default)
+            %(prog)s --basic            # Run basic text processing test only
+            %(prog)s --system           # Run system instruction test only
+            %(prog)s --streaming        # Run streaming functionality test only
+            %(prog)s --multimodal       # Run multimodal processing test only
 
-Individual test descriptions:
-- Basic Text Processing: Test basic text-to-text processing
-- System Instruction: Test custom system instructions/prompts  
-- Streaming: Test real-time streaming responses
-- Multimodal: Test text + image processing with sample.png
+            Individual test descriptions:
+            - Basic Text Processing: Test basic text-to-text processing
+            - System Instruction: Test custom system instructions/prompts  
+            - Streaming: Test real-time streaming responses
+            - Multimodal: Test text + image processing with sample.png
         """,
     )
 
