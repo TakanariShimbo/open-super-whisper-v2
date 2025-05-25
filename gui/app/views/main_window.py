@@ -29,10 +29,210 @@ from core.pipelines.pipeline_result import PipelineResult
 
 from ..controllers.main_controller import MainController
 from ..managers.icon_manager import IconManager
+from ..managers.settings_manager import SettingsManager
 from ..utils.clipboard_utils import ClipboardUtils
 from ..managers.audio_manager import AudioManager
 from .tray.system_tray import SystemTray
 from .widgets.markdown_text_browser import MarkdownTextBrowser
+
+
+class LabelManager:
+    """
+    Manages application labels for internationalization support in Main Window.
+    """
+
+    ALL_LABELS = {
+        "English": {
+            # Window/UI Labels
+            "window_title": "Open Super Whisper App",
+            "main_toolbar": "Main Toolbar",
+            "instruction_set_label": "Instruction Set:",
+            "stt_output_tab": "STT Output",
+            "llm_output_tab": "LLM Output",
+            "stt_output_header": "STT Output:",
+            "llm_output_header": "LLM Output:",
+            "copy_button": "Copy",
+            "hotkey_tooltip": "Hotkey: {hotkey}",
+            # Button Labels
+            "start_recording": "Start Recording",
+            "stop_recording": "Stop Recording",
+            "cancel_processing": "Cancel Processing",
+            # Menu/Action Labels
+            "api_key_action": "API Key",
+            "instruction_sets_action": "Instruction Sets",
+            "settings_action": "Settings",
+            "quit_application_action": "Quit Application",
+            # Status Messages
+            "status_ready": "Ready",
+            "status_recording": "Recording...",
+            "status_processing": "Processing...",
+            "status_cancelled": "Cancelled",
+            "status_processing_completed": "Processing completed",
+            # Placeholder Text
+            "stt_placeholder": "STT output will appear here...",
+            "llm_placeholder": "LLM output will appear here...",
+            # Status Bar Messages
+            "api_key_updated": "API key updated",
+            "api_key_update_failed": "Failed to update API key",
+            "instruction_sets_updated": "Instruction sets updated",
+            "settings_updated": "Settings updated",
+            "stt_copied": "STT output copied to clipboard",
+            "llm_copied": "LLM output copied to clipboard",
+            # Dialog Messages
+            "quit_dialog_title": "Quit Application",
+            "quit_dialog_message": "Are you sure you want to quit the application?",
+            "tray_message_title": "Open Super Whisper App",
+            "tray_message_text": "The application is still running in the background. Click the tray icon to restore.",
+        },
+        # Future: Add other languages here
+    }
+
+    def __init__(self) -> None:
+        # Load language from settings manager
+        settings_manager = SettingsManager.instance()
+        language = settings_manager.get_language()
+
+        # Set labels based on language
+        self._labels = self.ALL_LABELS[language]
+
+    # Window/UI Labels
+    @property
+    def window_title(self) -> str:
+        return self._labels["window_title"]
+
+    @property
+    def main_toolbar(self) -> str:
+        return self._labels["main_toolbar"]
+
+    @property
+    def instruction_set_label(self) -> str:
+        return self._labels["instruction_set_label"]
+
+    @property
+    def stt_output_tab(self) -> str:
+        return self._labels["stt_output_tab"]
+
+    @property
+    def llm_output_tab(self) -> str:
+        return self._labels["llm_output_tab"]
+
+    @property
+    def stt_output_header(self) -> str:
+        return self._labels["stt_output_header"]
+
+    @property
+    def llm_output_header(self) -> str:
+        return self._labels["llm_output_header"]
+
+    @property
+    def copy_button(self) -> str:
+        return self._labels["copy_button"]
+
+    @property
+    def hotkey_tooltip(self) -> str:
+        return self._labels["hotkey_tooltip"]
+
+    # Button Labels
+    @property
+    def start_recording(self) -> str:
+        return self._labels["start_recording"]
+
+    @property
+    def stop_recording(self) -> str:
+        return self._labels["stop_recording"]
+
+    @property
+    def cancel_processing(self) -> str:
+        return self._labels["cancel_processing"]
+
+    # Menu/Action Labels
+    @property
+    def api_key_action(self) -> str:
+        return self._labels["api_key_action"]
+
+    @property
+    def instruction_sets_action(self) -> str:
+        return self._labels["instruction_sets_action"]
+
+    @property
+    def settings_action(self) -> str:
+        return self._labels["settings_action"]
+
+    @property
+    def quit_application_action(self) -> str:
+        return self._labels["quit_application_action"]
+
+    # Status Messages
+    @property
+    def status_ready(self) -> str:
+        return self._labels["status_ready"]
+
+    @property
+    def status_recording(self) -> str:
+        return self._labels["status_recording"]
+
+    @property
+    def status_processing(self) -> str:
+        return self._labels["status_processing"]
+
+    @property
+    def status_cancelled(self) -> str:
+        return self._labels["status_cancelled"]
+
+    @property
+    def status_processing_completed(self) -> str:
+        return self._labels["status_processing_completed"]
+
+    # Placeholder Text
+    @property
+    def stt_placeholder(self) -> str:
+        return self._labels["stt_placeholder"]
+
+    @property
+    def llm_placeholder(self) -> str:
+        return self._labels["llm_placeholder"]
+
+    # Status Bar Messages
+    @property
+    def api_key_updated(self) -> str:
+        return self._labels["api_key_updated"]
+
+    @property
+    def api_key_update_failed(self) -> str:
+        return self._labels["api_key_update_failed"]
+
+    @property
+    def instruction_sets_updated(self) -> str:
+        return self._labels["instruction_sets_updated"]
+
+    @property
+    def settings_updated(self) -> str:
+        return self._labels["settings_updated"]
+
+    @property
+    def stt_copied(self) -> str:
+        return self._labels["stt_copied"]
+
+    @property
+    def llm_copied(self) -> str:
+        return self._labels["llm_copied"]
+
+    # Dialog Messages
+    @property
+    def quit_dialog_title(self) -> str:
+        return self._labels["quit_dialog_title"]
+
+    @property
+    def quit_dialog_message(self) -> str:
+        return self._labels["quit_dialog_message"]
+
+    @property
+    def tray_message_title(self) -> str:
+        return self._labels["tray_message_title"]
+
+    @property
+    def tray_message_text(self) -> str:
+        return self._labels["tray_message_text"]
 
 
 class MainWindow(QMainWindow):
@@ -48,6 +248,9 @@ class MainWindow(QMainWindow):
         Initialize the MainWindow.
         """
         super().__init__()
+
+        # Initialize label manager
+        self._label_manager = LabelManager()
 
         # Initialize managers
         self._icon_manager = IconManager.instance()
@@ -79,7 +282,7 @@ class MainWindow(QMainWindow):
         Set up the user interface.
         """
         # Set window properties
-        self.setWindowTitle("Open Super Whisper App")
+        self.setWindowTitle(self._label_manager.window_title)
         self.setMinimumSize(700, 500)
 
         # Set window icon
@@ -114,23 +317,23 @@ class MainWindow(QMainWindow):
         """
         Create the application toolbar.
         """
-        self.toolbar = self.addToolBar("Main Toolbar")
+        self.toolbar = self.addToolBar(self._label_manager.main_toolbar)
         self.toolbar.setMovable(False)
 
         # API key action
-        api_action = QAction("API Key", self)
+        api_action = QAction(self._label_manager.api_key_action, self)
         api_action.triggered.connect(self._on_click_api_key)
         self.toolbar.addAction(api_action)
         self.toolbar.addSeparator()
 
         # Instruction sets action
-        instruction_sets_action = QAction("Instruction Sets", self)
+        instruction_sets_action = QAction(self._label_manager.instruction_sets_action, self)
         instruction_sets_action.triggered.connect(self._on_click_instruction_sets)
         self.toolbar.addAction(instruction_sets_action)
         self.toolbar.addSeparator()
 
         # Settings action
-        settings_action = QAction("Settings", self)
+        settings_action = QAction(self._label_manager.settings_action, self)
         settings_action.triggered.connect(self._on_click_settings)
         self.toolbar.addAction(settings_action)
         self.toolbar.addSeparator()
@@ -142,7 +345,7 @@ class MainWindow(QMainWindow):
         self.toolbar.addSeparator()
 
         # Exit action (right-aligned)
-        quit_action = QAction("Quit Application", self)
+        quit_action = QAction(self._label_manager.quit_application_action, self)
         quit_action.triggered.connect(self._on_click_quit_application)
         self.toolbar.addAction(quit_action)
 
@@ -159,7 +362,7 @@ class MainWindow(QMainWindow):
         control_layout = QGridLayout(control_panel)
 
         # Record button
-        self._record_button = QPushButton("Start Recording")
+        self._record_button = QPushButton(self._label_manager.start_recording)
         self._record_button.setMinimumHeight(50)
         self._record_button.clicked.connect(self._on_click_record)
 
@@ -186,7 +389,7 @@ class MainWindow(QMainWindow):
         instruction_set_form = QWidget()
         form_layout = QFormLayout(instruction_set_form)
 
-        instruction_set_label = QLabel("Instruction Set:")
+        instruction_set_label = QLabel(self._label_manager.instruction_set_label)
         self._instruction_set_combo = QComboBox()
         self._instruction_set_combo.setMinimumWidth(200)
         form_layout.addRow(instruction_set_label, self._instruction_set_combo)
@@ -206,11 +409,11 @@ class MainWindow(QMainWindow):
 
         # Create STT output tab
         stt_tab = self._create_stt_output_tab()
-        self._tab_widget.addTab(stt_tab, "STT Output")
+        self._tab_widget.addTab(stt_tab, self._label_manager.stt_output_tab)
 
         # Create LLM output tab
         llm_tab = self._create_llm_output_tab()
-        self._tab_widget.addTab(llm_tab, "LLM Output")
+        self._tab_widget.addTab(llm_tab, self._label_manager.llm_output_tab)
 
         return self._tab_widget
 
@@ -228,14 +431,14 @@ class MainWindow(QMainWindow):
 
         # Create header with label and copy button
         stt_header_layout = self._create_output_header(
-            label_text="STT Output:",
+            label_text=self._label_manager.stt_output_header,
             copy_button_slot=self._on_click_copy_stt,
         )
         stt_layout.addLayout(stt_header_layout)
 
         # Use MarkdownTextBrowser for STT output
         self._stt_text = MarkdownTextBrowser(main_window=self)
-        self._stt_text.setPlaceholderText("STT output will appear here...")
+        self._stt_text.setPlaceholderText(self._label_manager.stt_placeholder)
         stt_layout.addWidget(self._stt_text)
 
         return stt_tab
@@ -254,14 +457,14 @@ class MainWindow(QMainWindow):
 
         # Create header with label and copy button
         llm_header_layout = self._create_output_header(
-            label_text="LLM Output:",
+            label_text=self._label_manager.llm_output_header,
             copy_button_slot=self._on_click_copy_llm,
         )
         llm_layout.addLayout(llm_header_layout)
 
         # Use MarkdownTextBrowser for LLM output
         self._llm_text = MarkdownTextBrowser(main_window=self)
-        self._llm_text.setPlaceholderText("LLM output will appear here...")
+        self._llm_text.setPlaceholderText(self._label_manager.llm_placeholder)
         llm_layout.addWidget(self._llm_text)
 
         return llm_tab
@@ -289,7 +492,7 @@ class MainWindow(QMainWindow):
         header_layout.addWidget(label, 0, 0)
 
         # Create copy button
-        copy_button = QPushButton("Copy")
+        copy_button = QPushButton(self._label_manager.copy_button)
         copy_button.clicked.connect(copy_button_slot)
         header_layout.addWidget(copy_button, 0, 1, Qt.AlignmentFlag.AlignRight)
 
@@ -309,7 +512,7 @@ class MainWindow(QMainWindow):
         self.setStatusBar(self._status_bar)
 
         # Status indicator
-        self._status_indicator = QLabel("Ready")
+        self._status_indicator = QLabel(self._label_manager.status_ready)
         self._status_bar.addPermanentWidget(self._status_indicator)
 
     def _populate_instruction_set_combo(self) -> None:
@@ -327,7 +530,7 @@ class MainWindow(QMainWindow):
             if instruction_set.hotkey:
                 self._instruction_set_combo.setItemData(
                     self._instruction_set_combo.count() - 1,
-                    f"Hotkey: {instruction_set.hotkey}",
+                    self._label_manager.hotkey_tooltip.format(hotkey=instruction_set.hotkey),
                     Qt.ItemDataRole.ToolTipRole,
                 )
 
@@ -396,8 +599,8 @@ class MainWindow(QMainWindow):
         Handle the recording started event.
         """
         # Update button and indicator text
-        self._record_button.setText("Stop Recording")
-        self._status_indicator.setText("Recording...")
+        self._record_button.setText(self._label_manager.stop_recording)
+        self._status_indicator.setText(self._label_manager.status_recording)
 
         # Update system tray recording status
         self._system_tray.update_recording_status("stop_recording")
@@ -414,8 +617,8 @@ class MainWindow(QMainWindow):
         Handle the processing started event.
         """
         # Update button and indicator text
-        self._record_button.setText("Cancel Processing")
-        self._status_indicator.setText("Processing...")
+        self._record_button.setText(self._label_manager.cancel_processing)
+        self._status_indicator.setText(self._label_manager.status_processing)
 
         # Update system tray recording status
         self._system_tray.update_recording_status("cancel_processing")
@@ -433,8 +636,8 @@ class MainWindow(QMainWindow):
         Handle processing cancelled event.
         """
         # Update button and indicator text
-        self._record_button.setText("Start Recording")
-        self._status_indicator.setText("Cancelled")
+        self._record_button.setText(self._label_manager.start_recording)
+        self._status_indicator.setText(self._label_manager.status_cancelled)
 
         # Re-enable instruction set selection
         self._instruction_set_combo.setEnabled(True)
@@ -469,8 +672,8 @@ class MainWindow(QMainWindow):
             self._tab_widget.setCurrentIndex(0)
 
         # Reset button state and status indicator
-        self._record_button.setText("Start Recording")
-        self._status_indicator.setText("Ready")
+        self._record_button.setText(self._label_manager.start_recording)
+        self._status_indicator.setText(self._label_manager.status_ready)
 
         # Re-enable instruction set selection
         self._instruction_set_combo.setEnabled(True)
@@ -479,7 +682,7 @@ class MainWindow(QMainWindow):
         self._system_tray.update_recording_status("start_recording")
 
         # Update status bar to show completion
-        self._status_bar.showMessage("Processing completed", 3000)
+        self._status_bar.showMessage(self._label_manager.status_processing_completed, 3000)
 
         # Play completion sound
         self._audio_manager.play_complete_processing()
@@ -544,9 +747,9 @@ class MainWindow(QMainWindow):
         """
         # Use the controller's API key settings method
         if self._controller.show_api_key_dialog(main_window=self):
-            self._status_bar.showMessage("API key updated", 2000)
+            self._status_bar.showMessage(self._label_manager.api_key_updated, 2000)
         else:
-            self._status_bar.showMessage("Failed to update API key", 2000)
+            self._status_bar.showMessage(self._label_manager.api_key_update_failed, 2000)
 
     @pyqtSlot()
     def _on_click_instruction_sets(self) -> None:
@@ -557,7 +760,7 @@ class MainWindow(QMainWindow):
         if self._controller.show_instruction_dialog(main_window=self):
             # Dialog was accepted, refresh instruction sets combo
             self._populate_instruction_set_combo()
-            self._status_bar.showMessage("Instruction sets updated", 2000)
+            self._status_bar.showMessage(self._label_manager.instruction_sets_updated, 2000)
 
     @pyqtSlot()
     def _on_click_settings(self) -> None:
@@ -567,7 +770,7 @@ class MainWindow(QMainWindow):
         # Use controller to handle settings dialog
         if self._controller.show_settings_dialog(main_window=self):
             # Settings were updated
-            self._status_bar.showMessage("Settings updated", 2000)
+            self._status_bar.showMessage(self._label_manager.settings_updated, 2000)
 
     @pyqtSlot()
     def _on_click_record(self) -> None:
@@ -600,7 +803,7 @@ class MainWindow(QMainWindow):
         Copy the STT output text to the clipboard.
         """
         ClipboardUtils.set_text(text=self._stt_text.markdown_text())
-        self._status_bar.showMessage("STT output copied to clipboard", 2000)
+        self._status_bar.showMessage(self._label_manager.stt_copied, 2000)
 
     @pyqtSlot()
     def _on_click_copy_llm(self) -> None:
@@ -608,7 +811,7 @@ class MainWindow(QMainWindow):
         Copy the LLM output text to the clipboard.
         """
         ClipboardUtils.set_text(text=self._llm_text.markdown_text())
-        self._status_bar.showMessage("LLM output copied to clipboard", 2000)
+        self._status_bar.showMessage(self._label_manager.llm_copied, 2000)
 
     #
     # Open/Close Events
@@ -635,8 +838,8 @@ class MainWindow(QMainWindow):
         """
         reply = QMessageBox.question(
             self,
-            "Quit Application",
-            "Are you sure you want to quit the application?",
+            self._label_manager.quit_dialog_title,
+            self._label_manager.quit_dialog_message,
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )
@@ -671,8 +874,8 @@ class MainWindow(QMainWindow):
 
             # Show a notification message
             self._system_tray.showMessage(
-                "Open Super Whisper App",
-                "The application is still running in the background. Click the tray icon to restore.",
+                self._label_manager.tray_message_title,
+                self._label_manager.tray_message_text,
                 QSystemTrayIcon.MessageIcon.Information,
                 3000,
             )
