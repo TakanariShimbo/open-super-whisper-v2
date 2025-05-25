@@ -42,13 +42,90 @@ def _create_test_client() -> tuple[bool, Any]:
 
 
 def _get_test_audio_file() -> Path:
-    """Get the test audio file path"""
-    test_audio_path = Path(__file__).parent / "toeic.mp3"
-
-    if not test_audio_path.exists():
-        raise FileNotFoundError(f"Test audio file not found: {test_audio_path}")
-
-    return test_audio_path
+    """Get the test audio file path with user selection"""
+    print("\n🎵 Audio File Options:")
+    print("1. Use toeic.mp3 (default test audio)")
+    print("2. Specify custom audio file path")
+    
+    while True:
+        try:
+            choice = input("Select audio option (1-2) or press Enter for default: ").strip()
+            
+            if not choice or choice == "1":
+                # Use default toeic.mp3
+                test_audio_path = Path(__file__).parent / "toeic.mp3"
+                if test_audio_path.exists():
+                    file_size_mb = test_audio_path.stat().st_size / (1024 * 1024)
+                    print(f"✅ Audio file loaded: {test_audio_path.name} ({file_size_mb:.2f}MB)")
+                    return test_audio_path
+                else:
+                    raise FileNotFoundError(f"Default audio file not found: {test_audio_path}")
+                    
+            elif choice == "2":
+                # Get custom audio file path
+                custom_path = input("Enter audio file path: ").strip()
+                if custom_path:
+                    audio_path = Path(custom_path)
+                    if audio_path.exists():
+                        # Check if it's likely an audio file
+                        audio_extensions = {'.mp3', '.wav', '.m4a', '.flac', '.ogg', '.aac', '.mp4', '.mov'}
+                        if audio_path.suffix.lower() in audio_extensions:
+                            file_size_mb = audio_path.stat().st_size / (1024 * 1024)
+                            print(f"✅ Audio file loaded: {audio_path.name} ({file_size_mb:.2f}MB)")
+                            return audio_path
+                        else:
+                            print(f"⚠️ Warning: {audio_path.suffix} might not be a supported audio format")
+                            proceed = input("Continue anyway? [y/N]: ").strip().lower()
+                            if proceed in ['y', 'yes']:
+                                file_size_mb = audio_path.stat().st_size / (1024 * 1024)
+                                print(f"✅ Audio file loaded: {audio_path.name} ({file_size_mb:.2f}MB)")
+                                return audio_path
+                            else:
+                                print("❌ Audio file selection cancelled")
+                                # Ask if user wants to try again
+                                retry = input("Try again? [y/N]: ").strip().lower()
+                                if retry not in ['y', 'yes']:
+                                    # Fallback to default
+                                    test_audio_path = Path(__file__).parent / "toeic.mp3"
+                                    if test_audio_path.exists():
+                                        print("⚠️ Falling back to default audio file")
+                                        return test_audio_path
+                                    else:
+                                        raise FileNotFoundError(f"Default audio file not found: {test_audio_path}")
+                    else:
+                        print(f"❌ Audio file not found: {audio_path}")
+                        # Ask if user wants to try again
+                        retry = input("Try again? [y/N]: ").strip().lower()
+                        if retry not in ['y', 'yes']:
+                            # Fallback to default
+                            test_audio_path = Path(__file__).parent / "toeic.mp3"
+                            if test_audio_path.exists():
+                                print("⚠️ Falling back to default audio file")
+                                return test_audio_path
+                            else:
+                                raise FileNotFoundError(f"Default audio file not found: {test_audio_path}")
+                else:
+                    print("❌ No path provided")
+                    # Ask if user wants to try again
+                    retry = input("Try again? [y/N]: ").strip().lower()
+                    if retry not in ['y', 'yes']:
+                        # Fallback to default
+                        test_audio_path = Path(__file__).parent / "toeic.mp3"
+                        if test_audio_path.exists():
+                            print("⚠️ Falling back to default audio file")
+                            return test_audio_path
+                        else:
+                            raise FileNotFoundError(f"Default audio file not found: {test_audio_path}")
+            else:
+                print("❌ Invalid selection. Please try again.")
+        
+        except KeyboardInterrupt:
+            print("\n⚠️ Using default audio file")
+            test_audio_path = Path(__file__).parent / "toeic.mp3"
+            if test_audio_path.exists():
+                return test_audio_path
+            else:
+                raise FileNotFoundError(f"Default audio file not found: {test_audio_path}")
 
 
 def _select_model(processor: STTProcessor) -> str:
@@ -169,11 +246,6 @@ def test_stt_processor() -> bool:
 
         # Get test audio file
         test_audio_path = _get_test_audio_file()
-        print(f"✅ Using test audio file: {test_audio_path.name}")
-
-        # Get file size for logging
-        file_size_mb = test_audio_path.stat().st_size / (1024 * 1024)
-        print(f"📁 File size: {file_size_mb:.2f}MB")
 
         # Interactive configuration
         print("\n" + "=" * 60)
@@ -200,6 +272,9 @@ def test_stt_processor() -> bool:
         print(f"📝 Custom Vocabulary: {vocabulary or 'None'}")
         print(f"🎯 System Instruction: {instruction or 'None'}")
         print(f"🌍 Language: {language or 'Auto-detection'}")
+        
+        # Get file size for summary
+        file_size_mb = test_audio_path.stat().st_size / (1024 * 1024)
         print(f"🎵 Audio File: {test_audio_path.name} ({file_size_mb:.2f}MB)")
 
         # Confirm to proceed

@@ -3,12 +3,11 @@
 LLM Processor Test
 
 This test verifies the LLMProcessor functionality using real OpenAI API calls.
-All tests require a valid API key and make actual API requests.
+The test allows interactive configuration of model and system instructions.
 """
 
 import sys
 import time
-import argparse
 from pathlib import Path
 from typing import Any
 
@@ -42,9 +41,174 @@ def _create_test_client() -> tuple[bool, Any]:
     return APIClientFactory.create_client(api_key)
 
 
-def test_basic_text_processing() -> bool:
-    """Test basic text processing with real API"""
-    print("=== Basic Text Processing Test ===")
+def _select_model(processor: LLMProcessor) -> str:
+    """Allow user to select LLM model"""
+    available_models = processor.AVAILABLE_MODELS
+
+    print("\n🤖 Available LLM Models:")
+    for i, model in enumerate(available_models, 1):
+        default_marker = " (default)" if model["id"] == processor.DEFAULT_MODEL_ID else ""
+        print(f"  {i}. {model['name']}{default_marker}")
+        print(f"     ID: {model['id']}")
+        print(f"     Description: {model['description'][:80]}...")
+        print()
+
+    while True:
+        try:
+            choice = input(f"Select model (1-{len(available_models)}) or press Enter for default: ").strip()
+
+            if not choice:
+                # Use default model
+                return processor.DEFAULT_MODEL_ID
+
+            model_index = int(choice) - 1
+            if 0 <= model_index < len(available_models):
+                selected_model = available_models[model_index]
+                processor.set_model(selected_model["id"])
+                print(f"✅ Model set to: {selected_model['name']}")
+                return selected_model["id"]
+            else:
+                print("❌ Invalid selection. Please try again.")
+        except ValueError:
+            print("❌ Please enter a valid number.")
+        except KeyboardInterrupt:
+            print("\n⚠️ Using default model")
+            return processor.DEFAULT_MODEL_ID
+
+
+def _configure_system_instruction(processor: LLMProcessor) -> str | None:
+    """Allow user to configure system instruction"""
+    print("\n🎯 System Instruction Configuration:")
+    print("You can provide instructions to control the LLM behavior.")
+    print("Examples: 'You are a helpful coding assistant' or 'Respond in Japanese'")
+
+    try:
+        instruction = input("Enter system instruction (or press Enter to skip): ").strip()
+
+        if instruction:
+            processor.set_system_instruction(instruction)
+            print(f"✅ System instruction set: {instruction}")
+            return instruction
+        else:
+            print("✅ Using default system instruction")
+            return None
+    except KeyboardInterrupt:
+        print("\n⚠️ Using default system instruction")
+        return None
+
+
+def _get_test_input() -> tuple[str, bytes | None]:
+    """Get test input (text and optional image)"""
+    print("\n📝 Test Input Configuration:")
+
+    # Get text input
+    try:
+        text = input("Enter your text prompt: ").strip()
+        if not text:
+            print("❌ No text provided")
+            return "", None
+    except KeyboardInterrupt:
+        print("\n⚠️ Test cancelled")
+        return "", None
+
+    # Ask about image input
+    try:
+        use_image = input("Include an image? [y/N]: ").strip().lower()
+        image_data = None
+
+        if use_image in ["y", "yes"]:
+            print("\n🖼️ Image Options:")
+            print("1. Use programmer.png (default test image)")
+            print("2. Specify custom image path")
+            
+            while True:
+                try:
+                    image_choice = input("Select image option (1-2) or press Enter for default: ").strip()
+                    
+                    if not image_choice or image_choice == "1":
+                        # Use default programmer.png
+                        image_path = Path(__file__).parent / "programmer.png"
+                        if image_path.exists():
+                            try:
+                                with open(image_path, "rb") as f:
+                                    image_data = f.read()
+                                print(f"✅ Image loaded: {image_path.name} ({len(image_data)} bytes)")
+                                break
+                            except Exception as e:
+                                print(f"❌ Failed to load image: {e}")
+                                break
+                        else:
+                            print(f"❌ Default image file not found: {image_path}")
+                            break
+                            
+                    elif image_choice == "2":
+                        # Get custom image path
+                        custom_path = input("Enter image file path: ").strip()
+                        if custom_path:
+                            image_path = Path(custom_path)
+                            if image_path.exists():
+                                try:
+                                    with open(image_path, "rb") as f:
+                                        image_data = f.read()
+                                    print(f"✅ Image loaded: {image_path.name} ({len(image_data)} bytes)")
+                                    break
+                                except Exception as e:
+                                    print(f"❌ Failed to load image: {e}")
+                                    # Ask if user wants to try again
+                                    retry = input("Try again? [y/N]: ").strip().lower()
+                                    if retry not in ['y', 'yes']:
+                                        break
+                            else:
+                                print(f"❌ Image file not found: {image_path}")
+                                # Ask if user wants to try again
+                                retry = input("Try again? [y/N]: ").strip().lower()
+                                if retry not in ['y', 'yes']:
+                                    break
+                        else:
+                            print("❌ No path provided")
+                            break
+                    else:
+                        print("❌ Invalid selection. Please try again.")
+                
+                except KeyboardInterrupt:
+                    print("\n⚠️ Skipping image input")
+                    break
+        else:
+            print("✅ Text-only processing")
+
+    except KeyboardInterrupt:
+        print("\n⚠️ Using text-only processing")
+        image_data = None
+
+    return text, image_data
+
+
+def _select_processing_mode() -> str:
+    """Allow user to select processing mode"""
+    print("\n⚡ Processing Mode:")
+    print("1. Standard processing")
+    print("2. Streaming processing")
+
+    while True:
+        try:
+            choice = input("Select processing mode (1-2) or press Enter for standard: ").strip()
+
+            if not choice or choice == "1":
+                return "standard"
+            elif choice == "2":
+                return "streaming"
+            else:
+                print("❌ Invalid selection. Please try again.")
+        except KeyboardInterrupt:
+            print("\n⚠️ Using standard processing")
+            return "standard"
+
+
+def test_llm_processor() -> bool:
+    """Main LLM processor test with interactive configuration"""
+    print("🧪 LLMProcessor - Interactive Test Suite")
+    print("=" * 60)
+    print("This test uses real OpenAI API and requires a valid API key.\n")
 
     try:
         # Create real client
@@ -59,345 +223,111 @@ def test_basic_text_processing() -> bool:
         # Create processor
         processor = LLMProcessor(client)
 
-        # Get test text from user
-        print("\n📝 Enter the text you want to process:")
-        test_text = input("Text: ").strip()
+        # Interactive configuration
+        print("\n" + "=" * 60)
+        print("🔧 Interactive Configuration")
+        print("=" * 60)
 
-        if not test_text:
-            print("❌ No text provided")
+        # Model selection
+        selected_model = _select_model(processor)
+
+        # System instruction configuration
+        instruction = _configure_system_instruction(processor)
+
+        # Get test input
+        text_input, image_data = _get_test_input()
+
+        if not text_input:
+            print("❌ No text input provided")
             return False
 
-        print(f"\nTesting with: '{test_text}'")
+        # Processing mode selection
+        processing_mode = _select_processing_mode()
 
-        start_time = time.time()
-        response = processor.process_text(test_text)
-        end_time = time.time()
+        # Summary of configuration
+        print("\n" + "=" * 60)
+        print("📋 Configuration Summary")
+        print("=" * 60)
+        print(f"🤖 Model: {selected_model}")
+        print(f"🎯 System Instruction: {instruction or 'Default (helpful assistant)'}")
+        print(f"📝 Text Input: {text_input[:50]}{'...' if len(text_input) > 50 else ''}")
+        print(f"🖼️ Image Input: {'Yes' if image_data else 'No'}")
+        print(f"⚡ Processing Mode: {processing_mode.capitalize()}")
 
-        if response and len(response.strip()) > 0:
-            print(f"\n✅ Received response:")
-            print(f"Response: {response.strip()}")
-            print(f"Processing time: {end_time - start_time:.2f} seconds")
-        else:
-            print("❌ Empty or invalid response received")
-            return False
-
-        print("✅ Basic text processing test completed\n")
-        return True
-
-    except KeyboardInterrupt:
-        print("\n⚠️ Test cancelled by user")
-        return False
-    except Exception as e:
-        print(f"❌ Error during basic text processing test: {e}")
-        return False
-
-
-def test_system_instruction_functionality() -> bool:
-    """Test system instruction functionality with real API"""
-    print("=== System Instruction Functionality Test ===")
-
-    try:
-        # Create real client
-        is_successful, client = _create_test_client()
-
-        if not is_successful:
-            print("❌ Failed to create API client")
-            return False
-
-        # Create processor
-        processor = LLMProcessor(client)
-
-        # Get custom system instruction from user
-        print("\n🎯 Enter the system instruction:")
-        custom_instruction = input("System instruction: ").strip()
-
-        if not custom_instruction:
-            print("❌ No system instruction provided")
-            return False
-
-        processor.set_system_instruction(custom_instruction)
-
-        # Get test question from user
-        print("\n❓ Enter the question/text to test the instruction:")
-        test_text = input("Question: ").strip()
-
-        if not test_text:
-            print("❌ No question provided")
-            return False
-
-        print(f"\nTesting with custom instruction: '{custom_instruction}'")
-        print(f"Question: '{test_text}'")
-
-        start_time = time.time()
-        response = processor.process_text(test_text)
-        end_time = time.time()
-
-        if response and len(response.strip()) > 0:
-            print(f"\n✅ Received response:")
-            print(f"Response: {response.strip()}")
-            print(f"Processing time: {end_time - start_time:.2f} seconds")
-
-            # Ask user if response follows instruction
-            follows_instruction = input("\nDoes the response follow your instruction? [y/N]: ").strip().lower()
-            if follows_instruction in ["y", "yes"]:
-                print("✅ Response follows instruction as expected")
-            else:
-                print("⚠️ Response may not follow instruction perfectly (this can happen due to model behavior variations)")
-        else:
-            print("❌ Empty or invalid response received")
-            return False
-
-        print("✅ System instruction functionality test completed\n")
-        return True
-
-    except KeyboardInterrupt:
-        print("\n⚠️ Test cancelled by user")
-        return False
-    except Exception as e:
-        print(f"❌ Error during system instruction test: {e}")
-        return False
-
-
-def test_streaming_functionality() -> bool:
-    """Test streaming functionality with real API"""
-    print("=== Streaming Functionality Test ===")
-
-    try:
-        # Create real client
-        is_successful, client = _create_test_client()
-
-        if not is_successful:
-            print("❌ Failed to create API client")
-            return False
-
-        # Create processor
-        processor = LLMProcessor(client)
-
-        # Get test text from user
-        print("\n💬 Enter the text for streaming test:")
-        test_text = input("Text: ").strip()
-
-        if not test_text:
-            print("❌ No text provided")
-            return False
-
-        print(f"\nTesting streaming with: '{test_text}'")
-
-        chunks_received = []
-
-        def capture_chunk(chunk: str) -> None:
-            chunks_received.append(chunk)
-            print(chunk, end="", flush=True)
-
-        print("\nStreaming response:")
-        print("-" * 50)
-
-        start_time = time.time()
-        full_response = processor.process_text_with_stream(test_text, capture_chunk)
-        end_time = time.time()
-
-        print("\n" + "-" * 50)
-
-        if len(chunks_received) > 1:
-            print(f"✅ Received {len(chunks_received)} chunks")
-        else:
-            print("⚠️ Received fewer chunks than expected (may depend on response length)")
-
-        if full_response and len(full_response.strip()) > 0:
-            print(f"✅ Complete response length: {len(full_response)} characters")
-            print(f"Processing time: {end_time - start_time:.2f} seconds")
-        else:
-            print("❌ Empty or invalid complete response")
-            return False
-
-        # Verify that chunked response matches full response
-        combined_chunks = "".join(chunks_received)
-        if combined_chunks == full_response:
-            print("✅ Chunked response matches full response")
-        else:
-            print("⚠️ Chunked response differs from full response (may be expected)")
-
-        print("✅ Streaming functionality test completed\n")
-        return True
-
-    except KeyboardInterrupt:
-        print("\n⚠️ Test cancelled by user")
-        return False
-    except Exception as e:
-        print(f"❌ Error during streaming test: {e}")
-        return False
-
-
-def test_multimodal_processing() -> bool:
-    """Test multimodal processing with text and image"""
-    print("=== Multimodal Processing Test ===")
-
-    try:
-        # Create real client
-        is_successful, client = _create_test_client()
-
-        if not is_successful:
-            print("❌ Failed to create API client")
-            return False
-
-        # Create processor
-        processor = LLMProcessor(client)
-
-        # Load sample image from core/tests/programmer.png
-        sample_image_path = Path(__file__).parent / "programmer.png"
-
-        if not sample_image_path.exists():
-            print(f"❌ Sample image not found at: {sample_image_path}")
-            return False
-
+        # Confirm to proceed
+        print("\n" + "=" * 60)
         try:
-            with open(sample_image_path, "rb") as f:
-                test_image_data = f.read()
-            print(f"✅ Loaded sample image: {sample_image_path}")
-            print(f"   Image size: {len(test_image_data)} bytes")
-        except Exception as e:
-            print(f"❌ Failed to load sample image: {e}")
+            proceed = input("🚀 Start processing? [Y/n]: ").strip().lower()
+            if proceed and proceed not in ["y", "yes"]:
+                print("⚠️ Test cancelled by user")
+                return False
+        except KeyboardInterrupt:
+            print("\n⚠️ Test cancelled by user")
             return False
 
-        # Get question about the image from user
-        print(f"\n🖼️ Enter your question about the image ({sample_image_path.name}):")
-        test_text = input("Question: ").strip()
-
-        if not test_text:
-            print("❌ No question provided")
-            return False
-
-        print(f"\nTesting multimodal processing...")
-        print(f"Text: '{test_text}'")
-        print(f"Image: {sample_image_path.name}")
+        # Process the input
+        print("\n" + "=" * 60)
+        print("🔄 Processing Input")
+        print("=" * 60)
 
         start_time = time.time()
-        response = processor.process_text(test_text, image_data=test_image_data)
+
+        if processing_mode == "streaming":
+            print("Starting streaming processing...\n")
+            print("-" * 60)
+
+            def print_chunk(chunk: str) -> None:
+                print(chunk, end="", flush=True)
+
+            response = processor.process_text_with_stream(text_input, print_chunk, image_data=image_data)
+            print("\n" + "-" * 60)
+
+        else:
+            print("Starting standard processing...")
+            response = processor.process_text(text_input, image_data=image_data)
+
         end_time = time.time()
 
+        # Display results
+        print("\n" + "=" * 60)
+        print("📊 Processing Results")
+        print("=" * 60)
+
         if response and len(response.strip()) > 0:
-            print(f"\n✅ Received multimodal response:")
-            print(f"Response: {response.strip()}")
-            print(f"Processing time: {end_time - start_time:.2f} seconds")
+            print(f"✅ Processing completed successfully!")
+            print(f"⏱️ Processing time: {end_time - start_time:.2f} seconds")
+            print(f"📊 Response length: {len(response)} characters")
+            print(f"📝 Word count: {len(response.split())} words")
+
+            if processing_mode == "standard":
+                print("\n" + "-" * 60)
+                print("📄 Response:")
+                print("-" * 60)
+                print(response.strip())
+                print("-" * 60)
+
         else:
-            print("❌ Empty or invalid multimodal response received")
+            print("❌ Empty or invalid response received")
             return False
 
-        print("✅ Multimodal processing test completed\n")
+        print("\n✅ LLM Processor test completed successfully!")
         return True
 
     except KeyboardInterrupt:
         print("\n⚠️ Test cancelled by user")
         return False
     except Exception as e:
-        print(f"❌ Error during multimodal test: {e}")
+        print(f"❌ Error during test: {e}")
         return False
-
-
-def run_all_tests() -> int:
-    """Run all LLM processor tests"""
-    print("🧪 LLMProcessor - Complete Test Suite")
-    print("=" * 60)
-    print("All tests use real OpenAI API and require a valid API key.\n")
-
-    tests = [
-        ("Basic Text Processing", test_basic_text_processing),
-        ("System Instruction Functionality", test_system_instruction_functionality),
-        ("Streaming Functionality", test_streaming_functionality),
-        ("Multimodal Processing", test_multimodal_processing),
-    ]
-
-    passed = 0
-    failed = 0
-
-    for test_name, test_func in tests:
-        print(f"Running {test_name} test...")
-        if test_func():
-            passed += 1
-        else:
-            failed += 1
-        print()  # Add spacing between tests
-
-    # Print results summary
-    print("=" * 60)
-    print("📊 Test Results Summary:")
-    print(f"  Tests passed: ✅ {passed}")
-    print(f"  Tests failed: ❌ {failed}")
-    print(f"  Total tests: {passed + failed}")
-
-    if failed == 0:
-        print("\n🎉 All tests passed!")
-        return 0
-    else:
-        print(f"\n❌ {failed} tests failed.")
-        return 1
 
 
 def main() -> int:
     """Main test execution"""
-    parser = argparse.ArgumentParser(
-        description="LLMProcessor Test Suite (using real OpenAI API)",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-            This test suite verifies LLMProcessor functionality using real OpenAI API calls.
-            A valid OpenAI API key is required for all tests.
-
-            Examples:
-            %(prog)s                    # Run all tests (default)
-            %(prog)s --basic            # Run basic text processing test only
-            %(prog)s --system           # Run system instruction test only
-            %(prog)s --streaming        # Run streaming functionality test only
-            %(prog)s --multimodal       # Run multimodal processing test only
-
-            Individual test descriptions:
-            - Basic Text Processing: Test basic text-to-text processing
-            - System Instruction: Test custom system instructions/prompts  
-            - Streaming: Test real-time streaming responses
-            - Multimodal: Test text + image processing with programmer.png
-        """,
-    )
-
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument("--basic", action="store_true", help="Run basic text processing test only")
-    group.add_argument("--system", action="store_true", help="Run system instruction functionality test only")
-    group.add_argument("--streaming", action="store_true", help="Run streaming functionality test only")
-    group.add_argument("--multimodal", action="store_true", help="Run multimodal processing test only")
-    group.add_argument("--all", action="store_true", help="Run all tests (default)")
-
-    args = parser.parse_args()
-
     try:
-        # Determine which test to run
-        if args.basic:
-            print("🧪 LLMProcessor - Basic Text Processing Test")
-            print("=" * 50)
-            success = test_basic_text_processing()
-            return 0 if success else 1
-
-        elif args.system:
-            print("🧪 LLMProcessor - System Instruction Functionality Test")
-            print("=" * 50)
-            success = test_system_instruction_functionality()
-            return 0 if success else 1
-
-        elif args.streaming:
-            print("🧪 LLMProcessor - Streaming Functionality Test")
-            print("=" * 50)
-            success = test_streaming_functionality()
-            return 0 if success else 1
-
-        elif args.multimodal:
-            print("🧪 LLMProcessor - Multimodal Processing Test")
-            print("=" * 50)
-            success = test_multimodal_processing()
-            return 0 if success else 1
-
-        else:
-            # Default behavior: run all tests
-            return run_all_tests()
-
+        success = test_llm_processor()
+        return 0 if success else 1
     except KeyboardInterrupt:
-        print("\n⚠️ Tests cancelled by user")
+        print("\n⚠️ Test cancelled by user")
         return 1
 
 
