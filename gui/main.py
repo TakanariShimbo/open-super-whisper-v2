@@ -34,10 +34,6 @@ class LabelManager:
         self._labels = self.ALL_LABELS[language]
 
     @property
-    def name(self) -> str:
-        return self._labels["name"]
-
-    @property
     def already_running_title(self) -> str:
         return self._labels["already_running_title"]
 
