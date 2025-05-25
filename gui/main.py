@@ -15,6 +15,45 @@ from .app.managers.icon_manager import IconManager
 from .app.managers.settings_manager import SettingsManager
 
 
+class LabelManager:
+    """
+    Manages application labels for internationalization support.
+    """
+
+    ALL_LABELS = {
+        "English": {
+            "already_running_title": "Application already running",
+            "already_running_message": "Please check the application tray for the icon.",
+            "no_api_key_title": "No API key provided",
+            "no_api_key_message": "Please provide a valid API key to wake up the application.",
+        },
+        # Future: Add other languages here
+    }
+
+    def __init__(self, language: str = "English") -> None:
+        self._labels = self.ALL_LABELS[language]
+
+    @property
+    def name(self) -> str:
+        return self._labels["name"]
+
+    @property
+    def already_running_title(self) -> str:
+        return self._labels["already_running_title"]
+
+    @property
+    def already_running_message(self) -> str:
+        return self._labels["already_running_message"]
+
+    @property
+    def no_api_key_title(self) -> str:
+        return self._labels["no_api_key_title"]
+
+    @property
+    def no_api_key_message(self) -> str:
+        return self._labels["no_api_key_message"]
+
+
 class SingleInstance:
     """
     Ensures only one instance of the application is running using Qt shared memory.
@@ -105,6 +144,12 @@ def start_application() -> int:
         app.setApplicationName("OpenSuperWhisper")
         app.setOrganizationName("OpenSuperWhisper")
 
+        # Initialize settings manager
+        settings_manager = SettingsManager.instance()
+
+        # Initialize label manager
+        label_manager = LabelManager(language=settings_manager.get_language())
+
         # Set application icon using the IconManager
         icon_manager = IconManager.instance()
         app.setWindowIcon(icon_manager.get_app_icon())
@@ -112,13 +157,10 @@ def start_application() -> int:
         if single_instance.is_running():
             QMessageBox.critical(
                 None,
-                "Application already running",
-                "Please check the application tray for the icon.",
+                label_manager.already_running_title,
+                label_manager.already_running_message,
             )
             return 1
-
-        # Initialize settings manager
-        SettingsManager.instance()
 
         # Check for API key and show dialog if not available
         settings_manager = SettingsManager.instance()
@@ -129,8 +171,8 @@ def start_application() -> int:
             if not dialog.exec():
                 QMessageBox.critical(
                     None,
-                    "No API key provided",
-                    "Please provide a valid API key to wake up the application.",
+                    label_manager.no_api_key_title,
+                    label_manager.no_api_key_message,
                 )
                 return 1
 
