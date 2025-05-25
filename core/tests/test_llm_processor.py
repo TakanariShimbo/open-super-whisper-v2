@@ -120,14 +120,14 @@ def _get_test_input() -> tuple[str, bytes | None]:
             print("\n🖼️ Image Options:")
             print("1. Use programmer.png (default test image)")
             print("2. Specify custom image path")
-            
+
             while True:
                 try:
                     image_choice = input("Select image option (1-2) or press Enter for default: ").strip()
-                    
+
                     if not image_choice or image_choice == "1":
                         # Use default programmer.png
-                        image_path = Path(__file__).parent / "programmer.png"
+                        image_path = Path(__file__).parent / "sample_data" / "programmer.png"
                         if image_path.exists():
                             try:
                                 with open(image_path, "rb") as f:
@@ -140,7 +140,7 @@ def _get_test_input() -> tuple[str, bytes | None]:
                         else:
                             print(f"❌ Default image file not found: {image_path}")
                             break
-                            
+
                     elif image_choice == "2":
                         # Get custom image path
                         custom_path = input("Enter image file path: ").strip()
@@ -156,20 +156,20 @@ def _get_test_input() -> tuple[str, bytes | None]:
                                     print(f"❌ Failed to load image: {e}")
                                     # Ask if user wants to try again
                                     retry = input("Try again? [y/N]: ").strip().lower()
-                                    if retry not in ['y', 'yes']:
+                                    if retry not in ["y", "yes"]:
                                         break
                             else:
                                 print(f"❌ Image file not found: {image_path}")
                                 # Ask if user wants to try again
                                 retry = input("Try again? [y/N]: ").strip().lower()
-                                if retry not in ['y', 'yes']:
+                                if retry not in ["y", "yes"]:
                                     break
                         else:
                             print("❌ No path provided")
                             break
                     else:
                         print("❌ Invalid selection. Please try again.")
-                
+
                 except KeyboardInterrupt:
                     print("\n⚠️ Skipping image input")
                     break
