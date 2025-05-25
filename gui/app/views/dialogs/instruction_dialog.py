@@ -30,6 +30,265 @@ from PyQt6.QtGui import QCloseEvent, QShowEvent
 from core.pipelines.instruction_set import InstructionSet
 
 from ...controllers.dialogs.instruction_dialog_controller import InstructionDialogController
+from ...managers.settings_manager import SettingsManager
+
+
+class LabelManager:
+    """
+    Manages application labels for internationalization support in Instruction Dialog.
+    """
+
+    ALL_LABELS = {
+        "English": {
+            # Window/Dialog titles
+            "window_title": "Instruction Sets",
+            "new_instruction_set_title": "New Instruction Set",
+            "rename_instruction_set_title": "Rename Instruction Set",
+            "confirm_deletion_title": "Confirm Deletion",
+            "success_title": "Success",
+            "error_title": "Error",
+            "unsaved_changes_title": "Unsaved Changes",
+            "changes_discarded_title": "Changes Discarded",
+
+            # UI Labels
+            "instruction_sets_label": "Instruction Sets",
+            "custom_vocabulary_label": "Custom Vocabulary",
+            "stt_instructions_label": "STT Instructions",
+            "llm_instructions_label": "LLM Instructions",
+            "stt_language_label": "STT Language",
+            "stt_model_label": "STT Model",
+            "hotkey_label": "Hotkey",
+            "enable_llm_processing_label": "Enable LLM Processing",
+            "llm_model_label": "LLM Model",
+            "context_label": "Context",
+
+            # Button Labels
+            "add_button": "Add",
+            "rename_button": "Rename",
+            "delete_button": "Delete",
+            "save_changes_button": "Save Changes",
+            "discard_changes_button": "Discard Changes",
+            "set_hotkey_button": "Set Hotkey",
+            "close_button": "Close",
+
+            # Tab Labels
+            "vocabulary_tab": "Vocabulary",
+            "stt_instructions_tab": "STT Instructions",
+            "llm_instructions_tab": "LLM Instructions",
+            "settings_tab": "Settings",
+
+            # Checkbox Labels
+            "include_clipboard_text": "Include Clipboard Text",
+            "include_clipboard_image": "Include Clipboard Image",
+
+            # Help/Description Text
+            "vocabulary_help": "Add custom technical terms, acronyms, or specialized vocabulary to improve transcription accuracy.",
+            "stt_instructions_help": "Provide system instructions to guide the transcription process (formatting, focus areas, etc.)",
+            "llm_instructions_help": "Provide system instructions for the LLM to guide its processing of transcription results.",
+            "settings_help": "Configure language, model, and other settings for this instruction set.",
+            "clipboard_text_tooltip": "Include text from clipboard when processing with LLM",
+            "clipboard_image_tooltip": "Include image from clipboard when processing with LLM (if supported by model)",
+
+            # Placeholder Text
+            "no_hotkey_placeholder": "No hotkey set",
+
+            # Message Text
+            "enter_instruction_set_name": "Enter a name for the new instruction set:",
+            "enter_new_name": "Enter a new name for the instruction set:",
+            "confirm_delete_message": "Are you sure you want to delete the instruction set '{name}'?",
+            "unsaved_changes_message": "You have unsaved changes. Do you want to save them?",
+            "changes_discarded_message": "Changes have been discarded.",
+        },
+        # Future: Add other languages here
+    }
+
+    def __init__(self) -> None:
+        # Load language from settings manager
+        settings_manager = SettingsManager.instance()
+        language = settings_manager.get_language()
+
+        # Set labels based on language
+        self._labels = self.ALL_LABELS[language]
+
+    # Window/Dialog titles
+    @property
+    def window_title(self) -> str:
+        return self._labels["window_title"]
+
+    @property
+    def new_instruction_set_title(self) -> str:
+        return self._labels["new_instruction_set_title"]
+
+    @property
+    def rename_instruction_set_title(self) -> str:
+        return self._labels["rename_instruction_set_title"]
+
+    @property
+    def confirm_deletion_title(self) -> str:
+        return self._labels["confirm_deletion_title"]
+
+    @property
+    def success_title(self) -> str:
+        return self._labels["success_title"]
+
+    @property
+    def error_title(self) -> str:
+        return self._labels["error_title"]
+
+    @property
+    def unsaved_changes_title(self) -> str:
+        return self._labels["unsaved_changes_title"]
+
+    @property
+    def changes_discarded_title(self) -> str:
+        return self._labels["changes_discarded_title"]
+
+    # UI Labels
+    @property
+    def instruction_sets_label(self) -> str:
+        return self._labels["instruction_sets_label"]
+
+    @property
+    def custom_vocabulary_label(self) -> str:
+        return self._labels["custom_vocabulary_label"]
+
+    @property
+    def stt_instructions_label(self) -> str:
+        return self._labels["stt_instructions_label"]
+
+    @property
+    def llm_instructions_label(self) -> str:
+        return self._labels["llm_instructions_label"]
+
+    @property
+    def stt_language_label(self) -> str:
+        return self._labels["stt_language_label"]
+
+    @property
+    def stt_model_label(self) -> str:
+        return self._labels["stt_model_label"]
+
+    @property
+    def hotkey_label(self) -> str:
+        return self._labels["hotkey_label"]
+
+    @property
+    def enable_llm_processing_label(self) -> str:
+        return self._labels["enable_llm_processing_label"]
+
+    @property
+    def llm_model_label(self) -> str:
+        return self._labels["llm_model_label"]
+
+    @property
+    def context_label(self) -> str:
+        return self._labels["context_label"]
+
+    # Button Labels
+    @property
+    def add_button(self) -> str:
+        return self._labels["add_button"]
+
+    @property
+    def rename_button(self) -> str:
+        return self._labels["rename_button"]
+
+    @property
+    def delete_button(self) -> str:
+        return self._labels["delete_button"]
+
+    @property
+    def save_changes_button(self) -> str:
+        return self._labels["save_changes_button"]
+
+    @property
+    def discard_changes_button(self) -> str:
+        return self._labels["discard_changes_button"]
+
+    @property
+    def set_hotkey_button(self) -> str:
+        return self._labels["set_hotkey_button"]
+
+    @property
+    def close_button(self) -> str:
+        return self._labels["close_button"]
+
+    # Tab Labels
+    @property
+    def vocabulary_tab(self) -> str:
+        return self._labels["vocabulary_tab"]
+
+    @property
+    def stt_instructions_tab(self) -> str:
+        return self._labels["stt_instructions_tab"]
+
+    @property
+    def llm_instructions_tab(self) -> str:
+        return self._labels["llm_instructions_tab"]
+
+    @property
+    def settings_tab(self) -> str:
+        return self._labels["settings_tab"]
+
+    # Checkbox Labels
+    @property
+    def include_clipboard_text(self) -> str:
+        return self._labels["include_clipboard_text"]
+
+    @property
+    def include_clipboard_image(self) -> str:
+        return self._labels["include_clipboard_image"]
+
+    # Help/Description Text
+    @property
+    def vocabulary_help(self) -> str:
+        return self._labels["vocabulary_help"]
+
+    @property
+    def stt_instructions_help(self) -> str:
+        return self._labels["stt_instructions_help"]
+
+    @property
+    def llm_instructions_help(self) -> str:
+        return self._labels["llm_instructions_help"]
+
+    @property
+    def settings_help(self) -> str:
+        return self._labels["settings_help"]
+
+    @property
+    def clipboard_text_tooltip(self) -> str:
+        return self._labels["clipboard_text_tooltip"]
+
+    @property
+    def clipboard_image_tooltip(self) -> str:
+        return self._labels["clipboard_image_tooltip"]
+
+    # Placeholder Text
+    @property
+    def no_hotkey_placeholder(self) -> str:
+        return self._labels["no_hotkey_placeholder"]
+
+    # Message Text
+    @property
+    def enter_instruction_set_name(self) -> str:
+        return self._labels["enter_instruction_set_name"]
+
+    @property
+    def enter_new_name(self) -> str:
+        return self._labels["enter_new_name"]
+
+    @property
+    def confirm_delete_message(self) -> str:
+        return self._labels["confirm_delete_message"]
+
+    @property
+    def unsaved_changes_message(self) -> str:
+        return self._labels["unsaved_changes_message"]
+
+    @property
+    def changes_discarded_message(self) -> str:
+        return self._labels["changes_discarded_message"]
 
 
 class InstructionDialog(QDialog):
@@ -51,6 +310,9 @@ class InstructionDialog(QDialog):
             Parent widget, by default None
         """
         super().__init__(parent=main_window)
+
+        # Initialize label manager
+        self._label_manager = LabelManager()
 
         # Create controller
         self._controller = InstructionDialogController(instruction_dialog=self)
@@ -76,7 +338,7 @@ class InstructionDialog(QDialog):
         Initialize the user interface.
         """
         # Set dialog properties
-        self.setWindowTitle("Instruction Sets")
+        self.setWindowTitle(self._label_manager.window_title)
         self.setMinimumSize(700, 500)
 
         # Create main layout
@@ -123,7 +385,7 @@ class InstructionDialog(QDialog):
         left_layout = QVBoxLayout(left_widget)
 
         # List selection label
-        list_label = QLabel("Instruction Sets")
+        list_label = QLabel(self._label_manager.instruction_sets_label)
         left_layout.addWidget(list_label)
 
         # Instruction sets list
@@ -134,13 +396,13 @@ class InstructionDialog(QDialog):
         # Buttons for managing sets
         buttons_layout = QHBoxLayout()
 
-        self._add_button = QPushButton("Add")
+        self._add_button = QPushButton(self._label_manager.add_button)
         self._add_button.clicked.connect(self._on_click_add)
 
-        self._rename_button = QPushButton("Rename")
+        self._rename_button = QPushButton(self._label_manager.rename_button)
         self._rename_button.clicked.connect(self._on_click_rename)
 
-        self._delete_button = QPushButton("Delete")
+        self._delete_button = QPushButton(self._label_manager.delete_button)
         self._delete_button.clicked.connect(self._on_click_delete)
 
         buttons_layout.addWidget(self._add_button)
@@ -172,21 +434,21 @@ class InstructionDialog(QDialog):
         settings_tab = self._create_settings_tab()
 
         # Add tabs to widget
-        self._tab_widget.addTab(stt_vocabulary_tab, "Vocabulary")
-        self._tab_widget.addTab(stt_instructions_tab, "STT Instructions")
-        self._tab_widget.addTab(llm_instructions_tab, "LLM Instructions")
-        self._tab_widget.addTab(settings_tab, "Settings")
+        self._tab_widget.addTab(stt_vocabulary_tab, self._label_manager.vocabulary_tab)
+        self._tab_widget.addTab(stt_instructions_tab, self._label_manager.stt_instructions_tab)
+        self._tab_widget.addTab(llm_instructions_tab, self._label_manager.llm_instructions_tab)
+        self._tab_widget.addTab(settings_tab, self._label_manager.settings_tab)
 
         right_layout.addWidget(self._tab_widget)
 
         # Save and Discard buttons
         save_buttons_layout = QHBoxLayout()
 
-        self._save_button = QPushButton("Save Changes")
+        self._save_button = QPushButton(self._label_manager.save_changes_button)
         self._save_button.clicked.connect(self._on_click_save)
         save_buttons_layout.addWidget(self._save_button)
 
-        self._discard_button = QPushButton("Discard Changes")
+        self._discard_button = QPushButton(self._label_manager.discard_changes_button)
         self._discard_button.clicked.connect(self._on_click_discard)
         save_buttons_layout.addWidget(self._discard_button)
 
@@ -206,10 +468,10 @@ class InstructionDialog(QDialog):
         stt_vocabulary_tab = QWidget()
         stt_vocabulary_layout = QVBoxLayout(stt_vocabulary_tab)
 
-        stt_vocabulary_label = QLabel("Custom Vocabulary")
+        stt_vocabulary_label = QLabel(self._label_manager.custom_vocabulary_label)
         stt_vocabulary_layout.addWidget(stt_vocabulary_label)
 
-        stt_vocabulary_help = QLabel("Add custom technical terms, acronyms, or specialized vocabulary to improve transcription accuracy.")
+        stt_vocabulary_help = QLabel(self._label_manager.vocabulary_help)
         stt_vocabulary_help.setWordWrap(True)
         stt_vocabulary_layout.addWidget(stt_vocabulary_help)
 
@@ -231,10 +493,10 @@ class InstructionDialog(QDialog):
         stt_instructions_tab = QWidget()
         stt_instructions_layout = QVBoxLayout(stt_instructions_tab)
 
-        stt_instructions_label = QLabel("STT Instructions")
+        stt_instructions_label = QLabel(self._label_manager.stt_instructions_label)
         stt_instructions_layout.addWidget(stt_instructions_label)
 
-        stt_instructions_help = QLabel("Provide system instructions to guide the transcription process (formatting, focus areas, etc.)")
+        stt_instructions_help = QLabel(self._label_manager.stt_instructions_help)
         stt_instructions_help.setWordWrap(True)
         stt_instructions_layout.addWidget(stt_instructions_help)
 
@@ -256,10 +518,10 @@ class InstructionDialog(QDialog):
         llm_instructions_tab = QWidget()
         llm_instructions_layout = QVBoxLayout(llm_instructions_tab)
 
-        llm_instructions_label = QLabel("LLM Instructions")
+        llm_instructions_label = QLabel(self._label_manager.llm_instructions_label)
         llm_instructions_layout.addWidget(llm_instructions_label)
 
-        llm_instructions_help = QLabel("Provide system instructions for the LLM to guide its processing of transcription results.")
+        llm_instructions_help = QLabel(self._label_manager.llm_instructions_help)
         llm_instructions_help.setWordWrap(True)
         llm_instructions_layout.addWidget(llm_instructions_help)
 
@@ -281,7 +543,7 @@ class InstructionDialog(QDialog):
         settings_tab = QWidget()
         settings_layout = QVBoxLayout(settings_tab)
 
-        settings_help = QLabel("Configure language, model, and other settings for this instruction set.")
+        settings_help = QLabel(self._label_manager.settings_help)
         settings_help.setWordWrap(True)
         settings_layout.addWidget(settings_help)
 
@@ -290,24 +552,24 @@ class InstructionDialog(QDialog):
         main_layout = QFormLayout(main_form)
 
         # STT Language selection
-        stt_language_label = QLabel("STT Language")
+        stt_language_label = QLabel(self._label_manager.stt_language_label)
         self._stt_language_combo = QComboBox()
         self._stt_language_combo.currentIndexChanged.connect(self._on_form_changed)
         main_layout.addRow(stt_language_label, self._stt_language_combo)
 
         # STT Model selection
-        stt_model_label = QLabel("STT Model")
+        stt_model_label = QLabel(self._label_manager.stt_model_label)
         self._stt_model_combo = QComboBox()
         self._stt_model_combo.currentIndexChanged.connect(self._on_form_changed)
         main_layout.addRow(stt_model_label, self._stt_model_combo)
 
         # Hotkey selection
-        hotkey_label = QLabel("Hotkey")
+        hotkey_label = QLabel(self._label_manager.hotkey_label)
         self._hotkey_input = QLineEdit()
         self._hotkey_input.setReadOnly(True)
-        self._hotkey_input.setPlaceholderText("No hotkey set")
+        self._hotkey_input.setPlaceholderText(self._label_manager.no_hotkey_placeholder)
 
-        hotkey_button = QPushButton("Set Hotkey")
+        hotkey_button = QPushButton(self._label_manager.set_hotkey_button)
         hotkey_button.clicked.connect(self._on_click_hotkey)
 
         hotkey_layout = QHBoxLayout()
@@ -316,24 +578,24 @@ class InstructionDialog(QDialog):
         main_layout.addRow(hotkey_label, hotkey_layout)
 
         # LLM settings
-        llm_enabled_label = QLabel("Enable LLM Processing")
+        llm_enabled_label = QLabel(self._label_manager.enable_llm_processing_label)
         self._llm_enabled_checkbox = QCheckBox()
         self._llm_enabled_checkbox.stateChanged.connect(self._on_llm_enabled_changed)
         main_layout.addRow(llm_enabled_label, self._llm_enabled_checkbox)
 
-        llm_model_label = QLabel("LLM Model")
+        llm_model_label = QLabel(self._label_manager.llm_model_label)
         self._llm_model_combo = QComboBox()
         self._llm_model_combo.currentIndexChanged.connect(self._on_llm_model_changed)
         main_layout.addRow(llm_model_label, self._llm_model_combo)
 
         # LLM context options
-        self._llm_clipboard_text_checkbox = QCheckBox("Include Clipboard Text")
-        self._llm_clipboard_text_checkbox.setToolTip("Include text from clipboard when processing with LLM")
+        self._llm_clipboard_text_checkbox = QCheckBox(self._label_manager.include_clipboard_text)
+        self._llm_clipboard_text_checkbox.setToolTip(self._label_manager.clipboard_text_tooltip)
         self._llm_clipboard_text_checkbox.stateChanged.connect(self._on_form_changed)
-        main_layout.addRow("Context", self._llm_clipboard_text_checkbox)
+        main_layout.addRow(self._label_manager.context_label, self._llm_clipboard_text_checkbox)
 
-        self._llm_clipboard_image_checkbox = QCheckBox("Include Clipboard Image")
-        self._llm_clipboard_image_checkbox.setToolTip("Include image from clipboard when processing with LLM (if supported by model)")
+        self._llm_clipboard_image_checkbox = QCheckBox(self._label_manager.include_clipboard_image)
+        self._llm_clipboard_image_checkbox.setToolTip(self._label_manager.clipboard_image_tooltip)
         self._llm_clipboard_image_checkbox.stateChanged.connect(self._on_form_changed)
         main_layout.addRow("", self._llm_clipboard_image_checkbox)
 
@@ -501,14 +763,14 @@ class InstructionDialog(QDialog):
         if success:
             QMessageBox.information(
                 self,
-                "Success",
+                self._label_manager.success_title,
                 message,
                 QMessageBox.StandardButton.Ok,
             )
         else:
             QMessageBox.warning(
                 self,
-                "Error",
+                self._label_manager.error_title,
                 message,
                 QMessageBox.StandardButton.Ok,
             )
@@ -638,8 +900,8 @@ class InstructionDialog(QDialog):
         """
         name, ok = QInputDialog.getText(
             self,
-            "New Instruction Set",
-            "Enter a name for the new instruction set:",
+            self._label_manager.new_instruction_set_title,
+            self._label_manager.enter_instruction_set_name,
         )
 
         if ok and name:
@@ -658,8 +920,8 @@ class InstructionDialog(QDialog):
 
         new_name, ok = QInputDialog.getText(
             self,
-            "Rename Instruction Set",
-            "Enter a new name for the instruction set:",
+            self._label_manager.rename_instruction_set_title,
+            self._label_manager.enter_new_name,
             QLineEdit.EchoMode.Normal,
             old_name,
         )
@@ -680,8 +942,8 @@ class InstructionDialog(QDialog):
 
         result = QMessageBox.question(
             self,
-            "Confirm Deletion",
-            f"Are you sure you want to delete the instruction set '{name}'?",
+            self._label_manager.confirm_deletion_title,
+            self._label_manager.confirm_delete_message.format(name=name),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )
@@ -813,8 +1075,8 @@ class InstructionDialog(QDialog):
 
         QMessageBox.information(
             self,
-            "Changes Discarded",
-            "Changes have been discarded.",
+            self._label_manager.changes_discarded_title,
+            self._label_manager.changes_discarded_message,
             QMessageBox.StandardButton.Ok,
         )
 
@@ -840,8 +1102,8 @@ class InstructionDialog(QDialog):
         """
         return QMessageBox.question(
             self,
-            "Unsaved Changes",
-            "You have unsaved changes. Do you want to save them?",
+            self._label_manager.unsaved_changes_title,
+            self._label_manager.unsaved_changes_message,
             QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel,
             QMessageBox.StandardButton.Save,
         )
