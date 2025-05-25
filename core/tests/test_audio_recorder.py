@@ -1,26 +1,28 @@
 #!/usr/bin/env python3
 """
-GUI AudioRecorder Test
+AudioRecorder Test
 
-This test verifies the main AudioRecorder functionality used by the GUI
-(record → playback test).
+This test verifies the main AudioRecorder functionality.
 """
 
 import os
 import sys
 import time
+import argparse
+from typing import Literal
 from pathlib import Path
+
+import sounddevice as sd
+import soundfile as sf
 
 # Add project root to path for imports
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from core.recorder.audio_recorder import AudioRecorder
-import sounddevice as sd
-import soundfile as sf
 
 
-def test_microphone_availability():
+def test_microphone_availability() -> bool:
     """Test microphone availability"""
     print("=== Microphone Availability Check ===")
 
@@ -43,7 +45,7 @@ def test_microphone_availability():
     return True
 
 
-def test_recording_basic():
+def test_recording_basic() -> None | str:
     """Test basic recording functionality"""
     print("=== Basic Recording Test ===")
 
@@ -82,7 +84,7 @@ def test_recording_basic():
         return None
 
 
-def test_audio_playback(file_path):
+def test_audio_playback(file_path) -> bool:
     """Playback recorded audio"""
     print("\n=== Audio Playback Test ===")
 
@@ -115,7 +117,7 @@ def test_audio_playback(file_path):
         return False
 
 
-def test_error_handling():
+def test_error_handling() -> bool:
     """Basic error handling test"""
     print("\n=== Error Handling Test ===")
 
@@ -149,7 +151,7 @@ def test_error_handling():
         return False
 
 
-def cleanup_test_file(file_path):
+def cleanup_test_file(file_path) -> None:
     """Clean up test file"""
     if file_path and os.path.exists(file_path):
         try:
@@ -159,9 +161,47 @@ def cleanup_test_file(file_path):
             print(f"⚠️  Failed to delete test file: {e}")
 
 
-def main():
-    """Main test execution"""
-    print("🎵 AudioRecorder Test")
+def run_mic_test() -> Literal[0, 1]:
+    """Run microphone availability test only"""
+    print("🎵 AudioRecorder - Microphone Test")
+    print("=" * 50)
+
+    success = test_microphone_availability()
+    return 0 if success else 1
+
+
+def run_recording_and_playback_test() -> Literal[0, 1]:
+    """Run recording + playback test"""
+    print("🎵 AudioRecorder - Playback Test")
+    print("=" * 50)
+
+    if not test_microphone_availability():
+        print("No microphone available, ending test.")
+        return 1
+
+    recorded_file = test_recording_basic()
+    if not recorded_file:
+        print("Recording failed, cannot test playback.")
+        return 1
+
+    playback_success = test_audio_playback(recorded_file)
+    cleanup_test_file(recorded_file)
+
+    return 0 if playback_success else 1
+
+
+def run_error_test() -> Literal[0, 1]:
+    """Run error handling test only"""
+    print("🎵 AudioRecorder - Error Handling Test")
+    print("=" * 50)
+
+    success = test_error_handling()
+    return 0 if success else 1
+
+
+def run_all_tests() -> Literal[0, 1]:
+    """Run all tests (original behavior)"""
+    print("🎵 AudioRecorder - All Tests")
     print("=" * 50)
 
     # Check microphone availability
@@ -197,6 +237,40 @@ def main():
     else:
         print("\n❌ Some tests failed.")
         return 1
+
+
+def main() -> Literal[0, 1]:
+    """Main test execution with argument parsing"""
+    parser = argparse.ArgumentParser(
+        description="AudioRecorder Test Suite",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+            Examples:
+            %(prog)s                    # Run all tests
+            %(prog)s --mic              # Test microphone availability only
+            %(prog)s --recording         # Test recording + playback
+            %(prog)s --error            # Test error handling only
+        """,
+    )
+
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--mic", action="store_true", help="Test microphone availability only")
+    group.add_argument("--recording", action="store_true", help="Test recording + playback functionality")
+    group.add_argument("--error", action="store_true", help="Test error handling only")
+    group.add_argument("--all", action="store_true", help="Run all tests (default behavior)")
+
+    args = parser.parse_args()
+
+    # Determine which test to run
+    if args.mic:
+        return run_mic_test()
+    elif args.recording:
+        return run_recording_and_playback_test()
+    elif args.error:
+        return run_error_test()
+    else:
+        # Default behavior: run all tests
+        return run_all_tests()
 
 
 if __name__ == "__main__":
