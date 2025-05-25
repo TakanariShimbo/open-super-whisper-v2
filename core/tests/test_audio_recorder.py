@@ -151,7 +151,7 @@ def test_error_handling() -> bool:
         return False
 
 
-def cleanup_test_file(file_path) -> None:
+def _cleanup_test_file(file_path) -> None:
     """Clean up test file"""
     if file_path and os.path.exists(file_path):
         try:
@@ -185,7 +185,7 @@ def run_recording_and_playback_test() -> Literal[0, 1]:
         return 1
 
     playback_success = test_audio_playback(recorded_file)
-    cleanup_test_file(recorded_file)
+    _cleanup_test_file(recorded_file)
 
     return 0 if playback_success else 1
 
@@ -222,7 +222,7 @@ def run_all_tests() -> Literal[0, 1]:
     error_handling_success = test_error_handling()
 
     # Cleanup
-    cleanup_test_file(recorded_file)
+    _cleanup_test_file(recorded_file)
 
     # Results summary
     print("\n" + "=" * 50)
