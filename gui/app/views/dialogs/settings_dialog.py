@@ -28,7 +28,7 @@ class LabelManager:
             "indicator_tooltip": "Show indicator during recording and processing",
             "clipboard_checkbox": "Copy results to clipboard automatically",
             "clipboard_tooltip": "Copy results to clipboard automatically when processing completes",
-            "language_label": "Language:",
+            "language_label": "Application Language:",
             "language_tooltip": "Select the application language",
         },
         "Japanese": {
