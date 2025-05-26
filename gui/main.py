@@ -190,7 +190,3 @@ def start_application() -> int:
     finally:
         # Ensure cleanup
         single_instance.cleanup()
-
-
-if __name__ == "__main__":
-    sys.exit(status=start_application())

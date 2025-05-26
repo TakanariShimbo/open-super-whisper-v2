@@ -968,8 +968,7 @@ class MainWindow(QMainWindow):
         # Shut down the controller cleanly
         self._controller.shutdown()
 
-        # Exit application
-        sys.exit(0)
+        self.close()
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """
