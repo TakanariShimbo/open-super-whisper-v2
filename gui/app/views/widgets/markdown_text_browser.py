@@ -116,7 +116,11 @@ class MarkdownTextBrowser(QWebEngineView):
         self.page().setWebChannel(self._channel)
 
         # Configure markdown extensions
-        self.markdown_extensions = ["nl2br", "fenced_code", "tables"]
+        self.markdown_extensions = [
+            "nl2br",
+            "fenced_code",
+            "tables",
+        ]
 
         # Store original markdown text
         self._markdown_text = ""
