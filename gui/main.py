@@ -129,7 +129,7 @@ class SingleInstance:
         self.cleanup()
 
 
-def start_application() -> int:
+def start_application() -> None:
     """
     Main entry point for the Open Super Whisper app.
 
@@ -137,10 +137,10 @@ def start_application() -> int:
     creates the controller and view, and starts the application event loop.
     The application will only start if a valid API key is provided.
 
-    Returns
-    -------
-    int
-        The exit code of the application
+    The exit code of the application is as follows:
+        0: Normal exit
+        1: Error exit
+        100: Restart required
     """
     # Check if another instance is already running
     single_instance = SingleInstance("OpenSuperWhisper")
@@ -159,12 +159,13 @@ def start_application() -> int:
         app.setWindowIcon(icon_manager.get_app_icon())
 
         if single_instance.is_running():
+            # Show error message and exit if another instance is running
             QMessageBox.critical(
                 None,
                 label_manager.already_running_title,
                 label_manager.already_running_message,
             )
-            return 1
+            sys.exit(1)
 
         # Check for API key and show dialog if not available
         settings_manager = SettingsManager.instance()
@@ -173,20 +174,32 @@ def start_application() -> int:
             dialog = APIKeyDialogFactory.create_initial_dialog()
 
             if not dialog.exec():
+                # Show error message and exit if API key is not provided
                 QMessageBox.critical(
                     None,
                     label_manager.no_api_key_title,
                     label_manager.no_api_key_message,
                 )
-                return 1
+                sys.exit(1)
 
         # Create the main window using the factory
         main_window = MainWindowFactory.create_window()
         main_window.show()
 
         # Start the event loop
-        return app.exec()
+        app.exec()
+
+        if main_window.is_restart_required:
+            # Restart the application
+            sys.exit(100)
+        else:
+            # Normal exit
+            sys.exit(0)
 
     finally:
         # Ensure cleanup
         single_instance.cleanup()
+
+
+if __name__ == "__main__":
+    start_application()

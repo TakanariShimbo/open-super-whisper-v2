@@ -5,8 +5,6 @@ This module provides the main application window for the Open Super Whisper appl
 implementing the view component of the MVC architecture.
 """
 
-import sys
-
 from PyQt6.QtWidgets import (
     QMainWindow,
     QWidget,
@@ -82,7 +80,7 @@ class LabelManager:
             "quit_dialog_title": "Quit Application",
             "quit_dialog_message": "Are you sure you want to quit the application?",
             "settings_restart_dialog_title": "Settings Updated",
-            "settings_restart_dialog_message": "Settings have been updated successfully.\n\nThe application will shut down in {seconds} seconds to apply the new settings.",
+            "settings_restart_dialog_message": "Settings have been updated successfully.\n\nThe application will restart in {seconds} seconds to apply the new settings.",
             "tray_message_title": "Open Super Whisper",
             "tray_message_text": "The application is still running in the background. Click the tray icon to restore.",
         },
@@ -126,7 +124,7 @@ class LabelManager:
             "quit_dialog_title": "アプリ終了",
             "quit_dialog_message": "アプリケーションを終了してもよろしいですか？",
             "settings_restart_dialog_title": "設定が更新されました",
-            "settings_restart_dialog_message": "設定が正常に更新されました。\n\n新しい設定を適用するため、{seconds}秒後にアプリケーションを終了します。",
+            "settings_restart_dialog_message": "設定が正常に更新されました。\n\n新しい設定を適用するため、{seconds}秒後にアプリケーションを再起動します。",
             "tray_message_title": "Open Super Whisper",
             "tray_message_text": "アプリケーションはバックグラウンドで動作中です。トレイアイコンをクリックして復元できます。",
         },
@@ -315,6 +313,9 @@ class MainWindow(QMainWindow):
 
         # Flag to track if the application is actually closing
         self._is_closing = False
+
+        # Flag to restart the application
+        self._is_restart_required = False
 
         # Set up UI
         self._setup_ui()
@@ -877,7 +878,7 @@ class MainWindow(QMainWindow):
             self._show_settings_restart_dialog()
 
             # Exit application
-            self._exit_application()
+            self._exit_application(restart=True)
 
     @pyqtSlot()
     def _on_click_record(self) -> None:
@@ -954,7 +955,7 @@ class MainWindow(QMainWindow):
         if reply == QMessageBox.StandardButton.Yes:
             self._exit_application()
 
-    def _exit_application(self) -> None:
+    def _exit_application(self, restart: bool = False) -> None:
         """
         Exit the application with proper cleanup.
         """
@@ -967,6 +968,9 @@ class MainWindow(QMainWindow):
 
         # Shut down the controller cleanly
         self._controller.shutdown()
+
+        # Set restart flag
+        self._is_restart_required = restart
 
         self.close()
 
@@ -994,3 +998,10 @@ class MainWindow(QMainWindow):
         else:
             # Actually closing
             event.accept()
+
+    @property
+    def is_restart_required(self) -> bool:
+        """
+        Get the restart required flag.
+        """
+        return self._is_restart_required

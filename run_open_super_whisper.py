@@ -5,15 +5,9 @@ Open Super Whisper App Runner
 This script runs the Open Super Whisper application.
 """
 
-import sys
 import os
-
-
-# Add the project root to the path so we can import the package
-sys.path.insert(
-    0,
-    os.path.dirname(p=os.path.abspath(path=__file__)),
-)
+import sys
+import subprocess
 
 
 # Configure ffmpeg environment before any imports
@@ -39,14 +33,14 @@ def setup_ffmpeg_environment() -> None:
         print(f"Added {project_ffmpeg_bin} to PATH for ffmpeg")
 
 
-# Set up ffmpeg environment immediately
-setup_ffmpeg_environment()
-
-
-# Import the main application
-from gui.main import start_application
-
-
 if __name__ == "__main__":
-    # Start the application
-    start_application()
+    # Set up ffmpeg environment
+    setup_ffmpeg_environment()
+
+    # Run the application in a loop until it is not required to restart
+    while True:
+        result = subprocess.run([sys.executable, "-m", "gui.main"])
+        if result.returncode == 100:
+            continue
+        else:
+            break
