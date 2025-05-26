@@ -12,6 +12,66 @@ from PyQt6.QtGui import QAction
 from PyQt6.QtCore import pyqtSignal, pyqtSlot
 
 from ...managers.icon_manager import IconManager
+from ...managers.settings_manager import SettingsManager
+
+
+class LabelManager:
+    """
+    Manages application labels for internationalization support in System Tray.
+    """
+
+    ALL_LABELS = {
+        "English": {
+            # Tooltip
+            "app_tooltip": "Open Super Whisper App",
+            # Menu Actions
+            "show_window": "Show Window",
+            "hide_window": "Hide Window",
+            "start_recording": "Start Recording",
+            "stop_recording": "Stop Recording",
+            "cancel_processing": "Cancel Processing",
+            "quit_application": "Quit Application",
+        },
+        # Future: Add other languages here
+    }
+
+    def __init__(self) -> None:
+        # Load language from settings manager
+        settings_manager = SettingsManager.instance()
+        language = settings_manager.get_language()
+
+        # Set labels based on language
+        self._labels = self.ALL_LABELS[language]
+
+    # Tooltip
+    @property
+    def app_tooltip(self) -> str:
+        return self._labels["app_tooltip"]
+
+    # Menu Actions
+    @property
+    def show_window(self) -> str:
+        return self._labels["show_window"]
+
+    @property
+    def hide_window(self) -> str:
+        return self._labels["hide_window"]
+
+    @property
+    def start_recording(self) -> str:
+        return self._labels["start_recording"]
+
+    @property
+    def stop_recording(self) -> str:
+        return self._labels["stop_recording"]
+
+    @property
+    def cancel_processing(self) -> str:
+        return self._labels["cancel_processing"]
+
+    @property
+    def quit_application(self) -> str:
+        return self._labels["quit_application"]
 
 
 class SystemTray(QSystemTrayIcon):
@@ -53,13 +113,16 @@ class SystemTray(QSystemTrayIcon):
         """
         super().__init__(parent=main_window)
 
+        # Initialize label manager
+        self._label_manager = LabelManager()
+
         # Initialize managers
         self._icon_manager = IconManager.instance()
 
         # Set the icon
         self._set_icon()
 
-        self.setToolTip("Open Super Whisper App")
+        self.setToolTip(self._label_manager.app_tooltip)
 
         # Create the tray menu
         self._create_tray_menu()
@@ -82,17 +145,17 @@ class SystemTray(QSystemTrayIcon):
         self._tray_menu = QMenu()
 
         # Create actions
-        self._show_action = QAction("Show Window")
+        self._show_action = QAction(self._label_manager.show_window)
         self._show_action.triggered.connect(self._on_show_window)
 
-        self._hide_action = QAction("Hide Window")
+        self._hide_action = QAction(self._label_manager.hide_window)
         self._hide_action.triggered.connect(self._on_hide_window)
 
         # Create record action
-        self._record_action = QAction("Start Recording")
+        self._record_action = QAction(self._label_manager.start_recording)
         self._record_action.triggered.connect(self._on_toggle_recording)
 
-        self._quit_action = QAction("Quit")
+        self._quit_action = QAction(self._label_manager.quit_application)
         self._quit_action.triggered.connect(self._on_quit_application)
 
         # Add actions to menu
@@ -167,8 +230,8 @@ class SystemTray(QSystemTrayIcon):
             The status of the recording
         """
         if status == "start_recording":
-            self._record_action.setText("Start Recording")
+            self._record_action.setText(self._label_manager.start_recording)
         elif status == "stop_recording":
-            self._record_action.setText("Stop Recording")
+            self._record_action.setText(self._label_manager.stop_recording)
         elif status == "cancel_processing":
-            self._record_action.setText("Cancel Processing")
+            self._record_action.setText(self._label_manager.cancel_processing)
