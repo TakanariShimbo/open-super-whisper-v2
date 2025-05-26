@@ -150,7 +150,7 @@ class StatusIndicatorModel(QObject):
         self._timer.stop()  # Stop timer updates
         self.set_mode(mode=self._MODE_COMPLETED)
         # Keep indicator visible for a short time
-        QTimer.singleShot(3000, lambda: self.set_visible(visible=False))
+        QTimer.singleShot(2000, lambda: self.set_visible(visible=False))
 
     def cancel_processing(self) -> None:
         """
@@ -159,4 +159,4 @@ class StatusIndicatorModel(QObject):
         self._timer.stop()  # Stop timer updates
         self.set_mode(mode=self._MODE_CANCELLED)
         # Keep indicator visible for a short time
-        QTimer.singleShot(3000, lambda: self.set_visible(visible=False))
+        QTimer.singleShot(2000, lambda: self.set_visible(visible=False))

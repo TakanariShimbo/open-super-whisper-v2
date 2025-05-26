@@ -153,7 +153,7 @@ class MainController(QObject):
         self._model.processing_completed.connect(self._handle_processing_completed)
         self._model.processing_cancelled.connect(self._handle_processing_cancelled)
         self._model.processing_error.connect(
-            lambda error: self.showing_message.emit(self._label_manager.error_message_format.format(error=error), 3000)
+            lambda error: self.showing_message.emit(self._label_manager.error_message_format.format(error=error), 2000)
         )
         self._model.streaming_llm_chunk.connect(self._handle_streamling_llm_chunk)
 
@@ -449,7 +449,7 @@ class MainController(QObject):
             # Show cancelled status in indicator
             self._status_indicator_controller.cancel_processing()
 
-            self.showing_message.emit(self._label_manager.processing_cancelled_message, 3000)
+            self.showing_message.emit(self._label_manager.processing_cancelled_message, 2000)
 
         return result
 

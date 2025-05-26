@@ -736,7 +736,7 @@ class MainWindow(QMainWindow):
         self._system_tray.update_recording_status("start_recording")
 
         # Update status bar to show completion
-        self._status_bar.showMessage(self._label_manager.status_processing_completed, 3000)
+        self._status_bar.showMessage(self._label_manager.status_processing_completed, 2000)
 
         # Play completion sound
         self._audio_manager.play_complete_processing()
@@ -990,7 +990,7 @@ class MainWindow(QMainWindow):
                 self._label_manager.tray_message_title,
                 self._label_manager.tray_message_text,
                 QSystemTrayIcon.MessageIcon.Information,
-                3000,
+                2000,
             )
         else:
             # Actually closing
