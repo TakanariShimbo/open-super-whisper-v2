@@ -105,8 +105,8 @@ class LabelManager:
             # UI Labels
             "instruction_sets_label": "インストラクションセット一覧",
             "custom_vocabulary_label": "カスタム語彙",
-            "stt_instructions_label": "STT用指示",
-            "llm_instructions_label": "LLM用指示",
+            "stt_instructions_label": "STTインストラクション",
+            "llm_instructions_label": "LLMインストラクション",
             "stt_language_label": "STT言語",
             "stt_model_label": "STTモデル",
             "hotkey_label": "ホットキー",
@@ -123,16 +123,16 @@ class LabelManager:
             "close_button": "閉じる",
             # Tab Labels
             "vocabulary_tab": "語彙",
-            "stt_instructions_tab": "STT指示",
-            "llm_instructions_tab": "LLM指示",
+            "stt_instructions_tab": "STTインストラクション",
+            "llm_instructions_tab": "LLMインストラクション",
             "settings_tab": "設定",
             # Checkbox Labels
             "include_clipboard_text": "クリップボードのテキストを含める",
             "include_clipboard_image": "クリップボードの画像を含める",
             # Help/Description Text
             "vocabulary_help": "専門用語や略語などを追加して文字起こし精度を向上させます。",
-            "stt_instructions_help": "書式や注目点など、文字起こし処理の指示を記載してください。",
-            "llm_instructions_help": "文字起こし結果の処理方法をLLMに指示できます。",
+            "stt_instructions_help": "書式や注目点など、文字起こし処理のインストラクションを記載してください。",
+            "llm_instructions_help": "文字起こし結果の処理方法をLLMにインストラクションできます。",
             "settings_help": "このインストラクションセットの言語やモデルなどを設定します。",
             "clipboard_text_tooltip": "LLM処理時にクリップボードのテキストを含める",
             "clipboard_image_tooltip": "LLM処理時にクリップボードの画像を含める（モデルが対応している場合）",

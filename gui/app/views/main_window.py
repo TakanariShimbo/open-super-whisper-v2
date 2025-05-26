@@ -44,7 +44,7 @@ class LabelManager:
     ALL_LABELS = {
         "English": {
             # Window/UI Labels
-            "window_title": "Open Super Whisper App",
+            "window_title": "Open Super Whisper",
             "main_toolbar": "Main Toolbar",
             "instruction_set_label": "Instruction Set:",
             "stt_output_tab": "STT Output",
@@ -83,12 +83,12 @@ class LabelManager:
             "quit_dialog_message": "Are you sure you want to quit the application?",
             "settings_restart_dialog_title": "Settings Updated",
             "settings_restart_dialog_message": "Settings have been updated successfully.\n\nThe application will shut down in {seconds} seconds to apply the new settings.",
-            "tray_message_title": "Open Super Whisper App",
+            "tray_message_title": "Open Super Whisper",
             "tray_message_text": "The application is still running in the background. Click the tray icon to restore.",
         },
         "Japanese": {
             # Window/UI Labels
-            "window_title": "Open Super Whisper アプリ",
+            "window_title": "Open Super Whisper",
             "main_toolbar": "メインツールバー",
             "instruction_set_label": "インストラクションセット:",
             "stt_output_tab": "STT出力",
@@ -127,7 +127,7 @@ class LabelManager:
             "quit_dialog_message": "アプリケーションを終了してもよろしいですか？",
             "settings_restart_dialog_title": "設定が更新されました",
             "settings_restart_dialog_message": "設定が正常に更新されました。\n\n新しい設定を適用するため、{seconds}秒後にアプリケーションを終了します。",
-            "tray_message_title": "Open Super Whisper アプリ",
+            "tray_message_title": "Open Super Whisper",
             "tray_message_text": "アプリケーションはバックグラウンドで動作中です。トレイアイコンをクリックして復元できます。",
         },
         # Future: Add other languages here

@@ -19,8 +19,8 @@ class LabelManager:
 
     ALL_LABELS = {
         "English": {
-            "window_title": "API Key Settings",
-            "title_label": "OpenAI API Key Settings",
+            "window_title": "API Key",
+            "title_label": "OpenAI API Key",
             "help_text": (
                 "To use Open Super Whisper, you need a valid OpenAI API key.\n\n"
                 "1. Create an account at https://platform.openai.com\n"
@@ -37,8 +37,8 @@ class LabelManager:
             "error_empty_key": "API key cannot be empty",
         },
         "Japanese": {
-            "window_title": "APIキー設定",
-            "title_label": "OpenAI APIキー設定",
+            "window_title": "APIキー",
+            "title_label": "OpenAI APIキー",
             "help_text": (
                 "Open Super Whisperを利用するには有効なOpenAI APIキーが必要です。\n\n"
                 "1. https://platform.openai.com でアカウントを作成\n"
@@ -259,7 +259,7 @@ class APIKeyDialog(QDialog):
         """
         # Restore hotkeys
         self._restore_hotkeys()
-        
+
         # Save the valid API key
         self._controller.save_api_key()
 
@@ -340,7 +340,7 @@ class APIKeyDialog(QDialog):
         """
         # Restore hotkeys
         self._restore_hotkeys()
-        
+
         # Restore original state
         self._controller.cancel()
 
@@ -373,7 +373,7 @@ class APIKeyDialog(QDialog):
         """
         # Restore hotkeys
         self._restore_hotkeys()
-        
+
         # Restore original settings
         self._controller.cancel()
 

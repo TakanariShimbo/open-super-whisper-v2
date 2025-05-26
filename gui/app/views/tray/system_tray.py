@@ -23,7 +23,7 @@ class LabelManager:
     ALL_LABELS = {
         "English": {
             # Tooltip
-            "app_tooltip": "Open Super Whisper App",
+            "app_tooltip": "Open Super Whisper",
             # Menu Actions
             "show_window": "Show Window",
             "hide_window": "Hide Window",
@@ -34,7 +34,7 @@ class LabelManager:
         },
         "Japanese": {
             # Tooltip
-            "app_tooltip": "Open Super Whisper アプリ",
+            "app_tooltip": "Open Super Whisper",
             # Menu Actions
             "show_window": "ウィンドウ表示",
             "hide_window": "ウィンドウ非表示",
