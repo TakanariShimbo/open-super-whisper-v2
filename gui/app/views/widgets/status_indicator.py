@@ -9,8 +9,8 @@ from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QFrame
 from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QPalette, QColor, QShowEvent
 
-from ...controllers.widgets.status_indicator_controller import StatusIndicatorController
 from ...managers.settings_manager import SettingsManager
+from ...controllers.widgets.status_indicator_controller import StatusIndicatorController
 
 
 class LabelManager:

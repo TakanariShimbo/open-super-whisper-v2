@@ -29,8 +29,8 @@ from PyQt6.QtGui import QCloseEvent, QShowEvent
 
 from core.pipelines.instruction_set import InstructionSet
 
-from ...controllers.dialogs.instruction_dialog_controller import InstructionDialogController
 from ...managers.settings_manager import SettingsManager
+from ...controllers.dialogs.instruction_dialog_controller import InstructionDialogController
 
 
 class LabelManager:
@@ -49,7 +49,6 @@ class LabelManager:
             "error_title": "Error",
             "unsaved_changes_title": "Unsaved Changes",
             "changes_discarded_title": "Changes Discarded",
-
             # UI Labels
             "instruction_sets_label": "Instruction Sets",
             "custom_vocabulary_label": "Custom Vocabulary",
@@ -61,7 +60,6 @@ class LabelManager:
             "enable_llm_processing_label": "Enable LLM Processing",
             "llm_model_label": "LLM Model",
             "context_label": "Context",
-
             # Button Labels
             "add_button": "Add",
             "rename_button": "Rename",
@@ -70,17 +68,14 @@ class LabelManager:
             "discard_changes_button": "Discard Changes",
             "set_hotkey_button": "Set Hotkey",
             "close_button": "Close",
-
             # Tab Labels
             "vocabulary_tab": "Vocabulary",
             "stt_instructions_tab": "STT Instructions",
             "llm_instructions_tab": "LLM Instructions",
             "settings_tab": "Settings",
-
             # Checkbox Labels
             "include_clipboard_text": "Include Clipboard Text",
             "include_clipboard_image": "Include Clipboard Image",
-
             # Help/Description Text
             "vocabulary_help": "Add custom technical terms, acronyms, or specialized vocabulary to improve transcription accuracy.",
             "stt_instructions_help": "Provide system instructions to guide the transcription process (formatting, focus areas, etc.)",
@@ -88,10 +83,8 @@ class LabelManager:
             "settings_help": "Configure language, model, and other settings for this instruction set.",
             "clipboard_text_tooltip": "Include text from clipboard when processing with LLM",
             "clipboard_image_tooltip": "Include image from clipboard when processing with LLM (if supported by model)",
-
             # Placeholder Text
             "no_hotkey_placeholder": "No hotkey set",
-
             # Message Text
             "enter_instruction_set_name": "Enter a name for the new instruction set:",
             "enter_new_name": "Enter a new name for the instruction set:",

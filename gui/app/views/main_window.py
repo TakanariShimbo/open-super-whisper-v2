@@ -27,11 +27,11 @@ from PyQt6.QtGui import QAction, QCloseEvent
 
 from core.pipelines.pipeline_result import PipelineResult
 
-from ..controllers.main_controller import MainController
+from ..utils.clipboard_utils import ClipboardUtils
 from ..managers.icon_manager import IconManager
 from ..managers.settings_manager import SettingsManager
-from ..utils.clipboard_utils import ClipboardUtils
 from ..managers.audio_manager import AudioManager
+from ..controllers.main_controller import MainController
 from .tray.system_tray import SystemTray
 from .widgets.markdown_text_browser import MarkdownTextBrowser
 

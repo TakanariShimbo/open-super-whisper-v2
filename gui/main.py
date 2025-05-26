@@ -9,10 +9,10 @@ import sys
 from PyQt6.QtWidgets import QApplication, QMessageBox
 from PyQt6.QtCore import QSharedMemory
 
-from .app.views.factories.api_key_dialog_factory import APIKeyDialogFactory
-from .app.views.factories.main_window_factory import MainWindowFactory
 from .app.managers.icon_manager import IconManager
 from .app.managers.settings_manager import SettingsManager
+from .app.views.factories.api_key_dialog_factory import APIKeyDialogFactory
+from .app.views.factories.main_window_factory import MainWindowFactory
 
 
 class LabelManager:

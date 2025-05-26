@@ -9,8 +9,8 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QWidget, QCheckBox, QDialogBut
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtGui import QCloseEvent
 
-from ...controllers.dialogs.settings_dialog_controller import SettingsDialogController
 from ...managers.settings_manager import SettingsManager
+from ...controllers.dialogs.settings_dialog_controller import SettingsDialogController
 
 
 class LabelManager:

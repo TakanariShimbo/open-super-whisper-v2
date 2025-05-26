@@ -21,8 +21,8 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, pyqtSlot, QTimer
 from PyQt6.QtGui import QCloseEvent, QShowEvent
 
-from ...controllers.dialogs.hotkey_dialog_controller import HotkeyDialogController
 from ...managers.settings_manager import SettingsManager
+from ...controllers.dialogs.hotkey_dialog_controller import HotkeyDialogController
 
 
 class LabelManager:
