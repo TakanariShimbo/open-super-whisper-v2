@@ -8,6 +8,41 @@ following the factory design pattern to centralize dialog creation logic.
 from PyQt6.QtWidgets import QWidget
 
 from ..dialogs.api_key_dialog import APIKeyDialog
+from ...managers.settings_manager import SettingsManager
+
+
+class LabelManager:
+    """
+    Manages application labels for internationalization support.
+    """
+
+    ALL_LABELS = {
+        "English": {
+            "initial_api_key_message": "Welcome to Open Super Whisper! Please enter your OpenAI API key to get started.",
+            "settings_api_key_message": "Update your API key if needed.",
+        },
+        "Japanese": {
+            "initial_api_key_message": "Open Super Whisperへようこそ! OpenAI APIキーを入力して開始してください。",
+            "settings_api_key_message": "必要に応じてAPIキーを更新してください。",
+        },
+        # Future: Add other languages here
+    }
+
+    def __init__(self) -> None:
+        # load language from settings manager
+        settings_manager = SettingsManager.instance()
+        language = settings_manager.get_language()
+
+        # set labels based on language
+        self._labels = self.ALL_LABELS[language]
+
+    @property
+    def initial_api_key_message(self) -> str:
+        return self._labels["initial_api_key_message"]
+
+    @property
+    def settings_api_key_message(self) -> str:
+        return self._labels["settings_api_key_message"]
 
 
 class APIKeyDialogFactory:
@@ -55,7 +90,9 @@ class APIKeyDialogFactory:
         APIKeyDialog
             The created API key dialog instance
         """
-        initial_message = "Welcome to Open Super Whisper! Please enter your OpenAI API key to get started."
+        # Initialize label manager for internationalization
+        label_manager = LabelManager()
+        initial_message = label_manager.initial_api_key_message
         return cls._create_dialog(initial_message=initial_message)
 
     @classmethod
@@ -73,7 +110,9 @@ class APIKeyDialogFactory:
         APIKeyDialog
             The created API key dialog instance
         """
-        initial_message = "Update your API key or enter a new one if needed."
+        # Initialize label manager for internationalization
+        label_manager = LabelManager()
+        initial_message = label_manager.settings_api_key_message
         return cls._create_dialog(
             initial_message=initial_message,
             main_window=main_window,
