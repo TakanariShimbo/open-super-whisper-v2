@@ -16,6 +16,66 @@ from ..managers.instruction_sets_manager import InstructionSetsManager
 from ..managers.settings_manager import SettingsManager
 
 
+class LabelManager:
+    """
+    Manages application labels for internationalization support.
+    """
+
+    ALL_LABELS = {
+        "English": {
+            "pipeline_not_initialized": "Pipeline not initialized",
+            "error_starting_recording": "Error starting recording: {error}",
+            "error_stopping_recording": "Error stopping recording: {error}",
+            "processing_already_in_progress": "Processing already in progress",
+            "error_processing_audio": "Error processing audio: {error}",
+            "processing_failed": "Processing failed: {error}",
+            "error_setting_selected_instruction_set": "Error setting selected instruction set: {name}",
+            "error_applying_instruction_set": "Error applying instruction set: {error}",
+        },
+        # Future: Add other languages here
+    }
+
+    def __init__(self) -> None:
+        # load language from settings manager
+        settings_manager = SettingsManager.instance()
+        language = settings_manager.get_language()
+
+        # set labels based on language
+        self._labels = self.ALL_LABELS[language]
+
+    @property
+    def pipeline_not_initialized(self) -> str:
+        return self._labels["pipeline_not_initialized"]
+
+    @property
+    def error_starting_recording(self) -> str:
+        return self._labels["error_starting_recording"]
+
+    @property
+    def error_stopping_recording(self) -> str:
+        return self._labels["error_stopping_recording"]
+
+    @property
+    def processing_already_in_progress(self) -> str:
+        return self._labels["processing_already_in_progress"]
+
+    @property
+    def error_processing_audio(self) -> str:
+        return self._labels["error_processing_audio"]
+
+    @property
+    def processing_failed(self) -> str:
+        return self._labels["processing_failed"]
+
+    @property
+    def error_setting_selected_instruction_set(self) -> str:
+        return self._labels["error_setting_selected_instruction_set"]
+
+    @property
+    def error_applying_instruction_set(self) -> str:
+        return self._labels["error_applying_instruction_set"]
+
+
 class ProcessingThread(QThread):
     """
     Thread for processing audio files asynchronously.
@@ -157,6 +217,9 @@ class MainModel(QObject):
         self._keyboard_manager = KeyboardManager.get_instance()
         self._instruction_sets_manager = InstructionSetsManager.get_instance()
 
+        # Initialize label manager for internationalization
+        self._label_manager = LabelManager()
+
         # Initialize pipeline components
         self._pipeline = Pipeline(api_key=api_key)
         self._processor = None
@@ -238,13 +301,13 @@ class MainModel(QObject):
             True if recording started successfully, False otherwise
         """
         if not self._pipeline:
-            self.processing_error.emit("Pipeline not initialized")
+            self.processing_error.emit(self._label_manager.pipeline_not_initialized)
             return False
         try:
             self._pipeline.start_recording()
             return True
         except Exception as e:
-            self.processing_error.emit(f"Error starting recording: {str(e)}")
+            self.processing_error.emit(self._label_manager.error_starting_recording.format(error=str(e)))
             return False
 
     def stop_recording(self) -> str | None:
@@ -261,7 +324,7 @@ class MainModel(QObject):
         try:
             return self._pipeline.stop_recording()
         except Exception as e:
-            self.processing_error.emit(f"Error stopping recording: {str(e)}")
+            self.processing_error.emit(self._label_manager.error_stopping_recording.format(error=str(e)))
             return None
 
     def process_audio(
@@ -291,11 +354,11 @@ class MainModel(QObject):
             True if processing started successfully, False otherwise
         """
         if not self._pipeline:
-            self.processing_error.emit("Pipeline not initialized")
+            self.processing_error.emit(self._label_manager.pipeline_not_initialized)
             return False
 
         if self.is_processing:
-            self.processing_error.emit("Processing already in progress")
+            self.processing_error.emit(self._label_manager.processing_already_in_progress)
             return False
 
         try:
@@ -322,7 +385,7 @@ class MainModel(QObject):
             return True
 
         except Exception as e:
-            self.processing_error.emit(f"Error processing audio: {str(e)}")
+            self.processing_error.emit(self._label_manager.error_processing_audio.format(error=str(e)))
             self._processor = None
             return False
 
@@ -354,7 +417,7 @@ class MainModel(QObject):
             self._processor.deleteLater()
             self._processor = None
 
-        self.processing_error.emit(f"Processing failed: {error}")
+        self.processing_error.emit(self._label_manager.processing_failed.format(error=error))
 
     def cancel_processing(self) -> bool:
         """
@@ -464,7 +527,7 @@ class MainModel(QObject):
         # Set the selected instruction set
         is_success = self._instruction_sets_manager.set_selected_set_name(instruction_set_name=name)
         if not is_success:
-            self.processing_error.emit(f"Error setting selected instruction set: {name}")
+            self.processing_error.emit(self._label_manager.error_setting_selected_instruction_set.format(name=name))
             return False
 
         # Apply the instruction set to the pipeline
@@ -473,7 +536,7 @@ class MainModel(QObject):
             try:
                 self._pipeline.apply_instruction_set(selected_set=selected_set)
             except Exception as e:
-                self.processing_error.emit(f"Error applying instruction set: {str(e)}")
+                self.processing_error.emit(self._label_manager.error_applying_instruction_set.format(error=str(e)))
                 return False
 
         # Emit the instruction set activated signal
