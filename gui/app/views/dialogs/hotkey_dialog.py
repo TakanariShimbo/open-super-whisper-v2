@@ -52,7 +52,7 @@ class LabelManager:
             "button_capture": "キャプチャ",
             "button_stop_capturing": "ストップ",
             "button_clear": "クリア",
-            "tips_text": ("ヒント:\n" "・『取得』をクリックしてキーを押すとホットキーを設定できます\n" "・例: ctrl+shift+r, alt+a, ctrl+alt+s"),
+            "tips_text": ("ヒント:\n" "・『キャプチャ』をクリックしてキーを押すとホットキーを設定できます\n" "・例: ctrl+shift+r, alt+a, ctrl+alt+s"),
             "error_title": "ホットキー検証エラー",
         },
         # Future: Add other languages here

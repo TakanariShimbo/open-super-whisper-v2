@@ -57,7 +57,7 @@ class LabelManager:
             "stt_language_label": "STT Language",
             "stt_model_label": "STT Model",
             "hotkey_label": "Hotkey",
-            "enable_llm_processing_label": "Enable LLM Processing",
+            "enable_llm_processing_label": "LLM Processing",
             "llm_model_label": "LLM Model",
             "context_label": "Context",
             # Button Labels
@@ -66,7 +66,7 @@ class LabelManager:
             "delete_button": "Delete",
             "save_changes_button": "Save Changes",
             "discard_changes_button": "Discard Changes",
-            "set_hotkey_button": "Set Hotkey",
+            "set_hotkey_button": "Setting",
             "close_button": "Close",
             # Tab Labels
             "vocabulary_tab": "Vocabulary",
@@ -110,7 +110,7 @@ class LabelManager:
             "stt_language_label": "STT言語",
             "stt_model_label": "STTモデル",
             "hotkey_label": "ホットキー",
-            "enable_llm_processing_label": "LLM処理を有効化",
+            "enable_llm_processing_label": "LLM処理",
             "llm_model_label": "LLMモデル",
             "context_label": "コンテキスト",
             # Button Labels
@@ -119,7 +119,7 @@ class LabelManager:
             "delete_button": "削除",
             "save_changes_button": "変更を保存",
             "discard_changes_button": "変更を破棄",
-            "set_hotkey_button": "ホットキー設定",
+            "set_hotkey_button": "設定",
             "close_button": "閉じる",
             # Tab Labels
             "vocabulary_tab": "語彙",
