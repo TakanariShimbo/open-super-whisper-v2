@@ -10,6 +10,49 @@ from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QPalette, QColor, QShowEvent
 
 from ...controllers.widgets.status_indicator_controller import StatusIndicatorController
+from ...managers.settings_manager import SettingsManager
+
+
+class LabelManager:
+    """
+    Manages application labels for internationalization support in Status Indicator.
+    """
+
+    ALL_LABELS = {
+        "English": {
+            # Status Labels
+            "status_recording": "Recording...",
+            "status_processing": "Processing...",
+            "status_completed": "Completed!",
+            "status_cancelled": "Cancelled!",
+        },
+        # Future: Add other languages here
+    }
+
+    def __init__(self) -> None:
+        # Load language from settings manager
+        settings_manager = SettingsManager.instance()
+        language = settings_manager.get_language()
+
+        # Set labels based on language
+        self._labels = self.ALL_LABELS[language]
+
+    # Status Labels
+    @property
+    def status_recording(self) -> str:
+        return self._labels["status_recording"]
+
+    @property
+    def status_processing(self) -> str:
+        return self._labels["status_processing"]
+
+    @property
+    def status_completed(self) -> str:
+        return self._labels["status_completed"]
+
+    @property
+    def status_cancelled(self) -> str:
+        return self._labels["status_cancelled"]
 
 
 class StatusIndicatorWindow(QWidget):
@@ -39,6 +82,9 @@ class StatusIndicatorWindow(QWidget):
             parent=main_window,
             flags=Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint,
         )
+
+        # Initialize label manager
+        self._label_manager = LabelManager()
 
         # Create controller
         self._controller = StatusIndicatorController(status_indicator=self)
@@ -87,12 +133,12 @@ class StatusIndicatorWindow(QWidget):
         frame_layout = QVBoxLayout(frame)
 
         # Status text
-        self.status_label = QLabel("Recording...")
+        self.status_label = QLabel(self._label_manager.status_recording)
         self.status_label.setStyleSheet("color: #ff5f5f; font-weight: bold;")
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Timer text
-        self.timer_label = QLabel("00:00")
+        self.timer_label = QLabel("")
         self.timer_label.setStyleSheet("color: white;")
         self.timer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -118,18 +164,18 @@ class StatusIndicatorWindow(QWidget):
         Update the indicator visuals based on current mode.
         """
         if self._current_mode == self._MODE_RECORDING:
-            self.status_label.setText("Recording...")
+            self.status_label.setText(self._label_manager.status_recording)
             self.status_label.setStyleSheet("color: #ff5f5f; font-weight: bold;")
         elif self._current_mode == self._MODE_PROCESSING:
-            self.status_label.setText("Processing...")
+            self.status_label.setText(self._label_manager.status_processing)
             self.status_label.setStyleSheet("color: #bbbbbb; font-weight: bold;")
             self.timer_label.setText("")
         elif self._current_mode == self._MODE_COMPLETED:
-            self.status_label.setText("Completed!")
+            self.status_label.setText(self._label_manager.status_completed)
             self.status_label.setStyleSheet("color: #5fff5f; font-weight: bold;")
             self.timer_label.setText("")
         elif self._current_mode == self._MODE_CANCELLED:
-            self.status_label.setText("Cancelled!")
+            self.status_label.setText(self._label_manager.status_cancelled)
             self.status_label.setStyleSheet("color: #bbbbbb; font-weight: bold;")
             self.timer_label.setText("")
 
