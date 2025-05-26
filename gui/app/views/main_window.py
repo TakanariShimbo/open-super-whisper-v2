@@ -22,7 +22,7 @@ from PyQt6.QtWidgets import (
     QSystemTrayIcon,
     QSizePolicy,
 )
-from PyQt6.QtCore import Qt, pyqtSlot
+from PyQt6.QtCore import Qt, pyqtSlot, QTimer
 from PyQt6.QtGui import QAction, QCloseEvent
 
 from core.pipelines.pipeline_result import PipelineResult
@@ -81,6 +81,8 @@ class LabelManager:
             # Dialog Messages
             "quit_dialog_title": "Quit Application",
             "quit_dialog_message": "Are you sure you want to quit the application?",
+            "settings_restart_dialog_title": "Settings Updated",
+            "settings_restart_dialog_message": "Settings have been updated successfully.\n\nThe application will shut down in {seconds} seconds to apply the new settings.",
             "tray_message_title": "Open Super Whisper App",
             "tray_message_text": "The application is still running in the background. Click the tray icon to restore.",
         },
@@ -123,6 +125,8 @@ class LabelManager:
             # Dialog Messages
             "quit_dialog_title": "アプリ終了",
             "quit_dialog_message": "アプリケーションを終了してもよろしいですか？",
+            "settings_restart_dialog_title": "設定が更新されました",
+            "settings_restart_dialog_message": "設定が正常に更新されました。\n\n新しい設定を適用するため、{seconds}秒後にアプリケーションを終了します。",
             "tray_message_title": "Open Super Whisper アプリ",
             "tray_message_text": "アプリケーションはバックグラウンドで動作中です。トレイアイコンをクリックして復元できます。",
         },
@@ -267,6 +271,14 @@ class LabelManager:
     @property
     def quit_dialog_message(self) -> str:
         return self._labels["quit_dialog_message"]
+
+    @property
+    def settings_restart_dialog_title(self) -> str:
+        return self._labels["settings_restart_dialog_title"]
+
+    @property
+    def settings_restart_dialog_message(self) -> str:
+        return self._labels["settings_restart_dialog_message"]
 
     @property
     def tray_message_title(self) -> str:
@@ -782,6 +794,53 @@ class MainWindow(QMainWindow):
     #
     # UI Events
     #
+
+    def _update_settings_dialog_message(self) -> None:
+        """
+        Update the settings dialog message with current countdown.
+        """
+        message = self._label_manager.settings_restart_dialog_message.format(seconds=self._countdown_seconds)
+        self._settings_dialog.setText(message)
+
+    @pyqtSlot()
+    def _on_settings_timer_timeout(self) -> None:
+        """
+        Handle settings dialog timer timeout.
+        """
+        self._countdown_seconds -= 1
+
+        if self._countdown_seconds > 0:
+            # Update message with new countdown
+            self._update_settings_dialog_message()
+        else:
+            # Timer reached zero, close dialog and exit
+            self._settings_timer.stop()
+            self._settings_dialog.accept()  # Close dialog automatically
+
+    def _show_settings_restart_dialog(self) -> None:
+        """
+        Show settings restart dialog with countdown timer.
+        """
+        # Create message box
+        self._settings_dialog = QMessageBox(self)
+        self._settings_dialog.setWindowTitle(self._label_manager.settings_restart_dialog_title)
+        self._settings_dialog.setIcon(QMessageBox.Icon.Information)
+        self._settings_dialog.setStandardButtons(QMessageBox.StandardButton.Ok)
+
+        # Initialize countdown variables
+        self._countdown_seconds = 5
+
+        # Set initial message with countdown
+        self._update_settings_dialog_message()
+
+        # Create and start timer
+        self._settings_timer = QTimer(self)
+        self._settings_timer.timeout.connect(self._on_settings_timer_timeout)
+        self._settings_timer.start(1000)  # Update every second
+
+        # Show dialog (non-blocking)
+        self._settings_dialog.exec()
+
     @pyqtSlot()
     def _on_click_api_key(self) -> None:
         """
@@ -813,6 +872,12 @@ class MainWindow(QMainWindow):
         if self._controller.show_settings_dialog(main_window=self):
             # Settings were updated
             self._status_bar.showMessage(self._label_manager.settings_updated, 2000)
+
+            # Show countdown dialog with auto-close timer
+            self._show_settings_restart_dialog()
+
+            # Exit application
+            self._exit_application()
 
     @pyqtSlot()
     def _on_click_record(self) -> None:
@@ -887,18 +952,24 @@ class MainWindow(QMainWindow):
         )
 
         if reply == QMessageBox.StandardButton.Yes:
-            # Set closing flag
-            self._is_closing = True
+            self._exit_application()
 
-            # Hide the system tray icon
-            if hasattr(self, "system_tray"):
-                self._system_tray.hide()
+    def _exit_application(self) -> None:
+        """
+        Exit the application with proper cleanup.
+        """
+        # Set closing flag
+        self._is_closing = True
 
-            # Shut down the controller cleanly
-            self._controller.shutdown()
+        # Hide the system tray icon
+        if hasattr(self, "_system_tray"):
+            self._system_tray.hide()
 
-            # Exit application
-            sys.exit(0)
+        # Shut down the controller cleanly
+        self._controller.shutdown()
+
+        # Exit application
+        sys.exit(0)
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """
