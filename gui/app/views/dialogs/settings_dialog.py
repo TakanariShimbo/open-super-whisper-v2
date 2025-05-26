@@ -22,25 +22,25 @@ class LabelManager:
         "English": {
             "window_title": "Settings",
             "group_title": "Application Settings",
-            "sound_checkbox": "Enable sound notifications",
-            "sound_tooltip": "Play sounds when recording starts/stops and processing completes",
+            "sound_checkbox": "Notify with sound",
+            "sound_tooltip": "Notify with sound when recording started/stopped and processing completed",
             "indicator_checkbox": "Show status indicator",
-            "indicator_tooltip": "Show a visual indicator during recording and processing",
-            "clipboard_checkbox": "Automatically copy results to clipboard",
-            "clipboard_tooltip": "Copy results to clipboard when processing completes",
+            "indicator_tooltip": "Show indicator during recording and processing",
+            "clipboard_checkbox": "Copy results to clipboard automatically",
+            "clipboard_tooltip": "Copy results to clipboard automatically when processing completes",
             "language_label": "Language:",
             "language_tooltip": "Select the application language",
         },
         "Japanese": {
             "window_title": "設定",
             "group_title": "アプリケーション設定",
-            "sound_checkbox": "サウンド通知を有効",
-            "sound_tooltip": "録音開始・停止や処理完了時にサウンドを再生します",
+            "sound_checkbox": "サウンドによる通知",
+            "sound_tooltip": "録音開始・停止時や処理完了時にサウンドを再生します",
             "indicator_checkbox": "ステータスインジケーターを表示",
             "indicator_tooltip": "録音や処理中に視覚的なインジケーターを表示します",
             "clipboard_checkbox": "結果を自動的にクリップボードへコピー",
             "clipboard_tooltip": "処理完了時に結果をクリップボードへコピーします",
-            "language_label": "言語:",
+            "language_label": "アプリケーション言語:",
             "language_tooltip": "アプリケーションの表示言語を選択します",
         },
         # Future: Add other languages here
@@ -303,7 +303,7 @@ class SettingsDialog(QDialog):
         """
         # Restore hotkeys
         self._restore_hotkeys()
-        
+
         # Save settings
         self._controller.save_settings()
 
@@ -317,7 +317,7 @@ class SettingsDialog(QDialog):
         """
         # Restore hotkeys
         self._restore_hotkeys()
-        
+
         # Restore original settings
         self._controller.cancel()
 
@@ -350,7 +350,7 @@ class SettingsDialog(QDialog):
         """
         # Restore hotkeys
         self._restore_hotkeys()
-        
+
         # Restore original settings
         self._controller.cancel()
 
