@@ -9,6 +9,37 @@ from PyQt6.QtCore import QObject, pyqtSignal
 
 from ...managers.instruction_sets_manager import InstructionSetsManager
 from ...managers.keyboard_manager import KeyboardManager
+from ...managers.settings_manager import SettingsManager
+
+
+class LabelManager:
+    """
+    Manages application labels for internationalization support.
+    """
+
+    ALL_LABELS = {
+        "English": {
+            "invalid_hotkey_format_message": "Invalid hotkey format: {hotkey}",
+            "hotkey_already_used_message": "The hotkey '{hotkey}' is already used by instruction set '{conflicting_set_name}'.",
+        },
+        # Future: Add other languages here
+    }
+
+    def __init__(self) -> None:
+        # load language from settings manager
+        settings_manager = SettingsManager.instance()
+        language = settings_manager.get_language()
+
+        # set labels based on language
+        self._labels = self.ALL_LABELS[language]
+
+    @property
+    def invalid_hotkey_format_message(self) -> str:
+        return self._labels["invalid_hotkey_format_message"]
+
+    @property
+    def hotkey_already_used_message(self) -> str:
+        return self._labels["hotkey_already_used_message"]
 
 
 class HotkeyDialogModel(QObject):
@@ -59,6 +90,9 @@ class HotkeyDialogModel(QObject):
         # Create key state tracker for capturing key combinations
         self._instruction_sets_manager = InstructionSetsManager.get_instance()
         self._keyboard_manager = KeyboardManager.get_instance()
+        
+        # Initialize label manager for internationalization
+        self._label_manager = LabelManager()
 
     #
     # Model Methods
@@ -166,14 +200,14 @@ class HotkeyDialogModel(QObject):
         # Parse with the KeyFormatter to ensure it's a valid format
         parsed_hotkey = self._keyboard_manager.parse_hotkey_string(hotkey_string=self._hotkey)
         if parsed_hotkey is None:
-            self.validation_failed.emit(f"Invalid hotkey format: {self._hotkey}")
+            self.validation_failed.emit(self._label_manager.invalid_hotkey_format_message.format(hotkey=self._hotkey))
             return False
 
         # Check for conflicts if a checker function is provided
         if self._hotkey != self._original_hotkey:
             conflicting_set_name = self._check_hotkey_conflict(hotkey=self._hotkey)
             if conflicting_set_name:
-                self.validation_failed.emit(f"The hotkey '{self._hotkey}' is already used by instruction set '{conflicting_set_name}'.")
+                self.validation_failed.emit(self._label_manager.hotkey_already_used_message.format(hotkey=self._hotkey, conflicting_set_name=conflicting_set_name))
                 return False
         return True
 

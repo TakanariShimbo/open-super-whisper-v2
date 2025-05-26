@@ -12,8 +12,99 @@ from core.stt.stt_model import STTModel
 from core.llm.llm_model import LLMModel
 from core.pipelines.instruction_set import InstructionSet
 
+from ...managers.settings_manager import SettingsManager
 from ...models.dialogs.instruction_dialog_model import InstructionDialogModel
 from ...views.factories.hotkey_dialog_factory import HotkeyDialogFactory
+
+
+class LabelManager:
+    """
+    Manages application labels for internationalization support.
+    """
+
+    ALL_LABELS = {
+        "English": {
+            "instruction_set_already_exists_format": "An instruction set named '{name}' already exists.",
+            "instruction_set_created_successfully_format": "Instruction set '{name}' created successfully.",
+            "instruction_set_creation_failed_format": "Failed to create instruction set '{name}'.",
+            "instruction_set_not_exists_format": "Instruction set '{name}' does not exist.",
+            "instruction_set_updated_successfully_format": "Instruction set '{name}' updated successfully.",
+            "instruction_set_update_failed_format": "Failed to update instruction set '{name}'.",
+            "cannot_delete_last_instruction_set": "Cannot delete the last instruction set.",
+            "instruction_set_deleted_successfully_format": "Instruction set '{name}' deleted successfully.",
+            "instruction_set_deletion_failed_format": "Failed to delete instruction set '{name}'.",
+            "instruction_set_renamed_successfully_format": "Instruction set renamed from '{old_name}' to '{new_name}' successfully.",
+            "instruction_set_rename_failed_format": "Failed to rename instruction set from '{old_name}' to '{new_name}'.",
+            "hotkey_update_failed_format": "Failed to update hotkey for '{set_name}'.",
+            "hotkey_set_successfully_format": "Hotkey for '{set_name}' set to '{hotkey}' successfully.",
+            "hotkey_cleared_successfully_format": "Hotkey for '{set_name}' cleared successfully.",
+        },
+        # Future: Add other languages here
+    }
+
+    def __init__(self) -> None:
+        # load language from settings manager
+        settings_manager = SettingsManager.instance()
+        language = settings_manager.get_language()
+
+        # set labels based on language
+        self._labels = self.ALL_LABELS[language]
+
+    @property
+    def instruction_set_already_exists_format(self) -> str:
+        return self._labels["instruction_set_already_exists_format"]
+
+    @property
+    def instruction_set_created_successfully_format(self) -> str:
+        return self._labels["instruction_set_created_successfully_format"]
+
+    @property
+    def instruction_set_creation_failed_format(self) -> str:
+        return self._labels["instruction_set_creation_failed_format"]
+
+    @property
+    def instruction_set_not_exists_format(self) -> str:
+        return self._labels["instruction_set_not_exists_format"]
+
+    @property
+    def instruction_set_updated_successfully_format(self) -> str:
+        return self._labels["instruction_set_updated_successfully_format"]
+
+    @property
+    def instruction_set_update_failed_format(self) -> str:
+        return self._labels["instruction_set_update_failed_format"]
+
+    @property
+    def cannot_delete_last_instruction_set(self) -> str:
+        return self._labels["cannot_delete_last_instruction_set"]
+
+    @property
+    def instruction_set_deleted_successfully_format(self) -> str:
+        return self._labels["instruction_set_deleted_successfully_format"]
+
+    @property
+    def instruction_set_deletion_failed_format(self) -> str:
+        return self._labels["instruction_set_deletion_failed_format"]
+
+    @property
+    def instruction_set_renamed_successfully_format(self) -> str:
+        return self._labels["instruction_set_renamed_successfully_format"]
+
+    @property
+    def instruction_set_rename_failed_format(self) -> str:
+        return self._labels["instruction_set_rename_failed_format"]
+
+    @property
+    def hotkey_update_failed_format(self) -> str:
+        return self._labels["hotkey_update_failed_format"]
+
+    @property
+    def hotkey_set_successfully_format(self) -> str:
+        return self._labels["hotkey_set_successfully_format"]
+
+    @property
+    def hotkey_cleared_successfully_format(self) -> str:
+        return self._labels["hotkey_cleared_successfully_format"]
 
 
 class InstructionDialogController(QObject):
@@ -55,6 +146,9 @@ class InstructionDialogController(QObject):
             The parent object, by default None
         """
         super().__init__(parent=instruction_dialog)
+
+        # Initialize label manager
+        self._label_manager = LabelManager()
 
         # Create model
         self._model = InstructionDialogModel(instruction_dialog=instruction_dialog)
@@ -296,16 +390,25 @@ class InstructionDialogController(QObject):
         """
         # Check if name already exists
         if self._model.get_set_by_name(name=name):
-            self.operation_result.emit(False, f"An instruction set named '{name}' already exists.")
+            self.operation_result.emit(
+                False,
+                self._label_manager.instruction_set_already_exists_format.format(name=name),
+            )
             return False
 
         # Add set with default settings
         result = self._model.add_set(name=name)
 
         if result:
-            self.operation_result.emit(True, f"Instruction set '{name}' created successfully.")
+            self.operation_result.emit(
+                True,
+                self._label_manager.instruction_set_created_successfully_format.format(name=name),
+            )
         else:
-            self.operation_result.emit(False, f"Failed to create instruction set '{name}'.")
+            self.operation_result.emit(
+                False,
+                self._label_manager.instruction_set_creation_failed_format.format(name=name),
+            )
 
         return result
 
@@ -327,16 +430,25 @@ class InstructionDialogController(QObject):
         """
         # Check if set exists
         if not self._model.get_set_by_name(name=name):
-            self.operation_result.emit(False, f"Instruction set '{name}' does not exist.")
+            self.operation_result.emit(
+                False,
+                self._label_manager.instruction_set_not_exists_format.format(name=name),
+            )
             return False
 
         # Update the set
         result = self._model.update_set(name=name, **kwargs)
 
         if result:
-            self.operation_result.emit(True, f"Instruction set '{name}' updated successfully.")
+            self.operation_result.emit(
+                True,
+                self._label_manager.instruction_set_updated_successfully_format.format(name=name),
+            )
         else:
-            self.operation_result.emit(False, f"Failed to update instruction set '{name}'.")
+            self.operation_result.emit(
+                False,
+                self._label_manager.instruction_set_update_failed_format.format(name=name),
+            )
 
         return result
 
@@ -356,21 +468,33 @@ class InstructionDialogController(QObject):
         """
         # Check if set exists
         if not self._model.get_set_by_name(name=name):
-            self.operation_result.emit(False, f"Instruction set '{name}' does not exist.")
+            self.operation_result.emit(
+                False,
+                self._label_manager.instruction_set_not_exists_format.format(name=name),
+            )
             return False
 
         # Check if this is the last set
         if len(self._model.get_all_sets()) <= 1:
-            self.operation_result.emit(False, "Cannot delete the last instruction set.")
+            self.operation_result.emit(
+                False,
+                self._label_manager.cannot_delete_last_instruction_set,
+            )
             return False
 
         # Delete the set
         result = self._model.delete_set(name=name)
 
         if result:
-            self.operation_result.emit(True, f"Instruction set '{name}' deleted successfully.")
+            self.operation_result.emit(
+                True,
+                self._label_manager.instruction_set_deleted_successfully_format.format(name=name),
+            )
         else:
-            self.operation_result.emit(False, f"Failed to delete instruction set '{name}'.")
+            self.operation_result.emit(
+                False,
+                self._label_manager.instruction_set_deletion_failed_format.format(name=name),
+            )
 
         return result
 
@@ -392,21 +516,33 @@ class InstructionDialogController(QObject):
         """
         # Check if old name exists
         if not self._model.get_set_by_name(name=old_name):
-            self.operation_result.emit(False, f"Instruction set '{old_name}' does not exist.")
+            self.operation_result.emit(
+                False,
+                self._label_manager.instruction_set_not_exists_format.format(name=old_name),
+            )
             return False
 
         # Check if new name already exists
         if self._model.get_set_by_name(name=new_name):
-            self.operation_result.emit(False, f"An instruction set named '{new_name}' already exists.")
+            self.operation_result.emit(
+                False,
+                self._label_manager.instruction_set_already_exists_format.format(name=new_name),
+            )
             return False
 
         # Rename the set
         result = self._model.rename_set(old_name=old_name, new_name=new_name)
 
         if result:
-            self.operation_result.emit(True, f"Instruction set renamed from '{old_name}' to '{new_name}' successfully.")
+            self.operation_result.emit(
+                True,
+                self._label_manager.instruction_set_renamed_successfully_format.format(old_name=old_name, new_name=new_name),
+            )
         else:
-            self.operation_result.emit(False, f"Failed to rename instruction set from '{old_name}' to '{new_name}'.")
+            self.operation_result.emit(
+                False,
+                self._label_manager.instruction_set_rename_failed_format.format(old_name=old_name, new_name=new_name),
+            )
 
         return result
 
@@ -431,12 +567,21 @@ class InstructionDialogController(QObject):
 
         # Emit the result
         if not result:
-            self.operation_result.emit(False, f"Failed to update hotkey for '{set_name}'.")
+            self.operation_result.emit(
+                False,
+                self._label_manager.hotkey_update_failed_format.format(set_name=set_name),
+            )
             return False
         if hotkey:
-            self.operation_result.emit(True, f"Hotkey for '{set_name}' set to '{hotkey}' successfully.")
+            self.operation_result.emit(
+                True,
+                self._label_manager.hotkey_set_successfully_format.format(set_name=set_name, hotkey=hotkey),
+            )
         else:
-            self.operation_result.emit(True, f"Hotkey for '{set_name}' cleared successfully.")
+            self.operation_result.emit(
+                True,
+                self._label_manager.hotkey_cleared_successfully_format.format(set_name=set_name),
+            )
         return True
 
     def show_hotkey_dialog(
