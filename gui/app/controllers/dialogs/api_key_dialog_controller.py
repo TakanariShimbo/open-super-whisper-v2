@@ -7,6 +7,7 @@ This module provides the controller component for API key management.
 from PyQt6.QtCore import QObject, pyqtSignal
 
 from ...models.dialogs.api_key_dialog_model import APIKeyDialogModel
+from ...managers.keyboard_manager import KeyboardManager
 
 
 class APIKeyDialogController(QObject):
@@ -43,6 +44,9 @@ class APIKeyDialogController(QObject):
 
         # Initialize the model
         self._model = APIKeyDialogModel(api_key_dialog=api_key_dialog)
+        
+        # Get keyboard manager for hotkey control
+        self._keyboard_manager = KeyboardManager.get_instance()
 
     #
     # Controller Methods
@@ -109,3 +113,25 @@ class APIKeyDialogController(QObject):
         Cancel dialog and restore original API key.
         """
         self._model.restore_original()
+
+    def start_listening(self) -> bool:
+        """
+        Start listening for hotkeys.
+
+        Returns
+        -------
+        bool
+            True if listening started successfully, False otherwise
+        """
+        return self._keyboard_manager.start_listening()
+
+    def stop_listening(self) -> bool:
+        """
+        Stop listening for hotkeys.
+
+        Returns
+        -------
+        bool
+            True if listening stopped successfully, False otherwise
+        """
+        return self._keyboard_manager.stop_listening()

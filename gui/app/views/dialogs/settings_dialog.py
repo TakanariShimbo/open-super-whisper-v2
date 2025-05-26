@@ -7,7 +7,7 @@ It allows users to configure application preferences like sound, indicator visib
 
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QWidget, QCheckBox, QDialogButtonBox, QGroupBox, QGridLayout, QComboBox, QLabel
 from PyQt6.QtCore import pyqtSlot
-from PyQt6.QtGui import QCloseEvent
+from PyQt6.QtGui import QCloseEvent, QShowEvent
 
 from ...managers.settings_manager import SettingsManager
 from ...controllers.dialogs.settings_dialog_controller import SettingsDialogController
@@ -121,6 +121,9 @@ class SettingsDialog(QDialog):
 
         # Create controller
         self._controller = SettingsDialogController(settings_dialog=self)
+
+        # Track hotkey state
+        self._hotkeys_disabled = False
 
         # Set up UI
         self._init_ui()
@@ -285,11 +288,22 @@ class SettingsDialog(QDialog):
     #
     # Open/Close Events
     #
+    def _restore_hotkeys(self) -> None:
+        """
+        Restore hotkeys that were disabled.
+        """
+        if self._hotkeys_disabled:
+            self._controller.start_listening()
+            self._hotkeys_disabled = False
+
     @pyqtSlot()
     def _on_accept(self) -> None:
         """
         Handle dialog acceptance.
         """
+        # Restore hotkeys
+        self._restore_hotkeys()
+        
         # Save settings
         self._controller.save_settings()
 
@@ -301,11 +315,29 @@ class SettingsDialog(QDialog):
         """
         Handle dialog rejection.
         """
+        # Restore hotkeys
+        self._restore_hotkeys()
+        
         # Restore original settings
         self._controller.cancel()
 
         # Reject the dialog
         super().reject()
+
+    def showEvent(self, event: QShowEvent) -> None:
+        """
+        Handle dialog show event.
+
+        Parameters
+        ----------
+        event : QShowEvent
+            The show event
+        """
+        super().showEvent(event)
+
+        # Disable hotkeys while dialog is open
+        self._controller.stop_listening()
+        self._hotkeys_disabled = True
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """
@@ -316,6 +348,9 @@ class SettingsDialog(QDialog):
         event : QCloseEvent
             Close event
         """
+        # Restore hotkeys
+        self._restore_hotkeys()
+        
         # Restore original settings
         self._controller.cancel()
 

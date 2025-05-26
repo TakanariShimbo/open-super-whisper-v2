@@ -6,7 +6,7 @@ This module provides the view component for API key input dialog.
 
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QHBoxLayout, QWidget, QDialogButtonBox, QLabel, QLineEdit
 from PyQt6.QtCore import pyqtSlot
-from PyQt6.QtGui import QCloseEvent
+from PyQt6.QtGui import QCloseEvent, QShowEvent
 
 from ...managers.settings_manager import SettingsManager
 from ...controllers.dialogs.api_key_dialog_controller import APIKeyDialogController
@@ -137,6 +137,9 @@ class APIKeyDialog(QDialog):
         # Create controller
         self._controller = APIKeyDialogController(api_key_dialog=self)
 
+        # Track hotkey state
+        self._hotkeys_disabled = False
+
         # Create UI components
         self._init_ui()
 
@@ -254,6 +257,9 @@ class APIKeyDialog(QDialog):
         api_key : str
             The validated API key
         """
+        # Restore hotkeys
+        self._restore_hotkeys()
+        
         # Save the valid API key
         self._controller.save_api_key()
 
@@ -294,6 +300,14 @@ class APIKeyDialog(QDialog):
     #
     # Open/Close Events
     #
+    def _restore_hotkeys(self) -> None:
+        """
+        Restore hotkeys that were disabled.
+        """
+        if self._hotkeys_disabled:
+            self._controller.start_listening()
+            self._hotkeys_disabled = False
+
     def _get_entered_api_key(self) -> str:
         """
         Get the entered API key.
@@ -324,11 +338,29 @@ class APIKeyDialog(QDialog):
         """
         Handle dialog rejection.
         """
+        # Restore hotkeys
+        self._restore_hotkeys()
+        
         # Restore original state
         self._controller.cancel()
 
         # Reject the dialog
         super().reject()
+
+    def showEvent(self, event: QShowEvent) -> None:
+        """
+        Handle dialog show event.
+
+        Parameters
+        ----------
+        event : QShowEvent
+            The show event
+        """
+        super().showEvent(event)
+
+        # Disable hotkeys while dialog is open
+        self._controller.stop_listening()
+        self._hotkeys_disabled = True
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """
@@ -339,6 +371,9 @@ class APIKeyDialog(QDialog):
         event : QCloseEvent
             Close event
         """
+        # Restore hotkeys
+        self._restore_hotkeys()
+        
         # Restore original settings
         self._controller.cancel()
 

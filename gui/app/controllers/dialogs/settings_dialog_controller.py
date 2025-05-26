@@ -8,6 +8,7 @@ mediating between the model and view.
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 
 from ...models.dialogs.settings_dialog_model import SettingsDialogModel
+from ...managers.keyboard_manager import KeyboardManager
 
 
 class SettingsDialogController(QObject):
@@ -41,6 +42,9 @@ class SettingsDialogController(QObject):
 
         # Create model
         self._dialog_model = SettingsDialogModel(settings_dialog=settings_dialog)
+        
+        # Get keyboard manager for hotkey control
+        self._keyboard_manager = KeyboardManager.get_instance()
 
         # Connect model signals
         self._connect_model_signals()
@@ -180,3 +184,25 @@ class SettingsDialogController(QObject):
         Cancel dialog and restore original settings.
         """
         self._dialog_model.restore_original()
+
+    def start_listening(self) -> bool:
+        """
+        Start listening for hotkeys.
+
+        Returns
+        -------
+        bool
+            True if listening started successfully, False otherwise
+        """
+        return self._keyboard_manager.start_listening()
+
+    def stop_listening(self) -> bool:
+        """
+        Stop listening for hotkeys.
+
+        Returns
+        -------
+        bool
+            True if listening stopped successfully, False otherwise
+        """
+        return self._keyboard_manager.stop_listening()
