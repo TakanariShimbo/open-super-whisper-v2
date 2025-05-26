@@ -26,6 +26,13 @@ class LabelManager:
             "status_completed": "Completed!",
             "status_cancelled": "Cancelled!",
         },
+        "Japanese": {
+            # Status Labels
+            "status_recording": "Recording...",
+            "status_processing": "Processing...",
+            "status_completed": "Completed!",
+            "status_cancelled": "Cancelled!",
+        },
         # Future: Add other languages here
     }
 

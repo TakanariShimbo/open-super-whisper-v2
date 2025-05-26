@@ -28,6 +28,7 @@ class SettingsDialogModel(QObject):
     # Available language options
     AVAILABLE_LANGUAGES = [
         "English",
+        "Japanese",
     ]
 
     #

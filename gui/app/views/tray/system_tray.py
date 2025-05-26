@@ -32,6 +32,17 @@ class LabelManager:
             "cancel_processing": "Cancel Processing",
             "quit_application": "Quit Application",
         },
+        "Japanese": {
+            # Tooltip
+            "app_tooltip": "Open Super Whisper アプリ",
+            # Menu Actions
+            "show_window": "ウィンドウ表示",
+            "hide_window": "ウィンドウ非表示",
+            "start_recording": "録音開始",
+            "stop_recording": "録音停止",
+            "cancel_processing": "処理キャンセル",
+            "quit_application": "アプリ終了",
+        },
         # Future: Add other languages here
     }
 

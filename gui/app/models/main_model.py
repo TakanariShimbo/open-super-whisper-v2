@@ -32,6 +32,16 @@ class LabelManager:
             "error_setting_selected_instruction_set": "Error setting selected instruction set: {name}",
             "error_applying_instruction_set": "Error applying instruction set: {error}",
         },
+        "Japanese": {
+            "pipeline_not_initialized": "パイプラインが初期化されていません",
+            "error_starting_recording": "録音開始時のエラー: {error}",
+            "error_stopping_recording": "録音停止時のエラー: {error}",
+            "processing_already_in_progress": "既に処理中です",
+            "error_processing_audio": "音声処理中のエラー: {error}",
+            "processing_failed": "処理に失敗しました: {error}",
+            "error_setting_selected_instruction_set": "選択したインストラクションセットの設定エラー: {name}",
+            "error_applying_instruction_set": "インストラクションセット適用時のエラー: {error}",
+        },
         # Future: Add other languages here
     }
 

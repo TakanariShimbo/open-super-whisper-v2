@@ -39,6 +39,22 @@ class LabelManager:
             "hotkey_set_successfully_format": "Hotkey for '{set_name}' set to '{hotkey}' successfully.",
             "hotkey_cleared_successfully_format": "Hotkey for '{set_name}' cleared successfully.",
         },
+        "Japanese": {
+            "instruction_set_already_exists_format": "'{name}' というインストラクションセットは既に存在します。",
+            "instruction_set_created_successfully_format": "インストラクションセット '{name}' を作成しました。",
+            "instruction_set_creation_failed_format": "インストラクションセット '{name}' の作成に失敗しました。",
+            "instruction_set_not_exists_format": "インストラクションセット '{name}' は存在しません。",
+            "instruction_set_updated_successfully_format": "インストラクションセット '{name}' を更新しました。",
+            "instruction_set_update_failed_format": "インストラクションセット '{name}' の更新に失敗しました。",
+            "cannot_delete_last_instruction_set": "最後のインストラクションセットは削除できません。",
+            "instruction_set_deleted_successfully_format": "インストラクションセット '{name}' を削除しました。",
+            "instruction_set_deletion_failed_format": "インストラクションセット '{name}' の削除に失敗しました。",
+            "instruction_set_renamed_successfully_format": "インストラクションセット名を '{old_name}' から '{new_name}' に変更しました。",
+            "instruction_set_rename_failed_format": "インストラクションセット名の変更（{old_name} → {new_name}）に失敗しました。",
+            "hotkey_update_failed_format": "'{set_name}' のホットキー更新に失敗しました。",
+            "hotkey_set_successfully_format": "'{set_name}' のホットキーを '{hotkey}' に設定しました。",
+            "hotkey_cleared_successfully_format": "'{set_name}' のホットキーをクリアしました。",
+        },
         # Future: Add other languages here
     }
 

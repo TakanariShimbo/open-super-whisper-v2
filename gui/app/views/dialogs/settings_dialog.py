@@ -27,9 +27,21 @@ class LabelManager:
             "indicator_checkbox": "Show status indicator",
             "indicator_tooltip": "Show a visual indicator during recording and processing",
             "clipboard_checkbox": "Automatically copy results to clipboard",
-            "clipboard_tooltip": "Copy transcription results to clipboard when processing completes",
+            "clipboard_tooltip": "Copy results to clipboard when processing completes",
             "language_label": "Language:",
             "language_tooltip": "Select the application language",
+        },
+        "Japanese": {
+            "window_title": "設定",
+            "group_title": "アプリケーション設定",
+            "sound_checkbox": "サウンド通知を有効",
+            "sound_tooltip": "録音開始・停止や処理完了時にサウンドを再生します",
+            "indicator_checkbox": "ステータスインジケーターを表示",
+            "indicator_tooltip": "録音や処理中に視覚的なインジケーターを表示します",
+            "clipboard_checkbox": "結果を自動的にクリップボードへコピー",
+            "clipboard_tooltip": "処理完了時に結果をクリップボードへコピーします",
+            "language_label": "言語:",
+            "language_tooltip": "アプリケーションの表示言語を選択します",
         },
         # Future: Add other languages here
     }

@@ -27,6 +27,12 @@ class LabelManager:
             "no_api_key_title": "No API key provided",
             "no_api_key_message": "Please provide a valid API key to wake up the application.",
         },
+        "Japanese": {
+            "already_running_title": "アプリケーション起動中",
+            "already_running_message": "アプリケーショントレイのアイコンを確認してください。",
+            "no_api_key_title": "APIキー未設定",
+            "no_api_key_message": "有効なAPIキーを入力してアプリケーションを起動してください。",
+        },
         # Future: Add other languages here
     }
 

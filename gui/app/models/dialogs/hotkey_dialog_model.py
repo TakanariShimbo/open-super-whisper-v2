@@ -22,6 +22,10 @@ class LabelManager:
             "invalid_hotkey_format_message": "Invalid hotkey format: {hotkey}",
             "hotkey_already_used_message": "The hotkey '{hotkey}' is already used by instruction set '{conflicting_set_name}'.",
         },
+        "Japanese": {
+            "invalid_hotkey_format_message": "無効なホットキー形式: {hotkey}",
+            "hotkey_already_used_message": "ホットキー '{hotkey}' はインストラクションセット '{conflicting_set_name}' で既に使用されています。",
+        },
         # Future: Add other languages here
     }
 
@@ -90,7 +94,7 @@ class HotkeyDialogModel(QObject):
         # Create key state tracker for capturing key combinations
         self._instruction_sets_manager = InstructionSetsManager.get_instance()
         self._keyboard_manager = KeyboardManager.get_instance()
-        
+
         # Initialize label manager for internationalization
         self._label_manager = LabelManager()
 
@@ -207,7 +211,9 @@ class HotkeyDialogModel(QObject):
         if self._hotkey != self._original_hotkey:
             conflicting_set_name = self._check_hotkey_conflict(hotkey=self._hotkey)
             if conflicting_set_name:
-                self.validation_failed.emit(self._label_manager.hotkey_already_used_message.format(hotkey=self._hotkey, conflicting_set_name=conflicting_set_name))
+                self.validation_failed.emit(
+                    self._label_manager.hotkey_already_used_message.format(hotkey=self._hotkey, conflicting_set_name=conflicting_set_name)
+                )
                 return False
         return True
 

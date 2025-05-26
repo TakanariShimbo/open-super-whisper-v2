@@ -33,7 +33,7 @@ class LabelManager:
     ALL_LABELS = {
         "English": {
             "window_title": "Hotkey Settings",
-            "description": "Set a global hotkey combination for this action.",
+            "description": "Set a global hotkey combination for this instruction set.",
             "hotkey_label": "Hotkey:",
             "placeholder_click": "Click to capture keys",
             "placeholder_capture": "Press keys to capture hotkey...",
@@ -42,6 +42,18 @@ class LabelManager:
             "button_clear": "Clear",
             "tips_text": ("Tips:\n" "• Click 'Capture' and press keys to set a hotkey\n" "• Examples: ctrl+shift+r, alt+a, ctrl+alt+s"),
             "error_title": "Hotkey Validation Error",
+        },
+        "Japanese": {
+            "window_title": "ホットキー設定",
+            "description": "このインストラクションセットのためのグローバルホットキーを設定してください。",
+            "hotkey_label": "ホットキー:",
+            "placeholder_click": "クリックしてキーを取得",
+            "placeholder_capture": "ホットキーとして登録するキーを押してください...",
+            "button_capture": "キャプチャ",
+            "button_stop_capturing": "ストップ",
+            "button_clear": "クリア",
+            "tips_text": ("ヒント:\n" "・『取得』をクリックしてキーを押すとホットキーを設定できます\n" "・例: ctrl+shift+r, alt+a, ctrl+alt+s"),
+            "error_title": "ホットキー検証エラー",
         },
         # Future: Add other languages here
     }

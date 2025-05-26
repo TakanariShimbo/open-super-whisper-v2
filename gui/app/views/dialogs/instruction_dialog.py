@@ -92,6 +92,59 @@ class LabelManager:
             "unsaved_changes_message": "You have unsaved changes. Do you want to save them?",
             "changes_discarded_message": "Changes have been discarded.",
         },
+        "Japanese": {
+            # Window/Dialog titles
+            "window_title": "インストラクションセット",
+            "new_instruction_set_title": "新規インストラクションセット",
+            "rename_instruction_set_title": "インストラクションセット名の変更",
+            "confirm_deletion_title": "削除の確認",
+            "success_title": "成功",
+            "error_title": "エラー",
+            "unsaved_changes_title": "未保存の変更",
+            "changes_discarded_title": "変更を破棄しました",
+            # UI Labels
+            "instruction_sets_label": "インストラクションセット一覧",
+            "custom_vocabulary_label": "カスタム語彙",
+            "stt_instructions_label": "STT用指示",
+            "llm_instructions_label": "LLM用指示",
+            "stt_language_label": "STT言語",
+            "stt_model_label": "STTモデル",
+            "hotkey_label": "ホットキー",
+            "enable_llm_processing_label": "LLM処理を有効化",
+            "llm_model_label": "LLMモデル",
+            "context_label": "コンテキスト",
+            # Button Labels
+            "add_button": "追加",
+            "rename_button": "名前変更",
+            "delete_button": "削除",
+            "save_changes_button": "変更を保存",
+            "discard_changes_button": "変更を破棄",
+            "set_hotkey_button": "ホットキー設定",
+            "close_button": "閉じる",
+            # Tab Labels
+            "vocabulary_tab": "語彙",
+            "stt_instructions_tab": "STT指示",
+            "llm_instructions_tab": "LLM指示",
+            "settings_tab": "設定",
+            # Checkbox Labels
+            "include_clipboard_text": "クリップボードのテキストを含める",
+            "include_clipboard_image": "クリップボードの画像を含める",
+            # Help/Description Text
+            "vocabulary_help": "専門用語や略語などを追加して文字起こし精度を向上させます。",
+            "stt_instructions_help": "書式や注目点など、文字起こし処理の指示を記載してください。",
+            "llm_instructions_help": "文字起こし結果の処理方法をLLMに指示できます。",
+            "settings_help": "このインストラクションセットの言語やモデルなどを設定します。",
+            "clipboard_text_tooltip": "LLM処理時にクリップボードのテキストを含める",
+            "clipboard_image_tooltip": "LLM処理時にクリップボードの画像を含める（モデルが対応している場合）",
+            # Placeholder Text
+            "no_hotkey_placeholder": "ホットキー未設定",
+            # Message Text
+            "enter_instruction_set_name": "新しいインストラクションセット名を入力してください:",
+            "enter_new_name": "インストラクションセットの新しい名前を入力してください:",
+            "confirm_delete_message": "インストラクションセット『{name}』を削除してもよろしいですか？",
+            "unsaved_changes_message": "未保存の変更があります。保存しますか？",
+            "changes_discarded_message": "変更は破棄されました。",
+        },
         # Future: Add other languages here
     }
 

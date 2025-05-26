@@ -32,6 +32,12 @@ class LabelManager:
             "stt_output_copied_message": "STT output copied to clipboard",
             "processing_cancelled_message": "Processing cancelled",
         },
+        "Japanese": {
+            "error_message_format": "エラー: {error}",
+            "llm_output_copied_message": "LLM出力をクリップボードにコピーしました",
+            "stt_output_copied_message": "STT出力をクリップボードにコピーしました",
+            "processing_cancelled_message": "処理がキャンセルされました",
+        },
         # Future: Add other languages here
     }
 

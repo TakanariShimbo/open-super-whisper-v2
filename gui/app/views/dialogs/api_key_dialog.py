@@ -36,6 +36,24 @@ class LabelManager:
             "error_invalid_key": "Invalid API key. Please check and try again.",
             "error_empty_key": "API key cannot be empty",
         },
+        "Japanese": {
+            "window_title": "APIキー設定",
+            "title_label": "OpenAI APIキー設定",
+            "help_text": (
+                "Open Super Whisperを利用するには有効なOpenAI APIキーが必要です。\n\n"
+                "1. https://platform.openai.com でアカウントを作成\n"
+                "2. API Keysセクションに移動\n"
+                "3. 新しいAPIキーを作成\n"
+                "4. 下の欄にキーをコピー＆ペースト"
+            ),
+            "input_label": "OpenAI APIキー:",
+            "placeholder": "sk-...",
+            "tooltip_show_hide": "APIキーの表示/非表示",
+            "tooltip_hide": "APIキーを非表示",
+            "tooltip_show": "APIキーを表示",
+            "error_invalid_key": "無効なAPIキーです。ご確認の上、再度お試しください。",
+            "error_empty_key": "APIキーを入力してください",
+        },
         # Future: Add other languages here
     }
 

@@ -84,6 +84,48 @@ class LabelManager:
             "tray_message_title": "Open Super Whisper App",
             "tray_message_text": "The application is still running in the background. Click the tray icon to restore.",
         },
+        "Japanese": {
+            # Window/UI Labels
+            "window_title": "Open Super Whisper アプリ",
+            "main_toolbar": "メインツールバー",
+            "instruction_set_label": "インストラクションセット:",
+            "stt_output_tab": "STT出力",
+            "llm_output_tab": "LLM出力",
+            "stt_output_header": "STT出力:",
+            "llm_output_header": "LLM出力:",
+            "copy_button": "コピー",
+            "hotkey_tooltip": "ホットキー: {hotkey}",
+            # Button Labels
+            "start_recording": "録音開始",
+            "stop_recording": "録音停止",
+            "cancel_processing": "処理キャンセル",
+            # Menu/Action Labels
+            "api_key_action": "APIキー",
+            "instruction_sets_action": "インストラクションセット",
+            "settings_action": "設定",
+            "quit_application_action": "アプリ終了",
+            # Status Messages
+            "status_ready": "待機中",
+            "status_recording": "録音中...",
+            "status_processing": "処理中...",
+            "status_cancelled": "キャンセルされました",
+            "status_processing_completed": "処理が完了しました",
+            # Placeholder Text
+            "stt_placeholder": "ここにSTT出力が表示されます...",
+            "llm_placeholder": "ここにLLM出力が表示されます...",
+            # Status Bar Messages
+            "api_key_updated": "APIキーを更新しました",
+            "api_key_update_failed": "APIキーの更新に失敗しました",
+            "instruction_sets_updated": "インストラクションセットを更新しました",
+            "settings_updated": "設定を更新しました",
+            "stt_copied": "STT出力をクリップボードにコピーしました",
+            "llm_copied": "LLM出力をクリップボードにコピーしました",
+            # Dialog Messages
+            "quit_dialog_title": "アプリ終了",
+            "quit_dialog_message": "アプリケーションを終了してもよろしいですか？",
+            "tray_message_title": "Open Super Whisper アプリ",
+            "tray_message_text": "アプリケーションはバックグラウンドで動作中です。トレイアイコンをクリックして復元できます。",
+        },
         # Future: Add other languages here
     }
 
