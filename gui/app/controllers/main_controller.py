@@ -11,13 +11,53 @@ from PyQt6.QtWidgets import QWidget
 from core.pipelines.pipeline_result import PipelineResult
 from core.pipelines.instruction_set import InstructionSet
 
+from ..utils.clipboard_utils import ClipboardUtils
 from ..managers.settings_manager import SettingsManager
 from ..models.main_model import MainModel
 from ..views.factories.status_indicator_factory import StatusIndicatorFactory
 from ..views.factories.api_key_dialog_factory import APIKeyDialogFactory
 from ..views.factories.instruction_dialog_factory import InstructionDialogFactory
 from ..views.factories.settings_dialog_factory import SettingsDialogFactory
-from ..utils.clipboard_utils import ClipboardUtils
+
+
+class LabelManager:
+    """
+    Manages application labels for internationalization support.
+    """
+
+    ALL_LABELS = {
+        "English": {
+            "error_message_format": "Error: {error}",
+            "llm_output_copied_message": "LLM output copied to clipboard",
+            "stt_output_copied_message": "STT output copied to clipboard",
+            "processing_cancelled_message": "Processing cancelled",
+        },
+        # Future: Add other languages here
+    }
+
+    def __init__(self) -> None:
+        # load language from settings manager
+        settings_manager = SettingsManager.instance()
+        language = settings_manager.get_language()
+
+        # set labels based on language
+        self._labels = self.ALL_LABELS[language]
+
+    @property
+    def error_message_format(self) -> str:
+        return self._labels["error_message_format"]
+
+    @property
+    def llm_output_copied_message(self) -> str:
+        return self._labels["llm_output_copied_message"]
+
+    @property
+    def stt_output_copied_message(self) -> str:
+        return self._labels["stt_output_copied_message"]
+
+    @property
+    def processing_cancelled_message(self) -> str:
+        return self._labels["processing_cancelled_message"]
 
 
 class MainController(QObject):
@@ -73,6 +113,9 @@ class MainController(QObject):
         """
         super().__init__(parent=main_window)
 
+        # Initialize label manager
+        self._label_manager = LabelManager()
+
         # Get the settings manager
         self._settings_manager = SettingsManager.instance()
 
@@ -103,7 +146,9 @@ class MainController(QObject):
         self._model.processing_started.connect(self.processing_started)
         self._model.processing_completed.connect(self._handle_processing_completed)
         self._model.processing_cancelled.connect(self._handle_processing_cancelled)
-        self._model.processing_error.connect(lambda error: self.showing_message.emit(f"Error: {error}", 3000))
+        self._model.processing_error.connect(
+            lambda error: self.showing_message.emit(self._label_manager.error_message_format.format(error=error), 3000)
+        )
         self._model.streaming_llm_chunk.connect(self._handle_streamling_llm_chunk)
 
         # Instruction set signals
@@ -154,11 +199,11 @@ class MainController(QObject):
             if result.is_llm_processed and result.llm_output:
                 # If LLM was processed, copy LLM output
                 ClipboardUtils.set_text(text=result.llm_output)
-                self.showing_message.emit("LLM output copied to clipboard", 2000)
+                self.showing_message.emit(self._label_manager.llm_output_copied_message, 2000)
             elif result.stt_output:
                 # Otherwise, copy STT output
                 ClipboardUtils.set_text(text=result.stt_output)
-                self.showing_message.emit("STT output copied to clipboard", 2000)
+                self.showing_message.emit(self._label_manager.stt_output_copied_message, 2000)
 
         # Disable recording mode for hotkeys
         self._model.disable_filtered_mode_and_start_listening()
@@ -398,7 +443,7 @@ class MainController(QObject):
             # Show cancelled status in indicator
             self._status_indicator_controller.cancel_processing()
 
-            self.showing_message.emit("Processing cancelled", 3000)
+            self.showing_message.emit(self._label_manager.processing_cancelled_message, 3000)
 
         return result
 
