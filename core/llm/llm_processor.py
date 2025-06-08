@@ -386,6 +386,11 @@ class LLMProcessor:
         -------
         str
             Complete LLM response (all chunks combined).
+
+        Raises
+        ------
+        ValueError
+            If the text input is empty or invalid.
         """
         # Validate input
         if not text or not isinstance(text, str):
