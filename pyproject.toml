@@ -9,6 +9,7 @@ dependencies = [
     "markdown>=3.8",
     "numpy>=2.2.5",
     "openai>=1.75.0",
+    "openai-agents>=0.0.17",
     "pyinstaller>=6.13.0",
     "pynput>=1.8.1",
     "pyqt6>=6.9.0",

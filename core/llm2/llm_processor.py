@@ -1,61 +1,58 @@
 """
-LLM Processing Module
+LLM Processing Module using OpenAI Agents SDK
 
-This module provides a complete implementation for processing text using the LLM API,
+This module provides a complete implementation for processing text using the OpenAI Agents SDK,
 with support for:
-- Text and image inputs
+- Text and image inputs  
 - Streaming and non-streaming responses
 - Custom system instructions
 - Multiple model support
 - Comprehensive error handling
+- Async/await patterns
 
-The primary class (LLMProcessor) handles all communication with the LLM API,
-including authentication, request formatting, and response processing.
+The primary class (LLMProcessor) handles all communication with the LLM using
+the modern Agents SDK approach.
 """
 
 import base64
-import time
 from typing import Any, Callable
 
-import openai
+from agents import Agent, Runner, set_default_openai_key
+from openai.types.responses import ResponseTextDeltaEvent
 
 from .llm_model_manager import LLMModelManager
 
 
 class LLMProcessor:
     """
-    Implementation of API for processing text and images with large language models.
+    Implementation for processing text and images using OpenAI Agents SDK.
 
-    This class provides a comprehensive interface to LLM capabilities with:
+    This class provides a comprehensive interface to LLM capabilities using the
+    modern Agents SDK with:
     - Text and multimodal (text+image) input support
     - Both streaming and non-streaming response options
-    - Customizable system instructions for controlling model behavior
+    - Customizable system instructions for controlling agent behavior
     - Support for all available chat completion models
-    - Robust error handling for API-specific errors
+    - Robust error handling
+    - Async/await patterns for better performance
 
-    The processor handles all aspects of communication with the API including
-    authentication, content formatting, and response processing. It provides both
-    direct methods for immediate use and generator-based methods for more
-    advanced integration scenarios.
+    The processor uses the Agents SDK's Agent and Runner classes to handle
+    all aspects of communication with the LLM.
 
     Examples
     --------
     Basic text processing:
 
-    >>> from core.api.api_client_factory import APIClientFactory
-    >>> is_successful, client = APIClientFactory.create_client("your_api_key")
-    >>> processor = LLMProcessor(client)
-    >>> response = processor.process_text("Summarize the benefits of AI assistants.")
+    >>> processor = LLMProcessor(api_key="your_api_key")
+    >>> response = await processor.process_text("Summarize the benefits of AI assistants.")
     >>> print(response)
     AI assistants offer several benefits: 1. 24/7 availability...
 
     With custom system instruction:
 
-    >>> from core.api.api_client_factory import APIClientFactory
-    >>> is_successful, client = APIClientFactory.create_client("your_api_key")
-    >>> processor = LLMProcessor(client)
+    >>> processor = LLMProcessor(api_key="your_api_key")
     >>> processor.set_system_instruction("Respond in bullet points format.")
-    >>> response = processor.process_text("What are the key features of Python?")
+    >>> response = await processor.process_text("What are the key features of Python?")
     >>> print(response)
     • Dynamic typing
     • Interpreted language
@@ -64,13 +61,11 @@ class LLMProcessor:
 
     Streaming response with callback:
 
-    >>> def print_chunk(chunk):
+    >>> async def print_chunk(chunk):
     ...     print(chunk, end="", flush=True)
     >>>
-    >>> from core.api.api_client_factory import APIClientFactory
-    >>> is_successful, client = APIClientFactory.create_client("your_api_key")
-    >>> processor = LLMProcessor(client)
-    >>> processor.process_text_with_stream(
+    >>> processor = LLMProcessor(api_key="your_api_key")
+    >>> await processor.process_text_with_stream(
     ...     "Explain quantum computing",
     ...     callback=print_chunk
     ... )
@@ -80,21 +75,22 @@ class LLMProcessor:
     # Use model manager for available models
     AVAILABLE_MODELS = LLMModelManager.to_api_format()
     DEFAULT_MODEL_ID = LLMModelManager.get_default_model().id
-    REQUEST_TIMEOUT = 60  # seconds
-    MAX_RETRIES = 2
 
-    def __init__(self, client: openai.OpenAI) -> None:
+    def __init__(self, api_key: str) -> None:
         """
-        Initialize the LLMProcessor.
+        Initialize the LLMProcessor with API key.
 
         Parameters
         ----------
-        client : openai.OpenAI
-            API client to use.
+        api_key : str
+            OpenAI API key for authentication.
         """
-        self._client = client
+        # Set the API key globally for the Agents SDK
+        set_default_openai_key(api_key)
+        
+        self._agent: Agent | None = None
         self._model_id = self.DEFAULT_MODEL_ID
-        self._system_instruction: str = ""
+        self._system_instruction: str = "You are a helpful assistant."
 
     def set_model(self, model_id: str) -> None:
         """
@@ -110,17 +106,22 @@ class LLMProcessor:
         ValueError
             If the model ID is not in the list of available models.
         """
-        # Basic validation that model exists
-        available_models = [model["id"] for model in self.AVAILABLE_MODELS]
-        if model_id not in available_models:
+        # Validate that model exists
+        model = LLMModelManager.find_model_by_id(model_id)
+        if not model:
+            available_models = [m["id"] for m in self.AVAILABLE_MODELS]
             available_model_names = ", ".join(available_models[:5]) + "..."
-            raise ValueError(f"Unknown model ID: {model_id}. Available models include: {available_model_names}")
+            raise ValueError(
+                f"Unknown model ID: {model_id}. Available models include: {available_model_names}"
+            )
 
         self._model_id = model_id
+        # Reset agent to force recreation with new model
+        self._agent = None
 
     def set_system_instruction(self, instruction: str) -> None:
         """
-        Set system instruction to control LLM behavior.
+        Set system instruction to control agent behavior.
 
         Parameters
         ----------
@@ -128,211 +129,78 @@ class LLMProcessor:
             Instruction string.
         """
         self._system_instruction = instruction
+        # Reset agent to force recreation with new instruction
+        self._agent = None
 
     def clear_system_instruction(self) -> None:
         """
-        Clear the system instruction.
+        Clear the system instruction and reset to default.
         """
-        self._system_instruction = ""
+        self._system_instruction = "You are a helpful assistant."
+        # Reset agent to force recreation
+        self._agent = None
 
-    def _create_llm_system_message(self) -> str:
+    def _get_or_create_agent(self) -> Agent:
         """
-        Get the system message with instruction for the LLM.
+        Get existing agent or create a new one with current settings.
 
         Returns
         -------
-        str
-            System message, or a default message if no instruction exists.
+        Agent
+            Configured Agent instance.
         """
-        if not self._system_instruction:
-            return "You are a helpful assistant."
+        if self._agent is None:
+            self._agent = Agent(
+                name="Assistant",
+                instructions=self._system_instruction,
+                model=self._model_id,
+            )
+        return self._agent
 
-        return self._system_instruction
-
-    def _format_user_content(
-        self,
-        text: str,
-        image_data: bytes | None = None,
-    ) -> list[dict[str, Any]]:
+    def _format_image_input(self, text: str, image_data: bytes) -> list[dict[str, Any]]:
         """
-        Format user content into the structure required by the API, including optional image data.
+        Format text and image data into the input format expected by Agents SDK.
 
         Parameters
         ----------
         text : str
-            Text to process.
-        image_data : bytes | None, optional
-            Image data in bytes format, by default None.
+            Text prompt.
+        image_data : bytes
+            Image data in bytes format.
 
         Returns
         -------
         list[dict[str, Any]]
-            Formatted user content for the API.
+            Formatted input for the agent.
         """
-        if image_data is not None:
-            # Convert image bytes to base64 string
-            base64_image = base64.b64encode(image_data).decode("utf-8")
-
-            # Create user content with both text and image using the format for GPT-4o
-            return [
-                {"type": "text", "text": text},
-                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}},
-            ]
-        else:
-            # Text-only content can also use the array format for consistency
-            return [
-                {"type": "text", "text": text},
-            ]
-
-    def _create_api_messages(
-        self,
-        text: str,
-        image_data: bytes | None = None,
-    ) -> list[dict[str, Any]]:
-        """
-        Create formatted messages for API call.
-
-        Parameters
-        ----------
-        text : str
-            Text to process.
-        image_data : bytes | None, optional
-            Image data in bytes format, by default None.
-
-        Returns
-        -------
-        list[dict[str, Any]]
-            Formatted messages for API call.
-        """
-        system_message = self._create_llm_system_message()
-        user_content = self._format_user_content(text=text, image_data=image_data)
-
+        # Convert image bytes to base64 string
+        base64_image = base64.b64encode(image_data).decode("utf-8")
+        
+        # Format according to Agents SDK expectations
         return [
-            {"role": "system", "content": system_message},
-            {"role": "user", "content": user_content},
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "input_image",
+                        "detail": "auto",
+                        "image_url": f"data:image/jpeg;base64,{base64_image}",
+                    }
+                ],
+            },
+            {
+                "role": "user", 
+                "content": text,
+            },
         ]
 
-    def _make_api_call(
-        self,
-        messages: list[dict[str, Any]],
-        stream: bool = False,
-        retry_count: int = 0,
-    ) -> Any:
-        """
-        Make API call to the LLM service.
-
-        Parameters
-        ----------
-        messages : list[dict[str, Any]]
-            Formatted messages for API call.
-        stream : bool, optional
-            Whether to stream the response, by default False.
-        retry_count : int, optional
-            Current retry attempt, by default 0.
-
-        Returns
-        -------
-        Any
-            API response object.
-
-        Raises
-        ------
-        openai.APIError
-            If the API call fails after all retries.
-        """
-        try:
-            # Make the API call
-            response = self._client.chat.completions.create(
-                model=self._model_id,
-                messages=messages,
-                stream=stream,
-                timeout=self.REQUEST_TIMEOUT,
-            )
-            return response
-
-        except (openai.APIError, openai.APITimeoutError) as e:
-            # Handle retries
-            if retry_count < self.MAX_RETRIES:
-                # Exponential backoff
-                backoff_time = 2**retry_count
-                time.sleep(backoff_time)
-                return self._make_api_call(
-                    messages=messages,
-                    stream=stream,
-                    retry_count=retry_count + 1,
-                )
-            else:
-                raise
-
-    def _process_standard_response(self, response: Any) -> str:
-        """
-        Process standard (non-streaming) API response.
-
-        Parameters
-        ----------
-        response : Any
-            API response object.
-
-        Returns
-        -------
-        str
-            Extracted text content from response.
-        """
-        result = ""
-        if response.choices and len(response.choices) > 0:
-            result = response.choices[0].message.content
-        else:
-            result = "No response generated."
-        return result
-
-    def _process_streaming_response(
-        self,
-        response_stream: Any,
-        callback: Callable[[str], None] | None = None,
-    ) -> str:
-        """
-        Process streaming API response.
-
-        Parameters
-        ----------
-        response_stream : Any
-            Streaming API response.
-        callback : Callable[[str], None] | None, optional
-            Function to call with each response chunk, by default None.
-
-        Returns
-        -------
-        str
-            Complete LLM response (all chunks combined).
-        """
-        full_response = ""
-
-        for chunk in response_stream:
-            # Extract content from the chunk
-            if chunk.choices and len(chunk.choices) > 0:
-                # Get delta content (may be None)
-                content = chunk.choices[0].delta.content
-
-                # Skip if no content in this chunk
-                if content is None:
-                    continue
-
-                # Append to full response
-                full_response += content
-
-                # Call callback if provided
-                if callback:
-                    callback(content)
-
-        return full_response
-
-    def process_text(
+    async def process_text(
         self,
         text: str,
         image_data: bytes | None = None,
     ) -> str:
         """
-        Process text and optionally an image using the configured LLM.
+        Process text and optionally an image using the configured agent.
 
         Parameters
         ----------
@@ -355,16 +223,25 @@ class LLMProcessor:
         if not text or not isinstance(text, str):
             raise ValueError("Text input must be a non-empty string.")
 
-        # Create messages
-        messages = self._create_api_messages(text=text, image_data=image_data)
+        # Get or create agent
+        agent = self._get_or_create_agent()
 
-        # Make API call
-        response = self._make_api_call(messages=messages)
+        # Format input based on whether image is included
+        if image_data is not None:
+            # Check if model supports images
+            if not LLMModelManager.check_image_input_supported(self._model_id):
+                raise ValueError(
+                    f"Model {self._model_id} does not support image inputs."
+                )
+            input_data = self._format_image_input(text, image_data)
+        else:
+            input_data = text
 
-        # Process response
-        return self._process_standard_response(response=response)
+        # Run the agent and get response
+        result = await Runner.run(agent, input=input_data)
+        return result.final_output
 
-    def process_text_with_stream(
+    async def process_text_with_stream(
         self,
         text: str,
         callback: Callable[[str], None] | None = None,
@@ -396,11 +273,35 @@ class LLMProcessor:
         if not text or not isinstance(text, str):
             raise ValueError("Text input must be a non-empty string.")
 
-        # Create messages
-        messages = self._create_api_messages(text=text, image_data=image_data)
 
-        # Make API call with streaming
-        response_stream = self._make_api_call(messages=messages, stream=True)
+        # Get or create agent
+        agent = self._get_or_create_agent()
 
-        # Process streaming response
-        return self._process_streaming_response(response_stream=response_stream, callback=callback)
+        # Format input based on whether image is included
+        if image_data is not None:
+            # Check if model supports images
+            if not LLMModelManager.check_image_input_supported(self._model_id):
+                raise ValueError(
+                    f"Model {self._model_id} does not support image inputs."
+                )
+            input_data = self._format_image_input(text, image_data)
+        else:
+            input_data = text
+
+        # Run the agent with streaming
+        result = Runner.run_streamed(agent, input=input_data)
+        full_response = ""
+
+        # Process streaming events
+        async for event in result.stream_events():
+            if event.type == "raw_response_event" and isinstance(
+                event.data, ResponseTextDeltaEvent
+            ):
+                chunk = event.data.delta
+                if chunk:
+                    full_response += chunk
+                    if callback:
+                        callback(chunk)
+
+        return full_response
+
