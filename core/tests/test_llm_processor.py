@@ -9,7 +9,7 @@ The test allows interactive configuration of model and system instructions.
 import sys
 import time
 from pathlib import Path
-from typing import Any
+import asyncio
 
 # Add project root to path for imports
 project_root = Path(__file__).parent.parent.parent
@@ -29,7 +29,7 @@ def _get_test_api_key() -> str | None:
         return None
 
 
-def _create_test_client() -> tuple[bool, Any]:
+def _create_test_client() -> tuple[bool, str]:
     """Create a real OpenAI client for testing"""
     api_key = _get_test_api_key()
 
@@ -38,7 +38,8 @@ def _create_test_client() -> tuple[bool, Any]:
         return False, None
 
     print(f"Creating client with API key: {api_key[:10]}...")
-    return APIClientFactory.create_client(api_key)
+    is_successful, _ = APIClientFactory.create_client(api_key)
+    return is_successful, api_key
 
 
 def _select_model(processor: LLMProcessor) -> str:
@@ -212,7 +213,7 @@ def test_llm_processor() -> bool:
 
     try:
         # Create real client
-        is_successful, client = _create_test_client()
+        is_successful, api_key = _create_test_client()
 
         if not is_successful:
             print("❌ Failed to create API client")
@@ -221,7 +222,7 @@ def test_llm_processor() -> bool:
         print("✅ API client created successfully")
 
         # Create processor
-        processor = LLMProcessor(client)
+        processor = LLMProcessor(api_key=api_key)
 
         # Interactive configuration
         print("\n" + "=" * 60)
@@ -279,12 +280,12 @@ def test_llm_processor() -> bool:
             def print_chunk(chunk: str) -> None:
                 print(chunk, end="", flush=True)
 
-            response = processor.process_text_with_stream(text_input, print_chunk, image_data=image_data)
+            response = asyncio.run(processor.process_text_with_stream(text_input, print_chunk, image_data=image_data))
             print("\n" + "-" * 60)
 
         else:
             print("Starting standard processing...")
-            response = processor.process_text(text_input, image_data=image_data)
+            response = asyncio.run(processor.process_text(text_input, image_data=image_data))
 
         end_time = time.time()
 

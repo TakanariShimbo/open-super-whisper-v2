@@ -6,6 +6,7 @@ both speech-to-text transcription and LLM processing in a seamless way.
 """
 
 from typing import Callable
+import asyncio
 
 from ..api.api_client_factory import APIClientFactory
 from ..stt.stt_processor import STTProcessor
@@ -44,7 +45,7 @@ class Pipeline:
 
         # Initialize components
         self._stt_processor = STTProcessor(client=client)
-        self._llm_processor = LLMProcessor(client=client)
+        self._llm_processor = LLMProcessor(api_key=api_key)
         self._audio_recorder = AudioRecorder()
 
         # Processing state flag
@@ -181,24 +182,24 @@ class Pipeline:
         # Determine if we're using streaming
         if stream_callback:
             if clipboard_image:
-                return self._llm_processor.process_text_with_stream(
+                return asyncio.run(self._llm_processor.process_text_with_stream(
                     text=prompt,
                     callback=stream_callback,
                     image_data=clipboard_image,
-                )
+                ))
             else:
-                return self._llm_processor.process_text_with_stream(
+                return asyncio.run(self._llm_processor.process_text_with_stream(
                     text=prompt,
                     callback=stream_callback,
-                )
+                ))
         else:
             if clipboard_image:
-                return self._llm_processor.process_text(
+                return asyncio.run(self._llm_processor.process_text(
                     text=prompt,
                     image_data=clipboard_image,
-                )
+                ))
             else:
-                return self._llm_processor.process_text(text=prompt)
+                return asyncio.run(self._llm_processor.process_text(text=prompt))
 
     def process(
         self,
