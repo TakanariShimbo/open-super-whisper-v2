@@ -281,17 +281,6 @@ class MainController(QObject):
         """
         return self._model.is_processing
 
-    def reinit_pipeline(self, api_key: str) -> None:
-        """
-        Reinitialize the pipeline with a new API key.
-
-        Parameters
-        ----------
-        api_key : str
-            The API key to use
-        """
-        self._model.reinit_pipeline(api_key=api_key)
-
     def get_instruction_sets(self) -> list[InstructionSet]:
         """
         Get all available instruction sets.
@@ -478,12 +467,6 @@ class MainController(QObject):
 
         # Handle dialog result
         if result == dialog.DialogCode.Accepted:
-            # Get the new API key
-            new_api_key = self._settings_manager.get_api_key()
-
-            # Reinitialize model with the new API key
-            self.reinit_pipeline(api_key=new_api_key)
-
             return True
         else:
             return False

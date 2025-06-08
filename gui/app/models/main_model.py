@@ -290,17 +290,6 @@ class MainModel(QObject):
         """
         return self._processor is not None
 
-    def reinit_pipeline(self, api_key: str) -> None:
-        """
-        Reinitialize the pipeline with a new API key.
-
-        Parameters
-        ----------
-        api_key: str
-            The new API key to use
-        """
-        self._pipeline = Pipeline(api_key=api_key)
-
     def start_recording(self) -> bool:
         """
         Start recording audio.

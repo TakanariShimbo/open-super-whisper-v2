@@ -849,8 +849,16 @@ class MainWindow(QMainWindow):
         """
         # Use the controller's API key settings method
         if self._controller.show_api_key_dialog(main_window=self):
+            # API key was updated
             self._status_bar.showMessage(self._label_manager.api_key_updated, 2000)
+
+            # Show countdown dialog with auto-close timer
+            self._show_settings_restart_dialog()
+
+            # Exit application
+            self._exit_application(restart=True)
         else:
+            # API key update failed
             self._status_bar.showMessage(self._label_manager.api_key_update_failed, 2000)
 
     @pyqtSlot()
