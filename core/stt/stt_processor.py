@@ -100,15 +100,10 @@ class STTProcessor:
         This is particularly useful for domain-specific vocabulary, proper nouns,
         or technical terms that may not be properly recognized by default.
         """
+        if self._custom_vocabulary == vocabulary:
+            return
+
         self._custom_vocabulary = vocabulary
-
-    def clear_custom_vocabulary(self) -> None:
-        """
-        Clear custom vocabulary.
-
-        This removes the previously set custom vocabulary from the processor.
-        """
-        self._custom_vocabulary = ""
 
     def set_system_instruction(self, instruction: str) -> None:
         """
@@ -119,15 +114,10 @@ class STTProcessor:
         instruction : str
             Instruction string.
         """
+        if self._system_instruction == instruction:
+            return
+
         self._system_instruction = instruction
-
-    def clear_system_instruction(self) -> None:
-        """
-        Clear system instruction.
-
-        This removes the previously set instruction from the processor.
-        """
-        self._system_instruction = ""
 
     def _create_system_prompt(self, context: str | None = None) -> str | None:
         """

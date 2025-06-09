@@ -93,6 +93,12 @@ class LLMProcessor:
         self._system_instruction: str = "You are a helpful assistant."
         self._web_search_enabled: bool = False
 
+    def clear_agent(self) -> None:
+        """
+        Reset the agent to force recreation with new settings.
+        """
+        self._agent = None
+
     def set_model(self, model_id: str) -> None:
         """
         Set the LLM model to use.
@@ -116,9 +122,10 @@ class LLMProcessor:
                 f"Unknown model ID: {model_id}. Available models include: {available_model_names}"
             )
 
-        self._model_id = model_id
-        # Reset agent to force recreation with new model
-        self._agent = None
+        # Update model ID and clear agent if the model ID is different
+        if self._model_id != model_id:
+            self._model_id = model_id
+            self.clear_agent()
 
     def set_system_instruction(self, instruction: str) -> None:
         """
@@ -129,9 +136,10 @@ class LLMProcessor:
         instruction : str
             Instruction string.
         """
-        self._system_instruction = instruction
-        # Reset agent to force recreation with new instruction
-        self._agent = None
+        # Update system instruction and clear agent if the instruction is different
+        if self._system_instruction != instruction:
+            self._system_instruction = instruction
+            self.clear_agent()
 
     def set_web_search_enabled(self, is_enabled: bool) -> None:
         """
@@ -142,9 +150,10 @@ class LLMProcessor:
         is_enabled : bool
             Whether to enable web search.
         """
-        self._web_search_enabled = is_enabled
-        # Reset agent to force recreation with new instruction
-        self._agent = None
+        # Update web search enabled and clear agent if the value is different
+        if self._web_search_enabled != is_enabled:
+            self._web_search_enabled = is_enabled
+            self.clear_agent()
 
     def _get_or_create_agent(self) -> Agent:
         """

@@ -50,6 +50,7 @@ class Pipeline:
 
         # Processing state flag
         self._is_llm_processing_enabled = False
+        self._current_set_name = ""
 
     @property
     def is_recording(self) -> bool:
@@ -77,29 +78,32 @@ class Pipeline:
             The instruction set to apply.
         """
         # Apply vocabulary
-        self._stt_processor.clear_custom_vocabulary()
         self._stt_processor.set_custom_vocabulary(vocabulary=selected_set.stt_vocabulary)
 
         # Apply STT instructions
-        self._stt_processor.clear_system_instruction()
         self._stt_processor.set_system_instruction(instruction=selected_set.stt_instructions)
 
         # Set whisper model
-        if selected_set.stt_model:
-            self._stt_processor.set_model(model_id=selected_set.stt_model)
+        self._stt_processor.set_model(model_id=selected_set.stt_model)
 
         # LLM settings
         self._set_llm_processing(enabled=selected_set.llm_enabled)
 
+        # Clear LLM agent if the set name is different
+        if self._current_set_name != selected_set.name:
+            self._llm_processor.clear_agent()
+
         # Set LLM model
-        if selected_set.llm_model:
-            self._llm_processor.set_model(model_id=selected_set.llm_model)
+        self._llm_processor.set_model(model_id=selected_set.llm_model)
 
         # Apply LLM instructions
         self._llm_processor.set_system_instruction(instruction=selected_set.llm_instructions)
 
         # Apply LLM web search
         self._llm_processor.set_web_search_enabled(is_enabled=selected_set.llm_web_search_enabled)
+
+        # Update current set name
+        self._current_set_name = selected_set.name
 
     def start_recording(self) -> None:
         """
