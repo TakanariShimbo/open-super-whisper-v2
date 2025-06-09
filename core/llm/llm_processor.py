@@ -17,7 +17,7 @@ the modern Agents SDK approach.
 import base64
 from typing import Any, Callable
 
-from agents import Agent, Runner, set_default_openai_key
+from agents import Agent, Runner, WebSearchTool, set_default_openai_key
 from openai.types.responses import ResponseTextDeltaEvent
 
 from .llm_model_manager import LLMModelManager
@@ -154,6 +154,7 @@ class LLMProcessor:
                 name="Assistant",
                 instructions=self._system_instruction,
                 model=self._model_id,
+                tools=[WebSearchTool()],
             )
         return self._agent
 
