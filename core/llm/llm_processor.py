@@ -305,3 +305,8 @@ class LLMProcessor:
 
         return full_response
 
+    def shutdown(self) -> None:
+        """
+        Shutdown the LLMProcessor.
+        """
+        self._agent = None

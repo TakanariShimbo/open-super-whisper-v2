@@ -260,3 +260,9 @@ class Pipeline:
             result.is_llm_processed = True
 
         return result
+
+    def shutdown(self) -> None:
+        """
+        Shutdown the pipeline.
+        """
+        self._llm_processor.shutdown()

@@ -138,11 +138,11 @@ class ProcessingThread(QThread):
             The parent object
         """
         super().__init__(parent=main_window)
-        self.pipeline = pipeline
-        self.audio_file_path = audio_file_path
-        self.language = language
-        self.clipboard_text = clipboard_text
-        self.clipboard_image = clipboard_image
+        self._pipeline = pipeline
+        self._audio_file_path = audio_file_path
+        self._language = language
+        self._clipboard_text = clipboard_text
+        self._clipboard_image = clipboard_image
 
     #
     # Thread Methods
@@ -153,11 +153,11 @@ class ProcessingThread(QThread):
         """
         try:
             # Process the audio file with streaming updates
-            result = self.pipeline.process(
-                audio_file_path=self.audio_file_path,
-                language=self.language,
-                clipboard_text=self.clipboard_text,
-                clipboard_image=self.clipboard_image,
+            result = self._pipeline.process(
+                audio_file_path=self._audio_file_path,
+                language=self._language,
+                clipboard_text=self._clipboard_text,
+                clipboard_image=self._clipboard_image,
                 stream_callback=self.progress.emit,
             )
             self.completed.emit(result)
@@ -441,6 +441,12 @@ class MainModel(QObject):
 
         return True
 
+    def shutdown_pipeline(self) -> None:
+        """
+        Shutdown the pipeline.
+        """
+        self._pipeline.shutdown()
+
     #
     # Model Methods (Instruction Sets)
     #
@@ -678,3 +684,6 @@ class MainModel(QObject):
         # If still processing, cancel it
         if self.is_processing:
             self.cancel_processing()
+
+        # Shutdown pipeline
+        self.shutdown_pipeline()
