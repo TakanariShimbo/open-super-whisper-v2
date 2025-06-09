@@ -98,6 +98,9 @@ class Pipeline:
         # Apply LLM instructions
         self._llm_processor.set_system_instruction(instruction=selected_set.llm_instructions)
 
+        # Apply LLM web search
+        self._llm_processor.set_web_search_enabled(is_enabled=selected_set.llm_web_search_enabled)
+
     def start_recording(self) -> None:
         """
         Start recording audio from the microphone.

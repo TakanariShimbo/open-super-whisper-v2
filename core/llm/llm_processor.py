@@ -91,6 +91,7 @@ class LLMProcessor:
         self._agent: Agent | None = None
         self._model_id = self.DEFAULT_MODEL_ID
         self._system_instruction: str = "You are a helpful assistant."
+        self._web_search_enabled: bool = False
 
     def set_model(self, model_id: str) -> None:
         """
@@ -132,6 +133,19 @@ class LLMProcessor:
         # Reset agent to force recreation with new instruction
         self._agent = None
 
+    def set_web_search_enabled(self, is_enabled: bool) -> None:
+        """
+        Set whether to enable web search.
+
+        Parameters
+        ----------
+        is_enabled : bool
+            Whether to enable web search.
+        """
+        self._web_search_enabled = is_enabled
+        # Reset agent to force recreation with new instruction
+        self._agent = None
+
     def _get_or_create_agent(self) -> Agent:
         """
         Get existing agent or create a new one with current settings.
@@ -146,7 +160,7 @@ class LLMProcessor:
                 name="Assistant",
                 instructions=self._system_instruction,
                 model=self._model_id,
-                tools=[WebSearchTool()],
+                tools=[WebSearchTool()] if self._web_search_enabled else [],
             )
         return self._agent
 

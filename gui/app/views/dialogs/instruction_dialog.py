@@ -59,6 +59,9 @@ class LabelManager:
             "hotkey_label": "Hotkey",
             "enable_llm_processing_label": "LLM Processing",
             "llm_model_label": "LLM Model",
+            "llm_web_search_label": "Web Search",
+            "llm_include_clipboard_text": "Include Clipboard Text",
+            "llm_include_clipboard_image": "Include Clipboard Image",
             "context_label": "Context",
             # Button Labels
             "add_button": "Add",
@@ -73,9 +76,6 @@ class LabelManager:
             "stt_instructions_tab": "STT Instructions",
             "llm_instructions_tab": "LLM Instructions",
             "settings_tab": "Settings",
-            # Checkbox Labels
-            "include_clipboard_text": "Include Clipboard Text",
-            "include_clipboard_image": "Include Clipboard Image",
             # Help/Description Text
             "vocabulary_help": "Add custom technical terms, acronyms, or specialized vocabulary to improve transcription accuracy.",
             "stt_instructions_help": "Provide system instructions to guide the transcription process (formatting, focus areas, etc.)",
@@ -112,6 +112,9 @@ class LabelManager:
             "hotkey_label": "ホットキー",
             "enable_llm_processing_label": "LLM処理",
             "llm_model_label": "LLMモデル",
+            "llm_web_search_label": "Web検索",
+            "llm_include_clipboard_text": "クリップボードのテキストを含める",
+            "llm_include_clipboard_image": "クリップボードの画像を含める",
             "context_label": "コンテキスト",
             # Button Labels
             "add_button": "追加",
@@ -126,9 +129,6 @@ class LabelManager:
             "stt_instructions_tab": "STTインストラクション",
             "llm_instructions_tab": "LLMインストラクション",
             "settings_tab": "設定",
-            # Checkbox Labels
-            "include_clipboard_text": "クリップボードのテキストを含める",
-            "include_clipboard_image": "クリップボードの画像を含める",
             # Help/Description Text
             "vocabulary_help": "専門用語や略語などを追加して文字起こし精度を向上させます。",
             "stt_instructions_help": "書式や注目点など、文字起こし処理のインストラクションを記載してください。",
@@ -227,6 +227,10 @@ class LabelManager:
         return self._labels["llm_model_label"]
 
     @property
+    def llm_web_search_label(self) -> str:
+        return self._labels["llm_web_search_label"]
+
+    @property
     def context_label(self) -> str:
         return self._labels["context_label"]
 
@@ -278,12 +282,12 @@ class LabelManager:
 
     # Checkbox Labels
     @property
-    def include_clipboard_text(self) -> str:
-        return self._labels["include_clipboard_text"]
+    def llm_include_clipboard_text(self) -> str:
+        return self._labels["llm_include_clipboard_text"]
 
     @property
-    def include_clipboard_image(self) -> str:
-        return self._labels["include_clipboard_image"]
+    def llm_include_clipboard_image(self) -> str:
+        return self._labels["llm_include_clipboard_image"]
 
     # Help/Description Text
     @property
@@ -634,13 +638,19 @@ class InstructionDialog(QDialog):
         self._llm_model_combo.currentIndexChanged.connect(self._on_llm_model_changed)
         main_layout.addRow(llm_model_label, self._llm_model_combo)
 
+        # LLM web search
+        llm_web_search_label = QLabel(self._label_manager.llm_web_search_label)
+        self._llm_web_search_checkbox = QCheckBox()
+        self._llm_web_search_checkbox.stateChanged.connect(self._on_form_changed)
+        main_layout.addRow(llm_web_search_label, self._llm_web_search_checkbox)
+
         # LLM context options
-        self._llm_clipboard_text_checkbox = QCheckBox(self._label_manager.include_clipboard_text)
+        self._llm_clipboard_text_checkbox = QCheckBox(self._label_manager.llm_include_clipboard_text)
         self._llm_clipboard_text_checkbox.setToolTip(self._label_manager.clipboard_text_tooltip)
         self._llm_clipboard_text_checkbox.stateChanged.connect(self._on_form_changed)
         main_layout.addRow(self._label_manager.context_label, self._llm_clipboard_text_checkbox)
 
-        self._llm_clipboard_image_checkbox = QCheckBox(self._label_manager.include_clipboard_image)
+        self._llm_clipboard_image_checkbox = QCheckBox(self._label_manager.llm_include_clipboard_image)
         self._llm_clipboard_image_checkbox.setToolTip(self._label_manager.clipboard_image_tooltip)
         self._llm_clipboard_image_checkbox.stateChanged.connect(self._on_form_changed)
         main_layout.addRow("", self._llm_clipboard_image_checkbox)
@@ -858,6 +868,7 @@ class InstructionDialog(QDialog):
             self._stt_model_combo,
             self._llm_enabled_checkbox,
             self._llm_model_combo,
+            self._llm_web_search_checkbox,
             self._llm_clipboard_text_checkbox,
             self._llm_clipboard_image_checkbox,
         ]
@@ -897,6 +908,7 @@ class InstructionDialog(QDialog):
             is_image_supported = self._controller.check_image_input_supported(model_id=selected_model_id)
 
         self._llm_model_combo.setEnabled(is_llm_enabled)
+        self._llm_web_search_checkbox.setEnabled(is_llm_enabled)
         self._llm_clipboard_text_checkbox.setEnabled(is_llm_enabled)
         self._llm_clipboard_image_checkbox.setEnabled(is_llm_enabled and is_image_supported)
         self._llm_instructions_edit.setEnabled(is_llm_enabled)
@@ -927,6 +939,7 @@ class InstructionDialog(QDialog):
         # Update LLM settings
         self._llm_enabled_checkbox.setChecked(instruction_set.llm_enabled)
         self._set_combo_value(self._llm_model_combo, instruction_set.llm_model)
+        self._llm_web_search_checkbox.setChecked(instruction_set.llm_web_search_enabled)
         self._llm_clipboard_text_checkbox.setChecked(instruction_set.llm_clipboard_text_enabled)
         self._llm_clipboard_image_checkbox.setChecked(instruction_set.llm_clipboard_image_enabled)
 
@@ -1090,6 +1103,7 @@ class InstructionDialog(QDialog):
             "llm_enabled": self._llm_enabled_checkbox.isChecked(),
             "llm_model": self._llm_model_combo.currentData(),
             "llm_instructions": self._llm_instructions_edit.toPlainText(),
+            "llm_web_search_enabled": self._llm_web_search_checkbox.isChecked(),
             "llm_clipboard_text_enabled": self._llm_clipboard_text_checkbox.isChecked(),
             "llm_clipboard_image_enabled": self._llm_clipboard_image_checkbox.isChecked(),
             "hotkey": self._hotkey_input.text(),

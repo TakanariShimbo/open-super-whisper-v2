@@ -154,6 +154,9 @@ def _create_test_instruction_set() -> InstructionSet:
             
             clipboard_image_input = input("Include clipboard images in LLM processing? [y/N]: ").strip().lower()
             llm_clipboard_image_enabled = clipboard_image_input in ["y", "yes"]
+
+            web_search_input = input("Enable web search in LLM? [y/N]: ").strip().lower()
+            llm_web_search_enabled = web_search_input in ["y", "yes"]
         
         # Create instruction set
         instruction_set = InstructionSet(
@@ -163,6 +166,7 @@ def _create_test_instruction_set() -> InstructionSet:
             stt_language=stt_language,
             llm_enabled=llm_enabled,
             llm_instructions=llm_instructions,
+            llm_web_search_enabled=llm_web_search_enabled,
             llm_clipboard_text_enabled=llm_clipboard_text_enabled,
             llm_clipboard_image_enabled=llm_clipboard_image_enabled,
         )
