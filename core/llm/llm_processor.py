@@ -132,14 +132,6 @@ class LLMProcessor:
         # Reset agent to force recreation with new instruction
         self._agent = None
 
-    def clear_system_instruction(self) -> None:
-        """
-        Clear the system instruction and reset to default.
-        """
-        self._system_instruction = "You are a helpful assistant."
-        # Reset agent to force recreation
-        self._agent = None
-
     def _get_or_create_agent(self) -> Agent:
         """
         Get existing agent or create a new one with current settings.

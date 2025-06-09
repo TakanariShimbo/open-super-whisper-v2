@@ -96,7 +96,6 @@ class Pipeline:
             self._llm_processor.set_model(model_id=selected_set.llm_model)
 
         # Apply LLM instructions
-        self._llm_processor.clear_system_instruction()
         self._llm_processor.set_system_instruction(instruction=selected_set.llm_instructions)
 
     def start_recording(self) -> None:
