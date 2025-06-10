@@ -14,10 +14,13 @@ The primary class (LLMProcessor) handles all communication with the LLM using
 the modern Agents SDK approach.
 """
 
+import asyncio
 import base64
+import json
 from typing import Any, Callable
 
 from agents import Agent, Runner, WebSearchTool, set_default_openai_key
+from agents.mcp import MCPServerStdio
 from openai.types.responses import ResponseTextDeltaEvent
 
 from .llm_model_manager import LLMModelManager
@@ -277,12 +280,49 @@ class LLMProcessor:
         else:
             input_data = text
 
+        params_json_str = """
+{
+    "playwright": {
+        "command": "npx", 
+        "args": ["-y", "@playwright/mcp@latest"]
+    }
+"""
+        # TODO: remove this after testing
+        tmp = """
+{
+    "playwright": {
+        "command": "npx", 
+        "args": ["-y", "@playwright/mcp@latest"]
+    },
+    "filesystem": {
+        "command": "npx",
+        "args": [
+            "-y",
+            "@modelcontextprotocol/server-filesystem",
+            "C:/Users/takanari/Desktop/sample"
+        ]   
+    }
+}
+"""
+        params_dict = json.loads(params_json_str)
+
+        # Create MCP servers
+        mcp_servers: list[MCPServerStdio] = []
+        for _, params in params_dict.items():
+            server = MCPServerStdio(
+                params=params,
+                client_session_timeout_seconds=30,
+            )
+            await server.connect()
+            mcp_servers.append(server)
+
         # Create agent
         agent = Agent(
             name="Assistant",
             instructions=self._system_instruction,
             model=self._model_id,
             tools=[WebSearchTool()] if self._web_search_enabled else [],
+            mcp_servers=mcp_servers,
         )
 
         # Run the agent with streaming
@@ -299,6 +339,11 @@ class LLMProcessor:
                     full_response += chunk
                     if callback:
                         callback(chunk)
+
+        # Cleanup MCP server
+        for server in mcp_servers:
+            await server.cleanup()
+            await asyncio.sleep(1)
 
         return full_response
 
