@@ -145,22 +145,6 @@ class LLMProcessor:
         if self._web_search_enabled != is_enabled:
             self._web_search_enabled = is_enabled
 
-    def _create_agent(self) -> Agent:
-        """
-        Create a new agent with current settings.
-
-        Returns
-        -------
-        Agent
-            Configured Agent instance.
-        """
-        return Agent(
-            name="Assistant",
-            instructions=self._system_instruction,
-            model=self._model_id,
-            tools=[WebSearchTool()] if self._web_search_enabled else [],
-        )
-
     def _format_image_input(self, text: str, image_data: bytes) -> list[dict[str, Any]]:
         """
         Format text and image data into the input format expected by Agents SDK.
@@ -227,9 +211,6 @@ class LLMProcessor:
         if not text or not isinstance(text, str):
             raise ValueError("Text input must be a non-empty string.")
 
-        # Create agent
-        agent = self._create_agent()
-
         # Format input based on whether image is included
         if image_data is not None:
             # Check if model supports images
@@ -240,6 +221,14 @@ class LLMProcessor:
             input_data = self._format_image_input(text, image_data)
         else:
             input_data = text
+
+        # Create agent
+        agent = Agent(
+            name="Assistant",
+            instructions=self._system_instruction,
+            model=self._model_id,
+            tools=[WebSearchTool()] if self._web_search_enabled else [],
+        )
 
         # Run the agent and get response
         result = await Runner.run(agent, input=input_data)
@@ -277,9 +266,6 @@ class LLMProcessor:
         if not text or not isinstance(text, str):
             raise ValueError("Text input must be a non-empty string.")
 
-        # Create agent
-        agent = self._create_agent()
-
         # Format input based on whether image is included
         if image_data is not None:
             # Check if model supports images
@@ -290,6 +276,14 @@ class LLMProcessor:
             input_data = self._format_image_input(text, image_data)
         else:
             input_data = text
+
+        # Create agent
+        agent = Agent(
+            name="Assistant",
+            instructions=self._system_instruction,
+            model=self._model_id,
+            tools=[WebSearchTool()] if self._web_search_enabled else [],
+        )
 
         # Run the agent with streaming
         result = Runner.run_streamed(agent, input=input_data)
