@@ -89,10 +89,6 @@ class Pipeline:
         # LLM settings
         self._set_llm_processing(enabled=selected_set.llm_enabled)
 
-        # Clear LLM agent if the set name is different
-        if self._current_set_name != selected_set.name:
-            self._llm_processor.clear_agent()
-
         # Set LLM model
         self._llm_processor.set_model(model_id=selected_set.llm_model)
 

@@ -87,17 +87,10 @@ class LLMProcessor:
         """
         # Set the API key globally for the Agents SDK
         set_default_openai_key(api_key)
-        
-        self._agent: Agent | None = None
+
         self._model_id = self.DEFAULT_MODEL_ID
         self._system_instruction: str = "You are a helpful assistant."
         self._web_search_enabled: bool = False
-
-    def clear_agent(self) -> None:
-        """
-        Reset the agent to force recreation with new settings.
-        """
-        self._agent = None
 
     def set_model(self, model_id: str) -> None:
         """
@@ -125,7 +118,6 @@ class LLMProcessor:
         # Update model ID and clear agent if the model ID is different
         if self._model_id != model_id:
             self._model_id = model_id
-            self.clear_agent()
 
     def set_system_instruction(self, instruction: str) -> None:
         """
@@ -139,7 +131,6 @@ class LLMProcessor:
         # Update system instruction and clear agent if the instruction is different
         if self._system_instruction != instruction:
             self._system_instruction = instruction
-            self.clear_agent()
 
     def set_web_search_enabled(self, is_enabled: bool) -> None:
         """
@@ -153,25 +144,22 @@ class LLMProcessor:
         # Update web search enabled and clear agent if the value is different
         if self._web_search_enabled != is_enabled:
             self._web_search_enabled = is_enabled
-            self.clear_agent()
 
-    def _get_or_create_agent(self) -> Agent:
+    def _create_agent(self) -> Agent:
         """
-        Get existing agent or create a new one with current settings.
+        Create a new agent with current settings.
 
         Returns
         -------
         Agent
             Configured Agent instance.
         """
-        if self._agent is None:
-            self._agent = Agent(
-                name="Assistant",
-                instructions=self._system_instruction,
-                model=self._model_id,
-                tools=[WebSearchTool()] if self._web_search_enabled else [],
-            )
-        return self._agent
+        return Agent(
+            name="Assistant",
+            instructions=self._system_instruction,
+            model=self._model_id,
+            tools=[WebSearchTool()] if self._web_search_enabled else [],
+        )
 
     def _format_image_input(self, text: str, image_data: bytes) -> list[dict[str, Any]]:
         """
@@ -239,8 +227,8 @@ class LLMProcessor:
         if not text or not isinstance(text, str):
             raise ValueError("Text input must be a non-empty string.")
 
-        # Get or create agent
-        agent = self._get_or_create_agent()
+        # Create agent
+        agent = self._create_agent()
 
         # Format input based on whether image is included
         if image_data is not None:
@@ -289,9 +277,8 @@ class LLMProcessor:
         if not text or not isinstance(text, str):
             raise ValueError("Text input must be a non-empty string.")
 
-
-        # Get or create agent
-        agent = self._get_or_create_agent()
+        # Create agent
+        agent = self._create_agent()
 
         # Format input based on whether image is included
         if image_data is not None:
@@ -325,4 +312,4 @@ class LLMProcessor:
         """
         Shutdown the LLMProcessor.
         """
-        self._agent = None
+        pass
