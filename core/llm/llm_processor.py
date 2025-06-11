@@ -27,24 +27,6 @@ from openai.types.responses import ResponseTextDeltaEvent
 from .llm_model_manager import LLMModelManager
 
 
-params_json_str = """
-{
-    "playwright": {
-        "command": "npx", 
-        "args": ["-y", "@playwright/mcp@latest"]
-    },
-    "filesystem": {
-        "command": "npx",
-        "args": [
-            "-y",
-            "@modelcontextprotocol/server-filesystem",
-            "C:/Users/takanari/Desktop/sample"
-        ]   
-    }
-}
-"""
-
-
 class LLMProcessor:
     """
     Implementation for processing text and images using OpenAI Agents SDK.
@@ -113,6 +95,7 @@ class LLMProcessor:
         self._model_id = self.DEFAULT_MODEL_ID
         self._system_instruction: str = "You are a helpful assistant."
         self._web_search_enabled: bool = False
+        self._mcp_servers_json_str: str = r"{}"
 
     def set_model(self, model_id: str) -> None:
         """
@@ -153,6 +136,19 @@ class LLMProcessor:
         # Update system instruction and clear agent if the instruction is different
         if self._system_instruction != instruction:
             self._system_instruction = instruction
+
+    def set_mcp_servers_json_str(self, json_str: str) -> None:
+        """
+        Set the MCP servers JSON string.
+
+        Parameters
+        ----------
+        json_str : str
+            MCP servers JSON string.
+        """
+        # Update MCP servers JSON string and clear agent if the value is different
+        if self._mcp_servers_json_str != json_str:
+            self._mcp_servers_json_str = json_str
 
     def set_web_search_enabled(self, is_enabled: bool) -> None:
         """
@@ -246,11 +242,12 @@ class LLMProcessor:
 
         async with AsyncExitStack() as stack:
             # Create MCP servers
-            params_dict = json.loads(params_json_str)
+            mcp_servers_params = json.loads(self._mcp_servers_json_str)
             mcp_servers: list[MCPServerStdio] = []
-            for _, params in params_dict.items():
+            for name, params in mcp_servers_params.items():
                 server = await stack.enter_async_context(
                     MCPServerStdio(
+                        name=name,
                         params=params,
                         client_session_timeout_seconds=30,
                     )
@@ -321,7 +318,7 @@ class LLMProcessor:
 
         async with AsyncExitStack() as stack:
             # Create MCP servers
-            params_dict = json.loads(params_json_str)
+            params_dict = json.loads(self._mcp_servers_json_str)
             mcp_servers: list[MCPServerStdio] = []
             for _, params in params_dict.items():
                 server = await stack.enter_async_context(

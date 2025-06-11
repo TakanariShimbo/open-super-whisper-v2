@@ -42,6 +42,8 @@ class InstructionSet:
         LLM model ID to use, default from LLMProcessor.
     llm_instructions : str
         System instructions for LLM, by default empty string.
+    llm_mcp_servers_json_str : str
+        MCP servers JSON string, by default empty string.
     llm_web_search_enabled : bool
         Whether to enable web search in LLM, by default False.
     llm_clipboard_text_enabled : bool
@@ -64,6 +66,7 @@ class InstructionSet:
     llm_enabled: bool = False
     llm_model: str = LLMProcessor.DEFAULT_MODEL_ID
     llm_instructions: str = ""
+    llm_mcp_servers_json_str: str = r"{}"
     llm_web_search_enabled: bool = False
     llm_clipboard_text_enabled: bool = False
     llm_clipboard_image_enabled: bool = False
@@ -117,6 +120,7 @@ class InstructionSet:
             llm_enabled=data.get("llm_enabled", default_set.llm_enabled),
             llm_model=data.get("llm_model", default_set.llm_model),
             llm_instructions=data.get("llm_instructions", default_set.llm_instructions),
+            llm_mcp_servers_json_str=data.get("llm_mcp_servers_json_str", default_set.llm_mcp_servers_json_str),
             llm_web_search_enabled=data.get("llm_web_search_enabled", default_set.llm_web_search_enabled),
             llm_clipboard_text_enabled=data.get("llm_clipboard_text_enabled", default_set.llm_clipboard_text_enabled),
             llm_clipboard_image_enabled=data.get("llm_clipboard_image_enabled", default_set.llm_clipboard_image_enabled),
@@ -141,6 +145,7 @@ class InstructionSet:
             "llm_enabled": self.llm_enabled,
             "llm_model": self.llm_model,
             "llm_instructions": self.llm_instructions,
+            "llm_mcp_servers_json_str": self.llm_mcp_servers_json_str,
             "llm_web_search_enabled": self.llm_web_search_enabled,
             "llm_clipboard_text_enabled": self.llm_clipboard_text_enabled,
             "llm_clipboard_image_enabled": self.llm_clipboard_image_enabled,
@@ -156,6 +161,7 @@ class InstructionSet:
         llm_enabled: bool | None = None,
         llm_model: str | None = None,
         llm_instructions: str | None = None,
+        llm_mcp_servers_json_str: str | None = None,
         llm_web_search_enabled: bool | None = None,
         llm_clipboard_text_enabled: bool | None = None,
         llm_clipboard_image_enabled: bool | None = None,
@@ -180,6 +186,8 @@ class InstructionSet:
             LLM model ID to use, by default None (unchanged).
         llm_instructions : str, optional
             LLM system instructions, by default None (unchanged).
+        llm_mcp_servers_json_str : str, optional
+            MCP servers JSON string, by default None (unchanged).
         llm_web_search_enabled : bool, optional
             Whether to enable web search in LLM, by default None (unchanged).
         llm_clipboard_text_enabled : bool, optional
@@ -209,6 +217,9 @@ class InstructionSet:
 
         if llm_instructions is not None:
             self.llm_instructions = llm_instructions
+
+        if llm_mcp_servers_json_str is not None:
+            self.llm_mcp_servers_json_str = llm_mcp_servers_json_str
 
         if llm_web_search_enabled is not None:
             self.llm_web_search_enabled = llm_web_search_enabled

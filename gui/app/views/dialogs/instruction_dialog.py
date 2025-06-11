@@ -54,6 +54,7 @@ class LabelManager:
             "custom_vocabulary_label": "Custom Vocabulary",
             "stt_instructions_label": "STT Instructions",
             "llm_instructions_label": "LLM Instructions",
+            "llm_mcp_servers_label": "LLM MCP Servers",
             "stt_language_label": "STT Language",
             "stt_model_label": "STT Model",
             "hotkey_label": "Hotkey",
@@ -75,11 +76,13 @@ class LabelManager:
             "vocabulary_tab": "Vocabulary",
             "stt_instructions_tab": "STT Instructions",
             "llm_instructions_tab": "LLM Instructions",
+            "llm_mcp_servers_tab": "LLM MCP Servers",
             "settings_tab": "Settings",
             # Help/Description Text
             "vocabulary_help": "Add custom technical terms, acronyms, or specialized vocabulary to improve transcription accuracy.",
             "stt_instructions_help": "Provide system instructions to guide the transcription process (formatting, focus areas, etc.)",
             "llm_instructions_help": "Provide system instructions for the LLM to guide its processing of transcription results.",
+            "llm_mcp_servers_help": "Provide MCP servers for the LLM to use.",
             "settings_help": "Configure language, model, and other settings for this instruction set.",
             "clipboard_text_tooltip": "Include text from clipboard when processing with LLM",
             "clipboard_image_tooltip": "Include image from clipboard when processing with LLM (if supported by model)",
@@ -107,6 +110,7 @@ class LabelManager:
             "custom_vocabulary_label": "カスタム語彙",
             "stt_instructions_label": "STTインストラクション",
             "llm_instructions_label": "LLMインストラクション",
+            "llm_mcp_servers_label": "LLM MCPサーバー",
             "stt_language_label": "STT言語",
             "stt_model_label": "STTモデル",
             "hotkey_label": "ホットキー",
@@ -128,11 +132,13 @@ class LabelManager:
             "vocabulary_tab": "語彙",
             "stt_instructions_tab": "STTインストラクション",
             "llm_instructions_tab": "LLMインストラクション",
+            "llm_mcp_servers_tab": "LLM MCPサーバー",
             "settings_tab": "設定",
             # Help/Description Text
             "vocabulary_help": "専門用語や略語などを追加して文字起こし精度を向上させます。",
             "stt_instructions_help": "書式や注目点など、文字起こし処理のインストラクションを記載してください。",
             "llm_instructions_help": "文字起こし結果の処理方法をLLMにインストラクションできます。",
+            "llm_mcp_servers_help": "LLMに使用するMCPサーバーを設定します。",
             "settings_help": "このインストラクションセットの言語やモデルなどを設定します。",
             "clipboard_text_tooltip": "LLM処理時にクリップボードのテキストを含める",
             "clipboard_image_tooltip": "LLM処理時にクリップボードの画像を含める（モデルが対応している場合）",
@@ -205,6 +211,10 @@ class LabelManager:
     @property
     def llm_instructions_label(self) -> str:
         return self._labels["llm_instructions_label"]
+    
+    @property
+    def llm_mcp_servers_label(self) -> str:
+        return self._labels["llm_mcp_servers_label"]
 
     @property
     def stt_language_label(self) -> str:
@@ -275,6 +285,10 @@ class LabelManager:
     @property
     def llm_instructions_tab(self) -> str:
         return self._labels["llm_instructions_tab"]
+    
+    @property
+    def llm_mcp_servers_tab(self) -> str:
+        return self._labels["llm_mcp_servers_tab"]
 
     @property
     def settings_tab(self) -> str:
@@ -301,6 +315,10 @@ class LabelManager:
     @property
     def llm_instructions_help(self) -> str:
         return self._labels["llm_instructions_help"]
+    
+    @property
+    def llm_mcp_servers_help(self) -> str:
+        return self._labels["llm_mcp_servers_help"]
 
     @property
     def settings_help(self) -> str:
@@ -481,12 +499,14 @@ class InstructionDialog(QDialog):
         stt_vocabulary_tab = self._create_vocabulary_tab()
         stt_instructions_tab = self._create_stt_instructions_tab()
         llm_instructions_tab = self._create_llm_instructions_tab()
+        llm_mcp_servers_tab = self._create_llm_mcp_servers_tab()
         settings_tab = self._create_settings_tab()
 
         # Add tabs to widget
         self._tab_widget.addTab(stt_vocabulary_tab, self._label_manager.vocabulary_tab)
         self._tab_widget.addTab(stt_instructions_tab, self._label_manager.stt_instructions_tab)
         self._tab_widget.addTab(llm_instructions_tab, self._label_manager.llm_instructions_tab)
+        self._tab_widget.addTab(llm_mcp_servers_tab, self._label_manager.llm_mcp_servers_tab)
         self._tab_widget.addTab(settings_tab, self._label_manager.settings_tab)
 
         right_layout.addWidget(self._tab_widget)
@@ -580,6 +600,31 @@ class InstructionDialog(QDialog):
         llm_instructions_layout.addWidget(self._llm_instructions_edit)
 
         return llm_instructions_tab
+
+    def _create_llm_mcp_servers_tab(self) -> QWidget:
+        """
+        Create the LLM MCP servers tab.
+
+        Returns
+        -------
+        QWidget
+            The LLM MCP servers tab widget
+        """
+        llm_mcp_servers_tab = QWidget()
+        llm_mcp_servers_layout = QVBoxLayout(llm_mcp_servers_tab)
+
+        llm_mcp_servers_label = QLabel(self._label_manager.llm_mcp_servers_label)
+        llm_mcp_servers_layout.addWidget(llm_mcp_servers_label)
+
+        llm_mcp_servers_help = QLabel(self._label_manager.llm_mcp_servers_help)
+        llm_mcp_servers_help.setWordWrap(True)
+        llm_mcp_servers_layout.addWidget(llm_mcp_servers_help)
+
+        self._llm_mcp_servers_edit = QTextEdit()
+        self._llm_mcp_servers_edit.textChanged.connect(self._on_form_changed)
+        llm_mcp_servers_layout.addWidget(self._llm_mcp_servers_edit)
+
+        return llm_mcp_servers_tab
 
     def _create_settings_tab(self) -> QWidget:
         """
@@ -864,6 +909,7 @@ class InstructionDialog(QDialog):
             self._stt_vocabulary_edit,
             self._stt_instructions_edit,
             self._llm_instructions_edit,
+            self._llm_mcp_servers_edit,
             self._stt_language_combo,
             self._stt_model_combo,
             self._llm_enabled_checkbox,
@@ -912,6 +958,7 @@ class InstructionDialog(QDialog):
         self._llm_clipboard_text_checkbox.setEnabled(is_llm_enabled)
         self._llm_clipboard_image_checkbox.setEnabled(is_llm_enabled and is_image_supported)
         self._llm_instructions_edit.setEnabled(is_llm_enabled)
+        self._llm_mcp_servers_edit.setEnabled(is_llm_enabled)
 
     def _apply_set_to_editor_widget(self, instruction_set: InstructionSet) -> None:
         """
@@ -929,6 +976,7 @@ class InstructionDialog(QDialog):
         self._stt_vocabulary_edit.setPlainText(instruction_set.stt_vocabulary)
         self._stt_instructions_edit.setPlainText(instruction_set.stt_instructions)
         self._llm_instructions_edit.setPlainText(instruction_set.llm_instructions)
+        self._llm_mcp_servers_edit.setPlainText(instruction_set.llm_mcp_servers_json_str)
 
         # Update language selection
         self._set_combo_value(self._stt_language_combo, instruction_set.stt_language)
@@ -1103,6 +1151,7 @@ class InstructionDialog(QDialog):
             "llm_enabled": self._llm_enabled_checkbox.isChecked(),
             "llm_model": self._llm_model_combo.currentData(),
             "llm_instructions": self._llm_instructions_edit.toPlainText(),
+            "llm_mcp_servers_json_str": self._llm_mcp_servers_edit.toPlainText(),
             "llm_web_search_enabled": self._llm_web_search_checkbox.isChecked(),
             "llm_clipboard_text_enabled": self._llm_clipboard_text_checkbox.isChecked(),
             "llm_clipboard_image_enabled": self._llm_clipboard_image_checkbox.isChecked(),

@@ -95,6 +95,9 @@ class Pipeline:
         # Apply LLM instructions
         self._llm_processor.set_system_instruction(instruction=selected_set.llm_instructions)
 
+        # Apply MCP servers
+        self._llm_processor.set_mcp_servers_json_str(json_str=selected_set.llm_mcp_servers_json_str)
+
         # Apply LLM web search
         self._llm_processor.set_web_search_enabled(is_enabled=selected_set.llm_web_search_enabled)
 

@@ -143,12 +143,15 @@ def _create_test_instruction_set() -> InstructionSet:
         llm_enabled = llm_enabled_input in ["y", "yes"]
         
         llm_instructions = ""
+        llm_mcp_servers_json_str = r"{}"
         llm_clipboard_text_enabled = False
         llm_clipboard_image_enabled = False
         
         if llm_enabled:
             llm_instructions = input("Enter LLM system instructions (or press Enter to skip): ").strip()
-            
+
+            llm_mcp_servers_json_str = input("Enter MCP servers JSON string (or press Enter to skip): ").strip()
+
             clipboard_text_input = input("Include clipboard text in LLM processing? [y/N]: ").strip().lower()
             llm_clipboard_text_enabled = clipboard_text_input in ["y", "yes"]
             
@@ -166,6 +169,7 @@ def _create_test_instruction_set() -> InstructionSet:
             stt_language=stt_language,
             llm_enabled=llm_enabled,
             llm_instructions=llm_instructions,
+            llm_mcp_servers_json_str=llm_mcp_servers_json_str,
             llm_web_search_enabled=llm_web_search_enabled,
             llm_clipboard_text_enabled=llm_clipboard_text_enabled,
             llm_clipboard_image_enabled=llm_clipboard_image_enabled,
@@ -350,8 +354,10 @@ def test_pipeline() -> bool:
         print(f"🤖 LLM Enabled: {'Yes' if instruction_set.llm_enabled else 'No'}")
         if instruction_set.llm_enabled:
             print(f"🎯 LLM Instructions: {instruction_set.llm_instructions or 'None'}")
+            print(f"🔍 MCP Servers: {instruction_set.llm_mcp_servers_json_str}")
         print(f"📋 Clipboard Text: {'Yes' if clipboard_text else 'No'}")
         print(f"🖼️ Clipboard Image: {'Yes' if clipboard_image else 'No'}")
+        print(f"🔍 Web Search: {'Yes' if instruction_set.llm_web_search_enabled else 'No'}")
         print(f"⚡ Processing Mode: {processing_mode.capitalize()}")
         
         if audio_path.name == "live_recording":
