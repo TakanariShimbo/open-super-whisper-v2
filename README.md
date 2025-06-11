@@ -181,9 +181,11 @@ Transform your voice into intelligent, actionable text with this powerful PyQt6-
 
 4. Set up FFmpeg:
 
-   The application requires FFmpeg. You need to create an `ffmpeg` directory in the project root with a `bin` subdirectory containing FFmpeg executables.
+   The application requires FFmpeg.
 
    **For Windows:**
+
+   You need to create an `ffmpeg` directory in the project root with a `bin` subdirectory containing FFmpeg executables.
 
    ```bash
    # 1. Download FFmpeg from https://ffmpeg.org/download.html
