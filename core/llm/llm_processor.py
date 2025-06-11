@@ -17,6 +17,7 @@ the modern Agents SDK approach.
 import asyncio
 import base64
 import json
+from contextlib import AsyncExitStack
 from typing import Any, Callable
 
 from agents import Agent, Runner, WebSearchTool, set_default_openai_key
@@ -24,6 +25,24 @@ from agents.mcp import MCPServerStdio
 from openai.types.responses import ResponseTextDeltaEvent
 
 from .llm_model_manager import LLMModelManager
+
+
+params_json_str = """
+{
+    "playwright": {
+        "command": "npx", 
+        "args": ["-y", "@playwright/mcp@latest"]
+    },
+    "filesystem": {
+        "command": "npx",
+        "args": [
+            "-y",
+            "@modelcontextprotocol/server-filesystem",
+            "C:/Users/takanari/Desktop/sample"
+        ]   
+    }
+}
+"""
 
 
 class LLMProcessor:
@@ -225,17 +244,37 @@ class LLMProcessor:
         else:
             input_data = text
 
-        # Create agent
-        agent = Agent(
-            name="Assistant",
-            instructions=self._system_instruction,
-            model=self._model_id,
-            tools=[WebSearchTool()] if self._web_search_enabled else [],
-        )
+        async with AsyncExitStack() as stack:
+            # Create MCP servers
+            params_dict = json.loads(params_json_str)
+            mcp_servers: list[MCPServerStdio] = []
+            for _, params in params_dict.items():
+                server = await stack.enter_async_context(
+                    MCPServerStdio(
+                        params=params,
+                        client_session_timeout_seconds=30,
+                    )
+                )
+                await server.list_tools()
+                mcp_servers.append(server)
 
-        # Run the agent and get response
-        result = await Runner.run(agent, input=input_data)
-        return result.final_output
+            # Create agent
+            agent = Agent(
+                name="Assistant",
+                instructions=self._system_instruction,
+                model=self._model_id,
+                tools=[WebSearchTool()] if self._web_search_enabled else [],
+                mcp_servers=mcp_servers,
+            )
+
+            # Run the agent and get response
+            result = await Runner.run(agent, input=input_data)
+            response = result.final_output
+
+        # Wait for MCP servers to cleanup
+        await asyncio.sleep(1)
+
+        return response
 
     async def process_text_with_stream(
         self,
@@ -280,70 +319,46 @@ class LLMProcessor:
         else:
             input_data = text
 
-        params_json_str = """
-{
-    "playwright": {
-        "command": "npx", 
-        "args": ["-y", "@playwright/mcp@latest"]
-    }
-"""
-        # TODO: remove this after testing
-        tmp = """
-{
-    "playwright": {
-        "command": "npx", 
-        "args": ["-y", "@playwright/mcp@latest"]
-    },
-    "filesystem": {
-        "command": "npx",
-        "args": [
-            "-y",
-            "@modelcontextprotocol/server-filesystem",
-            "C:/Users/takanari/Desktop/sample"
-        ]   
-    }
-}
-"""
-        params_dict = json.loads(params_json_str)
+        async with AsyncExitStack() as stack:
+            # Create MCP servers
+            params_dict = json.loads(params_json_str)
+            mcp_servers: list[MCPServerStdio] = []
+            for _, params in params_dict.items():
+                server = await stack.enter_async_context(
+                    MCPServerStdio(
+                        params=params,
+                        client_session_timeout_seconds=30,
+                    )
+                )
+                await server.list_tools()
+                mcp_servers.append(server)
 
-        # Create MCP servers
-        mcp_servers: list[MCPServerStdio] = []
-        for _, params in params_dict.items():
-            server = MCPServerStdio(
-                params=params,
-                client_session_timeout_seconds=30,
+            # Create agent
+            agent = Agent(
+                name="Assistant",
+                instructions=self._system_instruction,
+                model=self._model_id,
+                tools=[WebSearchTool()] if self._web_search_enabled else [],
+                mcp_servers=mcp_servers,
             )
-            await server.connect()
-            mcp_servers.append(server)
 
-        # Create agent
-        agent = Agent(
-            name="Assistant",
-            instructions=self._system_instruction,
-            model=self._model_id,
-            tools=[WebSearchTool()] if self._web_search_enabled else [],
-            mcp_servers=mcp_servers,
-        )
+            # Run the agent with streaming
+            result = Runner.run_streamed(agent, input=input_data)
+            full_response = ""
 
-        # Run the agent with streaming
-        result = Runner.run_streamed(agent, input=input_data)
-        full_response = ""
+            # Process streaming events
+            async for event in result.stream_events():
+                if event.type == "raw_response_event" and isinstance(
+                    event.data, ResponseTextDeltaEvent
+                ):
+                    chunk = event.data.delta
+                    if chunk:
+                        full_response += chunk
+                        if callback:
+                            callback(chunk)
 
-        # Process streaming events
-        async for event in result.stream_events():
-            if event.type == "raw_response_event" and isinstance(
-                event.data, ResponseTextDeltaEvent
-            ):
-                chunk = event.data.delta
-                if chunk:
-                    full_response += chunk
-                    if callback:
-                        callback(chunk)
-
-        # Cleanup MCP server
-        for server in mcp_servers:
-            await server.cleanup()
-            await asyncio.sleep(1)
+        # Wait for MCP servers to cleanup
+        await asyncio.sleep(1)
 
         return full_response
 
