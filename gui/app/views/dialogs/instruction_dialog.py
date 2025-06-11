@@ -5,6 +5,8 @@ This module provides the view component for the instruction dialog in the Open S
 It provides the UI for managing instruction sets.
 """
 
+import json
+
 from PyQt6.QtWidgets import (
     QDialog,
     QVBoxLayout,
@@ -94,6 +96,7 @@ class LabelManager:
             "confirm_delete_message": "Are you sure you want to delete the instruction set '{name}'?",
             "unsaved_changes_message": "You have unsaved changes. Do you want to save them?",
             "changes_discarded_message": "Changes have been discarded.",
+            "invalid_mcp_servers_json": "Invalid MCP servers JSON format.\nError: {error}",
         },
         "Japanese": {
             # Window/Dialog titles
@@ -150,6 +153,7 @@ class LabelManager:
             "confirm_delete_message": "インストラクションセット『{name}』を削除してもよろしいですか？",
             "unsaved_changes_message": "未保存の変更があります。保存しますか？",
             "changes_discarded_message": "変更は破棄されました。",
+            "invalid_mcp_servers_json": "無効なMCPサーバーJSON形式です。\nエラー: {error}",
         },
         # Future: Add other languages here
     }
@@ -357,6 +361,10 @@ class LabelManager:
     @property
     def changes_discarded_message(self) -> str:
         return self._labels["changes_discarded_message"]
+
+    @property
+    def invalid_mcp_servers_json(self) -> str:
+        return self._labels["invalid_mcp_servers_json"]
 
 
 class InstructionDialog(QDialog):
@@ -1142,6 +1150,18 @@ class InstructionDialog(QDialog):
 
         set_name = self._sets_list.item(row).text()
 
+        # Check if MCP servers are valid JSON
+        mcp_servers_json_str = self._llm_mcp_servers_edit.toPlainText()
+        try:
+            self._controller.check_mcp_servers_json_str(json_str=mcp_servers_json_str)
+        except (AssertionError, json.JSONDecodeError) as e:
+            QMessageBox.warning(
+                self,
+                self._label_manager.error_title,
+                self._label_manager.invalid_mcp_servers_json.format(error=str(e)),
+            )
+            return
+
         # Collect values from UI
         kwargs = {
             "stt_vocabulary": self._stt_vocabulary_edit.toPlainText(),
@@ -1151,7 +1171,7 @@ class InstructionDialog(QDialog):
             "llm_enabled": self._llm_enabled_checkbox.isChecked(),
             "llm_model": self._llm_model_combo.currentData(),
             "llm_instructions": self._llm_instructions_edit.toPlainText(),
-            "llm_mcp_servers_json_str": self._llm_mcp_servers_edit.toPlainText(),
+            "llm_mcp_servers_json_str": mcp_servers_json_str,
             "llm_web_search_enabled": self._llm_web_search_checkbox.isChecked(),
             "llm_clipboard_text_enabled": self._llm_clipboard_text_checkbox.isChecked(),
             "llm_clipboard_image_enabled": self._llm_clipboard_image_checkbox.isChecked(),

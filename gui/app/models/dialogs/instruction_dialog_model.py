@@ -14,6 +14,7 @@ from core.llm.llm_model import LLMModel
 from core.stt.stt_lang_model_manager import STTLangModelManager
 from core.stt.stt_model_manager import STTModelManager
 from core.llm.llm_model_manager import LLMModelManager
+from core.llm.llm_processor import LLMProcessor
 
 from ...managers.instruction_sets_manager import InstructionSetsManager
 from ...managers.keyboard_manager import KeyboardManager
@@ -310,3 +311,21 @@ class InstructionDialogModel(QObject):
             True if the model supports image input, False otherwise
         """
         return LLMModelManager.check_image_input_supported(model_id=model_id)
+
+    def check_mcp_servers_json_str(self, json_str: str) -> None:
+        """
+        Check if the MCP servers JSON string is valid.
+
+        Parameters
+        ----------
+        json_str : str
+            MCP servers JSON string.
+
+        Raises
+        ------
+        AssertionError
+            If the MCP servers JSON string is invalid.
+        json.JSONDecodeError
+            If the MCP servers JSON string is not valid JSON.
+        """
+        return LLMProcessor.check_mcp_servers_json_str(json_str=json_str)

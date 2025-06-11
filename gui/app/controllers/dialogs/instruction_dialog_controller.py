@@ -305,6 +305,24 @@ class InstructionDialogController(QObject):
             True if the model supports image input, False otherwise
         """
         return self._model.check_image_input_supported(model_id=model_id)
+    
+    def check_mcp_servers_json_str(self, json_str: str) -> None:
+        """
+        Check if the MCP servers JSON string is valid.
+
+        Parameters
+        ----------
+        json_str : str
+            MCP servers JSON string.
+
+        Raises
+        ------
+        AssertionError
+            If the MCP servers JSON string is invalid.
+        json.JSONDecodeError
+            If the MCP servers JSON string is not valid JSON.
+        """
+        return self._model.check_mcp_servers_json_str(json_str=json_str)
 
     def start_listening(self) -> bool:
         """
