@@ -7,6 +7,7 @@ Transform your voice into intelligent, actionable text with this powerful PyQt6-
 ## Features
 
 ### 🎯 **Smart Recording & Transcription**
+
 - **One-click recording** with instant audio capture
 - **Global hotkey support** - Start/stop recording from anywhere on your system
 - **Multi-language support** with automatic language detection
@@ -14,18 +15,21 @@ Transform your voice into intelligent, actionable text with this powerful PyQt6-
 - **Large file handling** with intelligent audio chunking
 
 ### 🧠 **AI-Powered Content Processing**
+
 - **LLM integration** - Process transcriptions with GPT-4, Claude, and other models
 - **Intelligent analysis** - Summarize, translate, or transform your content
 - **Custom AI instructions** - Tailor AI responses to your specific needs
 - **Streaming responses** - See AI analysis in real-time as it's generated
 
 ### ⚡ **Advanced Workflow Management**
+
 - **Instruction Sets** - Create and switch between different processing profiles
 - **Custom vocabularies** - Improve accuracy for technical terms and specialized content
 - **Clipboard integration** - Automatically include clipboard content in AI processing
 - **Profile-based hotkeys** - Assign keyboard shortcuts to different workflows
 
 ### 💼 **Professional User Experience**
+
 - **Clean, modern interface** built with PyQt6
 - **System tray integration** - Keep the app running in the background
 - **Visual status indicators** - Always know what's happening
@@ -33,6 +37,7 @@ Transform your voice into intelligent, actionable text with this powerful PyQt6-
 - **Auto-clipboard** - Automatically copy results when processing completes
 
 ### 🔧 **Flexible & Customizable**
+
 - **Multiple AI models** - Choose the best model for your task
 - **Configurable settings** - Customize every aspect of the application
 - **Markdown support** - Rich text rendering with LaTeX math support
@@ -162,27 +167,30 @@ Transform your voice into intelligent, actionable text with this powerful PyQt6-
 1. Ensure you have UV installed.
 
 2. Clone the repository:
+
    ```bash
    git clone https://github.com/yourusername/open-super-whisper-v2.git
    cd open-super-whisper-v2
    ```
 
 3. Install dependencies:
+
    ```bash
    uv sync
    ```
 
 4. Set up FFmpeg:
-   
+
    The application requires FFmpeg. You need to create an `ffmpeg` directory in the project root with a `bin` subdirectory containing FFmpeg executables.
 
    **For Windows:**
+
    ```bash
    # 1. Download FFmpeg from https://ffmpeg.org/download.html
    #    - Recommended: "ffmpeg-release-essentials.zip" (Windows version)
-   
+
    # 2. Extract the downloaded ZIP file
-   
+
    # 3. Copy the entire extracted folder to the ffmpeg directory in the project root
    #    Example: Extracted "ffmpeg-x.x.x-win64-static/" → Project's "ffmpeg/"
    ```
@@ -198,6 +206,7 @@ python run_open_super_whisper.py
 ```
 
 Command line options:
+
 - `--minimized` or `-m`: Start the application minimized to the system tray
 
 ## Packaging
@@ -209,13 +218,14 @@ To package the application into a standalone executable:
 python -m PyInstaller --onefile --icon assets/icon.ico --name "OpenSuperWhisper" --add-data "assets;assets" --add-data "ffmpeg;ffmpeg" run_open_super_whisper.py
 
 # For macOS
-# python -m PyInstaller --onefile --icon assets/icon.icns --name "OpenSuperWhisper" --add-data "assets:assets" --add-data "ffmpeg:ffmpeg" run_open_super_whisper.py
+# python -m PyInstaller --onefile --icon assets/icon.icns --name "OpenSuperWhisper" --add-data "assets:assets" run_open_super_whisper.py
 
 # For Linux
-# python -m PyInstaller --onefile --icon assets/icon.png --name "OpenSuperWhisper" --add-data "assets:assets" --add-data "ffmpeg:ffmpeg" run_open_super_whisper.py
+# python -m PyInstaller --onefile --icon assets/icon.png --name "OpenSuperWhisper" --add-data "assets:assets" run_open_super_whisper.py
 ```
 
 The Windows command does the following:
+
 - `--onefile`: Creates a single executable file
 - `--icon assets/icon.ico`: Sets the application icon
 - `--name "OpenSuperWhisper"`: Specifies the output filename
