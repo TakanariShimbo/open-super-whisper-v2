@@ -50,3 +50,6 @@ Thumbs.db
 
 # FFmpeg
 ffmpeg/
+
+# Claude Code
+.claude/
