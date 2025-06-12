@@ -123,6 +123,7 @@ class KeyFormatter:
 
     # Map for control characters to more readable names (without 'ctrl+' prefix)
     CONTROL_CHAR_MAPPING: dict[str, str] = {
+        "\x00": "2",  # NULL (Ctrl+@, but @ is Shift+2)
         "\x01": "a",
         "\x02": "b",
         "\x03": "c",
@@ -149,6 +150,7 @@ class KeyFormatter:
         "\x18": "x",
         "\x19": "y",
         "\x1a": "z",
+        "\x1e": "6",  # RS (Ctrl+^, but ^ is Shift+6)
     }
 
     # Map for virtual key codes (VK) to human-readable names for special keys
@@ -407,12 +409,61 @@ class KeyFormatter:
         return any(isinstance(k, keyboard.Key) and (k == keyboard.Key.ctrl or k == keyboard.Key.ctrl_l or k == keyboard.Key.ctrl_r) for k in keys)
 
     @classmethod
+    def _has_shift_key(cls, keys: set[keyboard.Key | keyboard.KeyCode]) -> bool:
+        """Check if Shift key (any variant) is present in the key set."""
+        return any(isinstance(k, keyboard.Key) and (k == keyboard.Key.shift or k == keyboard.Key.shift_l or k == keyboard.Key.shift_r) for k in keys)
+
+    @classmethod
     def _get_formatted_key_strings(cls, keys: set[keyboard.Key | keyboard.KeyCode]) -> list[str]:
         """Convert all keys to formatted strings, filtering out empty ones."""
         key_strings = []
+        has_shift = cls._has_shift_key(keys)
+        
+        # When processing keys, we need to identify number keys properly
+        # Track which keys we've already processed to avoid duplicates
+        processed_numbers = set()
 
         for key in keys:
-            key_str = cls.format_key(key)
+            key_str = None
+            
+            # Special handling when shift is pressed
+            if has_shift:
+                # First check if this is a regular number key (VK 48-57)
+                if hasattr(key, 'vk') and key.vk and 48 <= key.vk <= 57:
+                    # This is a number key, use the number
+                    number = chr(key.vk)
+                    if number not in processed_numbers:
+                        key_str = number
+                        processed_numbers.add(number)
+                # Check if this is a character that results from shift+number
+                elif hasattr(key, 'char') and key.char:
+                    # Map of shifted characters to their base keys
+                    shifted_to_base = {
+                        '!': '1', '@': '2', '#': '3', '$': '4', '%': '5',
+                        '^': '6', '&': '7', '*': '8', '(': '9', ')': '0',
+                        '_': '-', '+': '=', '{': '[', '}': ']', '|': '\\',
+                        ':': ';', '"': "'", '<': ',', '>': '.', '?': '/',
+                        '~': '`'
+                    }
+                    if key.char in shifted_to_base:
+                        # This is a shifted character, use the base number
+                        number = shifted_to_base[key.char]
+                        if number not in processed_numbers:
+                            key_str = number
+                            processed_numbers.add(number)
+                    else:
+                        # For other characters when shift is pressed
+                        # Skip if it's a single quote and we already have a number
+                        if key.char == "'" and ('2' in processed_numbers or '7' in processed_numbers):
+                            continue
+                        key_str = cls.format_key(key)
+                else:
+                    # For other key types
+                    key_str = cls.format_key(key)
+            else:
+                # No shift pressed, use normal formatting
+                key_str = cls.format_key(key)
+                
             if key_str:  # Only add non-empty strings
                 key_strings.append(key_str)
 
