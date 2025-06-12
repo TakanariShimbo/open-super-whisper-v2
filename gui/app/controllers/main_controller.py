@@ -390,14 +390,9 @@ class MainController(QObject):
 
         # Process the audio if we have a file
         if audio_file_path:
-            # Get language from selected instruction set
-            language = None
-            selected_set = self._model.get_selected_instruction_set()
-            if selected_set:
-                language = selected_set.stt_language
-
             # Get clipboard content (text and image)
             clipboard_text, clipboard_image = None, None
+            selected_set = self._model.get_selected_instruction_set()
             if selected_set and selected_set.llm_enabled:
                 # Only get clipboard if LLM is enabled in the instruction set
                 clipboard_text, clipboard_image = ClipboardUtils.get_content()
@@ -412,7 +407,6 @@ class MainController(QObject):
             # Process the audio with clipboard content asynchronously
             self._model.process_audio(
                 audio_file_path=audio_file_path,
-                language=language,
                 clipboard_text=clipboard_text,
                 clipboard_image=clipboard_image,
             )

@@ -400,7 +400,6 @@ def test_pipeline() -> bool:
 
             result = pipeline.process(
                 audio_file_path=audio_file_path,
-                language=instruction_set.stt_language,
                 clipboard_text=clipboard_text,
                 clipboard_image=clipboard_image,
                 stream_callback=print_chunk,
@@ -411,7 +410,6 @@ def test_pipeline() -> bool:
             print("Starting standard processing...")
             result = pipeline.process(
                 audio_file_path=audio_file_path,
-                language=instruction_set.stt_language,
                 clipboard_text=clipboard_text,
                 clipboard_image=clipboard_image,
             )

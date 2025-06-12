@@ -114,7 +114,6 @@ class ProcessingThread(QThread):
         self,
         pipeline: Pipeline,
         audio_file_path: str,
-        language: str | None = None,
         clipboard_text: str | None = None,
         clipboard_image: bytes | None = None,
         main_window: QObject | None = None,
@@ -128,8 +127,6 @@ class ProcessingThread(QThread):
             The pipeline to use for processing
         audio_file_path: str
             The path to the audio file to process
-        language: str | None
-            The language to use for processing
         clipboard_text: str | None
             The text to use for processing
         clipboard_image: bytes | None
@@ -140,7 +137,6 @@ class ProcessingThread(QThread):
         super().__init__(parent=main_window)
         self._pipeline = pipeline
         self._audio_file_path = audio_file_path
-        self._language = language
         self._clipboard_text = clipboard_text
         self._clipboard_image = clipboard_image
 
@@ -155,7 +151,6 @@ class ProcessingThread(QThread):
             # Process the audio file with streaming updates
             result = self._pipeline.process(
                 audio_file_path=self._audio_file_path,
-                language=self._language,
                 clipboard_text=self._clipboard_text,
                 clipboard_image=self._clipboard_image,
                 stream_callback=self.progress.emit,
@@ -329,7 +324,6 @@ class MainModel(QObject):
     def process_audio(
         self,
         audio_file_path: str,
-        language: str | None = None,
         clipboard_text: str | None = None,
         clipboard_image: bytes | None = None,
     ) -> bool:
@@ -340,8 +334,6 @@ class MainModel(QObject):
         ----------
         audio_file_path: str
             The path to the audio file to process
-        language: str | None
-            The language to use for processing
         clipboard_text: str | None
             The text to use for processing
         clipboard_image: bytes | None
@@ -368,7 +360,6 @@ class MainModel(QObject):
             self._processor = ProcessingThread(
                 pipeline=self._pipeline,
                 audio_file_path=audio_file_path,
-                language=language,
                 clipboard_text=clipboard_text,
                 clipboard_image=clipboard_image,
                 main_window=self._main_window,
