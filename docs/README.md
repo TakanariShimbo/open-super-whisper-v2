@@ -1,3 +1,5 @@
+[English](README.md) | [日本語](README_ja.md)
+
 # Open Super Whisper V2
 
 **The Ultimate Audio Transcription & AI Analysis Tool**
