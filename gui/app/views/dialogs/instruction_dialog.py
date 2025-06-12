@@ -944,6 +944,10 @@ class InstructionDialog(QDialog):
 
         is_ui_enabled = not is_editing_mode
 
+        # Block signals to prevent triggering change events
+        self._block_signals_from_editor_widget(is_signal_blocked=True)
+
+        # Enable/disable operation buttons
         self._add_button.setEnabled(is_ui_enabled)
         self._rename_button.setEnabled(is_ui_enabled)
         self._delete_button.setEnabled(is_ui_enabled)
@@ -958,6 +962,7 @@ class InstructionDialog(QDialog):
         selected_model_id = self._llm_model_combo.currentData()
         is_image_supported = False
         is_web_search_supported = False
+        is_mcp_servers_supported = False
 
         if selected_model_id:
             is_image_supported = self._controller.check_image_input_supported(model_id=selected_model_id)
@@ -969,7 +974,7 @@ class InstructionDialog(QDialog):
         if not is_web_search_supported:
             self._llm_web_search_checkbox.setChecked(False)
         if not is_mcp_servers_supported:
-            self._llm_mcp_servers_edit.setPlainText("")
+            self._llm_mcp_servers_edit.setPlainText(r"{}")
 
         self._llm_model_combo.setEnabled(is_llm_enabled)
         self._llm_web_search_checkbox.setEnabled(is_llm_enabled and is_web_search_supported)
@@ -977,6 +982,9 @@ class InstructionDialog(QDialog):
         self._llm_clipboard_image_checkbox.setEnabled(is_llm_enabled and is_image_supported)
         self._llm_instructions_edit.setEnabled(is_llm_enabled)
         self._llm_mcp_servers_edit.setEnabled(is_llm_enabled and is_mcp_servers_supported)
+
+        # Unblock signals
+        self._block_signals_from_editor_widget(is_signal_blocked=False)
 
     def _apply_set_to_editor_widget(self, instruction_set: InstructionSet) -> None:
         """
