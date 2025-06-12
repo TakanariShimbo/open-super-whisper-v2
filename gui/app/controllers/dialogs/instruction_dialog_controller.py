@@ -317,12 +317,10 @@ class InstructionDialogController(QObject):
 
         Raises
         ------
-        AssertionError
+        ValueError
             If the MCP servers JSON string is invalid.
-        json.JSONDecodeError
-            If the MCP servers JSON string is not valid JSON.
         """
-        return self._model.check_mcp_servers_json_str(json_str=json_str)
+        self._model.check_mcp_servers_json_str(json_str=json_str)
 
     def start_listening(self) -> bool:
         """

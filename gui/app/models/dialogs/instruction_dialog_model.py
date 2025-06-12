@@ -323,9 +323,7 @@ class InstructionDialogModel(QObject):
 
         Raises
         ------
-        AssertionError
+        ValueError
             If the MCP servers JSON string is invalid.
-        json.JSONDecodeError
-            If the MCP servers JSON string is not valid JSON.
         """
-        return LLMProcessor.check_mcp_servers_json_str(json_str=json_str)
+        LLMProcessor.check_mcp_servers_json_str(json_str=json_str)

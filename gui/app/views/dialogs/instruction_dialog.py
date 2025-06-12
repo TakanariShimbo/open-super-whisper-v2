@@ -1154,7 +1154,7 @@ class InstructionDialog(QDialog):
         mcp_servers_json_str = self._llm_mcp_servers_edit.toPlainText()
         try:
             self._controller.check_mcp_servers_json_str(json_str=mcp_servers_json_str)
-        except (AssertionError, json.JSONDecodeError) as e:
+        except ValueError as e:
             QMessageBox.warning(
                 self,
                 self._label_manager.error_title,
