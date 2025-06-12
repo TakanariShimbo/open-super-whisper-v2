@@ -957,12 +957,19 @@ class InstructionDialog(QDialog):
         is_llm_enabled = self._llm_enabled_checkbox.isChecked()
         selected_model_id = self._llm_model_combo.currentData()
         is_image_supported = False
+        is_web_search_supported = False
 
         if selected_model_id:
             is_image_supported = self._controller.check_image_input_supported(model_id=selected_model_id)
+            is_web_search_supported = self._controller.check_web_search_supported(model_id=selected_model_id)
+
+        if not is_image_supported:
+            self._llm_clipboard_image_checkbox.setChecked(False)
+        if not is_web_search_supported:
+            self._llm_web_search_checkbox.setChecked(False)
 
         self._llm_model_combo.setEnabled(is_llm_enabled)
-        self._llm_web_search_checkbox.setEnabled(is_llm_enabled)
+        self._llm_web_search_checkbox.setEnabled(is_llm_enabled and is_web_search_supported)
         self._llm_clipboard_text_checkbox.setEnabled(is_llm_enabled)
         self._llm_clipboard_image_checkbox.setEnabled(is_llm_enabled and is_image_supported)
         self._llm_instructions_edit.setEnabled(is_llm_enabled)

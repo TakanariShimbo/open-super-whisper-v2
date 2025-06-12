@@ -29,6 +29,8 @@ class LLMModel:
         Performance category (e.g., "standard", "advanced").
     supports_image : bool
         Whether the model supports image inputs, by default False.
+    supports_web_search : bool
+        Whether the model supports web search, by default False.
     is_default : bool
         Whether this is the default model, by default False.
     """
@@ -38,6 +40,7 @@ class LLMModel:
     description: str
     performance_tier: str
     supports_image: bool = False
+    supports_web_search: bool = False
     is_default: bool = False
 
     def __str__(self) -> str:

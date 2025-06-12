@@ -306,6 +306,22 @@ class InstructionDialogController(QObject):
         """
         return self._model.check_image_input_supported(model_id=model_id)
     
+    def check_web_search_supported(self, model_id: str) -> bool:
+        """
+        Check if an LLM model supports web search.
+
+        Parameters
+        ----------
+        model_id : str
+            ID of the LLM model to check
+
+        Returns
+        -------
+        bool
+            True if the model supports web search, False otherwise
+        """
+        return self._model.check_web_search_supported(model_id=model_id)
+    
     def check_mcp_servers_json_str(self, json_str: str) -> None:
         """
         Check if the MCP servers JSON string is valid.

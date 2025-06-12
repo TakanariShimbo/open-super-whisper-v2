@@ -30,6 +30,7 @@ class LLMModelManager:
             description="Advanced model with superior coding, instruction following, and 1M token context support",
             performance_tier="advanced",
             supports_image=True,
+            supports_web_search=True,
             is_default=True,
         ),
         LLMModel(
@@ -38,6 +39,7 @@ class LLMModelManager:
             description="Versatile omni model with balanced text and image processing capabilities",
             performance_tier="standard",
             supports_image=True,
+            supports_web_search=True,
         ),
         # o-Series reasoning models
         LLMModel(
@@ -46,6 +48,7 @@ class LLMModelManager:
             description="Advanced reasoning model designed for practical problem solving",
             performance_tier="advanced",
             supports_image=True,
+            supports_web_search=False,
         ),
         LLMModel(
             id="o1",
@@ -53,6 +56,7 @@ class LLMModelManager:
             description="Base reasoning model designed for practical problem solving",
             performance_tier="advanced",
             supports_image=True,
+            supports_web_search=False,
         ),
     ]
 
@@ -125,6 +129,24 @@ class LLMModelManager:
         """
         model = cls.find_model_by_id(model_id=model_id)
         return model.supports_image if model else False
+
+    @classmethod
+    def check_web_search_supported(cls, model_id: str) -> bool:
+        """
+        Check if a model supports web search.
+
+        Parameters
+        ----------
+        model_id : str
+            Model ID to check.
+
+        Returns
+        -------
+        bool
+            True if the model supports web search, False otherwise.
+        """
+        model = cls.find_model_by_id(model_id=model_id)
+        return model.supports_web_search if model else False
 
     @classmethod
     def to_api_format(cls) -> list[dict[str, str]]:

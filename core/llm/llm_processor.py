@@ -247,6 +247,12 @@ class LLMProcessor:
         else:
             input_data = text
 
+        # Check if model supports web search
+        if self._web_search_enabled and not LLMModelManager.check_web_search_supported(self._model_id):
+            raise ValueError(
+                f"Model {self._model_id} does not support web search."
+            )
+
         async with AsyncExitStack() as stack:
             # Create MCP servers
             mcp_servers_params = json.loads(self._mcp_servers_json_str)
@@ -322,6 +328,12 @@ class LLMProcessor:
             input_data = self._format_image_input(text, image_data)
         else:
             input_data = text
+
+        # Check if model supports web search
+        if self._web_search_enabled and not LLMModelManager.check_web_search_supported(self._model_id):
+            raise ValueError(
+                f"Model {self._model_id} does not support web search."
+            )
 
         async with AsyncExitStack() as stack:
             # Create MCP servers
