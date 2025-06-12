@@ -22,10 +22,13 @@ class STTLangModel:
         ISO 639-1 language code (e.g., "en", "ja").
     name : str
         Display name in English (e.g., "English", "Japanese").
+    is_default : bool
+        Whether this is the default language, by default False.
     """
 
     code: str
     name: str
+    is_default: bool = False
 
     def __str__(self) -> str:
         """

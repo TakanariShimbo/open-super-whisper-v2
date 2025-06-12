@@ -12,6 +12,7 @@ from pathlib import Path
 import openai
 
 from .stt_model_manager import STTModelManager
+from .stt_lang_model_manager import STTLangModelManager
 from .audio_chunker import AudioChunker
 
 
@@ -45,7 +46,9 @@ class STTProcessor:
 
     # Use model manager for available models
     AVAILABLE_MODELS = STTModelManager.to_api_format()
+    AVAILABLE_LANGUAGES = STTLangModelManager.to_api_format()
     DEFAULT_MODEL_ID = STTModelManager.get_default_model().id
+    DEFAULT_LANGUAGE_CODE = STTLangModelManager.get_default_language().code
     MAX_RETRIES = 2
     REQUEST_TIMEOUT = 60  # seconds
     CONTEXT_MAX_WORDS = 20  # Maximum words to include from previous context
@@ -61,6 +64,7 @@ class STTProcessor:
         """
         self._client = client
         self._model_id = self.DEFAULT_MODEL_ID
+        self._language_code = self.DEFAULT_LANGUAGE_CODE
         self._custom_vocabulary: str = ""
         self._system_instruction: str = ""
 
@@ -73,10 +77,10 @@ class STTProcessor:
         model_id : str
             Model ID to use for transcription.
 
-        Notes
-        -----
-        The model must be one of the supported models that can be obtained
-        from the STTModelManager.
+        Raises
+        ------
+        ValueError
+            If the model ID is not supported.
         """
         # Basic validation that model exists
         available_models = [model["id"] for model in self.AVAILABLE_MODELS]
@@ -85,6 +89,28 @@ class STTProcessor:
             raise ValueError(f"Unknown model ID: {model_id}. Available models include: {available_model_names}")
 
         self._model_id = model_id
+
+    def set_language(self, language_code: str) -> None:
+        """
+        Set the language to use.
+
+        Parameters
+        ----------
+        language_code : str
+            Language code to use for transcription.
+
+        Raises
+        ------
+        ValueError
+            If the language code is not supported.
+        """
+        # Basic validation that language exists
+        available_languages = [language["code"] for language in self.AVAILABLE_LANGUAGES]
+        if language_code not in available_languages:
+            available_language_names = ", ".join(available_languages[:5]) + "..."
+            raise ValueError(f"Unknown language code: {language_code}. Available languages include: {available_language_names}")
+
+        self._language_code = language_code
 
     def set_custom_vocabulary(self, vocabulary: str) -> None:
         """
@@ -137,27 +163,25 @@ class STTProcessor:
 
         # Add custom vocabulary
         if self._custom_vocabulary:
-            prompt_parts.append(f"Vocabulary: {self._custom_vocabulary}")
+            prompt_parts.append(f"<vocabulary>\n{self._custom_vocabulary}\n</vocabulary>")
 
         # Add system instruction
         if self._system_instruction:
-            prompt_parts.append(f"Instructions: {self._system_instruction}")
+            prompt_parts.append(f"<instructions>\n{self._system_instruction}\n</instructions>")
 
         # Add context if provided
         if context:
-            prompt_parts.append(f"Context: {context}")
+            prompt_parts.append(f"<previous_transcription>\n{context}\n</previous_transcription>")
 
         # Return None if no parts, otherwise join with space
         return None if not prompt_parts else " ".join(prompt_parts)
 
-    def _build_transcription_params(self, language: str | None = None, context: str | None = None) -> dict[str, str]:
+    def _build_transcription_params(self, context: str | None = None) -> dict[str, str]:
         """
         Build parameters for transcription API call.
 
         Parameters
         ----------
-        language : str | None, optional
-            Language code, by default None
         context : str | None, optional
             Context from previous chunk, by default None
 
@@ -169,12 +193,9 @@ class STTProcessor:
         # Build base parameters
         params = {
             "model": self._model_id,
+            "language": self._language_code,
             "response_format": "text",
         }
-
-        # Add language if specified
-        if language:
-            params["language"] = language
 
         # Add prompt if available (with context if provided)
         prompt = self._create_system_prompt(context=context)
@@ -275,7 +296,7 @@ class STTProcessor:
 
         return merged_text
 
-    def transcribe_file_with_chunks(self, audio_file_path: str, language: str | None = None) -> str:
+    def transcribe_file_with_chunks(self, audio_file_path: str) -> str:
         """
         Transcribe an audio file.
 
@@ -286,8 +307,6 @@ class STTProcessor:
         ----------
         audio_file_path : str
             Path to the audio file to transcribe.
-        language : str | None, optional
-            Language code (e.g., "en", "ja"), or None for auto-detection.
 
         Returns
         -------
@@ -331,10 +350,7 @@ class STTProcessor:
                     context = self._extract_context(transcription=transcriptions[-1])
 
                 # Process chunk
-                params = self._build_transcription_params(
-                    language=language,
-                    context=context,
-                )
+                params = self._build_transcription_params(context=context)
                 result = self._transcribe_with_api(
                     file_path=chunk_path,
                     params=params,

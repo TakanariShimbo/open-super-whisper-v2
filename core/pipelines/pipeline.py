@@ -86,6 +86,9 @@ class Pipeline:
         # Set whisper model
         self._stt_processor.set_model(model_id=selected_set.stt_model)
 
+        # Set language
+        self._stt_processor.set_language(language_code=selected_set.stt_language)
+
         # LLM settings
         self._set_llm_processing(enabled=selected_set.llm_enabled)
 
@@ -125,7 +128,6 @@ class Pipeline:
         self,
         stt_output: str,
         clipboard_text: str | None = None,
-        clipboard_image: bytes | None = None,
     ) -> str:
         """
         Prepare the prompt for LLM processing based on available inputs.
@@ -136,8 +138,6 @@ class Pipeline:
             The transcription output from STT.
         clipboard_text : str | None, optional
             The text to be added to the clipboard, by default None.
-        clipboard_image : bytes | None, optional
-            The image to be added to the clipboard, by default None.
 
         Returns
         -------
@@ -145,19 +145,11 @@ class Pipeline:
             The prepared prompt.
         """
         # Start with just the STT output
-        prompt = f"Transcription:\n{stt_output}"
+        prompt = f"<speech_to_text>\n{stt_output}\n</speech_to_text>"
 
         # Add clipboard text if provided
-        if clipboard_text and not clipboard_image:
-            prompt = f"Clipboard Content:\n{clipboard_text}\n\nTranscription:\n{stt_output}"
-
-        # Add image context if there's an image but no clipboard text
-        if not clipboard_text and clipboard_image:
-            prompt = f"Analyze this image along with the following.\n\nTranscription:\n{stt_output}"
-
-        # Add both clipboard text and image context if both are provided
-        if clipboard_text and clipboard_image:
-            prompt = f"Analyze this image along with the following.\n\nClipboard Content:\n{clipboard_text}\n\nTranscription:\n{stt_output}"
+        if clipboard_text:
+            prompt = f"<clipboard_text>\n{clipboard_text}\n</clipboard_text>\n\n{prompt}"
 
         return prompt
 
@@ -209,7 +201,6 @@ class Pipeline:
     def process(
         self,
         audio_file_path: str,
-        language: str | None = None,
         clipboard_text: str | None = None,
         clipboard_image: bytes | None = None,
         stream_callback: Callable[[str], None] | None = None,
@@ -221,8 +212,6 @@ class Pipeline:
         ----------
         audio_file_path : str
             The path to the audio file to process.
-        language : str | None, optional
-            The language of the audio file, by default None.
         clipboard_text : str | None, optional
             The text to be added to the clipboard, by default None.
         clipboard_image : bytes | None, optional
@@ -236,10 +225,7 @@ class Pipeline:
             The result of the pipeline processing.
         """
         # Perform STT
-        stt_output = self._stt_processor.transcribe_file_with_chunks(
-            audio_file_path=audio_file_path,
-            language=language,
-        )
+        stt_output = self._stt_processor.transcribe_file_with_chunks(audio_file_path=audio_file_path)
 
         # Create result object
         result = PipelineResult(stt_output=stt_output)
@@ -250,7 +236,6 @@ class Pipeline:
             prompt = self._prepare_prompt(
                 stt_output=stt_output,
                 clipboard_text=clipboard_text,
-                clipboard_image=clipboard_image,
             )
 
             # Process with LLM

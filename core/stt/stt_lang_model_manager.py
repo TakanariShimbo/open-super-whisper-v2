@@ -23,7 +23,7 @@ class STTLangModelManager:
     # Define supported languages
     # This list includes commonly supported languages by transcription services
     _SUPPORTED_LANGUAGES: ClassVar[list[STTLangModel]] = [
-        STTLangModel(code="", name="Auto-detect"),
+        STTLangModel(code="", name="Auto-detect", is_default=True),
         STTLangModel(code="af", name="Afrikaans"),
         STTLangModel(code="ar", name="Arabic"),
         STTLangModel(code="hy", name="Armenian"),
@@ -98,6 +98,26 @@ class STTLangModelManager:
             The first element is always the auto-detect option.
         """
         return cls._SUPPORTED_LANGUAGES.copy()
+
+    @classmethod
+    def get_default_language(cls) -> STTLangModel:
+        """
+        Get the default language.
+
+        Returns
+        -------
+        STTLangModel
+            The default language.
+
+        Raises
+        ------
+        ValueError
+            If no default language is found.
+        """
+        for language in cls._SUPPORTED_LANGUAGES:
+            if language.is_default:
+                return language
+        raise ValueError("No default language found")
 
     @classmethod
     def get_language_by_code(cls, code: str) -> STTLangModel:
