@@ -173,6 +173,8 @@ Transform your voice into intelligent, actionable text with this powerful PyQt6-
    git clone https://github.com/yourusername/open-super-whisper-v2.git
    cd open-super-whisper-v2
    ```
+   
+   Note: This requires Git to be installed on your system.
 
 2. Install dependencies:
 

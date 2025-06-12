@@ -173,6 +173,8 @@
    git clone https://github.com/yourusername/open-super-whisper-v2.git
    cd open-super-whisper-v2
    ```
+   
+   注：システムにGitがインストールされている必要があります。
 
 2. 依存関係をインストールします：
 
