@@ -31,6 +31,7 @@ class LLMModelManager:
             performance_tier="advanced",
             supports_image=True,
             supports_web_search=True,
+            supports_mcp_servers=True,
             is_default=True,
         ),
         LLMModel(
@@ -40,6 +41,7 @@ class LLMModelManager:
             performance_tier="standard",
             supports_image=True,
             supports_web_search=True,
+            supports_mcp_servers=True,
         ),
         # o-Series reasoning models
         LLMModel(
@@ -49,6 +51,7 @@ class LLMModelManager:
             performance_tier="advanced",
             supports_image=True,
             supports_web_search=False,
+            supports_mcp_servers=True,
         ),
         LLMModel(
             id="o1",
@@ -57,6 +60,7 @@ class LLMModelManager:
             performance_tier="advanced",
             supports_image=True,
             supports_web_search=False,
+            supports_mcp_servers=True,
         ),
     ]
 
@@ -147,6 +151,24 @@ class LLMModelManager:
         """
         model = cls.find_model_by_id(model_id=model_id)
         return model.supports_web_search if model else False
+    
+    @classmethod
+    def check_mcp_servers_supported(cls, model_id: str) -> bool:
+        """
+        Check if a model supports MCP servers.
+
+        Parameters
+        ----------
+        model_id : str
+            Model ID to check.
+
+        Returns
+        -------
+        bool
+            True if the model supports MCP servers, False otherwise.
+        """
+        model = cls.find_model_by_id(model_id=model_id)
+        return model.supports_mcp_servers if model else False
 
     @classmethod
     def to_api_format(cls) -> list[dict[str, str]]:

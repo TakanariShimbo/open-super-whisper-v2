@@ -305,7 +305,7 @@ class InstructionDialogController(QObject):
             True if the model supports image input, False otherwise
         """
         return self._model.check_image_input_supported(model_id=model_id)
-    
+
     def check_web_search_supported(self, model_id: str) -> bool:
         """
         Check if an LLM model supports web search.
@@ -321,8 +321,24 @@ class InstructionDialogController(QObject):
             True if the model supports web search, False otherwise
         """
         return self._model.check_web_search_supported(model_id=model_id)
-    
-    def check_mcp_servers_json_str(self, json_str: str) -> None:
+
+    def check_mcp_servers_supported(self, model_id: str) -> bool:
+        """
+        Check if an LLM model supports MCP servers.
+
+        Parameters
+        ----------
+        model_id : str
+            ID of the LLM model to check
+
+        Returns
+        -------
+        bool
+            True if the model supports MCP servers, False otherwise
+        """
+        return self._model.check_mcp_servers_supported(model_id=model_id)
+
+    def check_mcp_servers_json_str(self, json_str: str) -> str:
         """
         Check if the MCP servers JSON string is valid.
 
@@ -331,12 +347,12 @@ class InstructionDialogController(QObject):
         json_str : str
             MCP servers JSON string.
 
-        Raises
-        ------
-        ValueError
-            If the MCP servers JSON string is invalid.
+        Returns
+        -------
+        str
+            Error message if the MCP servers JSON string is invalid, empty string otherwise
         """
-        self._model.check_mcp_servers_json_str(json_str=json_str)
+        return self._model.check_mcp_servers_json_str(json_str=json_str)
 
     def start_listening(self) -> bool:
         """

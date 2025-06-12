@@ -31,6 +31,8 @@ class LLMModel:
         Whether the model supports image inputs, by default False.
     supports_web_search : bool
         Whether the model supports web search, by default False.
+    supports_mcp_servers : bool
+        Whether the model supports MCP servers, by default False.
     is_default : bool
         Whether this is the default model, by default False.
     """
@@ -41,6 +43,7 @@ class LLMModel:
     performance_tier: str
     supports_image: bool = False
     supports_web_search: bool = False
+    supports_mcp_servers: bool = False
     is_default: bool = False
 
     def __str__(self) -> str:

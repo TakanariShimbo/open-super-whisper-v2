@@ -145,14 +145,7 @@ class LLMProcessor:
         ----------
         json_str : str
             MCP servers JSON string.
-
-        Raises
-        ------
-        ValueError
-            If the MCP servers JSON string is invalid.
         """
-        self.check_mcp_servers_json_str(json_str)
-
         # Update MCP servers JSON string and clear agent if the value is different
         if self._mcp_servers_json_str != json_str:
             self._mcp_servers_json_str = json_str
@@ -239,7 +232,7 @@ class LLMProcessor:
         # Format input based on whether image is included
         if image_data is not None:
             # Check if model supports images
-            if not LLMModelManager.check_image_input_supported(self._model_id):
+            if not LLMModelManager.check_image_input_supported(model_id=self._model_id):
                 raise ValueError(
                     f"Model {self._model_id} does not support image inputs."
                 )
@@ -248,14 +241,20 @@ class LLMProcessor:
             input_data = text
 
         # Check if model supports web search
-        if self._web_search_enabled and not LLMModelManager.check_web_search_supported(self._model_id):
+        if self._web_search_enabled and not LLMModelManager.check_web_search_supported(model_id=self._model_id):
             raise ValueError(
                 f"Model {self._model_id} does not support web search."
             )
 
+        # Check if model supports MCP servers
+        mcp_servers_params = self.parse_mcp_servers_json(json_str=self._mcp_servers_json_str)
+        if len(mcp_servers_params) > 0 and not LLMModelManager.check_mcp_servers_supported(model_id=self._model_id):
+            raise ValueError(
+                f"Model {self._model_id} does not support MCP servers."
+            )
+
         async with AsyncExitStack() as stack:
             # Create MCP servers
-            mcp_servers_params = json.loads(self._mcp_servers_json_str)
             mcp_servers: list[MCPServerStdio] = []
             for name, params in mcp_servers_params.items():
                 server = await stack.enter_async_context(
@@ -321,7 +320,7 @@ class LLMProcessor:
         # Format input based on whether image is included
         if image_data is not None:
             # Check if model supports images
-            if not LLMModelManager.check_image_input_supported(self._model_id):
+            if not LLMModelManager.check_image_input_supported(model_id=self._model_id):
                 raise ValueError(
                     f"Model {self._model_id} does not support image inputs."
                 )
@@ -330,18 +329,25 @@ class LLMProcessor:
             input_data = text
 
         # Check if model supports web search
-        if self._web_search_enabled and not LLMModelManager.check_web_search_supported(self._model_id):
+        if self._web_search_enabled and not LLMModelManager.check_web_search_supported(model_id=self._model_id):
             raise ValueError(
                 f"Model {self._model_id} does not support web search."
             )
 
+        # Check if model supports MCP servers
+        mcp_servers_params = self.parse_mcp_servers_json(json_str=self._mcp_servers_json_str)
+        if len(mcp_servers_params) > 0 and not LLMModelManager.check_mcp_servers_supported(model_id=self._model_id):
+            raise ValueError(
+                f"Model {self._model_id} does not support MCP servers."
+            )
+
         async with AsyncExitStack() as stack:
             # Create MCP servers
-            params_dict = json.loads(self._mcp_servers_json_str)
             mcp_servers: list[MCPServerStdio] = []
-            for _, params in params_dict.items():
+            for name, params in mcp_servers_params.items():
                 server = await stack.enter_async_context(
                     MCPServerStdio(
+                        name=name,
                         params=params,
                         client_session_timeout_seconds=30,
                     )
@@ -385,14 +391,19 @@ class LLMProcessor:
         pass
 
     @staticmethod
-    def check_mcp_servers_json_str(json_str: str) -> None:
+    def parse_mcp_servers_json(json_str: str) -> dict[str, Any]:
         """
-        Check if the MCP servers JSON string is valid.
+        Parse the MCP servers JSON string into a dictionary of parameters.
 
         Parameters
         ----------
         json_str : str
             MCP servers JSON string.
+
+        Returns
+        -------
+        dict[str, Any]
+            MCP servers parameters.
 
         Raises
         ------
@@ -419,3 +430,5 @@ class LLMProcessor:
                     raise AssertionError(f"MCP server 'args' must be set.")
         except (json.JSONDecodeError, AssertionError) as e:
             raise ValueError(str(e))
+        
+        return mcp_servers_params

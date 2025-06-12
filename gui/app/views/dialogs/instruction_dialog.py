@@ -962,18 +962,21 @@ class InstructionDialog(QDialog):
         if selected_model_id:
             is_image_supported = self._controller.check_image_input_supported(model_id=selected_model_id)
             is_web_search_supported = self._controller.check_web_search_supported(model_id=selected_model_id)
+            is_mcp_servers_supported = self._controller.check_mcp_servers_supported(model_id=selected_model_id)
 
         if not is_image_supported:
             self._llm_clipboard_image_checkbox.setChecked(False)
         if not is_web_search_supported:
             self._llm_web_search_checkbox.setChecked(False)
+        if not is_mcp_servers_supported:
+            self._llm_mcp_servers_edit.setPlainText("")
 
         self._llm_model_combo.setEnabled(is_llm_enabled)
         self._llm_web_search_checkbox.setEnabled(is_llm_enabled and is_web_search_supported)
         self._llm_clipboard_text_checkbox.setEnabled(is_llm_enabled)
         self._llm_clipboard_image_checkbox.setEnabled(is_llm_enabled and is_image_supported)
         self._llm_instructions_edit.setEnabled(is_llm_enabled)
-        self._llm_mcp_servers_edit.setEnabled(is_llm_enabled)
+        self._llm_mcp_servers_edit.setEnabled(is_llm_enabled and is_mcp_servers_supported)
 
     def _apply_set_to_editor_widget(self, instruction_set: InstructionSet) -> None:
         """
@@ -1159,13 +1162,12 @@ class InstructionDialog(QDialog):
 
         # Check if MCP servers are valid JSON
         mcp_servers_json_str = self._llm_mcp_servers_edit.toPlainText()
-        try:
-            self._controller.check_mcp_servers_json_str(json_str=mcp_servers_json_str)
-        except ValueError as e:
+        error_message = self._controller.check_mcp_servers_json_str(json_str=mcp_servers_json_str)
+        if error_message:
             QMessageBox.warning(
                 self,
                 self._label_manager.error_title,
-                self._label_manager.invalid_mcp_servers_json.format(error=str(e)),
+                self._label_manager.invalid_mcp_servers_json.format(error=error_message),
             )
             return
 

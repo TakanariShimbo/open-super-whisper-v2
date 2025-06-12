@@ -327,8 +327,24 @@ class InstructionDialogModel(QObject):
             True if the model supports web search, False otherwise
         """
         return LLMModelManager.check_web_search_supported(model_id=model_id)
+    
+    def check_mcp_servers_supported(self, model_id: str) -> bool:
+        """
+        Check if an LLM model supports MCP servers.
 
-    def check_mcp_servers_json_str(self, json_str: str) -> None:
+        Parameters
+        ----------
+        model_id : str
+            ID of the LLM model to check
+
+        Returns
+        -------
+        bool
+            True if the model supports MCP servers, False otherwise
+        """
+        return LLMModelManager.check_mcp_servers_supported(model_id=model_id)
+
+    def check_mcp_servers_json_str(self, json_str: str) -> str:
         """
         Check if the MCP servers JSON string is valid.
 
@@ -337,9 +353,13 @@ class InstructionDialogModel(QObject):
         json_str : str
             MCP servers JSON string.
 
-        Raises
-        ------
-        ValueError
-            If the MCP servers JSON string is invalid.
+        Returns
+        -------
+        str
+            Error message if the MCP servers JSON string is invalid, empty string otherwise
         """
-        LLMProcessor.check_mcp_servers_json_str(json_str=json_str)
+        try:
+            LLMProcessor.parse_mcp_servers_json(json_str=json_str)
+            return ""
+        except ValueError as e:
+            return str(e)
