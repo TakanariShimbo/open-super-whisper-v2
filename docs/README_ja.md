@@ -2,9 +2,9 @@
 
 # Open Super Whisper V2
 
-**究極の音声文字起こし＆AI分析ツール**
+**究極の音声文字起こし＆AI 分析ツール**
 
-音声をインテリジェントで実行可能なテキストに変換する、PyQt6ベースの強力なデスクトップアプリケーションです。OpenAIの最先端Whisper音声認識と高度な大規模言語モデルをシームレスに組み合わせて、音声コンテンツを単に文字起こしするだけでなく、分析、要約、拡張します。
+音声をインテリジェントで実行可能なテキストに変換する、PyQt6 ベースの強力なデスクトップアプリケーションです。OpenAI の最先端 Whisper 音声認識と高度な大規模言語モデルをシームレスに組み合わせて、音声コンテンツを単に文字起こしするだけでなく、分析、要約、拡張します。
 
 ## 機能
 
@@ -13,27 +13,27 @@
 - **ワンクリック録音** - 即座に音声をキャプチャ
 - **グローバルホットキー対応** - システムのどこからでも録音を開始/停止
 - **多言語対応** - 自動言語検出機能付き
-- **高品質な文字起こし** - OpenAI Whisper APIを搭載
+- **高品質な文字起こし** - OpenAI Whisper API を搭載
 - **大容量ファイル処理** - インテリジェントな音声チャンキング機能
 
-### 🧠 **AI駆動のコンテンツ処理**
+### 🧠 **AI 駆動のコンテンツ処理**
 
-- **LLM統合** - GPT-4、Claudeなどのモデルで文字起こしを処理
+- **LLM 統合** - GPT-4、Claude などのモデルで文字起こしを処理
 - **インテリジェント分析** - コンテンツの要約、翻訳、変換
-- **カスタムAI指示** - 特定のニーズに合わせてAIレスポンスを調整
-- **ストリーミングレスポンス** - AI分析をリアルタイムで表示
-- **MCPサーバーサポート** - Model Context Protocolによる外部ツールとデータソースへの接続
+- **カスタム AI 指示** - 特定のニーズに合わせて AI レスポンスを調整
+- **ストリーミングレスポンス** - AI 分析をリアルタイムで表示
+- **MCP サーバーサポート** - Model Context Protocol による外部ツールとデータソースへの接続
 
 ### ⚡ **高度なワークフロー管理**
 
 - **指示セット** - 異なる処理プロファイルを作成して切り替え
 - **カスタム語彙** - 専門用語や特殊なコンテンツの精度を向上
-- **クリップボード統合** - AI処理にクリップボードの内容を自動的に含める
+- **クリップボード統合** - AI 処理にクリップボードの内容を自動的に含める
 - **プロファイルベースのホットキー** - 異なるワークフローにキーボードショートカットを割り当て
 
 ### 💼 **プロフェッショナルなユーザー体験**
 
-- **クリーンでモダンなインターフェース** - PyQt6で構築
+- **クリーンでモダンなインターフェース** - PyQt6 で構築
 - **システムトレイ統合** - アプリをバックグラウンドで実行し続ける
 - **視覚的なステータスインジケーター** - 何が起きているかを常に把握
 - **音声通知** - 録音状態の音声フィードバック
@@ -41,17 +41,16 @@
 
 ### 🔧 **柔軟でカスタマイズ可能**
 
-- **複数のAIモデル** - タスクに最適なモデルを選択
+- **複数の AI モデル** - タスクに最適なモデルを選択
 - **設定可能な設定** - アプリケーションのあらゆる側面をカスタマイズ
-- **Markdownサポート** - LaTeX数式をサポートしたリッチテキストレンダリング
-- **クロスプラットフォーム対応** - Windows、macOS、Linuxで動作
+- **Markdown サポート** - LaTeX 数式をサポートしたリッチテキストレンダリング
+- **クロスプラットフォーム対応** - Windows、macOS、Linux で動作
 
 ## プロジェクト構造
 
 ```
 .
 ├── run_open_super_whisper.py                      # アプリケーションエントリーポイント
-├── README.md                                      # プロジェクト説明
 ├── pyproject.toml                                 # プロジェクト設定とuv用の依存関係
 ├── uv.lock                                        # プロジェクト設定とuv用の依存関係
 ├── assets/                                        # アセット（アイコン、音声ファイルなど）
@@ -67,6 +66,11 @@
 │   ├── lib/                                       # ライブラリファイル
 │   ├── include/                                   # インクルードファイル
 │   └── doc/                                       # ドキュメント
+├── docs/                                          # ドキュメントとサンプルファイル
+│   ├── README.md                                  # プロジェクトドキュメント（英語版）
+│   ├── README_ja.md                               # プロジェクトドキュメント（日本語版）
+│   ├── settings_sample_en.json                    # サンプル設定ファイル（英語版）
+│   └── settings_sample_ja.json                    # サンプル設定ファイル（日本語版）
 ├── core/                                          # コア機能（GUI非依存、完全実装済み）
 │   ├── __init__.py
 │   ├── api/                                       # APIクライアントファクトリーとユーティリティ
@@ -173,24 +177,24 @@
    git clone https://github.com/yourusername/open-super-whisper-v2.git
    cd open-super-whisper-v2
    ```
-   
-   注：システムにGitがインストールされている必要があります。
+
+   注：システムに Git がインストールされている必要があります。
 
 2. 依存関係をインストールします：
 
    ```bash
    uv sync
    ```
-   
-   注：システムにUVがインストールされている必要があります。
 
-3. FFmpegをセットアップします：
+   注：システムに UV がインストールされている必要があります。
 
-   このアプリケーションにはFFmpegが必要です。
+3. FFmpeg をセットアップします：
 
-   **Windows版：**
+   このアプリケーションには FFmpeg が必要です。
 
-   プロジェクトルートに`ffmpeg`ディレクトリを作成し、その中に`bin`サブディレクトリを作成して、FFmpeg実行ファイルを配置する必要があります。
+   **Windows 版：**
+
+   プロジェクトルートに`ffmpeg`ディレクトリを作成し、その中に`bin`サブディレクトリを作成して、FFmpeg 実行ファイルを配置する必要があります。
 
    ```bash
    # 1. https://ffmpeg.org/download.html からFFmpegをダウンロード
@@ -202,7 +206,47 @@
    #    例：展開した"ffmpeg-x.x.x-win64-static/" → プロジェクトの"ffmpeg/"
    ```
 
-   アプリケーションは起動時に`ffmpeg/bin`ディレクトリを自動的にPATHに追加します。
+   アプリケーションは起動時に`ffmpeg/bin`ディレクトリを自動的に PATH に追加します。
+
+## 設定
+
+### サンプル設定
+
+`docs/`ディレクトリにサンプル設定ファイルが提供されています：
+
+- `settings_sample_en.json` - 事前設定された指示セット付きの英語版
+- `settings_sample_ja.json` - 同じ機能の日本語版
+
+サンプルファイルを使用するには：
+
+1. ユーザーホームディレクトリに設定ディレクトリを作成：
+
+   ```bash
+   mkdir ~/.open_super_whisper
+   ```
+
+2. 使用したいサンプルファイルを設定ディレクトリにコピー：
+
+   ```bash
+   # 英語設定の場合
+   cp docs/settings_sample_en.json ~/.open_super_whisper/settings.json
+
+   # 日本語設定の場合
+   cp docs/settings_sample_ja.json ~/.open_super_whisper/settings.json
+   ```
+
+**注意:** アプリケーションは設定ファイルが`~/.open_super_whisper/settings.json`に配置されることを期待しています（`~`はユーザーホームディレクトリを表します）。
+
+### 事前設定された指示セット
+
+両方のサンプルファイルには以下の指示セットが含まれています：
+
+- **シンプル文字起こし** (Ctrl+Shift+1) - 基本的な音声テキスト変換
+- **書き言葉に変換** (Ctrl+Shift+2) - 音声を正式な書面に変換
+- **検索キーワード生成** (Ctrl+Shift+3) - 音声から検索キーワードを抽出
+- **クリップボードテキスト Q&A** (Ctrl+Shift+4) - クリップボードテキストに関する質問応答（Web 検索対応）
+- **クリップボード画像 Q&A** (Ctrl+Shift+5) - クリップボード画像に関する質問応答（Web 検索対応）
+- **Web 自動操作エージェント** (Ctrl+Shift+6) - Playwright を使用した自動 Web 操作
 
 ## 実行方法
 
@@ -231,16 +275,16 @@ python -m PyInstaller --onefile --icon assets/icon.ico --name "OpenSuperWhisper"
 # python -m PyInstaller --onefile --icon assets/icon.png --name "OpenSuperWhisper" --add-data "assets:assets" run_open_super_whisper.py
 ```
 
-Windowsコマンドは以下を実行します：
+Windows コマンドは以下を実行します：
 
 - `--onefile`：単一の実行可能ファイルを作成
 - `--icon assets/icon.ico`：アプリケーションアイコンを設定
 - `--name "OpenSuperWhisper"`：出力ファイル名を指定
-- `--add-data "assets;assets"`：実行ファイルにassetsディレクトリ全体を含める
-- `--add-data "ffmpeg;ffmpeg"`：実行ファイルにffmpegディレクトリ全体を含める
+- `--add-data "assets;assets"`：実行ファイルに assets ディレクトリ全体を含める
+- `--add-data "ffmpeg;ffmpeg"`：実行ファイルに ffmpeg ディレクトリ全体を含める
 
-ビルドが完了すると、Windowsでは`dist`フォルダに`OpenSuperWhisper.exe`が、macOSでは`dist`フォルダに`OpenSuperWhisper.app`が、Linuxでは`dist`フォルダに`OpenSuperWhisper`が作成されます。
+ビルドが完了すると、Windows では`dist`フォルダに`OpenSuperWhisper.exe`が、macOS では`dist`フォルダに`OpenSuperWhisper.app`が、Linux では`dist`フォルダに`OpenSuperWhisper`が作成されます。
 
 ## ライセンス
 
-このプロジェクトはMITライセンスの下でライセンスされています。詳細についてはLICENSEファイルを参照してください。
+このプロジェクトは MIT ライセンスの下でライセンスされています。詳細については LICENSE ファイルを参照してください。

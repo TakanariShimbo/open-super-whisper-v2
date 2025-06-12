@@ -51,7 +51,6 @@ Transform your voice into intelligent, actionable text with this powerful PyQt6-
 ```
 .
 ├── run_open_super_whisper.py                      # Application entry point
-├── README.md                                      # Project description
 ├── pyproject.toml                                 # Project configuration and dependencies for uv
 ├── uv.lock                                        # Project configuration and dependencies for uv
 ├── assets/                                        # Assets (icons, audio files, etc.)
@@ -67,6 +66,11 @@ Transform your voice into intelligent, actionable text with this powerful PyQt6-
 │   ├── lib/                                       # Library files
 │   ├── include/                                   # Include files
 │   └── doc/                                       # Documentation
+├── docs/                                          # Documentation and sample files
+│   ├── README.md                                  # Project documentation (English)
+│   ├── README_ja.md                               # Project documentation (Japanese)
+│   ├── settings_sample_en.json                    # Sample settings file (English)
+│   └── settings_sample_ja.json                    # Sample settings file (Japanese)
 ├── core/                                          # Core functionality (GUI-independent, fully implemented)
 │   ├── __init__.py
 │   ├── api/                                       # API client factory and utilities
@@ -173,7 +177,7 @@ Transform your voice into intelligent, actionable text with this powerful PyQt6-
    git clone https://github.com/yourusername/open-super-whisper-v2.git
    cd open-super-whisper-v2
    ```
-   
+
    Note: This requires Git to be installed on your system.
 
 2. Install dependencies:
@@ -181,7 +185,7 @@ Transform your voice into intelligent, actionable text with this powerful PyQt6-
    ```bash
    uv sync
    ```
-   
+
    Note: This requires UV to be installed on your system.
 
 3. Set up FFmpeg:
@@ -203,6 +207,46 @@ Transform your voice into intelligent, actionable text with this powerful PyQt6-
    ```
 
    The application will automatically add the `ffmpeg/bin` directory to the PATH when started.
+
+## Configuration
+
+### Sample Settings
+
+Sample configuration files are provided in the `docs/` directory:
+
+- `settings_sample_en.json` - English version with pre-configured instruction sets
+- `settings_sample_ja.json` - Japanese version with the same functionality
+
+To use a sample file:
+
+1. Create the settings directory in your user home directory:
+
+   ```bash
+   mkdir ~/.open_super_whisper
+   ```
+
+2. Copy the desired sample file to the settings directory:
+
+   ```bash
+   # For English settings
+   cp docs/settings_sample_en.json ~/.open_super_whisper/settings.json
+
+   # For Japanese settings
+   cp docs/settings_sample_ja.json ~/.open_super_whisper/settings.json
+   ```
+
+**Note:** The application expects the settings file to be located at `~/.open_super_whisper/settings.json` (where `~` represents your user home directory).
+
+### Pre-configured Instruction Sets
+
+Both sample files include the following instruction sets:
+
+- **Simple Transcription** (Ctrl+Shift+1) - Basic speech-to-text
+- **Convert to Written Form** (Ctrl+Shift+2) - Convert speech to formal written text
+- **Generate Search Keywords** (Ctrl+Shift+3) - Extract search keywords from speech
+- **Clipboard Text Q&A** (Ctrl+Shift+4) - Answer questions about clipboard text (with web search)
+- **Clipboard Image Q&A** (Ctrl+Shift+5) - Answer questions about clipboard images (with web search)
+- **Web Automation Agent** (Ctrl+Shift+6) - Automated web interactions using Playwright
 
 ## How to Run
 
