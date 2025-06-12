@@ -20,6 +20,7 @@ Transform your voice into intelligent, actionable text with this powerful PyQt6-
 - **Intelligent analysis** - Summarize, translate, or transform your content
 - **Custom AI instructions** - Tailor AI responses to your specific needs
 - **Streaming responses** - See AI analysis in real-time as it's generated
+- **MCP server support** - Connect to external tools and data sources via Model Context Protocol
 
 ### ⚡ **Advanced Workflow Management**
 
