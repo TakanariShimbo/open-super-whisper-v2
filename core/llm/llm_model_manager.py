@@ -41,6 +41,13 @@ class LLMModelManager:
         ),
         # o-Series reasoning models
         LLMModel(
+            id="o3",
+            name="O3",
+            description="Advanced reasoning model designed for practical problem solving",
+            performance_tier="advanced",
+            supports_image=True,
+        ),
+        LLMModel(
             id="o1",
             name="O1",
             description="Base reasoning model designed for practical problem solving",
