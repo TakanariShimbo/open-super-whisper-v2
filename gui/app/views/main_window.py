@@ -742,6 +742,9 @@ class MainWindow(QMainWindow):
         # Play completion sound
         self._audio_manager.play_complete_processing()
 
+        # Show the window
+        self._show_window()
+
     @pyqtSlot(str)
     def _handle_streaming_llm_chunk(self, chunk: str) -> None:
         """
@@ -932,20 +935,32 @@ class MainWindow(QMainWindow):
     #
     # Open/Close Events
     #
-    @pyqtSlot()
-    def _on_click_show_window(self) -> None:
+    def _show_window(self) -> None:
         """
         Show and activate the application window.
         """
         self.showNormal()
         self.activateWindow()
 
+    def _hide_window(self) -> None:
+        """
+        Hide the application window.
+        """
+        self.hide()
+
+    @pyqtSlot()
+    def _on_click_show_window(self) -> None:
+        """
+        Show and activate the application window.
+        """
+        self._show_window()
+
     @pyqtSlot()
     def _on_click_hide_window(self) -> None:
         """
         Hide the application window.
         """
-        self.hide()
+        self._hide_window()
 
     @pyqtSlot()
     def _on_click_quit_application(self) -> None:
@@ -999,7 +1014,7 @@ class MainWindow(QMainWindow):
         # If not actually closing (just minimizing to tray)
         if not self._is_closing:
             event.ignore()
-            self._on_click_hide_window()
+            self._hide_window()
 
             # Show a notification message
             self._system_tray.showMessage(
