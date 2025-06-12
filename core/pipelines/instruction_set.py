@@ -59,7 +59,7 @@ class InstructionSet:
     # STT settings
     stt_vocabulary: str = ""
     stt_instructions: str = ""
-    stt_language: str | None = None  # Language code (e.g., "en", "ja"), None for auto-detection
+    stt_language: str = STTProcessor.DEFAULT_LANGUAGE_CODE
     stt_model: str = STTProcessor.DEFAULT_MODEL_ID
 
     # LLM settings

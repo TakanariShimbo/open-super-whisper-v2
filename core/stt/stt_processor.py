@@ -193,9 +193,12 @@ class STTProcessor:
         # Build base parameters
         params = {
             "model": self._model_id,
-            "language": self._language_code,
             "response_format": "text",
         }
+
+        # Add language if specified
+        if self._language_code:
+            params["language"] = self._language_code
 
         # Add prompt if available (with context if provided)
         prompt = self._create_system_prompt(context=context)

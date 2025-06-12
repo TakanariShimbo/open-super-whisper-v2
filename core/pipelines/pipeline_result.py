@@ -28,17 +28,3 @@ class PipelineResult:
     stt_output: str
     llm_output: str | None = None
     is_llm_processed: bool = False
-
-    def get_combined_output(self) -> str:
-        """
-        Get a formatted output combining STT output and LLM output.
-
-        Returns
-        -------
-        str
-            Formatted output string.
-        """
-        if not self.is_llm_processed or not self.llm_output:
-            return self.stt_output
-
-        return f"STT Output:\n{self.stt_output}\n\nLLM Output:\n{self.llm_output}"
