@@ -167,22 +167,22 @@
 
 ## インストール
 
-1. UVがインストールされていることを確認してください。
-
-2. リポジトリをクローンします：
+1. リポジトリをクローンします：
 
    ```bash
    git clone https://github.com/yourusername/open-super-whisper-v2.git
    cd open-super-whisper-v2
    ```
 
-3. 依存関係をインストールします：
+2. 依存関係をインストールします：
 
    ```bash
    uv sync
    ```
+   
+   注：システムにUVがインストールされている必要があります。
 
-4. FFmpegをセットアップします：
+3. FFmpegをセットアップします：
 
    このアプリケーションにはFFmpegが必要です。
 

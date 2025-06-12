@@ -167,22 +167,22 @@ Transform your voice into intelligent, actionable text with this powerful PyQt6-
 
 ## Installation
 
-1. Ensure you have UV installed.
-
-2. Clone the repository:
+1. Clone the repository:
 
    ```bash
    git clone https://github.com/yourusername/open-super-whisper-v2.git
    cd open-super-whisper-v2
    ```
 
-3. Install dependencies:
+2. Install dependencies:
 
    ```bash
    uv sync
    ```
+   
+   Note: This requires UV to be installed on your system.
 
-4. Set up FFmpeg:
+3. Set up FFmpeg:
 
    The application requires FFmpeg.
 
