@@ -1,6 +1,7 @@
-# Open Super Whisper V2 User Manual
+[English](README.md) | [日本語](README_ja.md) | **README**
+[English](MANUAL.md) | [日本語](MANUAL_ja.md) | **User Manual**
 
-[English](README.md) | [日本語](README_ja.md) | **User Manual**
+# Open Super Whisper V2 - User Manual
 
 Open Super Whisper V2 is an innovative desktop application that transforms your voice into action through AI-powered agents. This comprehensive guide walks you through setup, configuration, and effective usage of this powerful voice-to-action tool.
 

@@ -1,6 +1,7 @@
-# Open Super Whisper V2 使い方ガイド
+[English](README.md) | [日本語](README_ja.md) | **README**
+[English](MANUAL.md) | [日本語](MANUAL_ja.md) | **説明書**
 
-[English](README.md) | [日本語](README_ja.md) | **使い方ガイド**
+# Open Super Whisper V2 - 説明書
 
 Open Super Whisper V2 は、音声入力から AI エージェントによる自動処理まで、すべてをシンプルな操作で実現する革新的なデスクトップアプリケーションです。このガイドでは、初回セットアップから実際の使用方法まで、ステップバイステップで詳しく説明します。
 

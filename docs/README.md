@@ -1,6 +1,7 @@
 [English](README.md) | [日本語](README_ja.md) | **README**
+[English](MANUAL.md) | [日本語](MANUAL_ja.md) | **User Manual**
 
-# Open Super Whisper V2
+# Open Super Whisper V2 - README
 
 <div align="center">
   <img src="../assets/icon.png" alt="Open Super Whisper V2 Icon" width="128" height="128">
