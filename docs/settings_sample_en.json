@@ -92,7 +92,7 @@
       "hotkey": "ctrl+shift+6"
     }
   ],
-  "selected_instruction_set": "Simple Transcription",
+  "selected_instruction_set": "Transcription Agent",
   "audio_notifications_enabled": true,
   "audio_notifications_volume": 0.5,
   "indicator_visible": true,
