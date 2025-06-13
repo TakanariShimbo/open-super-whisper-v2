@@ -227,10 +227,10 @@ Open Super Whisper V2 は以下の 4 つのステップで動作します：
 
    ```bash
    # 英語設定の場合
-   cp docs/settings_sample_en.json ~/.open_super_whisper/settings.json
+   cp docs/settings_sample/settings_en.json ~/.open_super_whisper/settings.json
 
    # 日本語設定の場合
-   cp docs/settings_sample_ja.json ~/.open_super_whisper/settings.json
+   cp docs/settings_sample/settings_ja.json ~/.open_super_whisper/settings.json
    ```
 
 **注意:** アプリケーションは設定ファイルが`~/.open_super_whisper/settings.json`に配置されることを期待しています（`~`はユーザーホームディレクトリを表します）。

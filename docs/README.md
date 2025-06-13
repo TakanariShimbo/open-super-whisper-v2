@@ -227,10 +227,10 @@ To use a sample file:
 
    ```bash
    # For English settings
-   cp docs/settings_sample_en.json ~/.open_super_whisper/settings.json
+   cp docs/settings_sample/settings_en.json ~/.open_super_whisper/settings.json
 
    # For Japanese settings
-   cp docs/settings_sample_ja.json ~/.open_super_whisper/settings.json
+   cp docs/settings_sample/settings_ja.json ~/.open_super_whisper/settings.json
    ```
 
 **Note:** The application expects the settings file to be located at `~/.open_super_whisper/settings.json` (where `~` represents your user home directory).
