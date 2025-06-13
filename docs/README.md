@@ -2,49 +2,47 @@
 
 # Open Super Whisper V2
 
-**The Ultimate Audio Transcription & AI Analysis Tool**
+**Conversational AI Agent - Transform Your Voice into Action**
 
-Transform your voice into intelligent, actionable text with this powerful PyQt6-based desktop application. Seamlessly combine OpenAI's cutting-edge Whisper speech recognition with advanced Large Language Models to not just transcribe, but analyze, summarize, and enhance your audio content.
+Just speak, and AI agents understand your intent and autonomously execute tasks. This powerful PyQt6-based desktop application seamlessly integrates OpenAI's cutting-edge Whisper speech recognition with advanced Large Language Models. From voice commands to document creation, information search, and web automation - revolutionize your daily workflow efficiency.
 
 ## Features
 
-### 🎯 **Smart Recording & Transcription**
+### Processing Flow
 
-- **One-click recording** with instant audio capture
-- **Global hotkey support** - Start/stop recording from anywhere on your system
-- **Multi-language support** with automatic language detection
-- **High-quality transcription** powered by OpenAI's Whisper API
-- **Large file handling** with intelligent audio chunking
+Open Super Whisper V2 operates through the following 4 steps:
 
-### 🧠 **AI-Powered Content Processing**
+```
+🎙️ Voice Input → 📝 Transcription → 🤖 Agent Processing → 📋 Result Output
+```
 
-- **LLM integration** - Process transcriptions with GPT-4, Claude, and other models
-- **Intelligent analysis** - Summarize, translate, or transform your content
-- **Custom AI instructions** - Tailor AI responses to your specific needs
-- **Streaming responses** - See AI analysis in real-time as it's generated
-- **MCP server support** - Connect to external tools and data sources via Model Context Protocol
+### 🎙️ **Voice Input**
 
-### ⚡ **Advanced Workflow Management**
+- **Global hotkeys** - Launch instantly from any application
+- **One-click recording** - Simple recording start/stop with UI buttons
+- **Background operation** - Always available via system tray
+- **Audio feedback** - Sound notifications for recording status
 
-- **Instruction Sets** - Create and switch between different processing profiles
-- **Custom vocabularies** - Improve accuracy for technical terms and specialized content
-- **Clipboard integration** - Automatically include clipboard content in AI processing
-- **Profile-based hotkeys** - Assign keyboard shortcuts to different workflows
+### 📝 **Transcription**
 
-### 💼 **Professional User Experience**
+- **OpenAI Whisper powered** - Industry-leading speech recognition accuracy
+- **Multi-language support** - Auto-detection and 125+ language support
+- **Custom vocabulary** - Enhanced accuracy for technical terms and proper nouns
+- **Large file support** - Auto-split processing for files over 20MB
 
-- **Clean, modern interface** built with PyQt6
-- **System tray integration** - Keep the app running in the background
-- **Visual status indicators** - Always know what's happening
-- **Sound notifications** - Audio feedback for recording states
-- **Auto-clipboard** - Automatically copy results when processing completes
+### 🤖 **Agent Processing**
 
-### 🔧 **Flexible & Customizable**
+- **Instruction sets** - Pre-defined AI agents specialized for different purposes
+- **Multimodal support** - Advanced processing combining voice, text, and images
+- **External tool integration** - Extensibility via MCP (Model Context Protocol)
+- **Multi-context** - Processing that combines clipboard text, images, and web search
 
-- **Multiple AI models** - Choose the best model for your task
-- **Configurable settings** - Customize every aspect of the application
-- **Markdown support** - Rich text rendering with LaTeX math support
-- **Cross-platform compatibility** - Works on Windows, macOS, and Linux
+### 📋 **Result Output**
+
+- **Markdown rendering** - Rich text display including LaTeX math formulas
+- **Auto-clipboard** - Automatic copying of results to clipboard upon completion
+- **Profile switching** - Instantly switch between different agents with hotkeys
+- **Immediate use** - Results ready for instant use in other applications
 
 ## Project Structure
 
@@ -237,16 +235,16 @@ To use a sample file:
 
 **Note:** The application expects the settings file to be located at `~/.open_super_whisper/settings.json` (where `~` represents your user home directory).
 
-### Pre-configured Instruction Sets
+### Pre-configured AI Agents
 
-Both sample files include the following instruction sets:
+Both sample files include the following AI agent profiles:
 
-- **Simple Transcription** (Ctrl+Shift+1) - Basic speech-to-text
-- **Convert to Written Form** (Ctrl+Shift+2) - Convert speech to formal written text
-- **Generate Search Keywords** (Ctrl+Shift+3) - Extract search keywords from speech
-- **Clipboard Text Q&A** (Ctrl+Shift+4) - Answer questions about clipboard text (with web search)
-- **Clipboard Image Q&A** (Ctrl+Shift+5) - Answer questions about clipboard images (with web search)
-- **Web Automation Agent** (Ctrl+Shift+6) - Automated web interactions using Playwright
+- **Transcription Agent** (Ctrl+Shift+1) - Basic speech-to-text conversion
+- **Document Creation Agent** (Ctrl+Shift+2) - Automatically convert speech to formal written documents
+- **Search Agent** (Ctrl+Shift+3) - Auto-generate optimal search keywords from speech
+- **Text Q&A Agent** (Ctrl+Shift+4) - Analyze clipboard text and answer questions (with web search)
+- **Image Q&A Agent** (Ctrl+Shift+5) - Analyze clipboard images and answer questions (with web search)
+- **Web Automation Agent** (Ctrl+Shift+6) - Autonomous web interactions using Playwright
 
 ## How to Run
 
