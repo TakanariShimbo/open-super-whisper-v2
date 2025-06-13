@@ -1,4 +1,4 @@
-[English](README.md) | [日本語](README_ja.md) | **README**
+[English](README.md) | [日本語](README_ja.md) | **README**  
 [English](MANUAL.md) | [日本語](MANUAL_ja.md) | **User Manual**
 
 # Open Super Whisper V2 - README
