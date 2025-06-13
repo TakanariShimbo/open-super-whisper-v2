@@ -19,7 +19,7 @@ Open Super Whisper V2 is an innovative desktop application that transforms your 
 
 When you first launch the application, you'll see the OpenAI API key setup screen:
 
-![Initial Startup Screen](ui/wakeup_en.png)
+![Initial Startup Screen](manual/wakeup_en.png)
 
 This is the "wakeup screen" that automatically appears when no valid OpenAI API key is configured.
 
@@ -35,7 +35,7 @@ This is the "wakeup screen" that automatically appears when no valid OpenAI API 
 
 ## Main Window
 
-![Main Window](ui/main_en.png)
+![Main Window](manual/main_en.png)
 
 ### Screen Layout
 
@@ -89,7 +89,7 @@ This is the "wakeup screen" that automatically appears when no valid OpenAI API 
 
 ## API Key Screen
 
-![API Key Screen](ui/api_key_en.png)
+![API Key Screen](manual/api_key_en.png)
 
 ### 🔑 OpenAI API Key
 
@@ -109,7 +109,7 @@ Instruction Sets define how AI agents process your voice input. You can create a
 
 ### Instruction Sets Management Screen
 
-![Instruction Sets Screen](ui/instraction_sets_vocabulary_en.png)
+![Instruction Sets Screen](manual/instraction_sets_vocabulary_en.png)
 
 #### 📁 Left Panel: Instruction Sets List
 
@@ -131,7 +131,7 @@ Manage detailed settings for each instruction set across 5 tabs.
 
 ### 1. Settings Tab
 
-![Instruction Set Settings Detail](ui/instraction_sets_settings_en.png)
+![Instruction Set Settings Detail](manual/instraction_sets_settings_en.png)
 
 #### 🎤 **STT Language**
 
@@ -168,7 +168,7 @@ Manage detailed settings for each instruction set across 5 tabs.
 
 ### 2. MCP Servers Tab
 
-![MCP Server Settings](ui/instraction_sets_mcp_servers_en.png)
+![MCP Server Settings](manual/instraction_sets_mcp_servers_en.png)
 
 #### 🔌 **MCP Server Configuration**
 
@@ -188,7 +188,7 @@ Manage detailed settings for each instruction set across 5 tabs.
 
 ### 3. LLM Instructions Tab
 
-![LLM Instructions](ui/instraction_sets_llm_instractions_en.png)
+![LLM Instructions](manual/instraction_sets_llm_instractions_en.png)
 
 #### 🤖 **LLM Instructions**
 
@@ -209,7 +209,7 @@ Use the Playwright tools to navigate websites, interact with elements, fill form
 
 ### 4. STT Instructions Tab
 
-![STT Instructions](ui/instraction_sets_stt_instractions_en.png)
+![STT Instructions](manual/instraction_sets_stt_instractions_en.png)
 
 #### 📝 **STT Instructions Configuration**
 
@@ -218,7 +218,7 @@ Use the Playwright tools to navigate websites, interact with elements, fill form
 
 ### 5. Vocabulary Tab
 
-![Vocabulary Settings](ui/instraction_sets_vocabulary_en.png)
+![Vocabulary Settings](manual/instraction_sets_vocabulary_en.png)
 
 #### 🔤 **Custom Vocabulary**
 
@@ -231,7 +231,7 @@ Use the Playwright tools to navigate websites, interact with elements, fill form
 
 ## Settings Screen
 
-![Settings Screen](ui/settings_en.png)
+![Settings Screen](manual/settings_en.png)
 
 ### 🎵 **Notify with sound**
 
@@ -252,7 +252,7 @@ Use the Playwright tools to navigate websites, interact with elements, fill form
 
 ## System Tray
 
-![System Tray](ui/tray_en.png)
+![System Tray](manual/tray_en.png)
 
 The application runs in the system tray, providing quick access to all features:
 

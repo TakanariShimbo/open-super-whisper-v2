@@ -19,7 +19,7 @@ Open Super Whisper V2 は、音声入力から AI エージェントによる自
 
 アプリケーションを初回起動すると、OpenAI API キー設定画面が表示されます：
 
-![初回起動画面](ui/wakeup_ja.png)
+![初回起動画面](manual/wakeup_ja.png)
 
 この画面は、有効な OpenAI API キーが設定されていない場合に自動的に表示される「ウェイクアップ画面」です。
 
@@ -35,7 +35,7 @@ Open Super Whisper V2 は、音声入力から AI エージェントによる自
 
 ## メイン画面
 
-![メイン画面](ui/main_ja.png)
+![メイン画面](manual/main_ja.png)
 
 ### 画面構成
 
@@ -89,7 +89,7 @@ Open Super Whisper V2 は、音声入力から AI エージェントによる自
 
 ## API キー画面
 
-![API キー画面](ui/api_key_ja.png)
+![API キー画面](manual/api_key_ja.png)
 
 ### 🔑 OpenAI API キー
 
@@ -109,7 +109,7 @@ Open Super Whisper V2 は、音声入力から AI エージェントによる自
 
 ### インストラクションセット管理画面
 
-![インストラクションセット画面](ui/instraction_sets_vocabulary_ja.png)
+![インストラクションセット画面](manual/instraction_sets_vocabulary_ja.png)
 
 #### 📁 左側パネル：インストラクションセット一覧
 
@@ -131,7 +131,7 @@ Open Super Whisper V2 は、音声入力から AI エージェントによる自
 
 ### 1. 設定タブ
 
-![インストラクションセット設定詳細](ui/instraction_sets_settings_ja.png)
+![インストラクションセット設定詳細](manual/instraction_sets_settings_ja.png)
 
 #### 🎤 **STT 言語**
 
@@ -169,7 +169,7 @@ Open Super Whisper V2 は、音声入力から AI エージェントによる自
 
 ### 2. MCP サーバー タブ
 
-![MCP サーバー設定](ui/instraction_sets_mcp_servers_ja.png)
+![MCP サーバー設定](manual/instraction_sets_mcp_servers_ja.png)
 
 #### 🔌 **MCP サーバー設定**
 
@@ -189,7 +189,7 @@ Open Super Whisper V2 は、音声入力から AI エージェントによる自
 
 ### 3. LLM インストラクション タブ
 
-![LLM インストラクション](ui/instraction_sets_llm_instractions_ja.png)
+![LLM インストラクション](manual/instraction_sets_llm_instractions_ja.png)
 
 #### 🤖 **LLM インストラクション**
 
@@ -210,7 +210,7 @@ Playwrightツールを使用して、Webサイトのナビゲーション、要�
 
 ### 4. STT インストラクション タブ
 
-![STT インストラクション](ui/instraction_sets_stt_instractions_ja.png)
+![STT インストラクション](manual/instraction_sets_stt_instractions_ja.png)
 
 #### 📝 **STT インストラクション設定**
 
@@ -219,7 +219,7 @@ Playwrightツールを使用して、Webサイトのナビゲーション、要�
 
 ### 5. 語彙タブ
 
-![語彙設定](ui/instraction_sets_vocabulary_ja.png)
+![語彙設定](manual/instraction_sets_vocabulary_ja.png)
 
 #### 🔤 **カスタム語彙**
 
@@ -232,7 +232,7 @@ Playwrightツールを使用して、Webサイトのナビゲーション、要�
 
 ## 設定画面
 
-![設定画面](ui/settings_ja.png)
+![設定画面](manual/settings_ja.png)
 
 ### 🎵 **サウンドによる通知**
 
@@ -253,7 +253,7 @@ Playwrightツールを使用して、Webサイトのナビゲーション、要�
 
 ## システムトレイ
 
-![システムトレイ](ui/tray_ja.png)
+![システムトレイ](manual/tray_ja.png)
 
 アプリケーションは常にシステムトレイに常駐し、以下の操作が可能です：
 
