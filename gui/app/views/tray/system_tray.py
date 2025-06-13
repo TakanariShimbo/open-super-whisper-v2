@@ -40,7 +40,7 @@ class LabelManager:
             "hide_window": "ウィンドウ非表示",
             "start_recording": "録音開始",
             "stop_recording": "録音停止",
-            "cancel_processing": "処理キャンセル",
+            "cancel_processing": "処理中止",
             "quit_application": "アプリ終了",
         },
         # Future: Add other languages here

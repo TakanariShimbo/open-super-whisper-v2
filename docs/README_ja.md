@@ -53,7 +53,7 @@ Open Super Whisper V2 は以下の 4 つのステップで動作します：
 ├── uv.lock                                        # プロジェクト設定とuv用の依存関係
 ├── assets/                                        # アセット（アイコン、音声ファイルなど）
 │   ├── cancel_processing.wav                      # 処理完了時に再生される音
-│   ├── complete_processing.wav                    # 処理キャンセル時に再生される音
+│   ├── complete_processing.wav                    # 処理中止時に再生される音
 │   ├── icon.icns                                  # アプリケーションアイコン（macOS）
 │   ├── icon.ico                                   # アプリケーションアイコン（Windows）
 │   ├── icon.png                                   # アプリケーションアイコン（クロスプラットフォーム）

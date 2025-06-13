@@ -98,7 +98,7 @@ class LabelManager:
             # Button Labels
             "start_recording": "録音開始",
             "stop_recording": "録音停止",
-            "cancel_processing": "処理キャンセル",
+            "cancel_processing": "処理中止",
             # Menu/Action Labels
             "api_key_action": "APIキー",
             "instruction_sets_action": "インストラクションセット",
