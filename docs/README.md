@@ -246,4 +246,4 @@ Once the build is complete, you'll find `OpenSuperWhisper.exe` in the `dist` fol
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the GNU General Public License v3.0.
