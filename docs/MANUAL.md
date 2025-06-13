@@ -19,6 +19,8 @@ Open Super Whisper V2 is an innovative desktop application that transforms your 
 
 ## Configuration Setup
 
+**Important:** Configuration setup should be performed when the application is not running.
+
 ### Sample Usage
 
 Sample configuration files are provided in the `docs/` directory:
