@@ -7,7 +7,7 @@ Open Super Whisper V2 is an innovative desktop application that transforms your 
 
 ## 📋 Table of Contents
 
-1. [Configuration](#configuration)
+1. [Configuration Setup](#configuration-setup)
 2. [Initial Startup Screen](#initial-startup-screen)
 3. [Main Window](#main-window)
 4. [API Key Screen](#api-key-screen)
@@ -17,24 +17,24 @@ Open Super Whisper V2 is an innovative desktop application that transforms your 
 8. [Usage Examples](#usage-examples)
 9. [Troubleshooting](#troubleshooting)
 
-## Configuration
+## Configuration Setup
 
-### Sample Settings Usage
+### Sample Usage
 
 Sample configuration files are provided in the `docs/` directory:
 
 - `settings_sample_en.json` - English version with pre-configured instruction sets
 - `settings_sample_ja.json` - Japanese version with the same functionality
 
-To use a sample file:
+To use a sample configuration file:
 
-1. Create the settings directory in your user home directory:
+1. Create a directory in your user home directory as follows:
 
    ```bash
    mkdir ~/.open_super_whisper
    ```
 
-2. Copy the desired sample file to the settings directory:
+2. Copy the sample configuration file to the created directory:
 
    ```bash
    cp docs/settings_sample/settings_en.json ~/.open_super_whisper/settings.json
@@ -42,9 +42,9 @@ To use a sample file:
 
 **Note:** The application expects the settings file to be located at `~/.open_super_whisper/settings.json` (where `~` represents your user home directory).
 
-### Sample Settings Content
+### Sample Content
 
-Both sample files include the following instruction sets:
+The sample configuration files include the following instruction sets:
 
 - **Transcription Agent** (Ctrl+Shift+1) - Basic speech-to-text conversion
 - **Document Creation Agent** (Ctrl+Shift+2) - Automatically convert speech to formal written documents
