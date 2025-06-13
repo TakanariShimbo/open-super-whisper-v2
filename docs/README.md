@@ -2,6 +2,10 @@
 
 # Open Super Whisper V2
 
+<div align="center">
+  <img src="../assets/icon.png" alt="Open Super Whisper V2 Icon" width="128" height="128">
+</div>
+
 **Conversational AI Agent - Transform Your Voice into Action**
 
 Just speak, and AI agents understand your intent and autonomously execute tasks. This powerful PyQt6-based desktop application seamlessly integrates OpenAI's cutting-edge Whisper speech recognition with advanced Large Language Models. From voice commands to document creation, information search, and web automation - revolutionize your daily workflow efficiency.

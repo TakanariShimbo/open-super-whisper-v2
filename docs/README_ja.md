@@ -2,6 +2,10 @@
 
 # Open Super Whisper V2
 
+<div align="center">
+  <img src="../assets/icon.png" alt="Open Super Whisper V2 Icon" width="128" height="128">
+</div>
+
 **会話型 AI エージェント - あなたの声を行動に変える**
 
 話すだけで、AI エージェントがあなたの意図を理解し、自律的にタスクを実行します。PyQt6 ベースの強力なデスクトップアプリケーションで、OpenAI の最先端音声認識と高度な大規模言語モデルをシームレスに統合。音声による指示から、文書作成、情報検索、Web 操作まで、あなたの日常業務を革新的に効率化します。
