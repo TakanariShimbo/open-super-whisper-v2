@@ -59,7 +59,7 @@ Open Super Whisper V2 は、音声入力から AI エージェントによる自
 
 アプリケーションを初回起動すると、OpenAI API キー設定画面が表示されます：
 
-![初回起動画面](manual/wakeup_ja.png)
+<img src="manual/wakeup_ja.png" alt="初回起動画面" style="max-width: 400px; width: 100%; height: auto;">
 
 この画面は、有効な OpenAI API キーが設定されていない場合に自動的に表示される「ウェイクアップ画面」です。
 
@@ -75,7 +75,7 @@ Open Super Whisper V2 は、音声入力から AI エージェントによる自
 
 ## メイン画面
 
-![メイン画面](manual/main_ja.png)
+<img src="manual/main_ja.png" alt="メイン画面" style="max-width: 600px; width: 100%; height: auto;">
 
 ### 画面構成
 
@@ -129,7 +129,7 @@ Open Super Whisper V2 は、音声入力から AI エージェントによる自
 
 ## API キー画面
 
-![API キー画面](manual/api_key_ja.png)
+<img src="manual/api_key_ja.png" alt="API キー画面" style="max-width: 400px; width: 100%; height: auto;">
 
 ### 🔑 OpenAI API キー
 
@@ -149,7 +149,7 @@ Open Super Whisper V2 は、音声入力から AI エージェントによる自
 
 ### インストラクションセット管理画面
 
-![インストラクションセット画面](manual/instraction_sets_vocabulary_ja.png)
+<img src="manual/instraction_sets_vocabulary_ja.png" alt="インストラクションセット画面" style="max-width: 600px; width: 100%; height: auto;">
 
 #### 📁 左側パネル：インストラクションセット一覧
 
@@ -171,7 +171,7 @@ Open Super Whisper V2 は、音声入力から AI エージェントによる自
 
 ### 1. 設定タブ
 
-![インストラクションセット設定詳細](manual/instraction_sets_settings_ja.png)
+<img src="manual/instraction_sets_settings_ja.png" alt="インストラクションセット設定詳細" style="max-width: 600px; width: 100%; height: auto;">
 
 #### 🎤 **STT 言語**
 
@@ -209,7 +209,7 @@ Open Super Whisper V2 は、音声入力から AI エージェントによる自
 
 ### 2. MCP サーバー タブ
 
-![MCP サーバー設定](manual/instraction_sets_mcp_servers_ja.png)
+<img src="manual/instraction_sets_mcp_servers_ja.png" alt="MCP サーバー設定" style="max-width: 600px; width: 100%; height: auto;">
 
 #### 🔌 **MCP サーバー設定**
 
@@ -229,7 +229,7 @@ Open Super Whisper V2 は、音声入力から AI エージェントによる自
 
 ### 3. LLM インストラクション タブ
 
-![LLM インストラクション](manual/instraction_sets_llm_instractions_ja.png)
+<img src="manual/instraction_sets_llm_instractions_ja.png" alt="LLM インストラクション" style="max-width: 600px; width: 100%; height: auto;">
 
 #### 🤖 **LLM インストラクション**
 
@@ -250,7 +250,7 @@ Playwrightツールを使用して、Webサイトのナビゲーション、要�
 
 ### 4. STT インストラクション タブ
 
-![STT インストラクション](manual/instraction_sets_stt_instractions_ja.png)
+<img src="manual/instraction_sets_stt_instractions_ja.png" alt="STT インストラクション" style="max-width: 600px; width: 100%; height: auto;">
 
 #### 📝 **STT インストラクション設定**
 
@@ -259,7 +259,7 @@ Playwrightツールを使用して、Webサイトのナビゲーション、要�
 
 ### 5. 語彙タブ
 
-![語彙設定](manual/instraction_sets_vocabulary_ja.png)
+<img src="manual/instraction_sets_vocabulary_ja.png" alt="語彙設定" style="max-width: 600px; width: 100%; height: auto;">
 
 #### 🔤 **カスタム語彙**
 
@@ -272,7 +272,7 @@ Playwrightツールを使用して、Webサイトのナビゲーション、要�
 
 ## 設定画面
 
-![設定画面](manual/settings_ja.png)
+<img src="manual/settings_ja.png" alt="設定画面" style="max-width: 400px; width: 100%; height: auto;">
 
 ### 🎵 **サウンドによる通知**
 
@@ -293,7 +293,7 @@ Playwrightツールを使用して、Webサイトのナビゲーション、要�
 
 ## システムトレイ
 
-![システムトレイ](manual/tray_ja.png)
+<img src="manual/tray_ja.png" alt="システムトレイ" style="max-width: 300px; width: 100%; height: auto;">
 
 アプリケーションは常にシステムトレイに常駐し、以下の操作が可能です：
 

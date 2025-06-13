@@ -59,7 +59,7 @@ The sample configuration files include the following instruction sets:
 
 When you first launch the application, you'll see the OpenAI API key setup screen:
 
-![Initial Startup Screen](manual/wakeup_en.png)
+<img src="manual/wakeup_en.png" alt="Initial Startup Screen" style="max-width: 400px; width: 100%; height: auto;">
 
 This is the "wakeup screen" that automatically appears when no valid OpenAI API key is configured.
 
@@ -75,7 +75,7 @@ This is the "wakeup screen" that automatically appears when no valid OpenAI API 
 
 ## Main Window
 
-![Main Window](manual/main_en.png)
+<img src="manual/main_en.png" alt="Main Window" style="max-width: 600px; width: 100%; height: auto;">
 
 ### Screen Layout
 
@@ -129,7 +129,7 @@ This is the "wakeup screen" that automatically appears when no valid OpenAI API 
 
 ## API Key Screen
 
-![API Key Screen](manual/api_key_en.png)
+<img src="manual/api_key_en.png" alt="API Key Screen" style="max-width: 400px; width: 100%; height: auto;">
 
 ### 🔑 OpenAI API Key
 
@@ -149,7 +149,7 @@ Instruction Sets define how AI agents process your voice input. You can create a
 
 ### Instruction Sets Management Screen
 
-![Instruction Sets Screen](manual/instraction_sets_vocabulary_en.png)
+<img src="manual/instraction_sets_vocabulary_en.png" alt="Instruction Sets Screen" style="max-width: 600px; width: 100%; height: auto;">
 
 #### 📁 Left Panel: Instruction Sets List
 
@@ -171,7 +171,7 @@ Manage detailed settings for each instruction set across 5 tabs.
 
 ### 1. Settings Tab
 
-![Instruction Set Settings Detail](manual/instraction_sets_settings_en.png)
+<img src="manual/instraction_sets_settings_en.png" alt="Instruction Set Settings Detail" style="max-width: 600px; width: 100%; height: auto;">
 
 #### 🎤 **STT Language**
 
@@ -208,7 +208,7 @@ Manage detailed settings for each instruction set across 5 tabs.
 
 ### 2. MCP Servers Tab
 
-![MCP Server Settings](manual/instraction_sets_mcp_servers_en.png)
+<img src="manual/instraction_sets_mcp_servers_en.png" alt="MCP Server Settings" style="max-width: 600px; width: 100%; height: auto;">
 
 #### 🔌 **MCP Server Configuration**
 
@@ -228,7 +228,7 @@ Manage detailed settings for each instruction set across 5 tabs.
 
 ### 3. LLM Instructions Tab
 
-![LLM Instructions](manual/instraction_sets_llm_instractions_en.png)
+<img src="manual/instraction_sets_llm_instractions_en.png" alt="LLM Instructions" style="max-width: 600px; width: 100%; height: auto;">
 
 #### 🤖 **LLM Instructions**
 
@@ -249,7 +249,7 @@ Use the Playwright tools to navigate websites, interact with elements, fill form
 
 ### 4. STT Instructions Tab
 
-![STT Instructions](manual/instraction_sets_stt_instractions_en.png)
+<img src="manual/instraction_sets_stt_instractions_en.png" alt="STT Instructions" style="max-width: 600px; width: 100%; height: auto;">
 
 #### 📝 **STT Instructions Configuration**
 
@@ -258,7 +258,7 @@ Use the Playwright tools to navigate websites, interact with elements, fill form
 
 ### 5. Vocabulary Tab
 
-![Vocabulary Settings](manual/instraction_sets_vocabulary_en.png)
+<img src="manual/instraction_sets_vocabulary_en.png" alt="Vocabulary Settings" style="max-width: 600px; width: 100%; height: auto;">
 
 #### 🔤 **Custom Vocabulary**
 
@@ -271,7 +271,7 @@ Use the Playwright tools to navigate websites, interact with elements, fill form
 
 ## Settings Screen
 
-![Settings Screen](manual/settings_en.png)
+<img src="manual/settings_en.png" alt="Settings Screen" style="max-width: 400px; width: 100%; height: auto;">
 
 ### 🎵 **Notify with sound**
 
@@ -292,7 +292,7 @@ Use the Playwright tools to navigate websites, interact with elements, fill form
 
 ## System Tray
 
-![System Tray](manual/tray_en.png)
+<img src="manual/tray_en.png" alt="System Tray" style="max-width: 300px; width: 100%; height: auto;">
 
 The application runs in the system tray, providing quick access to all features:
 
