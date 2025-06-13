@@ -8,14 +8,15 @@ Open Super Whisper V2 is an innovative desktop application that transforms your 
 ## 📋 Table of Contents
 
 1. [Configuration Setup](#configuration-setup)
-2. [Initial Startup Screen](#initial-startup-screen)
-3. [Main Window](#main-window)
-4. [API Key Screen](#api-key-screen)
-5. [Instruction Sets Screen](#instruction-sets-screen)
-6. [Settings Screen](#settings-screen)
-7. [System Tray](#system-tray)
-8. [Usage Examples](#usage-examples)
-9. [Troubleshooting](#troubleshooting)
+2. [Auto-Start Configuration](#auto-start-configuration)
+3. [Initial Startup Screen](#initial-startup-screen)
+4. [Main Window](#main-window)
+5. [API Key Screen](#api-key-screen)
+6. [Instruction Sets Screen](#instruction-sets-screen)
+7. [Settings Screen](#settings-screen)
+8. [System Tray](#system-tray)
+9. [Usage Examples](#usage-examples)
+10. [Troubleshooting](#troubleshooting)
 
 ## Configuration Setup
 
@@ -54,6 +55,43 @@ The sample configuration files include the following instruction sets:
 - **Text Q&A Agent** (Ctrl+Shift+4) - Analyze clipboard text and answer questions (with web search)
 - **Image Q&A Agent** (Ctrl+Shift+5) - Analyze clipboard images and answer questions (with web search)
 - **Web Automation Agent** (Ctrl+Shift+6) - Autonomous web interactions using Playwright
+
+## Auto-Start Configuration
+
+To make Open Super Whisper V2 automatically start when your PC boots up:
+
+### Windows Auto-Start Setup
+
+1. Build or obtain the `OpenSuperWhisper.exe` executable file
+2. Copy the executable to a convenient location (e.g., `C:\Program Files\OpenSuperWhisper\`)
+3. Press `Win + R` to open the Run dialog
+4. Type `shell:startup` and press Enter to open the Startup folder
+5. Create a shortcut to `OpenSuperWhisper.exe` in this folder:
+   - Right-click in the Startup folder
+   - Select "New" → "Shortcut"
+   - Browse to your `OpenSuperWhisper.exe` location
+   - Click "Next" and "Finish"
+
+**Note:** The application will start in the system tray and be ready for global hotkey activation.
+
+### Additional Shortcut Locations
+
+You can also create shortcuts in other convenient locations:
+
+**Taskbar (Pin to Taskbar):**
+
+1. Right-click the desktop shortcut or executable
+2. Select "Pin to taskbar"
+
+**Start Menu:**
+
+3. Press `Win + R`, type `shell:programs` and press Enter
+4. Create a shortcut to `OpenSuperWhisper.exe` in this folder
+
+**Quick Access Toolbar:**
+
+1. Copy the executable or shortcut to a folder in your PATH
+2. Or create a shortcut in `C:\ProgramData\Microsoft\Windows\Start Menu\Programs`
 
 ## Initial Startup Screen
 
