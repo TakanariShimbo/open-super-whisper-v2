@@ -207,42 +207,6 @@ Open Super Whisper V2 operates through the following 4 steps:
 
    The application will automatically add the `ffmpeg/bin` directory to the PATH when started.
 
-## Configuration
-
-### Sample Settings Usage
-
-Sample configuration files are provided in the `docs/` directory:
-
-- `settings_sample_en.json` - English version with pre-configured instruction sets
-- `settings_sample_ja.json` - Japanese version with the same functionality
-
-To use a sample file:
-
-1. Create the settings directory in your user home directory:
-
-   ```bash
-   mkdir ~/.open_super_whisper
-   ```
-
-2. Copy the desired sample file to the settings directory:
-
-   ```bash
-   cp docs/settings_sample/settings_en.json ~/.open_super_whisper/settings.json
-   ```
-
-**Note:** The application expects the settings file to be located at `~/.open_super_whisper/settings.json` (where `~` represents your user home directory).
-
-### Sample Settings Content
-
-Both sample files include the following instruction sets:
-
-- **Transcription Agent** (Ctrl+Shift+1) - Basic speech-to-text conversion
-- **Document Creation Agent** (Ctrl+Shift+2) - Automatically convert speech to formal written documents
-- **Search Keywords Agent** (Ctrl+Shift+3) - Auto-generate optimal search keywords from speech
-- **Text Q&A Agent** (Ctrl+Shift+4) - Analyze clipboard text and answer questions (with web search)
-- **Image Q&A Agent** (Ctrl+Shift+5) - Analyze clipboard images and answer questions (with web search)
-- **Web Automation Agent** (Ctrl+Shift+6) - Autonomous web interactions using Playwright
-
 ## How to Run
 
 To start the application, run:
