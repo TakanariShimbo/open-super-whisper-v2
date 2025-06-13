@@ -226,10 +226,6 @@ Open Super Whisper V2 は以下の 4 つのステップで動作します：
 2. 使用したいサンプルファイルを設定ディレクトリにコピー：
 
    ```bash
-   # 英語設定の場合
-   cp docs/settings_sample/settings_en.json ~/.open_super_whisper/settings.json
-
-   # 日本語設定の場合
    cp docs/settings_sample/settings_ja.json ~/.open_super_whisper/settings.json
    ```
 
