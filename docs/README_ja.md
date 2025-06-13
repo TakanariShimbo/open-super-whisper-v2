@@ -30,7 +30,7 @@ Open Super Whisper V2 は以下の 4 つのステップで動作します：
 
 ### 🤖 **エージェント処理**
 
-- **指示セット** - 用途別に特化した AI エージェントを事前定義
+- **インストラクションセット** - 用途別に特化した AI エージェントを事前定義
 - **外部ツール連携** - MCP（Model Context Protocol）による拡張性
 - **マルチコンテキスト** - クリップボードのテキストや画像、ウェブ検索を組み合わせた処理
 
@@ -80,10 +80,10 @@ Open Super Whisper V2 は以下の 4 つのステップで動作します：
 │   │   ├── llm_model.py                           # LLMモデルデータ構造
 │   │   ├── llm_model_manager.py                   # LLMモデル管理
 │   │   └── llm_processor.py                       # LLM処理実装
-│   ├── pipelines/                                 # 処理パイプラインと指示セット
+│   ├── pipelines/                                 # パイプラインとインストラクションセット
 │   │   ├── __init__.py
-│   │   ├── instruction_set.py                     # 指示セットデータモデル
-│   │   ├── instruction_sets_manager.py            # 指示セット管理
+│   │   ├── instruction_set.py                     # インストラクションセットデータモデル
+│   │   ├── instruction_sets_manager.py            # インストラクションセット管理
 │   │   ├── pipeline.py                            # 統合処理パイプライン
 │   │   └── pipeline_result.py                     # パイプライン結果データモデル
 │   ├── recorder/                                  # 音声録音機能
@@ -118,7 +118,7 @@ Open Super Whisper V2 は以下の 4 つのステップで動作します：
         │   ├── __init__.py
         │   ├── audio_manager.py                   # 音声通知管理
         │   ├── icon_manager.py                    # アプリケーションアイコン管理
-        │   ├── instruction_sets_manager.py        # GUI指示セット管理
+        │   ├── instruction_sets_manager.py        # GUIインストラクションセット管理
         │   ├── keyboard_manager.py                # GUIキーボード管理
         │   └── settings_manager.py                # アプリケーション設定管理
         ├── models/                                # MVCモデル
@@ -204,11 +204,11 @@ Open Super Whisper V2 は以下の 4 つのステップで動作します：
 
 ## 設定
 
-### サンプル設定
+### サンプル設定の利用
 
 `docs/`ディレクトリにサンプル設定ファイルが提供されています：
 
-- `settings_sample_en.json` - 事前設定された指示セット付きの英語版
+- `settings_sample_en.json` - 事前設定されたインストラクションセット付きの英語版
 - `settings_sample_ja.json` - 同じ機能の日本語版
 
 サンプルファイルを使用するには：
@@ -231,9 +231,9 @@ Open Super Whisper V2 は以下の 4 つのステップで動作します：
 
 **注意:** アプリケーションは設定ファイルが`~/.open_super_whisper/settings.json`に配置されることを期待しています（`~`はユーザーホームディレクトリを表します）。
 
-### 事前設定された指示セット
+### サンプル設定の内容
 
-両方のサンプルファイルには以下の指示セットが含まれています：
+両方のサンプルファイルには以下のインストラクションセットが含まれています：
 
 - **文字起こしエージェント** (Ctrl+Shift+1) - 基本的な音声テキスト変換
 - **文章作成エージェント** (Ctrl+Shift+2) - 音声を正式な書面に自動変換

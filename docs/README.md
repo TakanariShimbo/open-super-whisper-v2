@@ -204,7 +204,7 @@ Open Super Whisper V2 operates through the following 4 steps:
 
 ## Configuration
 
-### Sample Settings
+### Sample Settings Usage
 
 Sample configuration files are provided in the `docs/` directory:
 
@@ -231,7 +231,7 @@ To use a sample file:
 
 **Note:** The application expects the settings file to be located at `~/.open_super_whisper/settings.json` (where `~` represents your user home directory).
 
-### Pre-configured Instruction Sets
+### Sample Settings Content
 
 Both sample files include the following instruction sets:
 
