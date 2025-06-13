@@ -2,7 +2,7 @@
   "api_key": "",
   "instruction_sets": [
     {
-      "name": "シンプル文字起こし",
+      "name": "文字起こしエージェント",
       "stt_vocabulary": "",
       "stt_instructions": "",
       "stt_language": "ja",
@@ -17,7 +17,7 @@
       "hotkey": "ctrl+shift+1"
     },
     {
-      "name": "書き言葉に変換",
+      "name": "文章作成エージェント",
       "stt_vocabulary": "",
       "stt_instructions": "",
       "stt_language": "ja",
@@ -32,7 +32,7 @@
       "hotkey": "ctrl+shift+2"
     },
     {
-      "name": "検索キーワード生成",
+      "name": "検索キーワードエージェント",
       "stt_vocabulary": "",
       "stt_instructions": "",
       "stt_language": "ja",
@@ -47,7 +47,7 @@
       "hotkey": "ctrl+shift+3"
     },
     {
-      "name": "クリップボードテキストQ&A",
+      "name": "テキストQ&Aエージェント",
       "stt_vocabulary": "",
       "stt_instructions": "",
       "stt_language": "ja",
@@ -62,7 +62,7 @@
       "hotkey": "ctrl+shift+4"
     },
     {
-      "name": "クリップボード画像Q&A",
+      "name": "画像Q&Aエージェント",
       "stt_vocabulary": "",
       "stt_instructions": "",
       "stt_language": "ja",

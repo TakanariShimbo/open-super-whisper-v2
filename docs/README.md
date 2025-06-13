@@ -231,13 +231,13 @@ To use a sample file:
 
 **Note:** The application expects the settings file to be located at `~/.open_super_whisper/settings.json` (where `~` represents your user home directory).
 
-### Pre-configured AI Agents
+### Pre-configured Instruction Sets
 
-Both sample files include the following AI agent profiles:
+Both sample files include the following instruction sets:
 
 - **Transcription Agent** (Ctrl+Shift+1) - Basic speech-to-text conversion
 - **Document Creation Agent** (Ctrl+Shift+2) - Automatically convert speech to formal written documents
-- **Search Agent** (Ctrl+Shift+3) - Auto-generate optimal search keywords from speech
+- **Search Keywords Agent** (Ctrl+Shift+3) - Auto-generate optimal search keywords from speech
 - **Text Q&A Agent** (Ctrl+Shift+4) - Analyze clipboard text and answer questions (with web search)
 - **Image Q&A Agent** (Ctrl+Shift+5) - Analyze clipboard images and answer questions (with web search)
 - **Web Automation Agent** (Ctrl+Shift+6) - Autonomous web interactions using Playwright

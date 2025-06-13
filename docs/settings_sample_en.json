@@ -2,7 +2,7 @@
   "api_key": "",
   "instruction_sets": [
     {
-      "name": "Simple Transcription",
+      "name": "Transcription Agent",
       "stt_vocabulary": "",
       "stt_instructions": "",
       "stt_language": "",
@@ -17,7 +17,7 @@
       "hotkey": "ctrl+shift+1"
     },
     {
-      "name": "Convert to Written Form",
+      "name": "Written Form Agent",
       "stt_vocabulary": "",
       "stt_instructions": "",
       "stt_language": "",
@@ -32,7 +32,7 @@
       "hotkey": "ctrl+shift+2"
     },
     {
-      "name": "Generate Search Keywords",
+      "name": "Search Keywords Agent",
       "stt_vocabulary": "",
       "stt_instructions": "",
       "stt_language": "",
@@ -47,7 +47,7 @@
       "hotkey": "ctrl+shift+3"
     },
     {
-      "name": "Clipboard Text Q&A",
+      "name": "Text Q&A Agent",
       "stt_vocabulary": "",
       "stt_instructions": "",
       "stt_language": "",
@@ -62,7 +62,7 @@
       "hotkey": "ctrl+shift+4"
     },
     {
-      "name": "Clipboard Image Q&A",
+      "name": "Image Q&A Agent",
       "stt_vocabulary": "",
       "stt_instructions": "",
       "stt_language": "",
