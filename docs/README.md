@@ -21,19 +21,16 @@ Open Super Whisper V2 operates through the following 4 steps:
 - **Global hotkeys** - Launch instantly from any application
 - **One-click recording** - Simple recording start/stop with UI buttons
 - **Background operation** - Always available via system tray
-- **Audio feedback** - Sound notifications for recording status
 
 ### 📝 **Transcription**
 
 - **OpenAI Whisper powered** - Industry-leading speech recognition accuracy
 - **Multi-language support** - Auto-detection and 125+ language support
 - **Custom vocabulary** - Enhanced accuracy for technical terms and proper nouns
-- **Large file support** - Auto-split processing for files over 20MB
 
 ### 🤖 **Agent Processing**
 
 - **Instruction sets** - Pre-defined AI agents specialized for different purposes
-- **Multimodal support** - Advanced processing combining voice, text, and images
 - **External tool integration** - Extensibility via MCP (Model Context Protocol)
 - **Multi-context** - Processing that combines clipboard text, images, and web search
 
@@ -41,7 +38,6 @@ Open Super Whisper V2 operates through the following 4 steps:
 
 - **Markdown rendering** - Rich text display including LaTeX math formulas
 - **Auto-clipboard** - Automatic copying of results to clipboard upon completion
-- **Profile switching** - Instantly switch between different agents with hotkeys
 - **Immediate use** - Results ready for instant use in other applications
 
 ## Project Structure
