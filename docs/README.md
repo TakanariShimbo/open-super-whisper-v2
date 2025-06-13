@@ -168,7 +168,7 @@ Open Super Whisper V2 operates through the following 4 steps:
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/open-super-whisper-v2.git
+   git clone https://github.com/TakanariShimbo/open-super-whisper-v2.git
    cd open-super-whisper-v2
    ```
 
@@ -281,4 +281,4 @@ Once the build is complete, you'll find `OpenSuperWhisper.exe` in the `dist` fol
 
 ## License
 
-This project is licensed under the MIT License. See the LICENSE file for more details.
+This project is licensed under the MIT License.

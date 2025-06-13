@@ -168,7 +168,7 @@ Open Super Whisper V2 は以下の 4 つのステップで動作します：
 1. リポジトリをクローンします：
 
    ```bash
-   git clone https://github.com/yourusername/open-super-whisper-v2.git
+   git clone https://github.com/TakanariShimbo/open-super-whisper-v2.git
    cd open-super-whisper-v2
    ```
 
@@ -281,4 +281,4 @@ Windows コマンドは以下を実行します：
 
 ## ライセンス
 
-このプロジェクトは MIT ライセンスの下でライセンスされています。詳細については LICENSE ファイルを参照してください。
+このプロジェクトは MIT ライセンスの下でライセンスされています。
