@@ -488,45 +488,142 @@ class LLMProcessor:
         pass
 
     @staticmethod
-    def _expand_env(obj: Any) -> Any:
+    def _expand_string_variables(text: str, variables: dict[str, str]) -> str:
         """
-        Recursively expand environment variables in configuration objects.
+        Expand variables in a string using ${VAR} or $VAR format.
         
-        This method processes strings, lists, and dictionaries to expand any
-        environment variables using the ${VAR} or $VAR syntax.
+        Parameters
+        ----------
+        text : str
+            The string to expand variables in.
+        variables : dict[str, str]
+            Mapping of variable names to their values.
+            
+        Returns
+        -------
+        str
+            String with variables expanded.
+        """
+        import re
+        
+        def replace_var(match):
+            # Extract variable name from ${VAR} or $VAR
+            var_name = match.group(1) or match.group(2)
+            # Return original string if variable not found
+            return variables.get(var_name, match.group(0))
+        
+        # Match ${VAR} and $VAR patterns
+        pattern = r'\$\{([^}]+)\}|\$([A-Za-z_][A-Za-z0-9_]*)'
+        return re.sub(pattern, replace_var, text)
+    
+    @staticmethod
+    def _expand_with_env_vars(obj: Any, env_vars: dict[str, str]) -> Any:
+        """
+        Expand env variables within an object.
         
         Parameters
         ----------
         obj : Any
-            The configuration object to process. Can be a string, list, dict,
-            or any other type.
+            The object to expand env variables in.
+        env_vars : dict[str, str]
+            Mapping of env variable names to values.
             
         Returns
         -------
         Any
-            The processed object with environment variables expanded.
-            - Strings: Environment variables are expanded using os.path.expandvars
-            - Lists: Each element is recursively processed
-            - Dicts: Each value is recursively processed
-            - Other types: Returned unchanged
+            Object with env variables expanded.
+        """
+        if isinstance(obj, str):
+            return LLMProcessor._expand_string_variables(obj, env_vars)
+        
+        if isinstance(obj, list):
+            return [LLMProcessor._expand_with_env_vars(item, env_vars) for item in obj]
+        
+        if isinstance(obj, dict):
+            return {k: LLMProcessor._expand_with_env_vars(v, env_vars) for k, v in obj.items()}
+        
+        return obj
+
+    @staticmethod
+    def _expand_env(obj: Any) -> Any:
+        """
+        Expand environment variables in MCP server configuration.
+        
+        Processing order:
+        1. Expand system environment variables (${HOME}, etc.)
+        2. Resolve cross-references within env field variables
+        3. Expand resolved env field variables in other fields
+        
+        Parameters
+        ----------
+        obj : Any
+            The configuration object to process.
+            
+        Returns
+        -------
+        Any
+            Object with environment variables expanded.
             
         Examples
         --------
-        >>> os.environ['HOME'] = '/home/user'
-        >>> LLMProcessor._expand_env('${HOME}/config')
-        '/home/user/config'
-        
-        >>> LLMProcessor._expand_env({'path': '${HOME}', 'items': ['$USER', 'test']})
-        {'path': '/home/user', 'items': ['username', 'test']}
+        >>> config = {
+        ...     'env': {
+        ...         'PROJECT_ROOT': '/home/user/project',
+        ...         'DATA_DIR': '${PROJECT_ROOT}/data'
+        ...     },
+        ...     'cwd': '${PROJECT_ROOT}/scripts'
+        ... }
+        >>> result = LLMProcessor._expand_env(config)
+        >>> result['cwd']
+        '/home/user/project/scripts'
+        >>> result['env']['DATA_DIR']
+        '/home/user/project/data'
         """
+        # For strings: expand system environment variables only
         if isinstance(obj, str):
             return os.path.expandvars(obj)
+        
+        # For lists: recursively process each item
         if isinstance(obj, list):
-            return [LLMProcessor._expand_env(x) for x in obj]
-        if isinstance(obj, dict):
-            return {k: LLMProcessor._expand_env(v) for k, v in obj.items()}
-        return obj
-
+            return [LLMProcessor._expand_env(item) for item in obj]
+        
+        # For non-dict objects: return as-is
+        if not isinstance(obj, dict):
+            return obj
+        
+        # === Dictionary processing ===
+        
+        # Step 1: Expand system environment variables in all fields
+        expanded_config = {}
+        for key, value in obj.items():
+            expanded_config[key] = LLMProcessor._expand_env(value)
+        
+        # Step 2: If no env field, return Step 1 result
+        env_field = expanded_config.get('env')
+        if not isinstance(env_field, dict):
+            return expanded_config
+        
+        # Step 3: Resolve cross-references within env field
+        # Try up to 10 iterations to avoid infinite loops
+        resolved_env = dict(env_field)
+        for _ in range(10):
+            prev_env = dict(resolved_env)
+            resolved_env = LLMProcessor._expand_with_env_vars(resolved_env, resolved_env)
+            # Stop if no changes occurred
+            if resolved_env == prev_env:
+                break
+        
+        # Step 4: Expand resolved env variables in other fields
+        final_config = {}
+        for key, value in expanded_config.items():
+            if key == 'env':
+                # Use resolved env field
+                final_config[key] = resolved_env
+            else:
+                # Expand resolved env variables in other fields
+                final_config[key] = LLMProcessor._expand_with_env_vars(value, resolved_env)
+        
+        return final_config
 
     @staticmethod
     def _validate_server_config(name: str, params: dict[str, Any]) -> None:
