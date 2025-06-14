@@ -333,7 +333,7 @@ class LLMProcessor:
         mcp_servers: list[Union[MCPServerStdio, MCPServerSse, MCPServerStreamableHttp]] = []
         
         for name, params in mcp_servers_params.items():
-            server = self._build_server(name, params)
+            server = self._build_server(name=name, params=params)
             await stack.enter_async_context(server)
             mcp_servers.append(server)
             
@@ -387,23 +387,23 @@ class LLMProcessor:
             If the text input is empty or invalid.
         """
         # Validate input
-        self._validate_input(text)
+        self._validate_input(text=text)
 
         # Prepare input data
-        input_data = self._prepare_input(text, image_data)
+        input_data = self._prepare_input(text=text, image_data=image_data)
 
         # Parse MCP servers configuration once
         mcp_servers_params = self.parse_mcp_servers_json(json_str=self._mcp_servers_json_str)
         
         # Validate capabilities
-        self._validate_capabilities(mcp_servers_params)
+        self._validate_capabilities(mcp_servers_params=mcp_servers_params)
 
         async with AsyncExitStack() as stack:
             # Create MCP servers
-            mcp_servers = await self._create_mcp_servers(stack, mcp_servers_params)
+            mcp_servers = await self._create_mcp_servers(stack=stack, mcp_servers_params=mcp_servers_params)
 
             # Create agent
-            agent = self._create_agent(mcp_servers)
+            agent = self._create_agent(mcp_servers=mcp_servers)
 
             # Run the agent and get response
             result = await Runner.run(agent, input=input_data)
@@ -443,23 +443,23 @@ class LLMProcessor:
             If the text input is empty or invalid.
         """
         # Validate input
-        self._validate_input(text)
+        self._validate_input(text=text)
 
         # Prepare input data
-        input_data = self._prepare_input(text, image_data)
+        input_data = self._prepare_input(text=text, image_data=image_data)
 
         # Parse MCP servers configuration once
         mcp_servers_params = self.parse_mcp_servers_json(json_str=self._mcp_servers_json_str)
         
         # Validate capabilities
-        self._validate_capabilities(mcp_servers_params)
+        self._validate_capabilities(mcp_servers_params=mcp_servers_params)
 
         async with AsyncExitStack() as stack:
             # Create MCP servers
-            mcp_servers = await self._create_mcp_servers(stack, mcp_servers_params)
+            mcp_servers = await self._create_mcp_servers(stack=stack, mcp_servers_params=mcp_servers_params)
 
             # Create agent
-            agent = self._create_agent(mcp_servers)
+            agent = self._create_agent(mcp_servers=mcp_servers)
 
             # Run the agent with streaming
             result = Runner.run_streamed(agent, input=input_data)
@@ -632,9 +632,9 @@ class LLMProcessor:
                 continue
             
             # Validate server type and connection
-            LLMProcessor._validate_server_config(name, params)
+            LLMProcessor._validate_server_config(name=name, params=params)
             
             # Expand environment variables
-            mcp_servers[name] = LLMProcessor._expand_env(params)
+            mcp_servers[name] = LLMProcessor._expand_env(obj=params)
 
         return mcp_servers
