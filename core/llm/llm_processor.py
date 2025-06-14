@@ -163,42 +163,145 @@ class LLMProcessor:
         if self._web_search_enabled != is_enabled:
             self._web_search_enabled = is_enabled
 
-    def _format_image_input(self, text: str, image_data: bytes) -> list[dict[str, Any]]:
+    def _validate_input(self, text: str) -> None:
         """
-        Format text and image data into the input format expected by Agents SDK.
+        Validate text input.
+
+        Parameters
+        ----------
+        text : str
+            Text to validate.
+
+        Raises
+        ------
+        ValueError
+            If the text input is empty or invalid.
+        """
+        if not text or not isinstance(text, str):
+            raise ValueError("Text input must be a non-empty string.")
+
+    def _prepare_input(self, text: str, image_data: bytes | None = None) -> str | list[dict[str, Any]]:
+        """
+        Prepare input data for the agent.
 
         Parameters
         ----------
         text : str
             Text prompt.
-        image_data : bytes
-            Image data in bytes format.
+        image_data : bytes | None, optional
+            Image data in bytes format, by default None.
 
         Returns
         -------
-        list[dict[str, Any]]
+        str | list[dict[str, Any]]
             Formatted input for the agent.
+
+        Raises
+        ------
+        ValueError
+            If the model does not support image inputs.
         """
-        # Convert image bytes to base64 string
-        base64_image = base64.b64encode(image_data).decode("utf-8")
+        if image_data is not None:
+            # Check if model supports images
+            if not LLMModelManager.check_image_input_supported(model_id=self._model_id):
+                raise ValueError(
+                    f"Model {self._model_id} does not support image inputs."
+                )
+            # Convert image bytes to base64 string
+            base64_image = base64.b64encode(image_data).decode("utf-8")
+            
+            # Format according to Agents SDK expectations
+            return [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "input_image",
+                            "detail": "auto",
+                            "image_url": f"data:image/jpeg;base64,{base64_image}",
+                        }
+                    ],
+                },
+                {
+                    "role": "user", 
+                    "content": text,
+                },
+            ]            
+        else:
+            return text
+
+    def _validate_capabilities(self) -> None:
+        """
+        Validate that the model supports the configured capabilities.
+
+        Raises
+        ------
+        ValueError
+            If the model does not support web search or MCP servers when enabled.
+        """
+        # Check if model supports web search
+        if self._web_search_enabled and not LLMModelManager.check_web_search_supported(model_id=self._model_id):
+            raise ValueError(
+                f"Model {self._model_id} does not support web search."
+            )
+
+        # Check if model supports MCP servers
+        mcp_servers_params = self.parse_mcp_servers_json(json_str=self._mcp_servers_json_str)
+        if len(mcp_servers_params) > 0 and not LLMModelManager.check_mcp_servers_supported(model_id=self._model_id):
+            raise ValueError(
+                f"Model {self._model_id} does not support MCP servers."
+            )
+
+    async def _create_mcp_servers(self, stack: AsyncExitStack) -> list[MCPServerStdio]:
+        """
+        Create MCP servers within an async context.
+
+        Parameters
+        ----------
+        stack : AsyncExitStack
+            Async context stack for managing server lifecycles.
+
+        Returns
+        -------
+        list[MCPServerStdio]
+            List of created MCP servers.
+        """
+        mcp_servers: list[MCPServerStdio] = []
+        mcp_servers_params = self.parse_mcp_servers_json(json_str=self._mcp_servers_json_str)
         
-        # Format according to Agents SDK expectations
-        return [
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "input_image",
-                        "detail": "auto",
-                        "image_url": f"data:image/jpeg;base64,{base64_image}",
-                    }
-                ],
-            },
-            {
-                "role": "user", 
-                "content": text,
-            },
-        ]
+        for name, params in mcp_servers_params.items():
+            server = await stack.enter_async_context(
+                MCPServerStdio(
+                    name=name,
+                    params=params,
+                    client_session_timeout_seconds=30,
+                )
+            )
+            mcp_servers.append(server)
+            
+        return mcp_servers
+
+    def _create_agent(self, mcp_servers: list[MCPServerStdio]) -> Agent:
+        """
+        Create an Agent instance with configured settings.
+
+        Parameters
+        ----------
+        mcp_servers : list[MCPServerStdio]
+            List of MCP servers to attach to the agent.
+
+        Returns
+        -------
+        Agent
+            Configured agent instance.
+        """
+        return Agent(
+            name="Assistant",
+            instructions=self._system_instruction,
+            model=self._model_id,
+            tools=[WebSearchTool()] if self._web_search_enabled else [],
+            mcp_servers=mcp_servers,
+        )
 
     async def process_text(
         self,
@@ -226,55 +329,20 @@ class LLMProcessor:
             If the text input is empty or invalid.
         """
         # Validate input
-        if not text or not isinstance(text, str):
-            raise ValueError("Text input must be a non-empty string.")
+        self._validate_input(text)
 
-        # Format input based on whether image is included
-        if image_data is not None:
-            # Check if model supports images
-            if not LLMModelManager.check_image_input_supported(model_id=self._model_id):
-                raise ValueError(
-                    f"Model {self._model_id} does not support image inputs."
-                )
-            input_data = self._format_image_input(text, image_data)
-        else:
-            input_data = text
+        # Prepare input data
+        input_data = self._prepare_input(text, image_data)
 
-        # Check if model supports web search
-        if self._web_search_enabled and not LLMModelManager.check_web_search_supported(model_id=self._model_id):
-            raise ValueError(
-                f"Model {self._model_id} does not support web search."
-            )
-
-        # Check if model supports MCP servers
-        mcp_servers_params = self.parse_mcp_servers_json(json_str=self._mcp_servers_json_str)
-        if len(mcp_servers_params) > 0 and not LLMModelManager.check_mcp_servers_supported(model_id=self._model_id):
-            raise ValueError(
-                f"Model {self._model_id} does not support MCP servers."
-            )
+        # Validate capabilities
+        self._validate_capabilities()
 
         async with AsyncExitStack() as stack:
             # Create MCP servers
-            mcp_servers: list[MCPServerStdio] = []
-            for name, params in mcp_servers_params.items():
-                server = await stack.enter_async_context(
-                    MCPServerStdio(
-                        name=name,
-                        params=params,
-                        client_session_timeout_seconds=30,
-                    )
-                )
-                await server.list_tools()
-                mcp_servers.append(server)
+            mcp_servers = await self._create_mcp_servers(stack)
 
             # Create agent
-            agent = Agent(
-                name="Assistant",
-                instructions=self._system_instruction,
-                model=self._model_id,
-                tools=[WebSearchTool()] if self._web_search_enabled else [],
-                mcp_servers=mcp_servers,
-            )
+            agent = self._create_agent(mcp_servers)
 
             # Run the agent and get response
             result = await Runner.run(agent, input=input_data)
@@ -314,55 +382,20 @@ class LLMProcessor:
             If the text input is empty or invalid.
         """
         # Validate input
-        if not text or not isinstance(text, str):
-            raise ValueError("Text input must be a non-empty string.")
+        self._validate_input(text)
 
-        # Format input based on whether image is included
-        if image_data is not None:
-            # Check if model supports images
-            if not LLMModelManager.check_image_input_supported(model_id=self._model_id):
-                raise ValueError(
-                    f"Model {self._model_id} does not support image inputs."
-                )
-            input_data = self._format_image_input(text, image_data)
-        else:
-            input_data = text
+        # Prepare input data
+        input_data = self._prepare_input(text, image_data)
 
-        # Check if model supports web search
-        if self._web_search_enabled and not LLMModelManager.check_web_search_supported(model_id=self._model_id):
-            raise ValueError(
-                f"Model {self._model_id} does not support web search."
-            )
-
-        # Check if model supports MCP servers
-        mcp_servers_params = self.parse_mcp_servers_json(json_str=self._mcp_servers_json_str)
-        if len(mcp_servers_params) > 0 and not LLMModelManager.check_mcp_servers_supported(model_id=self._model_id):
-            raise ValueError(
-                f"Model {self._model_id} does not support MCP servers."
-            )
+        # Validate capabilities
+        self._validate_capabilities()
 
         async with AsyncExitStack() as stack:
             # Create MCP servers
-            mcp_servers: list[MCPServerStdio] = []
-            for name, params in mcp_servers_params.items():
-                server = await stack.enter_async_context(
-                    MCPServerStdio(
-                        name=name,
-                        params=params,
-                        client_session_timeout_seconds=30,
-                    )
-                )
-                await server.list_tools()
-                mcp_servers.append(server)
+            mcp_servers = await self._create_mcp_servers(stack)
 
             # Create agent
-            agent = Agent(
-                name="Assistant",
-                instructions=self._system_instruction,
-                model=self._model_id,
-                tools=[WebSearchTool()] if self._web_search_enabled else [],
-                mcp_servers=mcp_servers,
-            )
+            agent = self._create_agent(mcp_servers)
 
             # Run the agent with streaming
             result = Runner.run_streamed(agent, input=input_data)
