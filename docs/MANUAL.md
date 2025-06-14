@@ -250,19 +250,68 @@ Manage detailed settings for each instruction set across 5 tabs.
 
 #### 🔌 **MCP Server Configuration**
 
-- Configure Model Context Protocol (MCP) servers in JSON format
-- Example configuration: Playwright Web Automation
+Configure Model Context Protocol (MCP) servers in JSON format to extend AI capabilities with external tools and services.
+
+#### **Supported Server Types**
+
+**1. Local Command-Based Servers (stdio)**
+
+- Execute local commands and scripts
+- Default type for command-based configurations
+
+**2. HTTP/SSE Servers**
+
+- Connect to web-based MCP services
+- Support for Server-Sent Events (SSE)
+- Support for streamable HTTP connections
+
+#### **Configuration Examples**
+
+**Basic Local Server (Playwright):**
 
 ```json
 {
   "mcpServers": {
     "playwright": {
       "command": "npx",
-      "args": ["@playwright/mcp@latest"]
+      "args": ["-y", "@playwright/mcp@latest"]
     }
   }
 }
 ```
+
+**HTTP/SSE Server:**
+
+```json
+{
+  "mcpServers": {
+    "microsoft.docs.mcp": {
+      "type": "http",
+      "url": "https://learn.microsoft.com/api/mcp"
+    }
+  }
+}
+```
+
+#### **Configuration Options**
+
+**Common Options:**
+
+- `enabled` (boolean, default: true) - Enable/disable specific servers
+- `timeout` (number, default: 30) - Connection timeout in seconds
+
+**Local Servers (stdio):**
+
+- `command` (string, required) - Executable command
+- `args` (array, optional) - Command arguments
+- `env` (object, optional) - Environment variables
+- `cwd` (string, optional) - Working directory
+
+**HTTP/SSE Servers:**
+
+- `type` (string, required) - Server type: "sse", "stream"/"http"/"streamable-http"
+- `url` (string, required) - Server endpoint URL
+- `headers` (object, optional) - HTTP headers
 
 ### 3. LLM Instructions Tab
 

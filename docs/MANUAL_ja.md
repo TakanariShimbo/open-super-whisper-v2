@@ -251,19 +251,68 @@ Open Super Whisper V2 を PC 起動時に自動的に開始するようにする
 
 #### 🔌 **MCP サーバー設定**
 
-- Model Context Protocol (MCP) サーバーの設定を JSON 形式で記述
-- 設定例: Playwright Web 自動操作
+Model Context Protocol (MCP) サーバーを JSON 形式で設定し、AI エージェントに外部ツールやサービスの機能を拡張します。
+
+#### **サポートされるサーバータイプ**
+
+**1. ローカルコマンドベースサーバー (stdio)**
+
+- ローカルコマンドやスクリプトを実行
+- コマンドベース設定のデフォルトタイプ
+
+**2. HTTP/SSE サーバー**
+
+- Web ベースの MCP サービスに接続
+- Server-Sent Events (SSE) をサポート
+- ストリーマブル HTTP 接続をサポート
+
+#### **設定例**
+
+**基本的なローカルサーバー (Playwright):**
 
 ```json
 {
   "mcpServers": {
     "playwright": {
       "command": "npx",
-      "args": ["@playwright/mcp@latest"]
+      "args": ["-y", "@playwright/mcp@latest"]
     }
   }
 }
 ```
+
+**HTTP/SSE サーバー:**
+
+```json
+{
+  "mcpServers": {
+    "microsoft.docs.mcp": {
+      "type": "http",
+      "url": "https://learn.microsoft.com/api/mcp"
+    }
+  }
+}
+```
+
+#### **設定オプション**
+
+**共通オプション:**
+
+- `enabled` (boolean, デフォルト: true) - 特定のサーバーを有効/無効にする
+- `timeout` (number, デフォルト: 30) - 接続タイムアウト（秒）
+
+**ローカルサーバー (stdio):**
+
+- `command` (string, 必須) - 実行可能コマンド
+- `args` (array, オプション) - コマンド引数
+- `env` (object, オプション) - 環境変数
+- `cwd` (string, オプション) - 作業ディレクトリ
+
+**HTTP/SSE サーバー:**
+
+- `type` (string, 必須) - サーバータイプ: "sse", "stream"/"http"/"streamable-http"
+- `url` (string, 必須) - サーバーエンドポイント URL
+- `headers` (object, オプション) - HTTP ヘッダー
 
 ### 3. LLM インストラクション タブ
 
