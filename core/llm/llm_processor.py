@@ -17,11 +17,12 @@ the modern Agents SDK approach.
 import asyncio
 import base64
 import json
+import os
 from contextlib import AsyncExitStack
-from typing import Any, Callable
+from typing import Any, Callable, Union, Literal
 
 from agents import Agent, Runner, WebSearchTool, set_default_openai_key
-from agents.mcp import MCPServerStdio
+from agents.mcp import MCPServerStdio, MCPServerSse, MCPServerStreamableHttp
 from openai.types.responses import ResponseTextDeltaEvent
 
 from .llm_model_manager import LLMModelManager
@@ -230,9 +231,14 @@ class LLMProcessor:
         else:
             return text
 
-    def _validate_capabilities(self) -> None:
+    def _validate_capabilities(self, mcp_servers_params: dict[str, dict[str, Any]]) -> None:
         """
         Validate that the model supports the configured capabilities.
+
+        Parameters
+        ----------
+        mcp_servers_params : dict[str, dict[str, Any]]
+            Parsed MCP server parameters.
 
         Raises
         ------
@@ -246,13 +252,69 @@ class LLMProcessor:
             )
 
         # Check if model supports MCP servers
-        mcp_servers_params = self.parse_mcp_servers_json(json_str=self._mcp_servers_json_str)
         if len(mcp_servers_params) > 0 and not LLMModelManager.check_mcp_servers_supported(model_id=self._model_id):
             raise ValueError(
                 f"Model {self._model_id} does not support MCP servers."
             )
 
-    async def _create_mcp_servers(self, stack: AsyncExitStack) -> list[MCPServerStdio]:
+    def _build_server(self, name: str, params: dict[str, Any]) -> Union[MCPServerStdio, MCPServerSse, MCPServerStreamableHttp]:
+        """
+        Build appropriate MCP server based on configuration.
+        
+        Parameters
+        ----------
+        name : str
+            Server name.
+        params : dict[str, Any]
+            Server parameters.
+            
+        Returns
+        -------
+        Union[MCPServerStdio, MCPServerSse, MCPServerStreamableHttp]
+            Configured MCP server instance.
+        """
+        timeout = params.get("timeout", 30)
+        
+        # Build stdio server
+        if "command" in params:
+            stdio_params: dict[str, Any] = {
+                "command": params["command"],
+            }
+            if params.get("args"):
+                stdio_params["args"] = params["args"]
+            if params.get("env"):
+                stdio_params["env"] = params["env"]
+            if params.get("cwd"):
+                stdio_params["cwd"] = params["cwd"]
+            
+            return MCPServerStdio(
+                name=name,
+                params=stdio_params,
+                client_session_timeout_seconds=timeout,
+            )
+        
+        # Build HTTP-based server
+        server_type: Literal["sse", "stream", "http", "streamable-http"] = params["type"]
+        http_params: dict[str, Any] = {
+            "url": params["url"],
+        }
+        if params.get("headers"):
+            http_params["headers"] = params["headers"]
+        
+        if server_type == "sse":
+            return MCPServerSse(
+                name=name,
+                params=http_params,
+                client_session_timeout_seconds=timeout,
+            )
+        else:
+            return MCPServerStreamableHttp(
+                name=name,
+                params=http_params,
+                client_session_timeout_seconds=timeout,
+            )
+
+    async def _create_mcp_servers(self, stack: AsyncExitStack, mcp_servers_params: dict[str, dict[str, Any]]) -> list[Union[MCPServerStdio, MCPServerSse, MCPServerStreamableHttp]]:
         """
         Create MCP servers within an async context.
 
@@ -260,34 +322,30 @@ class LLMProcessor:
         ----------
         stack : AsyncExitStack
             Async context stack for managing server lifecycles.
+        mcp_servers_params : dict[str, dict[str, Any]]
+            Parsed MCP server parameters.
 
         Returns
         -------
-        list[MCPServerStdio]
+        list[Union[MCPServerStdio, MCPServerSse, MCPServerStreamableHttp]]
             List of created MCP servers.
         """
-        mcp_servers: list[MCPServerStdio] = []
-        mcp_servers_params = self.parse_mcp_servers_json(json_str=self._mcp_servers_json_str)
+        mcp_servers: list[Union[MCPServerStdio, MCPServerSse, MCPServerStreamableHttp]] = []
         
         for name, params in mcp_servers_params.items():
-            server = await stack.enter_async_context(
-                MCPServerStdio(
-                    name=name,
-                    params=params,
-                    client_session_timeout_seconds=30,
-                )
-            )
+            server = self._build_server(name, params)
+            await stack.enter_async_context(server)
             mcp_servers.append(server)
             
         return mcp_servers
 
-    def _create_agent(self, mcp_servers: list[MCPServerStdio]) -> Agent:
+    def _create_agent(self, mcp_servers: list[Union[MCPServerStdio, MCPServerSse, MCPServerStreamableHttp]]) -> Agent:
         """
         Create an Agent instance with configured settings.
 
         Parameters
         ----------
-        mcp_servers : list[MCPServerStdio]
+        mcp_servers : list[Union[MCPServerStdio, MCPServerSse, MCPServerStreamableHttp]]
             List of MCP servers to attach to the agent.
 
         Returns
@@ -334,12 +392,15 @@ class LLMProcessor:
         # Prepare input data
         input_data = self._prepare_input(text, image_data)
 
+        # Parse MCP servers configuration once
+        mcp_servers_params = self.parse_mcp_servers_json(json_str=self._mcp_servers_json_str)
+        
         # Validate capabilities
-        self._validate_capabilities()
+        self._validate_capabilities(mcp_servers_params)
 
         async with AsyncExitStack() as stack:
             # Create MCP servers
-            mcp_servers = await self._create_mcp_servers(stack)
+            mcp_servers = await self._create_mcp_servers(stack, mcp_servers_params)
 
             # Create agent
             agent = self._create_agent(mcp_servers)
@@ -387,12 +448,15 @@ class LLMProcessor:
         # Prepare input data
         input_data = self._prepare_input(text, image_data)
 
+        # Parse MCP servers configuration once
+        mcp_servers_params = self.parse_mcp_servers_json(json_str=self._mcp_servers_json_str)
+        
         # Validate capabilities
-        self._validate_capabilities()
+        self._validate_capabilities(mcp_servers_params)
 
         async with AsyncExitStack() as stack:
             # Create MCP servers
-            mcp_servers = await self._create_mcp_servers(stack)
+            mcp_servers = await self._create_mcp_servers(stack, mcp_servers_params)
 
             # Create agent
             agent = self._create_agent(mcp_servers)
@@ -424,7 +488,108 @@ class LLMProcessor:
         pass
 
     @staticmethod
-    def parse_mcp_servers_json(json_str: str) -> dict[str, Any]:
+    def _expand_env(obj: Any) -> Any:
+        """
+        Recursively expand environment variables in configuration objects.
+        
+        This method processes strings, lists, and dictionaries to expand any
+        environment variables using the ${VAR} or $VAR syntax.
+        
+        Parameters
+        ----------
+        obj : Any
+            The configuration object to process. Can be a string, list, dict,
+            or any other type.
+            
+        Returns
+        -------
+        Any
+            The processed object with environment variables expanded.
+            - Strings: Environment variables are expanded using os.path.expandvars
+            - Lists: Each element is recursively processed
+            - Dicts: Each value is recursively processed
+            - Other types: Returned unchanged
+            
+        Examples
+        --------
+        >>> os.environ['HOME'] = '/home/user'
+        >>> LLMProcessor._expand_env('${HOME}/config')
+        '/home/user/config'
+        
+        >>> LLMProcessor._expand_env({'path': '${HOME}', 'items': ['$USER', 'test']})
+        {'path': '/home/user', 'items': ['username', 'test']}
+        """
+        if isinstance(obj, str):
+            return os.path.expandvars(obj)
+        if isinstance(obj, list):
+            return [LLMProcessor._expand_env(x) for x in obj]
+        if isinstance(obj, dict):
+            return {k: LLMProcessor._expand_env(v) for k, v in obj.items()}
+        return obj
+
+
+    @staticmethod
+    def _validate_server_config(name: str, params: dict[str, Any]) -> None:
+        """
+        Validate server configuration.
+        
+        Parameters
+        ----------
+        name : str
+            Server name.
+        params : dict[str, Any]
+            Server parameters.
+            
+        Raises
+        ------
+        ValueError
+            If configuration is invalid.
+        """
+        http_types = {"sse", "stream", "http", "streamable-http"}
+        allowed_types = {"stdio"} | http_types
+        
+        server_type = params.get("type")
+        
+        # Validate stdio type
+        if "command" in params:
+            if not isinstance(params["command"], str):
+                raise ValueError(f'Server "{name}": "command" must be a string.')
+            args = params.get("args")
+            if args is not None and not isinstance(args, list):
+                raise ValueError(f'Server "{name}": "args" must be a list.')
+            if server_type and server_type != "stdio":
+                raise ValueError(f'Server "{name}": type must be "stdio" or omitted for command-based servers.')
+        
+        # Validate HTTP/SSE type
+        elif "url" in params:
+            if not isinstance(params["url"], str):
+                raise ValueError(f'Server "{name}": "url" must be a string.')
+            if server_type not in http_types:
+                raise ValueError(
+                    f'Server "{name}": url servers require type '
+                    f'"sse" or "stream"/"http"/"streamable-http".'
+                )
+        else:
+            raise ValueError(
+                f'Server "{name}" needs "command" (stdio) or "url" (HTTP/SSE).'
+            )
+        
+        # Validate server type is allowed
+        if server_type and server_type not in allowed_types:
+            raise ValueError(
+                f'Server "{name}": unknown type "{server_type}". Allowed: {allowed_types}'
+            )
+        
+        # Validate optional fields
+        if "headers" in params and not isinstance(params["headers"], dict):
+            raise ValueError(f'Server "{name}": "headers" must be an object.')
+        if "env" in params and not isinstance(params["env"], dict):
+            raise ValueError(f'Server "{name}": "env" must be an object.')
+        if "cwd" in params and params.get("cwd") is not None and not isinstance(params["cwd"], str):
+            raise ValueError(f'Server "{name}": "cwd" must be a string.')
+
+    @staticmethod
+    def parse_mcp_servers_json(json_str: str) -> dict[str, dict[str, Any]]:
         """
         Parse the MCP servers JSON string into a dictionary of parameters.
 
@@ -435,7 +600,7 @@ class LLMProcessor:
 
         Returns
         -------
-        dict[str, Any]
+        dict[str, dict[str, Any]]
             MCP servers parameters.
 
         Raises
@@ -444,24 +609,32 @@ class LLMProcessor:
             If the MCP servers JSON string is invalid.
         """
         try:
-            mcp_servers = json.loads(json_str)
-            if not isinstance(mcp_servers, dict):
-                raise AssertionError(f"MCP servers must be a dict.")
+            root = json.loads(json_str)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"Invalid JSON: {exc}") from None
 
-            mcp_servers_params = mcp_servers.get("mcpServers", {})
-            if not isinstance(mcp_servers_params, dict):
-                raise AssertionError(f"MCP servers must be a dict.")
+        if not isinstance(root, dict):
+            raise ValueError("Root must be an object.")
 
-            for name, params in mcp_servers_params.items():
-                if not isinstance(name, str):
-                    raise AssertionError(f"MCP server 'name' must be a string.")
-                if not isinstance(params, dict):
-                    raise AssertionError(f"MCP server 'params' must be a dict.")
-                if params.get("command", None) is None:
-                    raise AssertionError(f"MCP server 'command' must be set.")
-                if params.get("args", None) is None:
-                    raise AssertionError(f"MCP server 'args' must be set.")
-        except (json.JSONDecodeError, AssertionError) as e:
-            raise ValueError(str(e))
-        
-        return mcp_servers_params
+        original_mcp_servers = root.get("mcpServers", {})
+        if not isinstance(original_mcp_servers, dict):
+            raise ValueError('"mcpServers" must be an object.')
+
+        mcp_servers: dict[str, dict[str, Any]] = {}
+        for name, params in original_mcp_servers.items():
+            if not isinstance(name, str):
+                raise ValueError("Server names must be strings.")
+            if not isinstance(params, dict):
+                raise ValueError(f'Server "{name}" must be an object.')
+            
+            # Skip disabled servers
+            if params.get("enabled", True) is False:
+                continue
+            
+            # Validate server type and connection
+            LLMProcessor._validate_server_config(name, params)
+            
+            # Expand environment variables
+            mcp_servers[name] = LLMProcessor._expand_env(params)
+
+        return mcp_servers
