@@ -156,8 +156,7 @@ This is the "wakeup screen" that automatically appears when no valid OpenAI API 
 1. Select an **Instruction Set** (e.g., "Transcription Agent") and click **"Start Recording"** or press your configured **hotkey**
 2. Speak clearly into your microphone
 3. Click **"Stop Recording"** or press the **hotkey** again
-4. Review transcription results in the STT Output tab
-5. View AI-processed results in the LLM Output tab
+4. Review transcription results in the STT Output tab or View AI agent processing results in the LLM Output tab
 
 #### ⚡ Hotkey Usage
 
