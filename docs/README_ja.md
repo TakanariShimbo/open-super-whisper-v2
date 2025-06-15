@@ -68,8 +68,12 @@ Open Super Whisper V2 は以下の 4 つのステップで動作します：
 ├── docs/                                          # ドキュメントとサンプルファイル
 │   ├── README.md                                  # プロジェクトドキュメント（英語版）
 │   ├── README_ja.md                               # プロジェクトドキュメント（日本語版）
-│   ├── settings_sample_en.json                    # サンプル設定ファイル（英語版）
-│   └── settings_sample_ja.json                    # サンプル設定ファイル（日本語版）
+│   ├── MANUAL.md                                  # ユーザーマニュアル（英語版）
+│   ├── MANUAL_ja.md                               # ユーザーマニュアル（日本語版）
+│   ├── manual/                                    # マニュアル用スクリーンショットと画像
+│   └── settings_sample/                           # サンプル設定ファイル
+│       ├── settings_en.json                       # サンプル設定ファイル（英語版）
+│       └── settings_ja.json                       # サンプル設定ファイル（日本語版）
 ├── core/                                          # コア機能（GUI非依存、完全実装済み）
 │   ├── __init__.py
 │   ├── api/                                       # APIクライアントファクトリーとユーティリティ

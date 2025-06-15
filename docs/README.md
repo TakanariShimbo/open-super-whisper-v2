@@ -68,8 +68,12 @@ Open Super Whisper V2 operates through the following 4 steps:
 ├── docs/                                          # Documentation and sample files
 │   ├── README.md                                  # Project documentation (English)
 │   ├── README_ja.md                               # Project documentation (Japanese)
-│   ├── settings_sample_en.json                    # Sample settings file (English)
-│   └── settings_sample_ja.json                    # Sample settings file (Japanese)
+│   ├── MANUAL.md                                  # User manual (English)
+│   ├── MANUAL_ja.md                               # User manual (Japanese)
+│   ├── manual/                                    # Manual screenshots and images
+│   └── settings_sample/                           # Sample configuration files
+│       ├── settings_en.json                       # Sample settings file (English)
+│       └── settings_ja.json                       # Sample settings file (Japanese)
 ├── core/                                          # Core functionality (GUI-independent, fully implemented)
 │   ├── __init__.py
 │   ├── api/                                       # API client factory and utilities
