@@ -51,14 +51,14 @@ To use a sample configuration file:
 
 The sample configuration files include 6 pre-configured agents:
 
-| Hotkey     | Initial Task Example    | Use Case                                                                        |
-| ---------- | ----------------------- | ------------------------------------------------------------------------------- |
-| Ctrl ⇧ 1   | Transcription           | Instantly convert meetings, lectures, voice memos to text                       |
-| Ctrl ⇧ 2   | Document Creation       | "Write a formal email about ___" → Generates polished email draft               |
-| Ctrl ⇧ 3   | Search Keywords         | Summarize long questions and extract optimal web search keywords                |
-| Ctrl ⇧ 4   | Text Q&A                | Read clipboard text, provide summary + Q&A                                      |
-| Ctrl ⇧ 5   | Image Q&A               | Analyze clipboard images, explain content and provide insights                  |
-| Ctrl ⇧ 6   | Web Automation          | Auto-execute site navigation, data collection, form filling with Playwright MCP |
+| Hotkey   | Initial Task Example | Use Case                                                                        |
+| -------- | -------------------- | ------------------------------------------------------------------------------- |
+| Ctrl ⇧ 1 | Transcription        | Instantly convert meetings, lectures, voice memos to text                       |
+| Ctrl ⇧ 2 | Document Creation    | "Write a formal email about \_\_\_" → Generates polished email draft            |
+| Ctrl ⇧ 3 | Search Keywords      | Summarize long questions and extract optimal web search keywords                |
+| Ctrl ⇧ 4 | Text Q&A             | Read clipboard text, provide summary + Q&A                                      |
+| Ctrl ⇧ 5 | Image Q&A            | Analyze clipboard images, explain content and provide insights                  |
+| Ctrl ⇧ 6 | Web Automation       | Auto-execute site navigation, data collection, form filling with Playwright MCP |
 
 ## Auto-Start Configuration
 
@@ -402,6 +402,8 @@ The application runs in the system tray, providing quick access to all features:
 
 ### 📝 Use Case 1: Text Q&A Agent (ctrl+shift+4) for Email Reply Creation
 
+<img src="manual/usecase1_en.png" alt="Usecase1" width="600">
+
 1. **Scenario**: Create a draft reply to a received email
 2. **Operation**:
    - Copy the email content you want to reply to into the clipboard
@@ -416,6 +418,8 @@ The application runs in the system tray, providing quick access to all features:
 
 ### 🔍 Use Case 2: Image Q&A Agent (ctrl+shift+5) for Graph Analysis
 
+<img src="manual/usecase2_en.png" alt="Usecase2" width="600">
+
 1. **Scenario**: Analyze a screenshot of a chart with voice questions
 2. **Operation**:
    - Take a screenshot of graph or chart and copy to clipboard
@@ -428,6 +432,8 @@ The application runs in the system tray, providing quick access to all features:
 4. **Application**: Use for presentations and strategic decision making
 
 ### 🌐 Use Case 3: Web Automation Agent (ctrl+shift+6) for Information Gathering
+
+<img src="manual/usecase3_en.png" alt="Usecase3" width="600">
 
 1. **Scenario**: Automatically collect latest competitor information
 2. **Operation**:
