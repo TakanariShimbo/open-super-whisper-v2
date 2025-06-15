@@ -5,6 +5,8 @@
 
 Open Super Whisper V2 は、音声入力から AI エージェントによる自動処理まで、すべてをシンプルな操作で実現する革新的なデスクトップアプリケーションです。このガイドでは、初回セットアップから実際の使用方法まで、ステップバイステップで詳しく説明します。
 
+[Open Super Whisper V2 の最新リリースをダウンロード](https://github.com/TakanariShimbo/open-super-whisper-v2/releases/latest)
+
 ## 📋 目次
 
 1. [コンフィグ設定](#コンフィグ設定)

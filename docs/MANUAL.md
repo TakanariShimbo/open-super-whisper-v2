@@ -5,6 +5,8 @@
 
 Open Super Whisper V2 is an innovative desktop application that transforms your voice into powerful AI agent-driven automatic processing with simple operations. This guide provides detailed step-by-step explanations from initial setup to actual usage.
 
+[Download latest release of "Open Super Whisper V2"](https://github.com/TakanariShimbo/open-super-whisper-v2/releases/latest)
+
 ## 📋 Table of Contents
 
 1. [Configuration Setup](#configuration-setup)
