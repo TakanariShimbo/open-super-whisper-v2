@@ -3,7 +3,7 @@
 
 # Open Super Whisper V2 - User Manual
 
-Open Super Whisper V2 is an innovative desktop application that transforms your voice into action through AI-powered agents. This comprehensive guide walks you through setup, configuration, and effective usage of this powerful voice-to-action tool.
+Open Super Whisper V2 is an innovative desktop application that transforms your voice into powerful AI agent-driven automatic processing with simple operations. This guide provides detailed step-by-step explanations from initial setup to actual usage.
 
 ## 📋 Table of Contents
 
@@ -212,13 +212,13 @@ Manage detailed settings for each instruction set across 5 tabs.
 
 #### 🎤 **STT Language**
 
-- Select speech recognition target language (e.g., Auto-detect)
-- Auto-detect automatically identifies the spoken language
+- Select transcription target language (e.g., Japanese (ja))
+- Auto setting enables automatic language detection
 
 #### 🤖 **STT Model**
 
-- Choose OpenAI Whisper model
-- Available: GPT-4o Transcribe and others
+- Select transcription model used by Speech to text API
+- Example setting: `GPT-4o Transcribe`
 
 #### ⌨️ **Hotkey**
 
@@ -232,7 +232,8 @@ Manage detailed settings for each instruction set across 5 tabs.
 
 #### 🤖 **LLM Model**
 
-- Select language model to use (e.g., GPT-4.1)
+- Select LLM model used by Agent SDK
+- Example setting: `GPT-4.1`
 
 #### 🌐 **Web Search**
 
@@ -370,7 +371,7 @@ Use the Playwright tools to navigate websites, interact with elements, fill form
 ### 📋 **Copy results to clipboard automatically**
 
 - Automatic clipboard copy feature for AI processing results
-- When enabled: Output is automatically copied to clipboard upon processing completion for immediate use in other applications
+- Output is automatically copied to clipboard upon processing completion and can be immediately pasted into other applications
 
 ### 🌐 **Application Language**
 
@@ -395,13 +396,13 @@ The application runs in the system tray, providing quick access to all features:
 
 ## Usage Examples
 
-### 📝 Example 1: Written Form Agent (ctrl+shift+2)
+### 📝 Example 1: Document Creation Agent (ctrl+shift+2)
 
 1. **Scenario**: Convert meeting voice notes into formal minutes
 2. **Operation**:
-   - Select "Written Form Agent" in Instruction Set dropdown
+   - Select "Document Creation Agent" in Instruction Set dropdown
    - Press hotkey `ctrl+shift+2` or click recording button
-   - Say: "Create formal meeting minutes for today's product planning discussion about development timeline and budget allocation"
+   - Say: "Organize the development schedule and budget for the new product discussed in today's planning meeting"
    - Press hotkey again or click stop recording button
 3. **Results**:
    - **STT Output**: Voice converted to text
@@ -445,13 +446,13 @@ The application runs in the system tray, providing quick access to all features:
 - **Check permissions**: Ensure application has microphone access permission
 - **Reduce noise**: Try recording in a quieter environment
 
-#### API Errors
+### API Errors
 
 - **Verify API key**: Check that correct API key is configured
 - **Check quota**: Verify you haven't reached API usage limits
 - **Check network**: Ensure stable internet connection
 
-#### Hotkeys Not Working
+### Hotkeys Not Working
 
 - **Check conflicts**: Ensure no other applications use the same hotkey
 - **Admin rights**: Run application with administrator privileges if needed
