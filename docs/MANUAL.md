@@ -49,14 +49,16 @@ To use a sample configuration file:
 
 ### Sample Content
 
-The sample configuration files include the following instruction sets:
+The sample configuration files include 6 pre-configured agents:
 
-- **Transcription Agent** (Ctrl+Shift+1) - Basic speech-to-text conversion
-- **Document Creation Agent** (Ctrl+Shift+2) - Automatically convert speech to formal written documents
-- **Search Keywords Agent** (Ctrl+Shift+3) - Auto-generate optimal search keywords from speech
-- **Text Q&A Agent** (Ctrl+Shift+4) - Analyze clipboard text and answer questions (with web search)
-- **Image Q&A Agent** (Ctrl+Shift+5) - Analyze clipboard images and answer questions (with web search)
-- **Web Automation Agent** (Ctrl+Shift+6) - Autonomous web interactions using Playwright
+| Hotkey     | Initial Task Example    | Use Case                                                                        |
+| ---------- | ----------------------- | ------------------------------------------------------------------------------- |
+| Ctrl ⇧ 1   | Transcription           | Instantly convert meetings, lectures, voice memos to text                       |
+| Ctrl ⇧ 2   | Document Creation       | "Write a formal email about ___" → Generates polished email draft               |
+| Ctrl ⇧ 3   | Search Keywords         | Summarize long questions and extract optimal web search keywords                |
+| Ctrl ⇧ 4   | Text Q&A                | Read clipboard text, provide summary + Q&A                                      |
+| Ctrl ⇧ 5   | Image Q&A               | Analyze clipboard images, explain content and provide insights                  |
+| Ctrl ⇧ 6   | Web Automation          | Auto-execute site navigation, data collection, form filling with Playwright MCP |
 
 ## Auto-Start Configuration
 
@@ -398,42 +400,40 @@ The application runs in the system tray, providing quick access to all features:
 
 ## Usage Examples
 
-### 📝 Example 1: Document Creation Agent (ctrl+shift+2)
+### 📝 Use Case 1: Text Q&A Agent (ctrl+shift+4) for Email Reply Creation
 
-1. **Scenario**: Convert meeting voice notes into formal minutes
+1. **Scenario**: Create a draft reply to a received email
 2. **Operation**:
-   - Select "Document Creation Agent" in Instruction Set dropdown
-   - Press hotkey `ctrl+shift+2` or click recording button
-   - Say: "Organize the development schedule and budget for the new product discussed in today's planning meeting"
-   - Press hotkey again or click stop recording button
+   - Copy the email content you want to reply to into the clipboard
+   - Press hotkey `ctrl+shift+4`
+   - Say: "Create a polite reply to this email agreeing to schedule the meeting"
+   - Press the hotkey again
 3. **Results**:
    - **STT Output**: Voice converted to text
-   - **LLM Output**: Structured formal meeting minutes generated
+   - **LLM Output**: Appropriate reply generated based on the original email content
    - Automatically copied to clipboard (if enabled)
-4. **Application**: Paste into Word or Notion for meeting documentation
+4. **Application**: Paste into email app, make minor adjustments if needed, then send
 
-### 🔍 Example 2: Image Q&A Agent (ctrl+shift+5)
+### 🔍 Use Case 2: Image Q&A Agent (ctrl+shift+5) for Graph Analysis
 
 1. **Scenario**: Analyze a screenshot of a chart with voice questions
 2. **Operation**:
    - Take a screenshot of graph or chart and copy to clipboard
-   - Select "Image Q&A Agent" in Instruction Set
-   - Ensure "Include Clipboard Image" is enabled
    - Press hotkey `ctrl+shift+5`
    - Say: "Analyze this sales graph trends and suggest strategies for next month"
+   - Press the hotkey again
 3. **Results**:
    - AI analyzes image content
    - Detailed analysis report with specific recommendations based on graph data
 4. **Application**: Use for presentations and strategic decision making
 
-### 🌐 Example 3: Web Automation Agent (ctrl+shift+6)
+### 🌐 Use Case 3: Web Automation Agent (ctrl+shift+6) for Information Gathering
 
-1. **Scenario**: Automatically gather latest industry information
+1. **Scenario**: Automatically collect latest competitor information
 2. **Operation**:
-   - Select "Web Automation Agent" in Instruction Set
-   - Verify Playwright is configured in MCP servers
    - Press hotkey `ctrl+shift+6`
    - Say: "Search for latest AI industry news and summarize the three most important topics this week"
+   - Press the hotkey again
 3. **Results**:
    - Playwright automatically navigates multiple websites
    - Collects and analyzes latest news
