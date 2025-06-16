@@ -19,27 +19,67 @@ from core.llm.llm_processor import LLMProcessor
 from core.api.api_key_checker import APIKeyChecker
 
 
-def _get_test_openai_api_key() -> str | None:
-    """Get API key from user input for testing"""
+def _get_test_api_keys() -> tuple[str | None, str | None, str | None]:
+    """Get API keys from user input for testing"""
     try:
-        openai_api_key = input("Enter your OpenAI API key for testing: ").strip()
-        return openai_api_key if openai_api_key else None
+        print("Enter API keys for testing:")
+        openai_api_key = input("OpenAI API key (required): ").strip()
+        print("Optional API keys (press Enter to skip):")
+        anthropic_api_key = input("Anthropic API key: ").strip()
+        gemini_api_key = input("Gemini API key: ").strip()
+        
+        return (
+            openai_api_key if openai_api_key else None,
+            anthropic_api_key if anthropic_api_key else None,
+            gemini_api_key if gemini_api_key else None
+        )
     except KeyboardInterrupt:
         print("\n⚠️ Test cancelled by user")
-        return None
+        return None, None, None
 
 
-def _get_valid_openai_api_key() -> tuple[bool, str]:
-    """Get a valid OpenAI API key from user input"""
-    openai_api_key = _get_test_openai_api_key()
+def _get_valid_api_keys() -> tuple[bool, str | None, str | None, str | None]:
+    """Get valid API keys from user input"""
+    openai_api_key, anthropic_api_key, gemini_api_key = _get_test_api_keys()
 
+    # OpenAI API key is required
     if not openai_api_key:
-        print("❌ No API key provided")
-        return False, None
+        print("❌ OpenAI API key is required")
+        return False, None, None, None
 
-    print(f"Creating client with API key: {openai_api_key[:10]}...")
-    is_valid = APIKeyChecker.check_openai_api_key(openai_api_key=openai_api_key)
-    return is_valid, openai_api_key
+    valid_keys = []
+    
+    # Validate OpenAI API key (required)
+    print(f"Validating OpenAI API key: {openai_api_key[:10]}...")
+    if APIKeyChecker.check_openai_api_key(openai_api_key=openai_api_key):
+        print("✅ OpenAI API key is valid")
+        valid_keys.append("OpenAI")
+    else:
+        print("❌ OpenAI API key is invalid")
+        return False, None, None, None
+    
+    # Validate Anthropic API key if provided (optional)
+    if anthropic_api_key:
+        print(f"Validating Anthropic API key: {anthropic_api_key[:10]}...")
+        if APIKeyChecker.check_anthropic_api_key(anthropic_api_key=anthropic_api_key):
+            print("✅ Anthropic API key is valid")
+            valid_keys.append("Anthropic")
+        else:
+            print("❌ Anthropic API key is invalid, skipping")
+            anthropic_api_key = None
+    
+    # Validate Gemini API key if provided (optional)
+    if gemini_api_key:
+        print(f"Validating Gemini API key: {gemini_api_key[:10]}...")
+        if APIKeyChecker.check_gemini_api_key(gemini_api_key=gemini_api_key):
+            print("✅ Gemini API key is valid")
+            valid_keys.append("Gemini")
+        else:
+            print("❌ Gemini API key is invalid, skipping")
+            gemini_api_key = None
+    
+    print(f"✅ Valid API keys found for: {', '.join(valid_keys)}")
+    return True, openai_api_key, anthropic_api_key, gemini_api_key
 
 
 def _select_model(processor: LLMProcessor) -> str:
@@ -209,20 +249,24 @@ def test_llm_processor() -> bool:
     """Main LLM processor test with interactive configuration"""
     print("🧪 LLMProcessor - Interactive Test Suite")
     print("=" * 60)
-    print("This test uses real OpenAI API and requires a valid API key.\n")
+    print("This test requires a valid OpenAI API key. Other APIs are optional.\n")
 
     try:
-        # Get a valid OpenAI API key
-        is_valid, openai_api_key = _get_valid_openai_api_key()
+        # Get valid API keys
+        is_valid, openai_api_key, anthropic_api_key, gemini_api_key = _get_valid_api_keys()
 
         if not is_valid:
-            print("❌ Failed to create API client")
+            print("❌ Failed to get valid OpenAI API key")
             return False
 
-        print("✅ API client created successfully")
+        print("✅ API keys validated successfully")
 
-        # Create processor
-        processor = LLMProcessor(openai_api_key=openai_api_key)
+        # Create processor with OpenAI (required) and optional API keys
+        processor = LLMProcessor(
+            openai_api_key=openai_api_key,
+            anthropic_api_key=anthropic_api_key or "",
+            gemini_api_key=gemini_api_key or ""
+        )
 
         # Interactive configuration
         print("\n" + "=" * 60)
