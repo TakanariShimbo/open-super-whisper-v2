@@ -53,6 +53,8 @@ To use a sample configuration file:
    cp docs/settings_sample/settings_en.json ~/.open_super_whisper/settings.json
    ```
 
+   Or, [download](https://raw.githubusercontent.com/TakanariShimbo/open-super-whisper-v2/main/docs/settings_sample/settings_ja.json) and copy to `~/.open_super_whisper/settings.json`
+
 **Note:** The application expects the settings file to be located at `~/.open_super_whisper/settings.json` (where `~` represents your user home directory).
 
 ### Sample Content
