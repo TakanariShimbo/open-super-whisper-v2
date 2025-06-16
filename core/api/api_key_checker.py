@@ -51,7 +51,7 @@ class APIKeyChecker:
             return False
 
     @staticmethod
-    def anthropic_api_key(anthropic_api_key: str) -> bool:
+    def check_anthropic_api_key(anthropic_api_key: str) -> bool:
         """
         Check if an Anthropic API key is valid.
 
