@@ -35,8 +35,6 @@
 
 This software is licensed under GPL v3.0
 
----
-
 ## 🎉 v1.1.0 リリース
 
 ### 🆕 v1.1.0 の新機能
@@ -74,6 +72,8 @@ This software is licensed under GPL v3.0
 
 ---
 
+---
+
 ## 🎉 First Release (v1.0.0)
 
 Revolutionary voice-to-action desktop application powered by OpenAI Speech to text API and Agents SDK.
@@ -104,8 +104,6 @@ Revolutionary voice-to-action desktop application powered by OpenAI Speech to te
 ### ⚖️ License
 
 This software is licensed under GPL v3.0
-
----
 
 ## 🎉 Open Super Whisper V2 初回リリース (v1.0.0)
 
