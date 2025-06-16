@@ -12,7 +12,7 @@ import pathlib
 import threading
 from typing import Any
 
-from core.api.api_client_factory import APIClientFactory
+from core.api.api_checker import APIChecker
 
 
 class SettingsManager:
@@ -27,7 +27,7 @@ class SettingsManager:
 
     # Define common setting keys as constants to avoid string duplication
     # and ensure consistency
-    KEY_API_KEY = "api_key"
+    KEY_OPENAI_API_KEY = "openai_api_key"
     KEY_INSTRUCTION_SETS = "instruction_sets"
     KEY_SELECTED_INSTRUCTION_SET = "selected_instruction_set"
     KEY_AUDIO_NOTIFICATIONS_ENABLED = "audio_notifications_enabled"
@@ -124,7 +124,7 @@ class SettingsManager:
             A dictionary containing default settings
         """
         return {
-            self.KEY_API_KEY: "",
+            self.KEY_OPENAI_API_KEY: "",
             self.KEY_INSTRUCTION_SETS: [],
             self.KEY_SELECTED_INSTRUCTION_SET: "",
             self.KEY_AUDIO_NOTIFICATIONS_ENABLED: True,
@@ -184,43 +184,43 @@ class SettingsManager:
 
     # API key methods
 
-    def get_api_key(self) -> str:
+    def get_openai_api_key(self) -> str:
         """
-        Get the stored API key.
+        Get the stored OpenAI API key.
 
         Returns
         -------
         str
             The stored API key, or an empty string if none is stored
         """
-        return self._get_value(key=self.KEY_API_KEY, default="")
+        return self._get_value(key=self.KEY_OPENAI_API_KEY, default="")
 
-    def set_api_key(self, api_key: str) -> None:
+    def set_openai_api_key(self, openai_api_key: str) -> None:
         """
         Store an API key.
 
         Parameters
         ----------
-        api_key : str
-            The API key to store
+        openai_api_key : str
+            The OpenAI API key to store
         """
-        self._set_value(key=self.KEY_API_KEY, value=api_key)
+        self._set_value(key=self.KEY_OPENAI_API_KEY, value=openai_api_key)
 
-    def has_valid_api_key(self) -> bool:
+    def has_valid_openai_api_key(self) -> bool:
         """
-        Check if the stored API key is valid.
+        Check if the stored OpenAI API key is valid.
 
         Returns
         -------
         bool
-            True if the API key is valid, False otherwise
+            True if the OpenAI API key is valid, False otherwise
         """
-        stored_api_key = self.get_api_key()
-        if not stored_api_key:
+        stored_openai_api_key = self.get_openai_api_key()
+        if not stored_openai_api_key:
             return False
 
-        is_successful, _ = APIClientFactory.create_client(api_key=stored_api_key)
-        return is_successful
+        is_valid = APIChecker.check_openai_api_key(openai_api_key=stored_openai_api_key)
+        return is_valid
 
     # Audio notification methods
 

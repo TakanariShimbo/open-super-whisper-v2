@@ -9,7 +9,6 @@ The test allows interactive configuration of instruction sets and processing opt
 import sys
 import time
 from pathlib import Path
-from typing import Any
 
 # Add project root to path for imports
 project_root = Path(__file__).parent.parent.parent
@@ -19,11 +18,11 @@ from core.pipelines.pipeline import Pipeline
 from core.pipelines.instruction_set import InstructionSet
 
 
-def _get_test_api_key() -> str | None:
+def _get_test_openai_api_key() -> str | None:
     """Get API key from user input for testing"""
     try:
-        api_key = input("Enter your OpenAI API key for testing: ").strip()
-        return api_key if api_key else None
+        openai_api_key = input("Enter your OpenAI API key for testing: ").strip()
+        return openai_api_key if openai_api_key else None
     except KeyboardInterrupt:
         print("\n⚠️ Test cancelled by user")
         return None
@@ -31,15 +30,15 @@ def _get_test_api_key() -> str | None:
 
 def _create_test_pipeline() -> Pipeline | None:
     """Create a pipeline with real API key for testing"""
-    api_key = _get_test_api_key()
+    openai_api_key = _get_test_openai_api_key()
 
-    if not api_key:
+    if not openai_api_key:
         print("❌ No API key provided")
         return None
 
     try:
-        print(f"Creating pipeline with API key: {api_key[:10]}...")
-        pipeline = Pipeline(api_key=api_key)
+        print(f"Creating pipeline with API key: {openai_api_key[:10]}...")
+        pipeline = Pipeline(openai_api_key=openai_api_key)
         print("✅ Pipeline created successfully")
         return pipeline
     except ValueError as e:

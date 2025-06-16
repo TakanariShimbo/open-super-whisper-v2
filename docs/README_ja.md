@@ -80,7 +80,7 @@ Open Super Whisper V2 は以下の 4 つのステップで動作します：
 │   ├── __init__.py
 │   ├── api/                                       # APIクライアントファクトリーとユーティリティ
 │   │   ├── __init__.py
-│   │   └── api_client_factory.py
+│   │   └── api_checker.py
 │   ├── key/                                       # キーボードとホットキー管理
 │   │   ├── __init__.py
 │   │   ├── hotkey_manager.py                      # グローバルホットキー管理

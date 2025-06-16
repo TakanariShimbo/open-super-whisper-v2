@@ -201,7 +201,7 @@ class MainModel(QObject):
 
     def __init__(
         self,
-        api_key: str,
+        openai_api_key: str,
         main_window: QObject | None = None,
     ) -> None:
         """
@@ -209,8 +209,8 @@ class MainModel(QObject):
 
         Parameters
         ----------
-        api_key: str
-            The API key to use for the pipeline
+        openai_api_key: str
+            The OpenAI API key to use for the pipeline
         main_window: QObject | None, optional
             The parent object, by default None
         """
@@ -226,7 +226,7 @@ class MainModel(QObject):
         self._label_manager = LabelManager()
 
         # Initialize pipeline components
-        self._pipeline = Pipeline(api_key=api_key)
+        self._pipeline = Pipeline(openai_api_key=openai_api_key)
         self._processor = None
 
         # Connect signals

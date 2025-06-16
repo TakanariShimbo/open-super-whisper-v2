@@ -16,29 +16,30 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from core.stt.stt_processor import STTProcessor
-from core.api.api_client_factory import APIClientFactory
+from core.api.api_checker import APIChecker
 
 
-def _get_test_api_key() -> str | None:
+def _get_test_openai_api_key() -> str | None:
     """Get API key from user input for testing"""
     try:
-        api_key = input("Enter your OpenAI API key for testing: ").strip()
-        return api_key if api_key else None
+        openai_api_key = input("Enter your OpenAI API key for testing: ").strip()
+        return openai_api_key if openai_api_key else None
     except KeyboardInterrupt:
         print("\n⚠️ Test cancelled by user")
         return None
 
 
-def _create_test_client() -> tuple[bool, Any]:
-    """Create a real OpenAI client for testing"""
-    api_key = _get_test_api_key()
+def _get_valid_openai_api_key() -> tuple[bool, str]:
+    """Get a valid OpenAI API key from user input"""
+    openai_api_key = _get_test_openai_api_key()
 
-    if not api_key:
+    if not openai_api_key:
         print("❌ No API key provided")
         return False, None
 
-    print(f"Creating client with API key: {api_key[:10]}...")
-    return APIClientFactory.create_client(api_key)
+    print(f"Creating client with API key: {openai_api_key[:10]}...")
+    is_valid = APIChecker.check_openai_api_key(openai_api_key=openai_api_key)
+    return is_valid, openai_api_key
 
 
 def _get_test_audio_file() -> Path:
@@ -232,17 +233,17 @@ def test_stt_processor() -> bool:
     print("This test uses real OpenAI API and requires a valid API key.\n")
 
     try:
-        # Create real client
-        is_successful, client = _create_test_client()
+        # Get a valid OpenAI API key
+        is_valid, openai_api_key = _get_valid_openai_api_key()
 
-        if not is_successful:
+        if not is_valid:
             print("❌ Failed to create API client")
             return False
 
         print("✅ API client created successfully")
 
         # Create processor
-        processor = STTProcessor(client)
+        processor = STTProcessor(openai_api_key=openai_api_key)
 
         # Get test audio file
         test_audio_path = _get_test_audio_file()

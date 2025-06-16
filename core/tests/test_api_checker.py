@@ -12,28 +12,28 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from core.api.api_client_factory import APIClientFactory
+from core.api.api_checker import APIChecker
 
 
-def test_api_key_input() -> bool:
+def test_openai_api_key_input() -> bool:
     """Test API key input and validation"""
     print("🔑 API Client Factory Test")
     print("=" * 40)
 
     try:
         # Get API key from user
-        api_key = input("Enter your API key: ").strip()
+        openai_api_key = input("Enter your OpenAI API key: ").strip()
 
-        if not api_key:
+        if not openai_api_key:
             print("❌ Empty API key provided")
             return False
 
-        print(f"Testing API key: {api_key[:10]}...")
+        print(f"Testing API key: {openai_api_key[:10]}...")
 
         # Test client creation
-        is_successful, client = APIClientFactory.create_client(api_key)
+        is_valid = APIChecker.check_openai_api_key(openai_api_key=openai_api_key)
 
-        if is_successful:
+        if is_valid:
             print("✅ API key is valid! Client created successfully.")
             return True
         else:
@@ -53,7 +53,7 @@ def main() -> None:
     print("Testing API Client Factory with user input")
     print("Press Ctrl+C to cancel\n")
 
-    test_api_key_input()
+    test_openai_api_key_input()
 
     print("\n🎉 All tests completed!")
 

@@ -48,14 +48,14 @@ class LLMProcessor:
     --------
     Basic text processing:
 
-    >>> processor = LLMProcessor(api_key="your_api_key")
+    >>> processor = LLMProcessor(openai_api_key="your_openai_api_key")
     >>> response = await processor.process_text("Summarize the benefits of AI assistants.")
     >>> print(response)
     AI assistants offer several benefits: 1. 24/7 availability...
 
     With custom system instruction:
 
-    >>> processor = LLMProcessor(api_key="your_api_key")
+    >>> processor = LLMProcessor(openai_api_key="your_openai_api_key")
     >>> processor.set_system_instruction("Respond in bullet points format.")
     >>> response = await processor.process_text("What are the key features of Python?")
     >>> print(response)
@@ -69,7 +69,7 @@ class LLMProcessor:
     >>> async def print_chunk(chunk):
     ...     print(chunk, end="", flush=True)
     >>>
-    >>> processor = LLMProcessor(api_key="your_api_key")
+    >>> processor = LLMProcessor(openai_api_key="your_openai_api_key")
     >>> await processor.process_text_with_stream(
     ...     "Explain quantum computing",
     ...     callback=print_chunk
@@ -81,17 +81,17 @@ class LLMProcessor:
     AVAILABLE_MODELS = LLMModelManager.to_api_format()
     DEFAULT_MODEL_ID = LLMModelManager.get_default_model().id
 
-    def __init__(self, api_key: str) -> None:
+    def __init__(self, openai_api_key: str) -> None:
         """
         Initialize the LLMProcessor with API key.
 
         Parameters
         ----------
-        api_key : str
+        openai_api_key : str
             OpenAI API key for authentication.
         """
         # Set the API key globally for the Agents SDK
-        set_default_openai_key(api_key)
+        set_default_openai_key(openai_api_key)
 
         self._model_id = self.DEFAULT_MODEL_ID
         self._system_instruction: str = "You are a helpful assistant."

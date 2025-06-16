@@ -6,7 +6,7 @@ This module provides functionality for API key validation and management.
 
 from PyQt6.QtCore import QObject
 
-from core.api.api_client_factory import APIClientFactory
+from core.api.api_checker import APIChecker
 
 from ...managers.settings_manager import SettingsManager
 
@@ -33,66 +33,66 @@ class APIKeyDialogModel(QObject):
         self._settings_manager = SettingsManager.instance()
 
         # Load current API key
-        self._api_key = self._settings_manager.get_api_key()
+        self._openai_api_key = self._settings_manager.get_openai_api_key()
 
         # Store original value to support cancel operation
-        self._original_api_key = self._api_key
+        self._original_openai_api_key = self._openai_api_key
 
     #
     # Model Methods
     #
-    def validate_api_key(self, api_key: str) -> bool:
+    def validate_openai_api_key(self, openai_api_key: str) -> bool:
         """
-        Validate an API key using the API client factory.
+        Validate an OpenAI API key using the API checker.
 
         Parameters
         ----------
-        api_key : str
-            The API key to validate
+        openai_api_key : str
+            The OpenAI API key to validate
 
         Returns
         -------
         bool
-            True if the API key is valid, False otherwise
+            True if the OpenAI API key is valid, False otherwise
         """
-        is_successful, _ = APIClientFactory.create_client(api_key=api_key)
-        return is_successful
+        is_valid = APIChecker.check_openai_api_key(openai_api_key=openai_api_key)
+        return is_valid
 
-    def get_api_key(self) -> str:
+    def get_openai_api_key(self) -> str:
         """
-        Get the current API key value.
+        Get the current OpenAI API key value.
 
         Returns
         -------
         str
-            The current API key, or an empty string if none is set
+            The current OpenAI API key, or an empty string if none is set
         """
-        return self._api_key
+        return self._openai_api_key
 
-    def set_api_key(self, api_key: str) -> None:
+    def set_openai_api_key(self, openai_api_key: str) -> None:
         """
-        Set the API key value.
+        Set the OpenAI API key value.
 
         Parameters
         ----------
-        api_key : str
-            The API key to set
+        openai_api_key : str
+            The OpenAI API key to set
         """
-        if self._api_key != api_key:
-            self._api_key = api_key
+        if self._openai_api_key != openai_api_key:
+            self._openai_api_key = openai_api_key
 
-    def save_api_key(self) -> None:
+    def save_openai_api_key(self) -> None:
         """
-        Save current API key to persistent storage.
+        Save current OpenAI API key to persistent storage.
         """
-        self._settings_manager.set_api_key(api_key=self._api_key)
+        self._settings_manager.set_openai_api_key(openai_api_key=self._openai_api_key)
 
         # Update original value
-        self._original_api_key = self._api_key
+        self._original_openai_api_key = self._openai_api_key
 
     def restore_original(self) -> None:
         """
-        Restore original API key (cancel changes).
+        Restore original OpenAI API key (cancel changes).
         """
-        if self._api_key != self._original_api_key:
-            self._api_key = self._original_api_key
+        if self._openai_api_key != self._original_openai_api_key:
+            self._openai_api_key = self._original_openai_api_key

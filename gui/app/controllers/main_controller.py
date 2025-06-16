@@ -126,11 +126,11 @@ class MainController(QObject):
         self._settings_manager = SettingsManager.instance()
 
         # Get the API key
-        api_key = self._settings_manager.get_api_key()
+        openai_api_key = self._settings_manager.get_openai_api_key()
 
         # Initialize the model
         self._model = MainModel(
-            api_key=api_key,
+            openai_api_key=openai_api_key,
             main_window=main_window,
         )
 

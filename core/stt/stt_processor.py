@@ -28,18 +28,14 @@ class STTProcessor:
     --------
     Basic transcription:
 
-    >>> from core.api.api_client_factory import APIClientFactory
-    >>> is_successful, client = APIClientFactory.create_client("your_api_key")
-    >>> processor = STTProcessor(client)
+    >>> processor = STTProcessor(openai_api_key="your_openai_api_key")
     >>> transcription = processor.transcribe_file_with_chunks("recording.wav")
     >>> print(transcription[:100])
     Hello, welcome to the meeting. Today we'll be discussing the quarterly results...
 
     Using custom vocabulary:
 
-    >>> from core.api.api_client_factory import APIClientFactory
-    >>> is_successful, client = APIClientFactory.create_client("your_api_key")
-    >>> processor = STTProcessor(client)
+    >>> processor = STTProcessor(openai_api_key="your_openai_api_key")
     >>> processor.set_custom_vocabulary("PyTorch, TensorFlow, scikit-learn, BERT")
     >>> transcription = processor.transcribe_file_with_chunks("tech_talk.wav")
     """
@@ -53,16 +49,16 @@ class STTProcessor:
     REQUEST_TIMEOUT = 60  # seconds
     CONTEXT_MAX_WORDS = 20  # Maximum words to include from previous context
 
-    def __init__(self, client: openai.OpenAI) -> None:
+    def __init__(self, openai_api_key: str) -> None:
         """
         Initialize the STTProcessor.
 
         Parameters
         ----------
-        client : openai.OpenAI
-            API client to use.
+        openai_api_key : str
+            OpenAI API key.
         """
-        self._client = client
+        self._client = openai.OpenAI(api_key=openai_api_key)
         self._model_id = self.DEFAULT_MODEL_ID
         self._language_code = self.DEFAULT_LANGUAGE_CODE
         self._custom_vocabulary: str = ""

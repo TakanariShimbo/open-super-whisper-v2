@@ -1,0 +1,51 @@
+"""
+API Checker Module
+
+This module provides functionality for checking if an API key is valid.
+"""
+
+import openai
+
+
+class APIChecker:
+    """
+    Class for checking if an API key is valid.
+
+    This class provides a method to check if an API key is valid.
+
+    Examples
+    --------
+    Checking an OpenAI API key:
+
+    >>> is_valid = APIChecker.check_openai_api_key("your_openai_api_key")
+    >>> if is_valid:
+    ...     print("API key is valid")
+    ... else:
+    ...     print("API key is invalid")
+    """
+
+    @staticmethod
+    def check_openai_api_key(openai_api_key: str) -> bool:
+        """
+        Check if an OpenAI API key is valid.
+
+        Parameters
+        ----------
+        openai_api_key : str
+            The OpenAI API key to check.
+
+        Returns
+        -------
+        bool
+            True if the API key is valid, False otherwise
+        """
+        try:
+            # Create the client
+            client = openai.OpenAI(api_key=openai_api_key)
+
+            # Verify the client works by listing models
+            client.models.list()
+
+            return True
+        except Exception:
+            return False

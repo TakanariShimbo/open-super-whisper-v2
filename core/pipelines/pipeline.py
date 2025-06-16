@@ -8,7 +8,7 @@ both speech-to-text transcription and LLM processing in a seamless way.
 from typing import Callable
 import asyncio
 
-from ..api.api_client_factory import APIClientFactory
+from ..api.api_checker import APIChecker
 from ..stt.stt_processor import STTProcessor
 from ..llm.llm_processor import LLMProcessor
 from ..recorder.audio_recorder import AudioRecorder
@@ -24,14 +24,14 @@ class Pipeline:
     a seamless processing pipeline, with optional LLM processing.
     """
 
-    def __init__(self, api_key: str) -> None:
+    def __init__(self, openai_api_key: str) -> None:
         """
         Initialize the Pipeline.
 
         Parameters
         ----------
-        api_key : str
-            API key.
+        openai_api_key : str
+            OpenAI API key.
 
         Raises
         ------
@@ -39,13 +39,13 @@ class Pipeline:
             If no API key is provided and none is found in environment variables.
         """
         # Verify api key and create client
-        is_successful, client = APIClientFactory.create_client(api_key=api_key)
-        if not is_successful:
-            raise ValueError("Invalid API key. Please provide a valid API key.")
+        is_valid = APIChecker.check_openai_api_key(openai_api_key=openai_api_key)
+        if not is_valid:
+            raise ValueError("Invalid OpenAI API key. Please provide a valid API key.")
 
         # Initialize components
-        self._stt_processor = STTProcessor(client=client)
-        self._llm_processor = LLMProcessor(api_key=api_key)
+        self._stt_processor = STTProcessor(openai_api_key=openai_api_key)
+        self._llm_processor = LLMProcessor(openai_api_key=openai_api_key)
         self._audio_recorder = AudioRecorder()
 
         # Processing state flag

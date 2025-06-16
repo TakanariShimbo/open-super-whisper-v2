@@ -24,14 +24,14 @@ class LabelManager:
         "English": {
             "already_running_title": "Application already running",
             "already_running_message": "Please check the application tray for the icon.",
-            "no_api_key_title": "No API key provided",
-            "no_api_key_message": "Please provide a valid API key to wake up the application.",
+            "no_openai_api_key_title": "No OpenAI API key provided",
+            "no_openai_api_key_message": "Please provide a valid OpenAI API key to wake up the application.",
         },
         "Japanese": {
             "already_running_title": "アプリケーション起動中",
             "already_running_message": "アプリケーショントレイのアイコンを確認してください。",
-            "no_api_key_title": "APIキー未設定",
-            "no_api_key_message": "有効なAPIキーを入力してアプリケーションを起動してください。",
+            "no_openai_api_key_title": "OpenAI APIキー未設定",
+            "no_openai_api_key_message": "有効なOpenAI APIキーを入力してアプリケーションを起動してください。",
         },
         # Future: Add other languages here
     }
@@ -53,12 +53,12 @@ class LabelManager:
         return self._labels["already_running_message"]
 
     @property
-    def no_api_key_title(self) -> str:
-        return self._labels["no_api_key_title"]
+    def no_openai_api_key_title(self) -> str:
+        return self._labels["no_openai_api_key_title"]
 
     @property
-    def no_api_key_message(self) -> str:
-        return self._labels["no_api_key_message"]
+    def no_openai_api_key_message(self) -> str:
+        return self._labels["no_openai_api_key_message"]
 
 
 class SingleInstance:
@@ -169,7 +169,7 @@ def start_application() -> None:
 
         # Check for API key and show dialog if not available
         settings_manager = SettingsManager.instance()
-        if not settings_manager.has_valid_api_key():
+        if not settings_manager.has_valid_openai_api_key():
             # Create and show initial API key dialog
             dialog = APIKeyDialogFactory.create_initial_dialog()
 
@@ -177,8 +177,8 @@ def start_application() -> None:
                 # Show error message and exit if API key is not provided
                 QMessageBox.critical(
                     None,
-                    label_manager.no_api_key_title,
-                    label_manager.no_api_key_message,
+                    label_manager.no_openai_api_key_title,
+                    label_manager.no_openai_api_key_message,
                 )
                 sys.exit(1)
 

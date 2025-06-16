@@ -19,17 +19,17 @@ class APIKeyDialogController(QObject):
 
     Signals
     -------
-    api_key_validated : pyqtSignal
-        Signal emitted when an API key is validated successfully
-    api_key_invalid : pyqtSignal
-        Signal emitted when an API key validation fails
+    openai_api_key_validated : pyqtSignal
+        Signal emitted when an OpenAI API key is validated successfully
+    openai_api_key_invalid : pyqtSignal
+        Signal emitted when an OpenAI API key validation fails
     """
 
     #
     # Signals
     #
-    api_key_validated = pyqtSignal()
-    api_key_invalid = pyqtSignal()
+    openai_api_key_validated = pyqtSignal()
+    openai_api_key_invalid = pyqtSignal()
 
     def __init__(self, api_key_dialog: QObject | None = None) -> None:
         """
@@ -51,14 +51,14 @@ class APIKeyDialogController(QObject):
     #
     # Controller Methods
     #
-    def validate_api_key(self, api_key: str) -> bool:
+    def validate_openai_api_key(self, openai_api_key: str) -> bool:
         """
-        Validate the given API key.
+        Validate the given OpenAI API key.
 
         Parameters
         ----------
-        api_key : str
-            The API key to validate
+        openai_api_key : str
+            The OpenAI API key to validate
 
         Returns
         -------
@@ -66,47 +66,47 @@ class APIKeyDialogController(QObject):
             True if the API key is valid, False otherwise
         """
         # Validate the API key
-        is_valid = self._model.validate_api_key(api_key=api_key)
+        is_valid = self._model.validate_openai_api_key(openai_api_key=openai_api_key)
 
         if is_valid:
             # Set the valid key in the model
-            self._model.set_api_key(api_key=api_key)
+            self._model.set_openai_api_key(openai_api_key=openai_api_key)
 
             # Emit signal for validation success
-            self.api_key_validated.emit()
+            self.openai_api_key_validated.emit()
         else:
             # Emit signal for validation failure
-            self.api_key_invalid.emit()
+            self.openai_api_key_invalid.emit()
 
         return is_valid
 
-    def get_api_key(self) -> str:
+    def get_openai_api_key(self) -> str:
         """
-        Get current API key.
+        Get current OpenAI API key.
 
         Returns
         -------
         str
             The current API key
         """
-        return self._model.get_api_key()
+        return self._model.get_openai_api_key()
 
-    def set_api_key(self, api_key: str) -> None:
+    def set_openai_api_key(self, openai_api_key: str) -> None:
         """
-        Set API key in model.
+        Set OpenAI API key in model.
 
         Parameters
         ----------
-        api_key : str
-            The API key to set
+        openai_api_key : str
+            The OpenAI API key to set
         """
-        self._model.set_api_key(api_key=api_key)
+        self._model.set_openai_api_key(openai_api_key=openai_api_key)
 
-    def save_api_key(self) -> None:
+    def save_openai_api_key(self) -> None:
         """
-        Save current API key to persistent storage.
+        Save current OpenAI API key to persistent storage.
         """
-        self._model.save_api_key()
+        self._model.save_openai_api_key()
 
     def cancel(self) -> None:
         """

@@ -20,7 +20,7 @@ class LabelManager:
     ALL_LABELS = {
         "English": {
             "window_title": "API Key",
-            "title_label": "OpenAI API Key",
+            "title_label": "API Key Settings",
             "help_text": (
                 "To use Open Super Whisper, you need a valid OpenAI API key.\n\n"
                 "1. Create an account at https://platform.openai.com\n"
@@ -28,17 +28,17 @@ class LabelManager:
                 "3. Create a new API key\n"
                 "4. Copy and paste the key below"
             ),
-            "input_label": "OpenAI API key:",
-            "placeholder": "sk-...",
+            "openai_api_key_input_label": "OpenAI API key:",
+            "openai_api_key_input_placeholder": "sk-...",
+            "error_invalid_openai_api_key": "Invalid OpenAI API key. Please check and try again.",
+            "error_empty_openai_api_key": "OpenAI API key cannot be empty",
             "tooltip_show_hide": "Show/Hide API Key",
             "tooltip_hide": "Hide API Key",
             "tooltip_show": "Show API Key",
-            "error_invalid_key": "Invalid API key. Please check and try again.",
-            "error_empty_key": "API key cannot be empty",
         },
         "Japanese": {
             "window_title": "APIキー",
-            "title_label": "OpenAI APIキー",
+            "title_label": "API キー設定",
             "help_text": (
                 "Open Super Whisperを利用するには有効なOpenAI APIキーが必要です。\n\n"
                 "1. https://platform.openai.com でアカウントを作成\n"
@@ -46,13 +46,13 @@ class LabelManager:
                 "3. 新しいAPIキーを作成\n"
                 "4. 下の欄にキーをコピー＆ペースト"
             ),
-            "input_label": "OpenAI APIキー:",
-            "placeholder": "sk-...",
+            "openai_api_key_input_label": "OpenAI APIキー:",
+            "openai_api_key_input_placeholder": "sk-...",
+            "error_invalid_openai_api_key": "無効なOpenAI APIキーです。ご確認の上、再度お試しください。",
+            "error_empty_openai_api_key": "OpenAI APIキーを入力してください",
             "tooltip_show_hide": "APIキーの表示/非表示",
             "tooltip_hide": "APIキーを非表示",
             "tooltip_show": "APIキーを表示",
-            "error_invalid_key": "無効なAPIキーです。ご確認の上、再度お試しください。",
-            "error_empty_key": "APIキーを入力してください",
         },
         # Future: Add other languages here
     }
@@ -78,12 +78,20 @@ class LabelManager:
         return self._labels["help_text"]
 
     @property
-    def input_label(self) -> str:
-        return self._labels["input_label"]
+    def openai_api_key_input_label(self) -> str:
+        return self._labels["openai_api_key_input_label"]
 
     @property
-    def placeholder(self) -> str:
-        return self._labels["placeholder"]
+    def openai_api_key_input_placeholder(self) -> str:
+        return self._labels["openai_api_key_input_placeholder"]
+
+    @property
+    def error_invalid_openai_api_key(self) -> str:
+        return self._labels["error_invalid_openai_api_key"]
+
+    @property
+    def error_empty_openai_api_key(self) -> str:
+        return self._labels["error_empty_openai_api_key"]
 
     @property
     def tooltip_show_hide(self) -> str:
@@ -96,15 +104,6 @@ class LabelManager:
     @property
     def tooltip_show(self) -> str:
         return self._labels["tooltip_show"]
-
-    @property
-    def error_invalid_key(self) -> str:
-        return self._labels["error_invalid_key"]
-
-    @property
-    def error_empty_key(self) -> str:
-        return self._labels["error_empty_key"]
-
 
 class APIKeyDialog(QDialog):
     """
@@ -151,9 +150,9 @@ class APIKeyDialog(QDialog):
             self._show_status_message(message=initial_message)
 
         # Initialize API key field
-        current_api_key = self._controller.get_api_key()
-        if current_api_key:
-            self._api_key_input.setText(current_api_key)
+        current_openai_api_key = self._controller.get_openai_api_key()
+        if current_openai_api_key:
+            self._openai_api_key_input.setText(current_openai_api_key)
 
     def _show_status_message(self, message: str) -> None:
         """
@@ -194,18 +193,18 @@ class APIKeyDialog(QDialog):
         layout.addSpacing(10)
 
         # Input label
-        input_label = QLabel(self._label_manager.input_label)
+        input_label = QLabel(self._label_manager.openai_api_key_input_label)
         layout.addWidget(input_label)
 
         # Create a horizontal layout for input field and toggle button
         input_layout = QHBoxLayout()
 
         # API key input field
-        self._api_key_input = QLineEdit()
-        self._api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
-        self._api_key_input.setPlaceholderText(self._label_manager.placeholder)
-        self._api_key_input.returnPressed.connect(self._on_accept)
-        input_layout.addWidget(self._api_key_input, 1)  # Use stretch factor 1
+        self._openai_api_key_input = QLineEdit()
+        self._openai_api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
+        self._openai_api_key_input.setPlaceholderText(self._label_manager.openai_api_key_input_placeholder)
+        self._openai_api_key_input.returnPressed.connect(self._on_accept)
+        input_layout.addWidget(self._openai_api_key_input, 1)  # Use stretch factor 1
 
         # Toggle visibility button
         self._toggle_button = QPushButton("👁️")
@@ -241,42 +240,42 @@ class APIKeyDialog(QDialog):
         Connect signals from the controller.
         """
         # Connect controller signals to view methods
-        self._controller.api_key_validated.connect(self._handle_api_key_validated)
-        self._controller.api_key_invalid.connect(self._handle_api_key_invalid)
+        self._controller.openai_api_key_validated.connect(self._handle_openai_api_key_validated)
+        self._controller.openai_api_key_invalid.connect(self._handle_openai_api_key_invalid)
 
     #
     # Controller Events
     #
     @pyqtSlot()
-    def _handle_api_key_validated(self) -> None:
+    def _handle_openai_api_key_validated(self) -> None:
         """
-        Handle successful API key validation.
+        Handle successful OpenAI API key validation.
 
         Parameters
         ----------
-        api_key : str
-            The validated API key
+        openai_api_key : str
+            The validated OpenAI API key
         """
         # Restore hotkeys
         self._restore_hotkeys()
 
-        # Save the valid API key
-        self._controller.save_api_key()
+        # Save the valid OpenAI API key
+        self._controller.save_openai_api_key()
 
         # Accept the dialog
         super().accept()
 
     @pyqtSlot()
-    def _handle_api_key_invalid(self) -> None:
+    def _handle_openai_api_key_invalid(self) -> None:
         """
-        Handle failed API key validation.
+        Handle failed OpenAI API key validation.
 
         Parameters
         ----------
-        api_key : str
-            The invalid API key
+        openai_api_key : str
+            The invalid OpenAI API key
         """
-        self._show_status_message(message=self._label_manager.error_invalid_key)
+        self._show_status_message(message=self._label_manager.error_invalid_openai_api_key)
 
     #
     # UI Events
@@ -288,12 +287,12 @@ class APIKeyDialog(QDialog):
         """
         if self._toggle_button.isChecked():
             # Show API key
-            self._api_key_input.setEchoMode(QLineEdit.EchoMode.Normal)
+            self._openai_api_key_input.setEchoMode(QLineEdit.EchoMode.Normal)
             self._toggle_button.setText("🔒")
             self._toggle_button.setToolTip(self._label_manager.tooltip_hide)
         else:
             # Hide API key
-            self._api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
+            self._openai_api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
             self._toggle_button.setText("👁️")
             self._toggle_button.setToolTip(self._label_manager.tooltip_show)
 
@@ -308,30 +307,30 @@ class APIKeyDialog(QDialog):
             self._controller.start_listening()
             self._hotkeys_disabled = False
 
-    def _get_entered_api_key(self) -> str:
+    def _get_entered_openai_api_key(self) -> str:
         """
-        Get the entered API key.
+        Get the entered OpenAI API key.
 
         Returns
         -------
         str
-            The entered API key
+            The entered OpenAI API key
         """
-        return self._api_key_input.text().strip()
+        return self._openai_api_key_input.text().strip()
 
     @pyqtSlot()
     def _on_accept(self) -> None:
         """
         Handle dialog acceptance.
         """
-        entered_api_key = self._get_entered_api_key()
+        entered_openai_api_key = self._get_entered_openai_api_key()
 
-        if not entered_api_key:
-            self._show_status_message(message=self._label_manager.error_empty_key)
+        if not entered_openai_api_key:
+            self._show_status_message(message=self._label_manager.error_empty_openai_api_key)
             return
 
         # Use controller to validate the key
-        self._controller.validate_api_key(api_key=entered_api_key)
+        self._controller.validate_openai_api_key(openai_api_key=entered_openai_api_key)
 
     @pyqtSlot()
     def _on_reject(self) -> None:
