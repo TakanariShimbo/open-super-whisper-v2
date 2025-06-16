@@ -49,3 +49,39 @@ class APIKeyChecker:
             return True
         except Exception:
             return False
+
+    @staticmethod
+    def anthropic_api_key(anthropic_api_key: str) -> bool:
+        """
+        Check if an Anthropic API key is valid.
+
+        Parameters
+        ----------
+        anthropic_api_key : str
+            The Anthropic API key to check.
+
+        Returns
+        -------
+        bool
+            True if the API key is valid, False otherwise
+        """
+        # TODO: Implement the check
+        return True
+
+    @staticmethod
+    def check_gemini_api_key(gemini_api_key: str) -> bool:
+        """
+        Check if a Gemini API key is valid.
+
+        Parameters
+        ----------
+        gemini_api_key : str
+            The Gemini API key to check.
+
+        Returns
+        -------
+        bool
+            True if the API key is valid, False otherwise
+        """
+        # TODO: Implement the check
+        return True
