@@ -7,6 +7,8 @@ Open Super Whisper V2 is an innovative desktop application that transforms your 
 
 [Download latest release of "Open Super Whisper V2"](https://github.com/TakanariShimbo/open-super-whisper-v2/releases/latest)
 
+<img src="manual/demo.gif" alt="DEMO" width="600">
+
 ## 📋 Table of Contents
 
 1. [Configuration Setup](#configuration-setup)

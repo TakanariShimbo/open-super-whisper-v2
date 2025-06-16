@@ -7,6 +7,8 @@ Open Super Whisper V2 は、音声入力から AI エージェントによる自
 
 [Open Super Whisper V2 の最新リリースをダウンロード](https://github.com/TakanariShimbo/open-super-whisper-v2/releases/latest)
 
+<img src="manual/demo.gif" alt="DEMO" width="600">
+
 ## 📋 目次
 
 1. [コンフィグ設定](#コンフィグ設定)
@@ -39,7 +41,7 @@ Open Super Whisper V2 は、音声入力から AI エージェントによる自
    mkdir ~/.open_super_whisper
    ```
 
-2. サンプルの設定ファイルをGitHubから直接ダウンロード：
+2. サンプルの設定ファイルを GitHub から直接ダウンロード：
 
    ```bash
    curl -o ~/.open_super_whisper/settings.json https://raw.githubusercontent.com/TakanariShimbo/open-super-whisper-v2/main/docs/settings_sample/settings_ja.json

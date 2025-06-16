@@ -11,6 +11,8 @@
 
 Just speak, and MCP-enabled AI agents understand your intent and autonomously execute tasks. This powerful PyQt6-based desktop application seamlessly integrates OpenAI's Speech to text API and Agent SDK. From voice commands to document creation, information search, and web operations - revolutionize your daily workflow efficiency.
 
+<img src="manual/demo.gif" alt="DEMO" width="600">
+
 ## Features
 
 ### Processing Flow
