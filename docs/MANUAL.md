@@ -244,7 +244,7 @@ Manage detailed settings for each instruction set across 5 tabs.
 
 #### 🤖 **LLM Model**
 
-- Select LLM model used by Agent SDK
+- Select LLM model used by Agents SDK
 - Example setting: `GPT-4.1`
 
 #### 🌐 **Web Search**

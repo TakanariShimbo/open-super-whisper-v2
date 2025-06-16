@@ -244,7 +244,7 @@ Open Super Whisper V2 を PC 起動時に自動的に開始するようにする
 
 #### 🤖 **LLM モデル**
 
-- Agent SDK で利用する LLM モデルの選択
+- Agents SDK で利用する LLM モデルの選択
 - 設定例：`GPT-4.1`
 
 #### 🌐 **Web 検索**

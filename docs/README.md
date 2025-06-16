@@ -9,7 +9,7 @@
 
 **Conversational AI Agent - Transform Your Voice into Action**
 
-Just speak, and MCP-enabled AI agents understand your intent and autonomously execute tasks. This powerful PyQt6-based desktop application seamlessly integrates OpenAI's Speech to text API and Agent SDK. From voice commands to document creation, information search, and web operations - revolutionize your daily workflow efficiency.
+Just speak, and MCP-enabled AI agents understand your intent and autonomously execute tasks. This powerful PyQt6-based desktop application seamlessly integrates OpenAI's Speech to text API and Agents SDK. From voice commands to document creation, information search, and web operations - revolutionize your daily workflow efficiency.
 
 <img src="manual/demo.gif" alt="DEMO" width="600">
 
@@ -37,7 +37,7 @@ Open Super Whisper V2 operates through the following 4 steps:
 
 ### 🤖 **Agent Processing**
 
-- **OpenAI Agent SDK powered** - AI agents specialized for different purposes defined by Instruction sets
+- **OpenAI Agents SDK powered** - AI agents specialized for different purposes defined by Instruction sets
 - **External tool integration** - Extensibility via MCP (Model Context Protocol)
 - **Multi-context** - Processing that combines clipboard text, images, and web search
 
