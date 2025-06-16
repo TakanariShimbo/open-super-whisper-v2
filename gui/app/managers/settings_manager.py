@@ -12,7 +12,7 @@ import pathlib
 import threading
 from typing import Any
 
-from core.api.api_checker import APIChecker
+from core.api.api_key_checker import APIKeyChecker
 
 
 class SettingsManager:
@@ -219,7 +219,7 @@ class SettingsManager:
         if not stored_openai_api_key:
             return False
 
-        is_valid = APIChecker.check_openai_api_key(openai_api_key=stored_openai_api_key)
+        is_valid = APIKeyChecker.check_openai_api_key(openai_api_key=stored_openai_api_key)
         return is_valid
 
     # Audio notification methods

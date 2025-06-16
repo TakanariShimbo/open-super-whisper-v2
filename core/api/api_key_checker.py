@@ -1,5 +1,5 @@
 """
-API Checker Module
+API Key Checker Module
 
 This module provides functionality for checking if an API key is valid.
 """
@@ -7,7 +7,7 @@ This module provides functionality for checking if an API key is valid.
 import openai
 
 
-class APIChecker:
+class APIKeyChecker:
     """
     Class for checking if an API key is valid.
 

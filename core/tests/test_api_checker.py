@@ -12,7 +12,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from core.api.api_checker import APIChecker
+from core.api.api_key_checker import APIKeyChecker
 
 
 def test_openai_api_key_input() -> bool:
@@ -31,7 +31,7 @@ def test_openai_api_key_input() -> bool:
         print(f"Testing API key: {openai_api_key[:10]}...")
 
         # Test client creation
-        is_valid = APIChecker.check_openai_api_key(openai_api_key=openai_api_key)
+        is_valid = APIKeyChecker.check_openai_api_key(openai_api_key=openai_api_key)
 
         if is_valid:
             print("✅ API key is valid! Client created successfully.")

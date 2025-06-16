@@ -6,7 +6,7 @@ This module provides functionality for API key validation and management.
 
 from PyQt6.QtCore import QObject
 
-from core.api.api_checker import APIChecker
+from core.api.api_key_checker import APIKeyChecker
 
 from ...managers.settings_manager import SettingsManager
 
@@ -55,7 +55,7 @@ class APIKeyDialogModel(QObject):
         bool
             True if the OpenAI API key is valid, False otherwise
         """
-        is_valid = APIChecker.check_openai_api_key(openai_api_key=openai_api_key)
+        is_valid = APIKeyChecker.check_openai_api_key(openai_api_key=openai_api_key)
         return is_valid
 
     def get_openai_api_key(self) -> str:

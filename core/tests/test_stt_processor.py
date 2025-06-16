@@ -16,7 +16,7 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from core.stt.stt_processor import STTProcessor
-from core.api.api_checker import APIChecker
+from core.api.api_key_checker import APIKeyChecker
 
 
 def _get_test_openai_api_key() -> str | None:
@@ -38,7 +38,7 @@ def _get_valid_openai_api_key() -> tuple[bool, str]:
         return False, None
 
     print(f"Creating client with API key: {openai_api_key[:10]}...")
-    is_valid = APIChecker.check_openai_api_key(openai_api_key=openai_api_key)
+    is_valid = APIKeyChecker.check_openai_api_key(openai_api_key=openai_api_key)
     return is_valid, openai_api_key
 
 

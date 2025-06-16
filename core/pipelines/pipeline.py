@@ -8,7 +8,7 @@ both speech-to-text transcription and LLM processing in a seamless way.
 from typing import Callable
 import asyncio
 
-from ..api.api_checker import APIChecker
+from ..api.api_key_checker import APIKeyChecker
 from ..stt.stt_processor import STTProcessor
 from ..llm.llm_processor import LLMProcessor
 from ..recorder.audio_recorder import AudioRecorder
@@ -39,7 +39,7 @@ class Pipeline:
             If no API key is provided and none is found in environment variables.
         """
         # Verify api key and create client
-        is_valid = APIChecker.check_openai_api_key(openai_api_key=openai_api_key)
+        is_valid = APIKeyChecker.check_openai_api_key(openai_api_key=openai_api_key)
         if not is_valid:
             raise ValueError("Invalid OpenAI API key. Please provide a valid API key.")
 
