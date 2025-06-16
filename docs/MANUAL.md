@@ -26,10 +26,10 @@ Open Super Whisper V2 is an innovative desktop application that transforms your 
 
 ### Sample Usage
 
-Sample configuration files are provided in the `docs/` directory:
+Sample configuration files are provided in the `docs/settings_sample/` directory:
 
-- `settings_sample_en.json` - English version with pre-configured instruction sets
-- `settings_sample_ja.json` - Japanese version with the same functionality
+- `settings_en.json` - English version with pre-configured instruction sets
+- `settings_ja.json` - Japanese version with the same functionality
 
 To use a sample configuration file:
 
@@ -39,7 +39,13 @@ To use a sample configuration file:
    mkdir ~/.open_super_whisper
    ```
 
-2. Copy the sample configuration file to the created directory:
+2. Download the sample configuration file directly from GitHub:
+
+   ```bash
+   curl -o ~/.open_super_whisper/settings.json https://raw.githubusercontent.com/TakanariShimbo/open-super-whisper-v2/main/docs/settings_sample/settings_en.json
+   ```
+
+   Or, if you have cloned the repository, copy it:
 
    ```bash
    cp docs/settings_sample/settings_en.json ~/.open_super_whisper/settings.json
@@ -420,7 +426,7 @@ The application runs in the system tray, providing quick access to all features:
 
 <img src="manual/usecase2_en.png" alt="Usecase2" width="600">
 
-1. **Scenario**: Analyze a screenshot of a chart with voice questions
+1. **Scenario**: Analyze a chart
 2. **Operation**:
    - Take a screenshot of graph or chart and copy to clipboard
    - Press hotkey `ctrl+shift+5`

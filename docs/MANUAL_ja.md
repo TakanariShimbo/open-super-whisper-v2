@@ -26,10 +26,10 @@ Open Super Whisper V2 は、音声入力から AI エージェントによる自
 
 ### サンプルの利用
 
-`docs/`ディレクトリにサンプルの設定ファイルが提供されています：
+`docs/settings_sample/`ディレクトリにサンプルの設定ファイルが提供されています：
 
-- `settings_sample_en.json` - 事前設定されたインストラクションセット付きの英語版
-- `settings_sample_ja.json` - 同じ機能の日本語版
+- `settings_en.json` - 事前設定されたインストラクションセット付きの英語版
+- `settings_ja.json` - 同じ機能の日本語版
 
 サンプルの設定ファイルを使用するには：
 
@@ -39,7 +39,13 @@ Open Super Whisper V2 は、音声入力から AI エージェントによる自
    mkdir ~/.open_super_whisper
    ```
 
-2. サンプルの設定ファイルを作成したディレクトリにコピー：
+2. サンプルの設定ファイルをGitHubから直接ダウンロード：
+
+   ```bash
+   curl -o ~/.open_super_whisper/settings.json https://raw.githubusercontent.com/TakanariShimbo/open-super-whisper-v2/main/docs/settings_sample/settings_ja.json
+   ```
+
+   または、リポジトリをクローンしている場合はコピー：
 
    ```bash
    cp docs/settings_sample/settings_ja.json ~/.open_super_whisper/settings.json
@@ -419,7 +425,7 @@ Playwrightツールを使用して、Webサイトのナビゲーション、要�
 
 <img src="manual/usecase2_ja.png" alt="Usecase2" width="600">
 
-1. **シーン**：スクリーンショットした図表を音声で分析させたい
+1. **シーン**：図や表を分析したい
 2. **操作**：
    - 分析したいグラフやチャートをスクリーンショットしてクリップボードにコピー
    - ホットキー `ctrl+shift+5` を押す
