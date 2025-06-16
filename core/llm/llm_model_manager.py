@@ -26,8 +26,8 @@ class LLMModelManager:
         LLMModel(
             id="gpt-4.1",
             name="GPT-4.1",
-            description="Advanced model with superior coding, instruction following, and 1M token context support",
-            performance_tier="advanced",
+            description=r"Specialized coding model (61.7% accuracy) with precise instruction following and web development expertise",
+            performance_tier="standard",
             provider="openai",
             supports_image=True,
             supports_web_search=True,
@@ -37,7 +37,7 @@ class LLMModelManager:
         LLMModel(
             id="gpt-4o",
             name="GPT-4o",
-            description="Versatile omni model with balanced text and image processing capabilities",
+            description=r"Flagship omni model reasoning across audio, vision, and text in real time with 128K context",
             performance_tier="standard",
             provider="openai",
             supports_image=True,
@@ -47,7 +47,7 @@ class LLMModelManager:
         LLMModel(
             id="o3",
             name="O3",
-            description="Advanced reasoning model designed for practical problem solving",
+            description=r"Top reasoning model (SWE-bench 69.1%) with 20% fewer errors than O1, excels in coding and science",
             performance_tier="advanced",
             provider="openai",
             supports_image=True,
@@ -57,7 +57,7 @@ class LLMModelManager:
         LLMModel(
             id="o1",
             name="O1",
-            description="Base reasoning model designed for practical problem solving",
+            description=r"Chain-of-thought reasoning model for complex tasks in research, strategy, coding, math, and science",
             performance_tier="advanced",
             provider="openai",
             supports_image=True,
@@ -70,7 +70,7 @@ class LLMModelManager:
         LLMModel(
             id="litellm/anthropic/claude-opus-4-20250514",
             name="Claude 4 Opus",
-            description="Most capable and intelligent Claude model, setting new standards in complex reasoning",
+            description=r"World's best coding model (SWE-bench 72.5%) with sustained performance on complex, hours-long agent workflows",
             performance_tier="advanced",
             provider="anthropic",
             supports_image=True,
@@ -80,7 +80,7 @@ class LLMModelManager:
         LLMModel(
             id="litellm/anthropic/claude-sonnet-4-20250514",
             name="Claude 4 Sonnet",
-            description="High-performance model with exceptional reasoning and efficiency",
+            description=r"Excellent coding (SWE-bench 72.7%) and reasoning model with superior instruction following, 5x cheaper than Opus",
             performance_tier="standard",
             provider="anthropic",
             supports_image=True,
@@ -93,7 +93,7 @@ class LLMModelManager:
         LLMModel(
             id="litellm/gemini/gemini-2.5-pro-preview-06-05",
             name="Gemini 2.5 Pro",
-            description="Most intelligent Gemini model",
+            description=r"Advanced reasoning model with Deep Think mode, #1 on WebDev Arena, excels at complex math and coding",
             performance_tier="advanced",
             provider="gemini",
             supports_image=True,
@@ -103,7 +103,7 @@ class LLMModelManager:
         LLMModel(
             id="litellm/gemini/gemini-2.5-flash-preview-05-20",
             name="Gemini 2.5 Flash",
-            description="Fast Gemini model",
+            description=r"Hybrid reasoning model with best price-performance ratio, uses 20-30% less tokens with adjustable thinking budget",
             performance_tier="standard",
             provider="gemini",
             supports_image=True,
