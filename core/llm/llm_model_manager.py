@@ -19,11 +19,10 @@ class LLMModelManager:
     for lookup and validation.
     """
 
-    # Define supported models
-    # This list represents models that are currently available through the API
-    # Last updated: April 2025
     _SUPPORTED_LLM_MODELS: ClassVar[list[LLMModel]] = [
-        # GPT-4 Series
+        #
+        # OpenAI
+        #
         LLMModel(
             id="gpt-4.1",
             name="GPT-4.1",
@@ -45,7 +44,6 @@ class LLMModelManager:
             supports_web_search=True,
             supports_mcp_servers=True,
         ),
-        # o-Series reasoning models
         LLMModel(
             id="o3",
             name="O3",
@@ -62,6 +60,52 @@ class LLMModelManager:
             description="Base reasoning model designed for practical problem solving",
             performance_tier="advanced",
             provider="openai",
+            supports_image=True,
+            supports_web_search=False,
+            supports_mcp_servers=True,
+        ),
+        #
+        # Anthropic
+        #
+        LLMModel(
+            id="litellm/anthropic/claude-opus-4-20250514",
+            name="Claude 4 Opus",
+            description="Most capable and intelligent Claude model, setting new standards in complex reasoning",
+            performance_tier="advanced",
+            provider="anthropic",
+            supports_image=True,
+            supports_web_search=False,
+            supports_mcp_servers=True,
+        ),
+        LLMModel(
+            id="litellm/anthropic/claude-sonnet-4-20250514",
+            name="Claude 4 Sonnet",
+            description="High-performance model with exceptional reasoning and efficiency",
+            performance_tier="standard",
+            provider="anthropic",
+            supports_image=True,
+            supports_web_search=False,
+            supports_mcp_servers=True,
+        ),
+        #
+        # Gemini
+        #
+        LLMModel(
+            id="litellm/gemini/gemini-2.5-pro-preview-06-05",
+            name="Gemini 2.5 Pro",
+            description="Most intelligent Gemini model",
+            performance_tier="advanced",
+            provider="gemini",
+            supports_image=True,
+            supports_web_search=False,
+            supports_mcp_servers=True,
+        ),
+        LLMModel(
+            id="litellm/gemini/gemini-2.5-flash-preview-05-20",
+            name="Gemini 2.5 Flash",
+            description="Fast Gemini model",
+            performance_tier="standard",
+            provider="gemini",
             supports_image=True,
             supports_web_search=False,
             supports_mcp_servers=True,

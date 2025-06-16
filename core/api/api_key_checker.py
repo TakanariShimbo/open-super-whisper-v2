@@ -5,6 +5,8 @@ This module provides functionality for checking if an API key is valid.
 """
 
 import openai
+import anthropic
+from google import genai
 
 
 class APIKeyChecker:
@@ -65,8 +67,16 @@ class APIKeyChecker:
         bool
             True if the API key is valid, False otherwise
         """
-        # TODO: Implement the check
-        return True
+        try:
+            # Create the client
+            client = anthropic.Anthropic(api_key=anthropic_api_key)
+            
+            # Verify the client works by listing models
+            client.models.list()
+            
+            return True
+        except Exception:
+            return False
 
     @staticmethod
     def check_gemini_api_key(gemini_api_key: str) -> bool:
@@ -83,5 +93,13 @@ class APIKeyChecker:
         bool
             True if the API key is valid, False otherwise
         """
-        # TODO: Implement the check
-        return True
+        try:
+            # Configure the API key
+            client = genai.Client(api_key=gemini_api_key)
+            
+            # List models to verify API key
+            client.models.list()
+
+            return True
+        except Exception:
+            return False
