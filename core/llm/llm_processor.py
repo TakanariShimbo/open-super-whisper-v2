@@ -172,23 +172,6 @@ class LLMProcessor:
         if self._web_search_enabled != is_enabled:
             self._web_search_enabled = is_enabled
 
-    def _validate_input(self, text: str) -> None:
-        """
-        Validate text input.
-
-        Parameters
-        ----------
-        text : str
-            Text to validate.
-
-        Raises
-        ------
-        ValueError
-            If the text input is empty or invalid.
-        """
-        if not text or not isinstance(text, str):
-            raise ValueError("Text input must be a non-empty string.")
-
     def _prepare_input(self, text: str, image_data: bytes | None = None) -> str | list[dict[str, Any]]:
         """
         Prepare input data for the agent.
@@ -204,18 +187,8 @@ class LLMProcessor:
         -------
         str | list[dict[str, Any]]
             Formatted input for the agent.
-
-        Raises
-        ------
-        ValueError
-            If the model does not support image inputs.
         """
         if image_data is not None:
-            # Check if model supports images
-            if not LLMModelManager.check_image_input_supported(model_id=self._model_id):
-                raise ValueError(
-                    f"Model {self._model_id} does not support image inputs."
-                )
             # Convert image bytes to base64 string
             base64_image = base64.b64encode(image_data).decode("utf-8")
             
@@ -260,6 +233,78 @@ class LLMProcessor:
             )
 
         # Check if model supports MCP servers
+        if len(mcp_servers_params) > 0 and not LLMModelManager.check_mcp_servers_supported(model_id=self._model_id):
+            raise ValueError(
+                f"Model {self._model_id} does not support MCP servers."
+            )
+
+    def _validate_for_processing(
+        self,
+        text: str,
+        image_data: bytes | None = None,
+        mcp_servers_params: dict[str, dict[str, Any]] = {},
+    ) -> None:
+        """
+        Validate all inputs and model capabilities before processing.
+
+        This method consolidates all validation logic that needs to run before
+        processing text through the LLM, including parsing MCP servers configuration.
+
+        Parameters
+        ----------
+        text : str
+            Text to process through the LLM.
+        image_data : bytes | None, optional
+            Image data in bytes format, by default None.
+        mcp_servers_params : dict[str, dict[str, Any]], optional
+            Parsed MCP server parameters, by default {}.
+
+        Raises
+        ------
+        ValueError
+            If any validation fails:
+            - Empty or invalid text input
+            - Model ID is not configured
+            - API key is not set
+            - Model doesn't support image inputs when image is provided
+            - Model doesn't support web search when enabled
+            - Model doesn't support MCP servers when configured
+        """
+        # Validate input text
+        if not text or not isinstance(text, str):
+            raise ValueError("Text input must be a non-empty string.")
+        
+        # Validate model exists and get model info
+        model = LLMModelManager.find_model_by_id(self._model_id)
+        if not model:
+            available_models = [m["id"] for m in self.AVAILABLE_MODELS]
+            available_model_names = ", ".join(available_models[:5]) + "..."
+            raise ValueError(
+                f"Unknown model ID: {self._model_id}. Available models include: {available_model_names}"
+            )
+
+        # Validate API key is set
+        if model.provider == "anthropic":
+            if not os.environ.get("ANTHROPIC_API_KEY"):
+                raise ValueError("Anthropic API key is not set.")
+        elif model.provider == "gemini":
+            if not os.environ.get("GEMINI_API_KEY"):
+                raise ValueError("Gemini API key is not set.")
+
+        # Validate image support if image is provided
+        if image_data is not None:
+            if not LLMModelManager.check_image_input_supported(model_id=self._model_id):
+                raise ValueError(
+                    f"Model {self._model_id} does not support image inputs."
+                )
+
+        # Validate web search support if enabled
+        if self._web_search_enabled and not LLMModelManager.check_web_search_supported(model_id=self._model_id):
+            raise ValueError(
+                f"Model {self._model_id} does not support web search."
+            )
+        
+        # Validate MCP servers support if configured
         if len(mcp_servers_params) > 0 and not LLMModelManager.check_mcp_servers_supported(model_id=self._model_id):
             raise ValueError(
                 f"Model {self._model_id} does not support MCP servers."
@@ -394,17 +439,14 @@ class LLMProcessor:
         ValueError
             If the text input is empty or invalid.
         """
-        # Validate input
-        self._validate_input(text=text)
-
         # Prepare input data
         input_data = self._prepare_input(text=text, image_data=image_data)
 
-        # Parse MCP servers configuration once
+        # Parse and validate MCP servers configuration
         mcp_servers_params = self.parse_mcp_servers_json(json_str=self._mcp_servers_json_str)
-        
-        # Validate capabilities
-        self._validate_capabilities(mcp_servers_params=mcp_servers_params)
+
+        # Validate inputs and model capabilities
+        self._validate_for_processing(text=text, image_data=image_data, mcp_servers_params=mcp_servers_params)
 
         async with AsyncExitStack() as stack:
             # Create MCP servers
@@ -450,17 +492,14 @@ class LLMProcessor:
         ValueError
             If the text input is empty or invalid.
         """
-        # Validate input
-        self._validate_input(text=text)
-
         # Prepare input data
         input_data = self._prepare_input(text=text, image_data=image_data)
 
-        # Parse MCP servers configuration once
+        # Parse and validate MCP servers configuration
         mcp_servers_params = self.parse_mcp_servers_json(json_str=self._mcp_servers_json_str)
-        
-        # Validate capabilities
-        self._validate_capabilities(mcp_servers_params=mcp_servers_params)
+
+        # Validate inputs and model capabilities
+        self._validate_for_processing(text=text, image_data=image_data, mcp_servers_params=mcp_servers_params)
 
         async with AsyncExitStack() as stack:
             # Create MCP servers
