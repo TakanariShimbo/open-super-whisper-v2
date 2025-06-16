@@ -28,6 +28,8 @@ class SettingsManager:
     # Define common setting keys as constants to avoid string duplication
     # and ensure consistency
     KEY_OPENAI_API_KEY = "openai_api_key"
+    KEY_ANTHROPIC_API_KEY = "anthropic_api_key"
+    KEY_GEMINI_API_KEY = "gemini_api_key"
     KEY_INSTRUCTION_SETS = "instruction_sets"
     KEY_SELECTED_INSTRUCTION_SET = "selected_instruction_set"
     KEY_AUDIO_NOTIFICATIONS_ENABLED = "audio_notifications_enabled"
@@ -125,6 +127,8 @@ class SettingsManager:
         """
         return {
             self.KEY_OPENAI_API_KEY: "",
+            self.KEY_ANTHROPIC_API_KEY: "",
+            self.KEY_GEMINI_API_KEY: "",
             self.KEY_INSTRUCTION_SETS: [],
             self.KEY_SELECTED_INSTRUCTION_SET: "",
             self.KEY_AUDIO_NOTIFICATIONS_ENABLED: True,
@@ -205,6 +209,50 @@ class SettingsManager:
             The OpenAI API key to store
         """
         self._set_value(key=self.KEY_OPENAI_API_KEY, value=openai_api_key)
+
+    def get_anthropic_api_key(self) -> str:
+        """
+        Get the stored Anthropic API key.
+
+        Returns
+        -------
+        str
+            The stored API key, or an empty string if none is stored
+        """
+        return self._get_value(key=self.KEY_ANTHROPIC_API_KEY, default="")
+
+    def set_anthropic_api_key(self, anthropic_api_key: str) -> None:
+        """
+        Store an API key.
+
+        Parameters
+        ----------
+        anthropic_api_key : str
+            The Anthropic API key to store
+        """
+        self._set_value(key=self.KEY_ANTHROPIC_API_KEY, value=anthropic_api_key)
+
+    def get_gemini_api_key(self) -> str:
+        """
+        Get the stored Gemini API key.
+
+        Returns
+        -------
+        str
+            The stored API key, or an empty string if none is stored
+        """
+        return self._get_value(key=self.KEY_GEMINI_API_KEY, default="")
+
+    def set_gemini_api_key(self, gemini_api_key: str) -> None:
+        """
+        Store an API key.
+
+        Parameters
+        ----------
+        gemini_api_key : str
+            The Gemini API key to store
+        """
+        self._set_value(key=self.KEY_GEMINI_API_KEY, value=gemini_api_key)
 
     def has_valid_openai_api_key(self) -> bool:
         """

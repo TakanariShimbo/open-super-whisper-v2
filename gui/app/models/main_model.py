@@ -199,18 +199,12 @@ class MainModel(QObject):
     # Hotkey signals
     hotkey_triggered = pyqtSignal(str)
 
-    def __init__(
-        self,
-        openai_api_key: str,
-        main_window: QObject | None = None,
-    ) -> None:
+    def __init__(self, main_window: QObject | None = None) -> None:
         """
         Initialize the main model.
 
         Parameters
         ----------
-        openai_api_key: str
-            The OpenAI API key to use for the pipeline
         main_window: QObject | None, optional
             The parent object, by default None
         """
@@ -226,7 +220,11 @@ class MainModel(QObject):
         self._label_manager = LabelManager()
 
         # Initialize pipeline components
-        self._pipeline = Pipeline(openai_api_key=openai_api_key)
+        self._pipeline = Pipeline(
+            openai_api_key=self._settings_manager.get_openai_api_key(),
+            anthropic_api_key=self._settings_manager.get_anthropic_api_key(),
+            gemini_api_key=self._settings_manager.get_gemini_api_key(),
+        )
         self._processor = None
 
         # Connect signals

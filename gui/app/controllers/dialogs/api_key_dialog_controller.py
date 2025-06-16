@@ -19,17 +19,17 @@ class APIKeyDialogController(QObject):
 
     Signals
     -------
-    openai_api_key_validated : pyqtSignal
-        Signal emitted when an OpenAI API key is validated successfully
-    openai_api_key_invalid : pyqtSignal
-        Signal emitted when an OpenAI API key validation fails
+    api_key_validated : pyqtSignal
+        Signal emitted when an API key is validated successfully
+    api_key_invalid : pyqtSignal
+        Signal emitted when an API key validation fails
     """
 
     #
     # Signals
     #
-    openai_api_key_validated = pyqtSignal()
-    openai_api_key_invalid = pyqtSignal()
+    api_key_validated = pyqtSignal()
+    api_key_invalid = pyqtSignal()
 
     def __init__(self, api_key_dialog: QObject | None = None) -> None:
         """
@@ -51,7 +51,7 @@ class APIKeyDialogController(QObject):
     #
     # Controller Methods
     #
-    def validate_openai_api_key(self, openai_api_key: str) -> bool:
+    def validate_api_key(self, openai_api_key: str, anthropic_api_key: str, gemini_api_key: str) -> bool:
         """
         Validate the given OpenAI API key.
 
@@ -66,17 +66,21 @@ class APIKeyDialogController(QObject):
             True if the API key is valid, False otherwise
         """
         # Validate the API key
-        is_valid = self._model.validate_openai_api_key(openai_api_key=openai_api_key)
+        is_valid = self._model.validate_api_key(
+            openai_api_key=openai_api_key,
+            anthropic_api_key=anthropic_api_key,
+            gemini_api_key=gemini_api_key,
+        )
 
         if is_valid:
             # Set the valid key in the model
             self._model.set_openai_api_key(openai_api_key=openai_api_key)
 
             # Emit signal for validation success
-            self.openai_api_key_validated.emit()
+            self.api_key_validated.emit()
         else:
             # Emit signal for validation failure
-            self.openai_api_key_invalid.emit()
+            self.api_key_invalid.emit()
 
         return is_valid
 
@@ -102,11 +106,11 @@ class APIKeyDialogController(QObject):
         """
         self._model.set_openai_api_key(openai_api_key=openai_api_key)
 
-    def save_openai_api_key(self) -> None:
+    def save_api_key(self) -> None:
         """
-        Save current OpenAI API key to persistent storage.
+        Save current API key to persistent storage.
         """
-        self._model.save_openai_api_key()
+        self._model.save_api_key()
 
     def cancel(self) -> None:
         """

@@ -7,6 +7,7 @@ a consistent interface for accessing model information.
 """
 
 from dataclasses import dataclass
+from typing import Literal
 
 
 @dataclass
@@ -27,6 +28,8 @@ class LLMModel:
         Description of the model's capabilities and characteristics.
     performance_tier : str
         Performance category (e.g., "standard", "advanced").
+    provider : str
+        Provider of the model (e.g., "openai", "anthropic", "gemini").
     supports_image : bool
         Whether the model supports image inputs, by default False.
     supports_web_search : bool
@@ -41,6 +44,7 @@ class LLMModel:
     name: str
     description: str
     performance_tier: str
+    provider: Literal["openai", "anthropic", "gemini"]
     supports_image: bool = False
     supports_web_search: bool = False
     supports_mcp_servers: bool = False

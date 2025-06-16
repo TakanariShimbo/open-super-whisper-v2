@@ -26,12 +26,18 @@ class LabelManager:
                 "1. Create an account at https://platform.openai.com\n"
                 "2. Navigate to API Keys section\n"
                 "3. Create a new API key\n"
-                "4. Copy and paste the key below"
+                "4. Copy and paste the key in the OpenAI API key field"
             ),
-            "openai_api_key_input_label": "OpenAI API key:",
-            "openai_api_key_input_placeholder": "sk-...",
+            "openai_api_key_input_label": "OpenAI API key (required):",
             "error_invalid_openai_api_key": "Invalid OpenAI API key. Please check and try again.",
             "error_empty_openai_api_key": "OpenAI API key cannot be empty",
+            "anthropic_api_key_input_label": "Anthropic API key (optional):",
+            "error_invalid_anthropic_api_key": "Invalid Anthropic API key. Please check and try again.",
+            "error_empty_anthropic_api_key": "Anthropic API key cannot be empty",
+            "gemini_api_key_input_label": "Gemini API key (optional):",
+            "error_invalid_gemini_api_key": "Invalid Gemini API key. Please check and try again.",
+            "error_empty_gemini_api_key": "Gemini API key cannot be empty",
+            "input_placeholder": "...",
             "tooltip_show_hide": "Show/Hide API Key",
             "tooltip_hide": "Hide API Key",
             "tooltip_show": "Show API Key",
@@ -44,12 +50,18 @@ class LabelManager:
                 "1. https://platform.openai.com でアカウントを作成\n"
                 "2. API Keysセクションに移動\n"
                 "3. 新しいAPIキーを作成\n"
-                "4. 下の欄にキーをコピー＆ペースト"
+                "4. OpenAI APIキーの欄にコピー＆ペースト"
             ),
-            "openai_api_key_input_label": "OpenAI APIキー:",
-            "openai_api_key_input_placeholder": "sk-...",
+            "openai_api_key_input_label": "OpenAI APIキー（必須）:",
             "error_invalid_openai_api_key": "無効なOpenAI APIキーです。ご確認の上、再度お試しください。",
             "error_empty_openai_api_key": "OpenAI APIキーを入力してください",
+            "anthropic_api_key_input_label": "Anthropic APIキー（任意）:",
+            "error_invalid_anthropic_api_key": "無効なAnthropic APIキーです。ご確認の上、再度お試しください。",
+            "error_empty_anthropic_api_key": "Anthropic APIキーを入力してください",
+            "gemini_api_key_input_label": "Gemini APIキー（任意）:",
+            "error_invalid_gemini_api_key": "無効なGemini APIキーです。ご確認の上、再度お試しください。",
+            "error_empty_gemini_api_key": "Gemini APIキーを入力してください",
+            "input_placeholder": "Enter API key here...",
             "tooltip_show_hide": "APIキーの表示/非表示",
             "tooltip_hide": "APIキーを非表示",
             "tooltip_show": "APIキーを表示",
@@ -82,16 +94,40 @@ class LabelManager:
         return self._labels["openai_api_key_input_label"]
 
     @property
-    def openai_api_key_input_placeholder(self) -> str:
-        return self._labels["openai_api_key_input_placeholder"]
-
-    @property
     def error_invalid_openai_api_key(self) -> str:
         return self._labels["error_invalid_openai_api_key"]
 
     @property
     def error_empty_openai_api_key(self) -> str:
         return self._labels["error_empty_openai_api_key"]
+
+    @property
+    def anthropic_api_key_input_label(self) -> str:
+        return self._labels["anthropic_api_key_input_label"]
+
+    @property
+    def error_invalid_anthropic_api_key(self) -> str:
+        return self._labels["error_invalid_anthropic_api_key"]
+
+    @property
+    def error_empty_anthropic_api_key(self) -> str:
+        return self._labels["error_empty_anthropic_api_key"]
+
+    @property
+    def gemini_api_key_input_label(self) -> str:
+        return self._labels["gemini_api_key_input_label"]
+
+    @property
+    def error_invalid_gemini_api_key(self) -> str:
+        return self._labels["error_invalid_gemini_api_key"]
+
+    @property
+    def error_empty_gemini_api_key(self) -> str:
+        return self._labels["error_empty_gemini_api_key"]
+
+    @property
+    def input_placeholder(self) -> str:
+        return self._labels["input_placeholder"]
 
     @property
     def tooltip_show_hide(self) -> str:
@@ -179,6 +215,9 @@ class APIKeyDialog(QDialog):
 
         layout = QVBoxLayout()
 
+        #
+        # Title and Help Text
+        #
         # Title label
         title_label = QLabel(self._label_manager.title_label)
         title_label.setStyleSheet("font-size: 14px; font-weight: bold;")
@@ -189,41 +228,108 @@ class APIKeyDialog(QDialog):
         help_text.setWordWrap(True)
         layout.addWidget(help_text)
 
-        # API key input
+        # Spacing
         layout.addSpacing(10)
 
-        # Input label
-        input_label = QLabel(self._label_manager.openai_api_key_input_label)
-        layout.addWidget(input_label)
+        #
+        # OpenAI API key input
+        #
+        # OpenAI input label
+        openai_input_label = QLabel(self._label_manager.openai_api_key_input_label)
+        layout.addWidget(openai_input_label)
 
-        # Create a horizontal layout for input field and toggle button
-        input_layout = QHBoxLayout()
+        # Create a horizontal layout for OpenAI input field and toggle button
+        openai_input_layout = QHBoxLayout()
 
-        # API key input field
+        # OpenAI API key input field
         self._openai_api_key_input = QLineEdit()
         self._openai_api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
-        self._openai_api_key_input.setPlaceholderText(self._label_manager.openai_api_key_input_placeholder)
+        self._openai_api_key_input.setPlaceholderText(self._label_manager.input_placeholder)
         self._openai_api_key_input.returnPressed.connect(self._on_accept)
-        input_layout.addWidget(self._openai_api_key_input, 1)  # Use stretch factor 1
+        openai_input_layout.addWidget(self._openai_api_key_input, 1)  # Use stretch factor 1
 
-        # Toggle visibility button
-        self._toggle_button = QPushButton("👁️")
-        self._toggle_button.setToolTip(self._label_manager.tooltip_show_hide)
-        self._toggle_button.setFixedWidth(30)  # Fixed width for the button
-        self._toggle_button.setCheckable(True)  # Make it a toggle button
-        self._toggle_button.setChecked(False)  # Initially not checked
-        self._toggle_button.clicked.connect(self._on_toggle_key_visibility)
-        input_layout.addWidget(self._toggle_button)
+        # OpenAI toggle visibility button
+        self._openai_toggle_button = QPushButton("👁️")
+        self._openai_toggle_button.setToolTip(self._label_manager.tooltip_show_hide)
+        self._openai_toggle_button.setFixedWidth(30)  # Fixed width for the button
+        self._openai_toggle_button.setCheckable(True)  # Make it a toggle button
+        self._openai_toggle_button.setChecked(False)  # Initially not checked
+        self._openai_toggle_button.clicked.connect(self._on_toggle_openai_api_key_visibility)
+        openai_input_layout.addWidget(self._openai_toggle_button)
 
         # Add the input layout to the main layout
-        layout.addLayout(input_layout)
+        layout.addLayout(openai_input_layout)
 
+        #
+        # Anthropic API key input
+        #
+        # Anthropic input label
+        anthropic_input_label = QLabel(self._label_manager.anthropic_api_key_input_label)
+        layout.addWidget(anthropic_input_label)
+
+        # Create a horizontal layout for OpenAI input field and toggle button
+        anthropic_input_layout = QHBoxLayout()
+
+        # Anthropic API key input field
+        self._anthropic_api_key_input = QLineEdit()
+        self._anthropic_api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
+        self._anthropic_api_key_input.setPlaceholderText(self._label_manager.input_placeholder)
+        self._anthropic_api_key_input.returnPressed.connect(self._on_accept)
+        anthropic_input_layout.addWidget(self._anthropic_api_key_input, 1)  # Use stretch factor 1
+
+        # OpenAI toggle visibility button
+        self._anthropic_toggle_button = QPushButton("👁️")
+        self._anthropic_toggle_button.setToolTip(self._label_manager.tooltip_show_hide)
+        self._anthropic_toggle_button.setFixedWidth(30)  # Fixed width for the button
+        self._anthropic_toggle_button.setCheckable(True)  # Make it a toggle button
+        self._anthropic_toggle_button.setChecked(False)  # Initially not checked
+        self._anthropic_toggle_button.clicked.connect(self._on_toggle_anthropic_api_key_visibility)
+        anthropic_input_layout.addWidget(self._anthropic_toggle_button)
+
+        # Add the anthropic input layout to the main layout
+        layout.addLayout(anthropic_input_layout)
+
+        #
+        # Gemini API key input
+        #
+        # Gemini input label
+        gemini_input_label = QLabel(self._label_manager.gemini_api_key_input_label)
+        layout.addWidget(gemini_input_label)
+
+        # Create a horizontal layout for Gemini input field and toggle button
+        gemini_input_layout = QHBoxLayout()
+
+        # Gemini API key input field
+        self._gemini_api_key_input = QLineEdit()
+        self._gemini_api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
+        self._gemini_api_key_input.setPlaceholderText(self._label_manager.input_placeholder)
+        self._gemini_api_key_input.returnPressed.connect(self._on_accept)
+        gemini_input_layout.addWidget(self._gemini_api_key_input, 1)  # Use stretch factor 1
+
+        # OpenAI toggle visibility button
+        self._gemini_toggle_button = QPushButton("👁️")
+        self._gemini_toggle_button.setToolTip(self._label_manager.tooltip_show_hide)
+        self._gemini_toggle_button.setFixedWidth(30)  # Fixed width for the button
+        self._gemini_toggle_button.setCheckable(True)  # Make it a toggle button
+        self._gemini_toggle_button.setChecked(False)  # Initially not checked
+        self._gemini_toggle_button.clicked.connect(self._on_toggle_gemini_api_key_visibility)
+        gemini_input_layout.addWidget(self._gemini_toggle_button)
+
+        # Add the input layout to the main layout
+        layout.addLayout(gemini_input_layout)
+
+        #
+        # Status label
+        #
         # Status label (initially hidden)
         self._status_label = QLabel("")
         self._status_label.setStyleSheet("color: red;")
         self._status_label.setVisible(False)
         layout.addWidget(self._status_label)
 
+        #
+        # Button box
+        #
         # Add button box
         button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         button_box.accepted.connect(self._on_accept)
@@ -240,40 +346,30 @@ class APIKeyDialog(QDialog):
         Connect signals from the controller.
         """
         # Connect controller signals to view methods
-        self._controller.openai_api_key_validated.connect(self._handle_openai_api_key_validated)
-        self._controller.openai_api_key_invalid.connect(self._handle_openai_api_key_invalid)
+        self._controller.api_key_validated.connect(self._handle_api_key_validated)
+        self._controller.api_key_invalid.connect(self._handle_api_key_invalid)
 
     #
     # Controller Events
     #
     @pyqtSlot()
-    def _handle_openai_api_key_validated(self) -> None:
+    def _handle_api_key_validated(self) -> None:
         """
-        Handle successful OpenAI API key validation.
-
-        Parameters
-        ----------
-        openai_api_key : str
-            The validated OpenAI API key
+        Handle successful API key validation.
         """
         # Restore hotkeys
         self._restore_hotkeys()
 
         # Save the valid OpenAI API key
-        self._controller.save_openai_api_key()
+        self._controller.save_api_key()
 
         # Accept the dialog
         super().accept()
 
     @pyqtSlot()
-    def _handle_openai_api_key_invalid(self) -> None:
+    def _handle_api_key_invalid(self) -> None:
         """
-        Handle failed OpenAI API key validation.
-
-        Parameters
-        ----------
-        openai_api_key : str
-            The invalid OpenAI API key
+        Handle failed API key validation.
         """
         self._show_status_message(message=self._label_manager.error_invalid_openai_api_key)
 
@@ -281,20 +377,52 @@ class APIKeyDialog(QDialog):
     # UI Events
     #
     @pyqtSlot()
-    def _on_toggle_key_visibility(self) -> None:
+    def _on_toggle_openai_api_key_visibility(self) -> None:
         """
-        Handle key visibility toggle.
+        Handle OpenAI API key visibility toggle.
         """
-        if self._toggle_button.isChecked():
+        if self._openai_toggle_button.isChecked():
             # Show API key
             self._openai_api_key_input.setEchoMode(QLineEdit.EchoMode.Normal)
-            self._toggle_button.setText("🔒")
-            self._toggle_button.setToolTip(self._label_manager.tooltip_hide)
+            self._openai_toggle_button.setText("🔒")
+            self._openai_toggle_button.setToolTip(self._label_manager.tooltip_hide)
         else:
             # Hide API key
             self._openai_api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
-            self._toggle_button.setText("👁️")
-            self._toggle_button.setToolTip(self._label_manager.tooltip_show)
+            self._openai_toggle_button.setText("👁️")
+            self._openai_toggle_button.setToolTip(self._label_manager.tooltip_show)
+
+    @pyqtSlot()
+    def _on_toggle_anthropic_api_key_visibility(self) -> None:
+        """
+        Handle Anthropic API key visibility toggle.
+        """
+        if self._anthropic_toggle_button.isChecked():
+            # Show API key
+            self._anthropic_api_key_input.setEchoMode(QLineEdit.EchoMode.Normal)
+            self._anthropic_toggle_button.setText("🔒")
+            self._anthropic_toggle_button.setToolTip(self._label_manager.tooltip_hide)
+        else:
+            # Hide API key
+            self._anthropic_api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
+            self._anthropic_toggle_button.setText("👁️")
+            self._anthropic_toggle_button.setToolTip(self._label_manager.tooltip_show)
+
+    @pyqtSlot()
+    def _on_toggle_gemini_api_key_visibility(self) -> None:
+        """
+        Handle Gemini API key visibility toggle.
+        """
+        if self._gemini_toggle_button.isChecked():
+            # Show API key
+            self._gemini_api_key_input.setEchoMode(QLineEdit.EchoMode.Normal)
+            self._gemini_toggle_button.setText("🔒")
+            self._gemini_toggle_button.setToolTip(self._label_manager.tooltip_hide)
+        else:
+            # Hide API key
+            self._gemini_api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
+            self._gemini_toggle_button.setText("👁️")
+            self._gemini_toggle_button.setToolTip(self._label_manager.tooltip_show)
 
     #
     # Open/Close Events
@@ -317,6 +445,28 @@ class APIKeyDialog(QDialog):
             The entered OpenAI API key
         """
         return self._openai_api_key_input.text().strip()
+    
+    def _get_entered_anthropic_api_key(self) -> str:
+        """
+        Get the entered Anthropic API key.
+
+        Returns
+        -------
+        str
+            The entered Anthropic API key
+        """
+        return self._anthropic_api_key_input.text().strip()
+    
+    def _get_entered_gemini_api_key(self) -> str:
+        """
+        Get the entered Gemini API key.
+
+        Returns
+        -------
+        str
+            The entered Gemini API key
+        """
+        return self._gemini_api_key_input.text().strip()
 
     @pyqtSlot()
     def _on_accept(self) -> None:
@@ -324,13 +474,19 @@ class APIKeyDialog(QDialog):
         Handle dialog acceptance.
         """
         entered_openai_api_key = self._get_entered_openai_api_key()
+        entered_anthropic_api_key = self._get_entered_anthropic_api_key()
+        entered_gemini_api_key = self._get_entered_gemini_api_key()
 
         if not entered_openai_api_key:
             self._show_status_message(message=self._label_manager.error_empty_openai_api_key)
             return
 
         # Use controller to validate the key
-        self._controller.validate_openai_api_key(openai_api_key=entered_openai_api_key)
+        self._controller.validate_api_key(
+            openai_api_key=entered_openai_api_key,
+            anthropic_api_key=entered_anthropic_api_key,
+            gemini_api_key=entered_gemini_api_key,
+        )
 
     @pyqtSlot()
     def _on_reject(self) -> None:

@@ -24,7 +24,7 @@ class Pipeline:
     a seamless processing pipeline, with optional LLM processing.
     """
 
-    def __init__(self, openai_api_key: str) -> None:
+    def __init__(self, openai_api_key: str, anthropic_api_key: str = "", gemini_api_key: str = "") -> None:
         """
         Initialize the Pipeline.
 
@@ -32,6 +32,10 @@ class Pipeline:
         ----------
         openai_api_key : str
             OpenAI API key.
+        anthropic_api_key : str
+            Anthropic API key.
+        gemini_api_key : str
+            Gemini API key.
 
         Raises
         ------
@@ -39,13 +43,22 @@ class Pipeline:
             If no API key is provided and none is found in environment variables.
         """
         # Verify api key and create client
-        is_valid = APIKeyChecker.check_openai_api_key(openai_api_key=openai_api_key)
-        if not is_valid:
+        if not APIKeyChecker.check_openai_api_key(openai_api_key=openai_api_key):
             raise ValueError("Invalid OpenAI API key. Please provide a valid API key.")
+        if anthropic_api_key:
+            if not APIKeyChecker.check_anthropic_api_key(anthropic_api_key=anthropic_api_key):
+                raise ValueError("Invalid Anthropic API key. Please provide a valid API key.")
+        if gemini_api_key:
+            if not APIKeyChecker.check_gemini_api_key(gemini_api_key=gemini_api_key):
+                raise ValueError("Invalid Gemini API key. Please provide a valid API key.")
 
         # Initialize components
         self._stt_processor = STTProcessor(openai_api_key=openai_api_key)
-        self._llm_processor = LLMProcessor(openai_api_key=openai_api_key)
+        self._llm_processor = LLMProcessor(
+            openai_api_key=openai_api_key, 
+            anthropic_api_key=anthropic_api_key, 
+            gemini_api_key=gemini_api_key,
+        )
         self._audio_recorder = AudioRecorder()
 
         # Processing state flag

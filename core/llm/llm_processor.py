@@ -81,7 +81,7 @@ class LLMProcessor:
     AVAILABLE_MODELS = LLMModelManager.to_api_format()
     DEFAULT_MODEL_ID = LLMModelManager.get_default_model().id
 
-    def __init__(self, openai_api_key: str) -> None:
+    def __init__(self, openai_api_key: str, anthropic_api_key: str = "", gemini_api_key: str = "") -> None:
         """
         Initialize the LLMProcessor with API key.
 
@@ -89,9 +89,17 @@ class LLMProcessor:
         ----------
         openai_api_key : str
             OpenAI API key for authentication.
+        anthropic_api_key : str
+            Anthropic API key for authentication.
+        gemini_api_key : str
+            Gemini API key for authentication.
         """
-        # Set the API key globally for the Agents SDK
+        # Set the API for the Agents SDK
         set_default_openai_key(openai_api_key)
+        if anthropic_api_key:
+            os.environ["ANTHROPIC_API_KEY"] = anthropic_api_key
+        if gemini_api_key:
+            os.environ["GEMINI_API_KEY"] = gemini_api_key
 
         self._model_id = self.DEFAULT_MODEL_ID
         self._system_instruction: str = "You are a helpful assistant."
