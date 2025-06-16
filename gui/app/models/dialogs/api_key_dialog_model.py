@@ -45,16 +45,44 @@ class APIKeyDialogModel(QObject):
     #
     # Model Methods
     #
-    def validate_api_key(self, openai_api_key: str, anthropic_api_key: str, gemini_api_key: str) -> bool:
+    def validate_openai_api_key(self, openai_api_key: str) -> bool:
         """
-        Validate an API key using the API checker.
+        Validate an OpenAI API key using the API checker.
 
         Parameters
         ----------
         openai_api_key : str
             The OpenAI API key to validate
+
+        Returns
+        -------
+        bool
+            True if the API key is valid, False otherwise
+        """
+        return APIKeyChecker.check_openai_api_key(openai_api_key=openai_api_key)
+    
+    def validate_anthropic_api_key(self, anthropic_api_key: str) -> bool:
+        """
+        Validate an Anthropic API key using the API checker.
+
+        Parameters
+        ----------
         anthropic_api_key : str
             The Anthropic API key to validate
+
+        Returns
+        -------
+        bool
+            True if the API key is valid, False otherwise
+        """
+        return APIKeyChecker.check_anthropic_api_key(anthropic_api_key=anthropic_api_key)
+    
+    def validate_gemini_api_key(self, gemini_api_key: str) -> bool:
+        """
+        Validate a Gemini API key using the API checker.
+
+        Parameters
+        ----------
         gemini_api_key : str
             The Gemini API key to validate
 
@@ -63,18 +91,7 @@ class APIKeyDialogModel(QObject):
         bool
             True if the API key is valid, False otherwise
         """
-        is_openai_valid = APIKeyChecker.check_openai_api_key(openai_api_key=openai_api_key)
-
-        is_anthropic_valid = True
-        if anthropic_api_key:
-            is_anthropic_valid = APIKeyChecker.check_anthropic_api_key(anthropic_api_key=anthropic_api_key)
-        
-        is_gemini_valid = True
-        if gemini_api_key:
-            is_gemini_valid = APIKeyChecker.check_gemini_api_key(gemini_api_key=gemini_api_key)
-        
-        is_valid = is_openai_valid and is_anthropic_valid and is_gemini_valid
-        return is_valid
+        return APIKeyChecker.check_gemini_api_key(gemini_api_key=gemini_api_key)
 
     def get_openai_api_key(self) -> str:
         """

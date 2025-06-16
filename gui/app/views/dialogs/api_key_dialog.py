@@ -29,14 +29,10 @@ class LabelManager:
                 "4. Copy and paste the key in the OpenAI API key field"
             ),
             "openai_api_key_input_label": "OpenAI API key (required):",
-            "error_invalid_openai_api_key": "Invalid OpenAI API key. Please check and try again.",
-            "error_empty_openai_api_key": "OpenAI API key cannot be empty",
             "anthropic_api_key_input_label": "Anthropic API key (optional):",
-            "error_invalid_anthropic_api_key": "Invalid Anthropic API key. Please check and try again.",
-            "error_empty_anthropic_api_key": "Anthropic API key cannot be empty",
             "gemini_api_key_input_label": "Gemini API key (optional):",
-            "error_invalid_gemini_api_key": "Invalid Gemini API key. Please check and try again.",
-            "error_empty_gemini_api_key": "Gemini API key cannot be empty",
+            "error_empty_openai_api_key": "OpenAI API key cannot be empty",
+            "error_invalid_xxx_api_key": "Invalid {provider} API key. Please check and try again.",
             "input_placeholder": "...",
             "tooltip_show_hide": "Show/Hide API Key",
             "tooltip_hide": "Hide API Key",
@@ -53,14 +49,10 @@ class LabelManager:
                 "4. OpenAI APIキーの欄にコピー＆ペースト"
             ),
             "openai_api_key_input_label": "OpenAI APIキー（必須）:",
-            "error_invalid_openai_api_key": "無効なOpenAI APIキーです。ご確認の上、再度お試しください。",
-            "error_empty_openai_api_key": "OpenAI APIキーを入力してください",
             "anthropic_api_key_input_label": "Anthropic APIキー（任意）:",
-            "error_invalid_anthropic_api_key": "無効なAnthropic APIキーです。ご確認の上、再度お試しください。",
-            "error_empty_anthropic_api_key": "Anthropic APIキーを入力してください",
             "gemini_api_key_input_label": "Gemini APIキー（任意）:",
-            "error_invalid_gemini_api_key": "無効なGemini APIキーです。ご確認の上、再度お試しください。",
-            "error_empty_gemini_api_key": "Gemini APIキーを入力してください",
+            "error_empty_openai_api_key": "OpenAI APIキーを入力してください",
+            "error_invalid_xxx_api_key": "無効な{provider} APIキーです。ご確認の上、再度お試しください。",
             "input_placeholder": "Enter API key here...",
             "tooltip_show_hide": "APIキーの表示/非表示",
             "tooltip_hide": "APIキーを非表示",
@@ -94,36 +86,20 @@ class LabelManager:
         return self._labels["openai_api_key_input_label"]
 
     @property
-    def error_invalid_openai_api_key(self) -> str:
-        return self._labels["error_invalid_openai_api_key"]
-
-    @property
-    def error_empty_openai_api_key(self) -> str:
-        return self._labels["error_empty_openai_api_key"]
-
-    @property
     def anthropic_api_key_input_label(self) -> str:
         return self._labels["anthropic_api_key_input_label"]
-
-    @property
-    def error_invalid_anthropic_api_key(self) -> str:
-        return self._labels["error_invalid_anthropic_api_key"]
-
-    @property
-    def error_empty_anthropic_api_key(self) -> str:
-        return self._labels["error_empty_anthropic_api_key"]
 
     @property
     def gemini_api_key_input_label(self) -> str:
         return self._labels["gemini_api_key_input_label"]
 
     @property
-    def error_invalid_gemini_api_key(self) -> str:
-        return self._labels["error_invalid_gemini_api_key"]
+    def error_empty_openai_api_key(self) -> str:
+        return self._labels["error_empty_openai_api_key"]
 
     @property
-    def error_empty_gemini_api_key(self) -> str:
-        return self._labels["error_empty_gemini_api_key"]
+    def error_invalid_xxx_api_key(self) -> str:
+        return self._labels["error_invalid_xxx_api_key"]
 
     @property
     def input_placeholder(self) -> str:
@@ -186,9 +162,7 @@ class APIKeyDialog(QDialog):
             self._show_status_message(message=initial_message)
 
         # Initialize API key field
-        current_openai_api_key = self._controller.get_openai_api_key()
-        if current_openai_api_key:
-            self._openai_api_key_input.setText(current_openai_api_key)
+        self._fill_initial_api_key()
 
     def _show_status_message(self, message: str) -> None:
         """
@@ -201,6 +175,20 @@ class APIKeyDialog(QDialog):
         """
         self._status_label.setText(message)
         self._status_label.setVisible(True)
+
+    def _fill_initial_api_key(self) -> None:
+        """
+        Fill the initial API key fields.
+        """
+        current_openai_api_key = self._controller.get_openai_api_key()
+        if current_openai_api_key:
+            self._openai_api_key_input.setText(current_openai_api_key)
+        current_anthropic_api_key = self._controller.get_anthropic_api_key()
+        if current_anthropic_api_key:
+            self._anthropic_api_key_input.setText(current_anthropic_api_key)
+        current_gemini_api_key = self._controller.get_gemini_api_key()
+        if current_gemini_api_key:
+            self._gemini_api_key_input.setText(current_gemini_api_key)
 
     #
     # UI Setup
@@ -366,12 +354,12 @@ class APIKeyDialog(QDialog):
         # Accept the dialog
         super().accept()
 
-    @pyqtSlot()
-    def _handle_api_key_invalid(self) -> None:
+    @pyqtSlot(str)
+    def _handle_api_key_invalid(self, provider: str) -> None:
         """
         Handle failed API key validation.
         """
-        self._show_status_message(message=self._label_manager.error_invalid_openai_api_key)
+        self._show_status_message(message=self._label_manager.error_invalid_xxx_api_key.format(provider=provider))
 
     #
     # UI Events

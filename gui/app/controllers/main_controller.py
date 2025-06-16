@@ -148,9 +148,7 @@ class MainController(QObject):
         self._model.processing_started.connect(self.processing_started)
         self._model.processing_completed.connect(self._handle_processing_completed)
         self._model.processing_cancelled.connect(self._handle_processing_cancelled)
-        self._model.processing_error.connect(
-            lambda error: self.showing_message.emit(self._label_manager.error_message_format.format(error=error), 2000)
-        )
+        self._model.processing_error.connect(self._handle_processing_error)
         self._model.streaming_llm_chunk.connect(self._handle_streamling_llm_chunk)
 
         # Instruction set signals
@@ -223,6 +221,20 @@ class MainController(QObject):
 
         # Forward the signal to views
         self.processing_cancelled.emit()
+
+    @pyqtSlot(str)
+    def _handle_processing_error(self, error: str) -> None:
+        """
+        Handle processing error.
+        """
+        # Set status indicator to cancelled mode
+        self._status_indicator_controller.cancel_processing()
+
+        # Forward the signal to views
+        self.processing_cancelled.emit()
+
+        # Show error message
+        self.showing_message.emit(self._label_manager.error_message_format.format(error=error), 5000)
 
     @pyqtSlot(str)
     def _handle_hotkey_triggered(self, hotkey: str) -> None:

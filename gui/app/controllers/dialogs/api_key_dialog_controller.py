@@ -29,7 +29,7 @@ class APIKeyDialogController(QObject):
     # Signals
     #
     api_key_validated = pyqtSignal()
-    api_key_invalid = pyqtSignal()
+    api_key_invalid = pyqtSignal(str)
 
     def __init__(self, api_key_dialog: QObject | None = None) -> None:
         """
@@ -66,23 +66,29 @@ class APIKeyDialogController(QObject):
             True if the API key is valid, False otherwise
         """
         # Validate the API key
-        is_valid = self._model.validate_api_key(
-            openai_api_key=openai_api_key,
-            anthropic_api_key=anthropic_api_key,
-            gemini_api_key=gemini_api_key,
-        )
+        if not self._model.validate_openai_api_key(openai_api_key=openai_api_key):
+            self.api_key_invalid.emit("OpenAI")
+            return False
+        
+        if anthropic_api_key:
+            if not self._model.validate_anthropic_api_key(anthropic_api_key=anthropic_api_key):
+                self.api_key_invalid.emit("Anthropic")
+                return False
 
-        if is_valid:
-            # Set the valid key in the model
-            self._model.set_openai_api_key(openai_api_key=openai_api_key)
+        if gemini_api_key:
+            if not self._model.validate_gemini_api_key(gemini_api_key=gemini_api_key):
+                self.api_key_invalid.emit("Gemini")
+                return False
+        
+        # Set the valid key in the model
+        self._model.set_openai_api_key(openai_api_key=openai_api_key)
+        self._model.set_anthropic_api_key(anthropic_api_key=anthropic_api_key)
+        self._model.set_gemini_api_key(gemini_api_key=gemini_api_key)
 
-            # Emit signal for validation success
-            self.api_key_validated.emit()
-        else:
-            # Emit signal for validation failure
-            self.api_key_invalid.emit()
+        # Emit signal for validation success
+        self.api_key_validated.emit()
 
-        return is_valid
+        return True
 
     def get_openai_api_key(self) -> str:
         """
@@ -95,16 +101,27 @@ class APIKeyDialogController(QObject):
         """
         return self._model.get_openai_api_key()
 
-    def set_openai_api_key(self, openai_api_key: str) -> None:
+    def get_anthropic_api_key(self) -> str:
         """
-        Set OpenAI API key in model.
+        Get current Anthropic API key.
 
-        Parameters
-        ----------
-        openai_api_key : str
-            The OpenAI API key to set
+        Returns
+        -------
+        str
+            The current API key
         """
-        self._model.set_openai_api_key(openai_api_key=openai_api_key)
+        return self._model.get_anthropic_api_key()
+
+    def get_gemini_api_key(self) -> str:
+        """
+        Get current Gemini API key.
+
+        Returns
+        -------
+        str
+            The current API key
+        """
+        return self._model.get_gemini_api_key()
 
     def save_api_key(self) -> None:
         """
