@@ -144,6 +144,10 @@ Open Super Whisper V2 operates through the following 4 steps:
         │   └── widgets/                           # Widget models
         │       ├── __init__.py
         │       └── status_indicator_model.py
+        ├── design/                                # Design system
+        │   ├── __init__.py
+        │   ├── integration.py                     # PyQtDarkTheme integration
+        │   └── theme_colors.py                    # Centralized color definitions
         ├── utils/                                 # GUI utility functions
         │   ├── __init__.py
         │   ├── clipboard_utils.py                 # Clipboard operations
