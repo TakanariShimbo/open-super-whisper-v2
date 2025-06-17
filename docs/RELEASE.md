@@ -1,5 +1,77 @@
 # Release Notes - Open Super Whisper V2
 
+## 🎉 v1.2.0 Release
+
+### 🆕 What's New in v1.2.0
+
+- 🌙 **Adaptive Theme System**: Automatically detects and applies light/dark theme based on system preferences
+
+### ✨ Features
+
+- 🎙️ Global hotkey voice recording
+- 📝 High-accuracy speech recognition with OpenAI Speech to text API
+- 🤖 AI agent support (OpenAI + Claude + Gemini) with OpenAI Agents SDK
+- 🌙 **NEW**: Automatic light/dark theme switching based on system settings
+- 🔌 Extensibility via MCP (Model Context Protocol)
+- 📋 Automatic clipboard integration
+- 🎯 System tray operation
+
+### 📦 Installation
+
+1. Download `OpenSuperWhisper.exe`
+2. Run the executable
+3. Configure your OpenAI API key (required)
+4. Optionally configure Claude/Gemini API keys for additional AI models
+5. Start using!
+
+### 📖 Documentation
+
+- [README (English)](README.md)
+- [README (Japanese)](README_ja.md)
+- [User Manual (English)](MANUAL.md)
+- [User Manual (Japanese)](MANUAL_ja.md)
+
+### ⚖️ License
+
+This software is licensed under GPL v3.0
+
+## 🎉 v1.2.0 リリース
+
+### 🆕 v1.2.0 の新機能
+
+- 🌙 **アダプティブテーマシステム**: システム設定に基づいてライト・ダークテーマを自動検出・適用
+
+### ✨ 機能
+
+- 🎙️ グローバルホットキーによる音声録音
+- 📝 OpenAI Speech to text API による高精度音声認識
+- 🤖 OpenAI Agents SDK による AI エージェント対応（OpenAI + Claude + Gemini）
+- 🌙 **NEW**: システム設定に基づく自動ライト・ダークテーマ切り替え
+- 🔌 MCP (Model Context Protocol) による拡張性
+- 📋 自動クリップボード連携
+- 🎯 システムトレイ常駐動作
+
+### 📦 インストール
+
+1. `OpenSuperWhisper.exe` をダウンロード
+2. 実行ファイルを起動
+3. OpenAI API キーを設定（必須）
+4. 追加の AI モデル用に Claude/Gemini API キーをオプションで設定
+5. 利用開始！
+
+### 📖 ドキュメント
+
+- [README (English)](README.md)
+- [README (Japanese)](README_ja.md)
+- [User Manual (English)](MANUAL.md)
+- [User Manual (Japanese)](MANUAL_ja.md)
+
+### ⚖️ ライセンス
+
+このソフトウェアは GPL v3.0 の下でライセンスされています。
+
+---
+
 ## 🎉 v1.1.0 Release
 
 ### 🆕 What's New in v1.1.0
