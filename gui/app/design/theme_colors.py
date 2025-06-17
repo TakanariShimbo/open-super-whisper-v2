@@ -6,7 +6,12 @@ Centralized color definitions for the application.
 
 
 class ThemeColors:
-    """Provides theme-appropriate colors based on current theme."""
+    """
+    Provides theme-appropriate colors based on current theme.
+
+    This class provides theme-appropriate colors based on current theme.
+    It is used to get the colors for the application.   
+    """
     
     # Dark theme colors
     DARK = {
