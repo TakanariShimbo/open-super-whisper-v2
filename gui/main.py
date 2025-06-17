@@ -13,6 +13,7 @@ from .app.managers.icon_manager import IconManager
 from .app.managers.settings_manager import SettingsManager
 from .app.views.factories.api_key_dialog_factory import APIKeyDialogFactory
 from .app.views.factories.main_window_factory import MainWindowFactory
+from .app.design.integration import DesignSystemIntegration
 
 
 class LabelManager:
@@ -150,6 +151,9 @@ def start_application() -> None:
         app = QApplication(sys.argv)
         app.setApplicationName("OpenSuperWhisper")
         app.setOrganizationName("OpenSuperWhisper")
+
+        # Initialize design system
+        DesignSystemIntegration.initialize(app)
 
         # Initialize label manager
         label_manager = LabelManager()

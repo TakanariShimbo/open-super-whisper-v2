@@ -199,6 +199,15 @@ wheels = [
 ]
 
 [[package]]
+name = "darkdetect"
+version = "0.7.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/48/2e/346667de53b48417e6237efd9d076d6530c413666fcbc381adbfeff21ce7/darkdetect-0.7.1.tar.gz", hash = "sha256:47be3cf5134432ddb616bbffc927237718407914993c82809983e7ccebf49013", size = 6976 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/63/bd/b31abc8fcaab163e0b9501020309dd9094b47d609035a23e6ec0a0a8ba10/darkdetect-0.7.1-py2.py3-none-any.whl", hash = "sha256:3efe69f8ecd5f1b7f4fbb0d1d93f656b0e493c45cc49222380ffe2a529cbc866", size = 8199 },
+]
+
+[[package]]
 name = "distro"
 version = "1.9.0"
 source = { registry = "https://pypi.org/simple" }
@@ -680,6 +689,7 @@ dependencies = [
     { name = "pynput" },
     { name = "pyqt6" },
     { name = "pyqt6-webengine" },
+    { name = "pyqtdarktheme" },
     { name = "sounddevice" },
     { name = "soundfile" },
 ]
@@ -697,6 +707,7 @@ requires-dist = [
     { name = "pynput", specifier = ">=1.8.1" },
     { name = "pyqt6", specifier = ">=6.9.0" },
     { name = "pyqt6-webengine", specifier = ">=6.9.0" },
+    { name = "pyqtdarktheme", specifier = ">=2.1.0" },
     { name = "sounddevice", specifier = ">=0.5.1" },
     { name = "soundfile", specifier = ">=0.13.1" },
 ]
@@ -1084,6 +1095,18 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/57/7b/efbe18daef82fe2b5fc5997280b24b7cf6012d779f9392e5e53d74cb9a71/PyQt6_WebEngine_Qt6-6.9.0-py3-none-manylinux_2_28_x86_64.whl", hash = "sha256:e2c18e9c516305885b88f70cfb9ac7b88dee808764a7f5db933b37fc85c70522", size = 110469177 },
     { url = "https://files.pythonhosted.org/packages/55/8e/9b4f7c4d83c96913964a8b4b78d4b40f34404e96287feba3b365e071e6de/PyQt6_WebEngine_Qt6-6.9.0-py3-none-manylinux_2_39_aarch64.whl", hash = "sha256:0ba71f26616e69c8dfd976cec649878d02959e4f8a06458a828ae4731d7c128b", size = 106399729 },
     { url = "https://files.pythonhosted.org/packages/64/42/5f79fe130fc02cdacea6fc6c4d0ac488fad37ab1e0a06816229ae469787b/PyQt6_WebEngine_Qt6-6.9.0-py3-none-win_amd64.whl", hash = "sha256:f30c8c1f6b6378849bfa30b91a4496d3ecbd1aa86cbdd46341607ea15df6de79", size = 110225140 },
+]
+
+[[package]]
+name = "pyqtdarktheme"
+version = "2.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "darkdetect" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5c/f1/786feaad7a333072b34a913dbe38aef94b5ae43ad188934f5d70007aea79/pyqtdarktheme-2.1.0.tar.gz", hash = "sha256:5f8274ddfa3a5481ed9743cdb0f9debfeb7ff695b3a0d202a8104361d17dadb8", size = 42186 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/12/cd/8ce0ac84e9f68dc549edcc5cbdeac7511439c5f7ee6c05f1f8826ef05d44/pyqtdarktheme-2.1.0-py3-none-any.whl", hash = "sha256:8739d99502230fbaca42551ea033c9ae31c81c4ebfec2f1ffde38f32a18bea7a", size = 54242 },
 ]
 
 [[package]]

@@ -8,11 +8,14 @@ with LaTeX support, while preserving the original markdown text.
 import re
 
 import markdown
+
 from PyQt6.QtWidgets import QSizePolicy, QWidget
 from PyQt6.QtCore import QSize, pyqtSignal, QObject
 from PyQt6.QtGui import QDesktopServices
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWebChannel import QWebChannel
+
+from ...design.integration import DesignSystemIntegration
 
 
 class Document(QObject):
@@ -144,7 +147,19 @@ class MarkdownTextBrowser(QWebEngineView):
         3. JavaScript for handling content updates via Qt web channel
         4. Basic styling for placeholder text
         """
-        self._html_template = """
+        
+        if DesignSystemIntegration.is_dark_theme():
+            # PyQtDarkTheme dark theme - textbox background color
+            bg_color = "#303134"
+            text_color = "#e8eaed"
+            placeholder_color = "#9aa0a6"
+        else:
+            # PyQtDarkTheme light theme - textbox background color
+            bg_color = "#ffffff"
+            text_color = "#3c4043"
+            placeholder_color = "#80868b"
+        
+        self._html_template = f"""
         <!DOCTYPE html>
         <html>
         <head>
@@ -152,41 +167,48 @@ class MarkdownTextBrowser(QWebEngineView):
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <script type="text/javascript" src="qrc:///qtwebchannel/qwebchannel.js"></script>
             <script type="text/javascript">
-                window.MathJax = {
-                    tex: {
+                window.MathJax = {{
+                    tex: {{
                         inlineMath: [['$', '$'], ['\\(', '\\)']],
                         displayMath: [['$$', '$$'], ['\\[', '\\]']]
-                    },
-                    svg: {
+                    }},
+                    svg: {{
                         fontCache: 'global'
-                    }
-                };
+                    }}
+                }};
             </script>
             <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
             <script type="text/javascript">
-                function typesetMath() {
-                    if (typeof MathJax !== 'undefined' && typeof MathJax.typeset === 'function') {
+                function typesetMath() {{
+                    if (typeof MathJax !== 'undefined' && typeof MathJax.typeset === 'function') {{
                         MathJax.typeset([document.getElementById('content')]);
-                    }
-                }
+                    }}
+                }}
                 
-                document.addEventListener('DOMContentLoaded', function() {
-                    new QWebChannel(qt.webChannelTransport, function(channel) {
+                document.addEventListener('DOMContentLoaded', function() {{
+                    new QWebChannel(qt.webChannelTransport, function(channel) {{
                         var content = channel.objects.content;
-                        content.content_changed.connect(function(new_content) {
+                        content.content_changed.connect(function(new_content) {{
                             var contentElement = document.getElementById('content');
-                            if (contentElement) {
+                            if (contentElement) {{
                                 contentElement.innerHTML = new_content;
                                 typesetMath();
-                            }
-                        });
-                    });
-                });
+                            }}
+                        }});
+                    }});
+                }});
             </script>
             <style>
-                .placeholder {
-                    color: #999;
-                }
+                body {{
+                    background-color: {bg_color};
+                    color: {text_color};
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+                    margin: 8px;
+                    padding: 0;
+                }}
+                .placeholder {{
+                    color: {placeholder_color};
+                }}
             </style>
         </head>
         <body>

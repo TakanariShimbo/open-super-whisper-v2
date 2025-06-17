@@ -16,6 +16,7 @@ dependencies = [
     "pynput>=1.8.1",
     "pyqt6>=6.9.0",
     "pyqt6-webengine>=6.9.0",
+    "pyqtdarktheme>=2.1.0",
     "sounddevice>=0.5.1",
     "soundfile>=0.13.1",
 ]
