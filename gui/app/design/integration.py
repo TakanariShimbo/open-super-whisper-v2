@@ -1,6 +1,8 @@
 from PyQt6.QtWidgets import QApplication
 import qdarktheme
 
+from .theme_colors import ThemeColors
+
 
 class DesignSystemIntegration:
     """
@@ -74,3 +76,37 @@ class DesignSystemIntegration:
             True if the current theme is dark, False otherwise
         """
         return cls._is_dark_theme
+    
+    @classmethod
+    def get_color(cls, color_name: str) -> str:
+        """
+        Get a color value by name for the current theme.
+        
+        Parameters
+        ----------
+        color_name : str
+            Name of the color (e.g., 'primary', 'error', 'text_primary')
+            
+        Returns
+        -------
+        str
+            Hex color value
+        """
+        return ThemeColors.get_color(color_name, cls._is_dark_theme)
+    
+    @classmethod
+    def get_rgba_color(cls, color_name: str) -> tuple:
+        """
+        Get an RGBA color tuple by name for the current theme.
+        
+        Parameters
+        ----------
+        color_name : str
+            Name of the color (must end with '_transparent')
+            
+        Returns
+        -------
+        tuple
+            RGBA color tuple (r, g, b, a)
+        """
+        return ThemeColors.get_rgba_color(color_name, cls._is_dark_theme)

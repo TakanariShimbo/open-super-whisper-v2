@@ -133,10 +133,8 @@ class StatusIndicatorWindow(QWidget):
 
         # Set background color based on theme
         palette = frame.palette()
-        if DesignSystemIntegration.is_dark_theme():
-            bg_color = QColor(48, 49, 52, 220)  # Dark theme background
-        else:
-            bg_color = QColor(248, 249, 250, 220)  # Light theme background
+        bg_color_tuple = DesignSystemIntegration.get_rgba_color("background_transparent")
+        bg_color = QColor(*bg_color_tuple)
         palette.setColor(QPalette.ColorRole.Window, bg_color)
         frame.setAutoFillBackground(True)
         frame.setPalette(palette)
@@ -153,7 +151,7 @@ class StatusIndicatorWindow(QWidget):
         self.timer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         # Set timer text color based on theme
-        timer_color = "#e8eaed" if DesignSystemIntegration.is_dark_theme() else "#3c4043"
+        timer_color = DesignSystemIntegration.get_color("text_primary")
         self.timer_label.setStyleSheet(f"color: {timer_color};")
 
         # Add to layout
@@ -177,19 +175,11 @@ class StatusIndicatorWindow(QWidget):
         """
         Update the indicator visuals based on current mode.
         """
-        # Get colors based on current theme (using PyQtDarkTheme colors)
-        if DesignSystemIntegration.is_dark_theme():
-            # Dark theme colors
-            recording_color = "#f28b82"
-            processing_color = "#9aa0a6"
-            completed_color = "#8ab4f7"
-            cancelled_color = "#9aa0a6"
-        else:
-            # Light theme colors
-            recording_color = "#ea4335"
-            processing_color = "#5f6368"
-            completed_color = "#1a73e8"
-            cancelled_color = "#5f6368"
+        # Get colors from design system
+        recording_color = DesignSystemIntegration.get_color("error")
+        processing_color = DesignSystemIntegration.get_color("text_secondary")
+        completed_color = DesignSystemIntegration.get_color("success")
+        cancelled_color = DesignSystemIntegration.get_color("text_secondary")
         
         if self._current_mode == self._MODE_RECORDING:
             self.status_label.setText(self._label_manager.status_recording)

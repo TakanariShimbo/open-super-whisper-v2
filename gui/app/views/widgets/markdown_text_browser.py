@@ -148,16 +148,10 @@ class MarkdownTextBrowser(QWebEngineView):
         4. Basic styling for placeholder text
         """
         
-        if DesignSystemIntegration.is_dark_theme():
-            # PyQtDarkTheme dark theme - textbox background color
-            bg_color = "#303134"
-            text_color = "#e8eaed"
-            placeholder_color = "#9aa0a6"
-        else:
-            # PyQtDarkTheme light theme - textbox background color
-            bg_color = "#ffffff"
-            text_color = "#3c4043"
-            placeholder_color = "#80868b"
+        # Get colors from design system
+        bg_color = DesignSystemIntegration.get_color("html_background")
+        text_color = DesignSystemIntegration.get_color("html_text")
+        placeholder_color = DesignSystemIntegration.get_color("html_placeholder")
         
         self._html_template = f"""
         <!DOCTYPE html>

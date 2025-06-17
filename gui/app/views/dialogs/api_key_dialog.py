@@ -312,8 +312,8 @@ class APIKeyDialog(QDialog):
         #
         # Status label (initially hidden)
         self._status_label = QLabel("")
-        # Use theme-appropriate red color
-        error_color = "#f28b82" if DesignSystemIntegration.is_dark_theme() else "#ea4335"
+        # Use error color from design system
+        error_color = DesignSystemIntegration.get_color("error")
         self._status_label.setStyleSheet(f"color: {error_color};")
         self._status_label.setVisible(False)
         layout.addWidget(self._status_label)
