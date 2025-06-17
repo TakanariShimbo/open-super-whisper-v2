@@ -11,6 +11,7 @@ from PyQt6.QtGui import QPalette, QColor, QShowEvent
 
 from ...managers.settings_manager import SettingsManager
 from ...controllers.widgets.status_indicator_controller import StatusIndicatorController
+from ...design.integration import DesignSystemIntegration
 
 
 class LabelManager:
@@ -130,9 +131,13 @@ class StatusIndicatorWindow(QWidget):
         frame.setLineWidth(1)
         frame.setMidLineWidth(0)
 
-        # Set background color
+        # Set background color based on theme
         palette = frame.palette()
-        palette.setColor(QPalette.ColorRole.Window, QColor(30, 30, 30, 220))
+        if DesignSystemIntegration.is_dark_theme():
+            bg_color = QColor(48, 49, 52, 220)  # Dark theme background
+        else:
+            bg_color = QColor(248, 249, 250, 220)  # Light theme background
+        palette.setColor(QPalette.ColorRole.Window, bg_color)
         frame.setAutoFillBackground(True)
         frame.setPalette(palette)
 
@@ -141,13 +146,15 @@ class StatusIndicatorWindow(QWidget):
 
         # Status text
         self.status_label = QLabel(self._label_manager.status_recording)
-        self.status_label.setStyleSheet("color: #ff5f5f; font-weight: bold;")
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Timer text
         self.timer_label = QLabel("")
-        self.timer_label.setStyleSheet("color: white;")
         self.timer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        # Set timer text color based on theme
+        timer_color = "#e8eaed" if DesignSystemIntegration.is_dark_theme() else "#3c4043"
+        self.timer_label.setStyleSheet(f"color: {timer_color};")
 
         # Add to layout
         frame_layout.addWidget(self.status_label)
@@ -170,20 +177,34 @@ class StatusIndicatorWindow(QWidget):
         """
         Update the indicator visuals based on current mode.
         """
+        # Get colors based on current theme (using PyQtDarkTheme colors)
+        if DesignSystemIntegration.is_dark_theme():
+            # Dark theme colors
+            recording_color = "#f28b82"
+            processing_color = "#9aa0a6"
+            completed_color = "#8ab4f7"
+            cancelled_color = "#9aa0a6"
+        else:
+            # Light theme colors
+            recording_color = "#ea4335"
+            processing_color = "#5f6368"
+            completed_color = "#1a73e8"
+            cancelled_color = "#5f6368"
+        
         if self._current_mode == self._MODE_RECORDING:
             self.status_label.setText(self._label_manager.status_recording)
-            self.status_label.setStyleSheet("color: #ff5f5f; font-weight: bold;")
+            self.status_label.setStyleSheet(f"color: {recording_color}; font-weight: bold;")
         elif self._current_mode == self._MODE_PROCESSING:
             self.status_label.setText(self._label_manager.status_processing)
-            self.status_label.setStyleSheet("color: #bbbbbb; font-weight: bold;")
+            self.status_label.setStyleSheet(f"color: {processing_color}; font-weight: bold;")
             self.timer_label.setText("")
         elif self._current_mode == self._MODE_COMPLETED:
             self.status_label.setText(self._label_manager.status_completed)
-            self.status_label.setStyleSheet("color: #5fff5f; font-weight: bold;")
+            self.status_label.setStyleSheet(f"color: {completed_color}; font-weight: bold;")
             self.timer_label.setText("")
         elif self._current_mode == self._MODE_CANCELLED:
             self.status_label.setText(self._label_manager.status_cancelled)
-            self.status_label.setStyleSheet("color: #bbbbbb; font-weight: bold;")
+            self.status_label.setStyleSheet(f"color: {cancelled_color}; font-weight: bold;")
             self.timer_label.setText("")
 
     #

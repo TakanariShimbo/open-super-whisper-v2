@@ -10,6 +10,7 @@ from PyQt6.QtGui import QCloseEvent, QShowEvent
 
 from ...managers.settings_manager import SettingsManager
 from ...controllers.dialogs.api_key_dialog_controller import APIKeyDialogController
+from ...design.integration import DesignSystemIntegration
 
 
 class LabelManager:
@@ -311,7 +312,9 @@ class APIKeyDialog(QDialog):
         #
         # Status label (initially hidden)
         self._status_label = QLabel("")
-        self._status_label.setStyleSheet("color: red;")
+        # Use theme-appropriate red color
+        error_color = "#f28b82" if DesignSystemIntegration.is_dark_theme() else "#ea4335"
+        self._status_label.setStyleSheet(f"color: {error_color};")
         self._status_label.setVisible(False)
         layout.addWidget(self._status_label)
 
