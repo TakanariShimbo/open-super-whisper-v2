@@ -76,7 +76,7 @@ Open Super Whisper V2 operates through the following 4 steps:
 │   └── settings_sample/                           # Sample configuration files
 │       ├── settings_en.json                       # Sample settings file (English)
 │       └── settings_ja.json                       # Sample settings file (Japanese)
-├── core/                                          # Core functionality (GUI-independent, fully implemented)
+├── core/                                          # Core functionality
 │   ├── __init__.py
 │   ├── api/                                       # API client factory and utilities
 │   │   ├── __init__.py
@@ -108,7 +108,7 @@ Open Super Whisper V2 operates through the following 4 steps:
 │       ├── stt_model.py                           # STT model data structures
 │       ├── stt_model_manager.py                   # STT model management
 │       └── stt_processor.py                       # Speech-to-text processing implementation
-└── gui/                                           # GUI-related functionality (Qt-dependent)
+└── gui/                                           # GUI-related functionality
     ├── __init__.py
     ├── main.py                                    # GUI entry point
     └── app/                                       # Main application components
@@ -243,6 +243,7 @@ python -m PyInstaller --onefile --noconsole --icon assets/icon.ico --name "OpenS
 The Windows command does the following:
 
 - `--onefile`: Creates a single executable file
+- `--noconsole/windowed`: Build as desktop applicaiton
 - `--icon assets/icon.ico`: Sets the application icon
 - `--name "OpenSuperWhisper"`: Specifies the output filename
 - `--add-data "assets;assets"`: Includes the entire assets directory in the executable
