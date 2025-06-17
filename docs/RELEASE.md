@@ -72,6 +72,8 @@ This software is licensed under GPL v3.0
 
 ---
 
+---
+
 ## 🎉 v1.1.0 Release
 
 ### 🆕 What's New in v1.1.0
