@@ -42,7 +42,6 @@ class LabelManager:
             "icon_unlock": "🔓", 
             "icon_connection": "🔗",
             "tooltip_verify": "Test Connection",
-            "connecting": "🛜",
             "verification_success_title": "Connection Test Successful",
             "verification_success_message": "{provider} API connection test completed successfully.",
             "verification_failed_title": "Connection Test Failed",
@@ -71,7 +70,6 @@ class LabelManager:
             "icon_unlock": "🔓", 
             "icon_connection": "🔗",
             "tooltip_verify": "接続テスト",
-            "connecting": "🛜",
             "verification_success_title": "接続テスト成功",
             "verification_success_message": "{provider} APIへの接続テストが成功しました。",
             "verification_failed_title": "接続テスト失敗",
@@ -151,10 +149,6 @@ class LabelManager:
     @property
     def tooltip_verify(self) -> str:
         return self._labels["tooltip_verify"]
-    
-    @property
-    def connecting(self) -> str:
-        return self._labels["connecting"]
     
     @property
     def verification_success_title(self) -> str:
@@ -451,8 +445,8 @@ class APIKeyDialog(QDialog):
         provider : str
             The API provider (openai, anthropic, or gemini)
         """
-        # Reset button state
-        self._reset_verify_button_state(provider)
+        # Re-enable all verify buttons
+        self._set_all_verify_buttons_enabled(True)
         
         # Show success dialog
         provider_name = self._get_provider_display_name(provider)
@@ -472,8 +466,8 @@ class APIKeyDialog(QDialog):
         provider : str
             The API provider (openai, anthropic, or gemini)
         """
-        # Reset button state
-        self._reset_verify_button_state(provider)
+        # Re-enable all verify buttons
+        self._set_all_verify_buttons_enabled(True)
         
         # Show error dialog
         provider_name = self._get_provider_display_name(provider)
@@ -544,9 +538,8 @@ class APIKeyDialog(QDialog):
             self._show_status_message(message=self._label_manager.error_empty_openai_api_key)
             return
         
-        # Update button state
-        self._openai_verify_button.setText(self._label_manager.connecting)
-        self._openai_verify_button.setEnabled(False)
+        # Disable all verify buttons during connection test
+        self._set_all_verify_buttons_enabled(False)
         
         # Request verification from controller
         self._controller.verify_single_api_key("openai", api_key)
@@ -560,9 +553,8 @@ class APIKeyDialog(QDialog):
         if not api_key:
             return  # Optional key, no error message
         
-        # Update button state
-        self._anthropic_verify_button.setText(self._label_manager.connecting)
-        self._anthropic_verify_button.setEnabled(False)
+        # Disable all verify buttons during connection test
+        self._set_all_verify_buttons_enabled(False)
         
         # Request verification from controller
         self._controller.verify_single_api_key("anthropic", api_key)
@@ -576,31 +568,24 @@ class APIKeyDialog(QDialog):
         if not api_key:
             return  # Optional key, no error message
         
-        # Update button state
-        self._gemini_verify_button.setText(self._label_manager.connecting)
-        self._gemini_verify_button.setEnabled(False)
+        # Disable all verify buttons during connection test
+        self._set_all_verify_buttons_enabled(False)
         
         # Request verification from controller
         self._controller.verify_single_api_key("gemini", api_key)
     
-    def _reset_verify_button_state(self, provider: str) -> None:
+    def _set_all_verify_buttons_enabled(self, enabled: bool) -> None:
         """
-        Reset the verify button state for a provider.
+        Enable or disable all verify buttons.
         
         Parameters
         ----------
-        provider : str
-            The API provider (openai, anthropic, or gemini)
+        enabled : bool
+            True to enable buttons, False to disable
         """
-        if provider == "openai":
-            self._openai_verify_button.setText(self._label_manager.icon_connection)
-            self._openai_verify_button.setEnabled(True)
-        elif provider == "anthropic":
-            self._anthropic_verify_button.setText(self._label_manager.icon_connection)
-            self._anthropic_verify_button.setEnabled(True)
-        elif provider == "gemini":
-            self._gemini_verify_button.setText(self._label_manager.icon_connection)
-            self._gemini_verify_button.setEnabled(True)
+        self._openai_verify_button.setEnabled(enabled)
+        self._anthropic_verify_button.setEnabled(enabled)
+        self._gemini_verify_button.setEnabled(enabled)
     
     def _get_provider_display_name(self, provider: str) -> str:
         """
