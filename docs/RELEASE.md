@@ -1,5 +1,61 @@
 # Release Notes - Open Super Whisper V2
 
+## 🐛 v1.3.1 Release (Bug Fix)
+
+### 🔧 Bug Fixes in v1.3.1
+
+- 🌙 **Fixed Theme Switching in Hotkey Dialog**: Resolved an issue where the hotkey capture mode styling didn't properly update when switching between light and dark themes
+
+### 📦 Installation
+
+1. Download `OpenSuperWhisper.exe`
+2. Run the executable
+3. Configure your OpenAI API key (required)
+4. Optionally configure Claude/Gemini API keys for additional AI models
+5. Start using!
+
+### 📖 Documentation
+
+- [README (English)](README.md)
+- [README (Japanese)](README_ja.md)
+- [User Manual (English)](MANUAL.md)
+- [User Manual (Japanese)](MANUAL_ja.md)
+
+### ⚖️ License
+
+This software is licensed under GPL v3.0
+
+---
+
+## 🐛 v1.3.1 リリース（バグ修正）
+
+### 🔧 v1.3.1 のバグ修正
+
+- 🌙 **ホットキーダイアログのテーマ切り替えを修正**: ライトテーマとダークテーマの切り替え時に、ホットキーキャプチャモードのスタイルが適切に更新されない問題を解決
+
+### 📦 インストール
+
+1. `OpenSuperWhisper.exe` をダウンロード
+2. 実行ファイルを起動
+3. OpenAI API キーを設定（必須）
+4. 必要に応じて Claude/Gemini API キーを設定
+5. 使用開始！
+
+### 📖 ドキュメント
+
+- [README (English)](README.md)
+- [README (Japanese)](README_ja.md)
+- [User Manual (English)](MANUAL.md)
+- [User Manual (Japanese)](MANUAL_ja.md)
+
+### ⚖️ ライセンス
+
+このソフトウェアは GPL v3.0 ライセンスの下で提供されています
+
+---
+
+---
+
 ## 🎉 v1.3.0 Release
 
 ### 🆕 What's New in v1.3.0
@@ -73,8 +129,8 @@ This software is licensed under GPL v3.0
 
 - [README (English)](README.md)
 - [README (Japanese)](README_ja.md)
-- [ユーザーマニュアル (English)](MANUAL.md)
-- [ユーザーマニュアル (Japanese)](MANUAL_ja.md)
+- [User Manual (English)](MANUAL.md)
+- [User Manual (Japanese)](MANUAL_ja.md)
 
 ### ⚖️ ライセンス
 
