@@ -38,6 +38,9 @@ class LabelManager:
             "tooltip_show_hide": "Show/Hide API Key",
             "tooltip_hide": "Hide API Key",
             "tooltip_show": "Show API Key",
+            "icon_lock": "🔒",
+            "icon_unlock": "🔓", 
+            "icon_connection": "🔗",
             "tooltip_verify": "Test Connection",
             "connecting": "🛜",
             "verification_success_title": "Connection Test Successful",
@@ -64,6 +67,9 @@ class LabelManager:
             "tooltip_show_hide": "APIキーの表示/非表示",
             "tooltip_hide": "APIキーを非表示",
             "tooltip_show": "APIキーを表示",
+            "icon_lock": "🔒",
+            "icon_unlock": "🔓", 
+            "icon_connection": "🔗",
             "tooltip_verify": "接続テスト",
             "connecting": "🛜",
             "verification_success_title": "接続テスト成功",
@@ -129,6 +135,18 @@ class LabelManager:
     @property
     def tooltip_show(self) -> str:
         return self._labels["tooltip_show"]
+    
+    @property
+    def icon_lock(self) -> str:
+        return self._labels["icon_lock"]
+    
+    @property
+    def icon_unlock(self) -> str:
+        return self._labels["icon_unlock"]
+    
+    @property
+    def icon_connection(self) -> str:
+        return self._labels["icon_connection"]
     
     @property
     def tooltip_verify(self) -> str:
@@ -274,7 +292,7 @@ class APIKeyDialog(QDialog):
         openai_input_layout.addWidget(self._openai_api_key_input, 1)  # Use stretch factor 1
 
         # OpenAI toggle visibility button
-        self._openai_toggle_button = QPushButton("🔒")
+        self._openai_toggle_button = QPushButton(self._label_manager.icon_lock)
         self._openai_toggle_button.setToolTip(self._label_manager.tooltip_show_hide)
         self._openai_toggle_button.setFixedWidth(30)  # Fixed width for the button
         self._openai_toggle_button.setCheckable(True)  # Make it a toggle button
@@ -283,7 +301,7 @@ class APIKeyDialog(QDialog):
         openai_input_layout.addWidget(self._openai_toggle_button)
 
         # OpenAI verify button
-        self._openai_verify_button = QPushButton("🔗")
+        self._openai_verify_button = QPushButton(self._label_manager.icon_connection)
         self._openai_verify_button.setToolTip(self._label_manager.tooltip_verify)
         self._openai_verify_button.setFixedWidth(30)  # Fixed width for the button
         self._openai_verify_button.clicked.connect(self._on_verify_openai_api_key)
@@ -310,7 +328,7 @@ class APIKeyDialog(QDialog):
         anthropic_input_layout.addWidget(self._anthropic_api_key_input, 1)  # Use stretch factor 1
 
         # Anthropic toggle visibility button
-        self._anthropic_toggle_button = QPushButton("🔒")
+        self._anthropic_toggle_button = QPushButton(self._label_manager.icon_lock)
         self._anthropic_toggle_button.setToolTip(self._label_manager.tooltip_show_hide)
         self._anthropic_toggle_button.setFixedWidth(30)  # Fixed width for the button
         self._anthropic_toggle_button.setCheckable(True)  # Make it a toggle button
@@ -319,7 +337,7 @@ class APIKeyDialog(QDialog):
         anthropic_input_layout.addWidget(self._anthropic_toggle_button)
 
         # Anthropic verify button
-        self._anthropic_verify_button = QPushButton("🔗")
+        self._anthropic_verify_button = QPushButton(self._label_manager.icon_connection)
         self._anthropic_verify_button.setToolTip(self._label_manager.tooltip_verify)
         self._anthropic_verify_button.setFixedWidth(30)  # Fixed width for the button
         self._anthropic_verify_button.clicked.connect(self._on_verify_anthropic_api_key)
@@ -346,7 +364,7 @@ class APIKeyDialog(QDialog):
         gemini_input_layout.addWidget(self._gemini_api_key_input, 1)  # Use stretch factor 1
 
         # Gemini toggle visibility button
-        self._gemini_toggle_button = QPushButton("🔒")
+        self._gemini_toggle_button = QPushButton(self._label_manager.icon_lock)
         self._gemini_toggle_button.setToolTip(self._label_manager.tooltip_show_hide)
         self._gemini_toggle_button.setFixedWidth(30)  # Fixed width for the button
         self._gemini_toggle_button.setCheckable(True)  # Make it a toggle button
@@ -355,7 +373,7 @@ class APIKeyDialog(QDialog):
         gemini_input_layout.addWidget(self._gemini_toggle_button)
 
         # Gemini verify button
-        self._gemini_verify_button = QPushButton("🔗")
+        self._gemini_verify_button = QPushButton(self._label_manager.icon_connection)
         self._gemini_verify_button.setToolTip(self._label_manager.tooltip_verify)
         self._gemini_verify_button.setFixedWidth(30)  # Fixed width for the button
         self._gemini_verify_button.clicked.connect(self._on_verify_gemini_api_key)
@@ -476,12 +494,12 @@ class APIKeyDialog(QDialog):
         if self._openai_toggle_button.isChecked():
             # Show API key
             self._openai_api_key_input.setEchoMode(QLineEdit.EchoMode.Normal)
-            self._openai_toggle_button.setText("🔓")
+            self._openai_toggle_button.setText(self._label_manager.icon_unlock)
             self._openai_toggle_button.setToolTip(self._label_manager.tooltip_hide)
         else:
             # Hide API key
             self._openai_api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
-            self._openai_toggle_button.setText("🔒")
+            self._openai_toggle_button.setText(self._label_manager.icon_lock)
             self._openai_toggle_button.setToolTip(self._label_manager.tooltip_show)
 
     @pyqtSlot()
@@ -492,12 +510,12 @@ class APIKeyDialog(QDialog):
         if self._anthropic_toggle_button.isChecked():
             # Show API key
             self._anthropic_api_key_input.setEchoMode(QLineEdit.EchoMode.Normal)
-            self._anthropic_toggle_button.setText("🔓")
+            self._anthropic_toggle_button.setText(self._label_manager.icon_unlock)
             self._anthropic_toggle_button.setToolTip(self._label_manager.tooltip_hide)
         else:
             # Hide API key
             self._anthropic_api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
-            self._anthropic_toggle_button.setText("🔒")
+            self._anthropic_toggle_button.setText(self._label_manager.icon_lock)
             self._anthropic_toggle_button.setToolTip(self._label_manager.tooltip_show)
 
     @pyqtSlot()
@@ -508,12 +526,12 @@ class APIKeyDialog(QDialog):
         if self._gemini_toggle_button.isChecked():
             # Show API key
             self._gemini_api_key_input.setEchoMode(QLineEdit.EchoMode.Normal)
-            self._gemini_toggle_button.setText("🔓")
+            self._gemini_toggle_button.setText(self._label_manager.icon_unlock)
             self._gemini_toggle_button.setToolTip(self._label_manager.tooltip_hide)
         else:
             # Hide API key
             self._gemini_api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
-            self._gemini_toggle_button.setText("🔒")
+            self._gemini_toggle_button.setText(self._label_manager.icon_lock)
             self._gemini_toggle_button.setToolTip(self._label_manager.tooltip_show)
     
     @pyqtSlot()
@@ -575,13 +593,13 @@ class APIKeyDialog(QDialog):
             The API provider (openai, anthropic, or gemini)
         """
         if provider == "openai":
-            self._openai_verify_button.setText("🔗")
+            self._openai_verify_button.setText(self._label_manager.icon_connection)
             self._openai_verify_button.setEnabled(True)
         elif provider == "anthropic":
-            self._anthropic_verify_button.setText("🔗")
+            self._anthropic_verify_button.setText(self._label_manager.icon_connection)
             self._anthropic_verify_button.setEnabled(True)
         elif provider == "gemini":
-            self._gemini_verify_button.setText("🔗")
+            self._gemini_verify_button.setText(self._label_manager.icon_connection)
             self._gemini_verify_button.setEnabled(True)
     
     def _get_provider_display_name(self, provider: str) -> str:
