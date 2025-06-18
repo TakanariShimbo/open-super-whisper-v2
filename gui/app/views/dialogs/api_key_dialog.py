@@ -569,10 +569,10 @@ class APIKeyDialog(QDialog):
             return  # Optional key, no error message
         
         # Disable all verify buttons during connection test
-        self._set_all_verify_buttons_enabled(False)
+        self._set_all_verify_buttons_enabled(enabled=False)
         
         # Request verification from controller
-        self._controller.verify_single_api_key("gemini", api_key)
+        self._controller.verify_single_api_key(provider="gemini", api_key=api_key)
     
     def _set_all_verify_buttons_enabled(self, enabled: bool) -> None:
         """
