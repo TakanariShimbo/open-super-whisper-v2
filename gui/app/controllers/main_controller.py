@@ -334,7 +334,7 @@ class MainController(QObject):
         Parameters
         ----------
         hotkey : str
-            The hotkey string to register (e.g., "ctrl+shift+r")
+            The hotkey string to register (e.g., "ctrl+alt+1")
 
         Returns
         -------

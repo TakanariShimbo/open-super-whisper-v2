@@ -24,22 +24,22 @@ class HotkeyManager:
     Basic usage:
 
     >>> hotkey_manager = HotkeyManager()
-    >>> # Register a hotkey for Ctrl+Shift+R
-    >>> hotkey_manager.register_hotkey("ctrl+shift+r", lambda: print("Hotkey pressed!"))
+    >>> # Register a hotkey for Ctrl+Alt+1
+    >>> hotkey_manager.register_hotkey("ctrl+alt+1", lambda: print("Hotkey pressed!"))
     >>> # Start listening for hotkeys
     >>> hotkey_manager.start_listening()
     >>> # Unregister the hotkey when no longer needed
     >>> hotkey_manager.stop_listening()
-    >>> hotkey_manager.unregister_hotkey("ctrl+shift+r")
+    >>> hotkey_manager.unregister_hotkey("ctrl+alt+1")
 
     Filtered mode example:
 
     >>> hotkey_manager = HotkeyManager()
     >>> # Register multiple hotkeys
-    >>> hotkey_manager.register_hotkey("ctrl+shift+r", lambda: print("Action R"))
-    >>> hotkey.register("ctrl+shift+s", lambda: print("Action S"))
+    >>> hotkey_manager.register_hotkey("ctrl+alt+1", lambda: print("Action 1"))
+    >>> hotkey.register("ctrl+alt+2", lambda: print("Action 2"))
     >>> # Start listening with filtered mode to only allow specific hotkey
-    >>> hotkey_manager.enable_filtered_mode(["ctrl+shift+r"])
+    >>> hotkey_manager.enable_filtered_mode(["ctrl+alt+1"])
     >>> hotkey_manager.start_listening()
     >>> # Later, stop and disable filtered mode to restore all hotkeys
     >>> hotkey_manager.stop_listening()

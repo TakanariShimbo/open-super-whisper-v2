@@ -16,7 +16,7 @@
       "llm_web_search_enabled": false,
       "llm_clipboard_text_enabled": false,
       "llm_clipboard_image_enabled": false,
-      "hotkey": "ctrl+shift+1"
+      "hotkey": "ctrl+alt+1"
     },
     {
       "name": "文章作成エージェント",
@@ -31,7 +31,7 @@
       "llm_web_search_enabled": false,
       "llm_clipboard_text_enabled": false,
       "llm_clipboard_image_enabled": false,
-      "hotkey": "ctrl+shift+2"
+      "hotkey": "ctrl+alt+2"
     },
     {
       "name": "検索キーワードエージェント",
@@ -46,7 +46,7 @@
       "llm_web_search_enabled": false,
       "llm_clipboard_text_enabled": false,
       "llm_clipboard_image_enabled": false,
-      "hotkey": "ctrl+shift+3"
+      "hotkey": "ctrl+alt+3"
     },
     {
       "name": "テキストQ&Aエージェント",
@@ -61,7 +61,7 @@
       "llm_web_search_enabled": true,
       "llm_clipboard_text_enabled": true,
       "llm_clipboard_image_enabled": false,
-      "hotkey": "ctrl+shift+4"
+      "hotkey": "ctrl+alt+4"
     },
     {
       "name": "画像Q&Aエージェント",
@@ -76,7 +76,7 @@
       "llm_web_search_enabled": true,
       "llm_clipboard_text_enabled": false,
       "llm_clipboard_image_enabled": true,
-      "hotkey": "ctrl+shift+5"
+      "hotkey": "ctrl+alt+5"
     },
     {
       "name": "Web自動操作エージェント",
@@ -91,7 +91,7 @@
       "llm_web_search_enabled": false,
       "llm_clipboard_text_enabled": false,
       "llm_clipboard_image_enabled": false,
-      "hotkey": "ctrl+shift+6"
+      "hotkey": "ctrl+alt+6"
     }
   ],
   "selected_instruction_set": "文字起こしエージェント",

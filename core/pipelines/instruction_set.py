@@ -51,7 +51,7 @@ class InstructionSet:
     llm_clipboard_image_enabled : bool
         Whether to include clipboard images in LLM input, by default False.
     hotkey : str
-        Hotkey string for quick activation (e.g., "ctrl+shift+1"), by default empty string.
+        Hotkey string for quick activation (e.g., "ctrl+alt+1"), by default empty string.
     """
 
     name: str
@@ -72,7 +72,7 @@ class InstructionSet:
     llm_clipboard_image_enabled: bool = False
 
     # Hotkey setting
-    hotkey: str = ""  # Hotkey string (e.g., "ctrl+shift+1", "alt+f1")
+    hotkey: str = ""  # Hotkey string (e.g., "ctrl+alt+1", "ctrl+alt+2")
 
     @classmethod
     def get_default(cls) -> "InstructionSet":

@@ -40,7 +40,7 @@ class LabelManager:
             "button_capture": "Capture",
             "button_stop_capturing": "Stop Capturing",
             "button_clear": "Clear",
-            "tips_text": ("Tips:\n" "• Click 'Capture' and press keys to set a hotkey\n" "• Examples: ctrl+shift+r, alt+a, ctrl+alt+s"),
+            "tips_text": ("Tips:\n" "• Click 'Capture' and press keys to set a hotkey\n" "• Examples: ctrl+alt+1, ctrl+alt+2, ctrl+alt+3"),
             "error_title": "Hotkey Validation Error",
         },
         "Japanese": {
@@ -52,7 +52,7 @@ class LabelManager:
             "button_capture": "キャプチャ",
             "button_stop_capturing": "ストップ",
             "button_clear": "クリア",
-            "tips_text": ("ヒント:\n" "・『キャプチャ』をクリックしてキーを押すとホットキーを設定できます\n" "・例: ctrl+shift+r, alt+a, ctrl+alt+s"),
+            "tips_text": ("ヒント:\n" "・『キャプチャ』をクリックしてキーを押すとホットキーを設定できます\n" "・例: ctrl+alt+1, ctrl+alt+2, ctrl+alt+3"),
             "error_title": "ホットキー検証エラー",
         },
         # Future: Add other languages here

@@ -24,12 +24,12 @@ def test_key_detection_interactive() -> bool:
     print("This test will monitor your keyboard input for 15 seconds.")
     print("🎯 Try these test cases to validate current/last key functionality:")
     print("  1. Press a single key (e.g., 'a') - observe current vs last")
-    print("  2. Press Ctrl+Shift+R combination - observe current vs last")
+    print("  2. Press Ctrl+Alt+1 combination - observe current vs last")
     print("  3. Release all keys - observe that current becomes empty but last remains")
     print("  4. Press a different key - observe last keys update to new combination")
     print("  5. Hold multiple keys simultaneously - observe both current and last")
-    print("  6. Press and hold Ctrl, then add Shift - watch last keys update")
-    print("  7. Release Ctrl but keep Shift - current should show 'shift', last should show 'ctrl+shift'")
+    print("  6. Press and hold Ctrl, then add Alt - watch last keys update")
+    print("  7. Release Ctrl but keep Alt - current should show 'alt', last should show 'ctrl+alt'")
 
     try:
         tracker = KeyStateTracker()

@@ -160,7 +160,7 @@ class HotkeyDialogModel(QObject):
         if not keys_list:
             return
 
-        # Create hotkey string (e.g., "ctrl+shift+a")
+        # Create hotkey string (e.g., "ctrl+alt+1")
         hotkey_string = "+".join(keys_list)
 
         # Update the model

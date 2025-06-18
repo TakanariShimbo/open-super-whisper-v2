@@ -176,7 +176,7 @@ This is the "wakeup screen" that automatically appears when no valid OpenAI API 
 
 - Configure individual hotkeys for each instruction set
 - Available globally from any application
-- Examples: `ctrl+shift+1` (transcription), `ctrl+shift+2` (document creation), ...
+- Examples: `ctrl+alt+1` (transcription), `ctrl+alt+2` (document creation), ...
 
 ## API Key Screen
 
@@ -237,7 +237,7 @@ Manage detailed settings for each instruction set across 5 tabs.
 #### ⌨️ **Hotkey**
 
 - Global hotkey specific to each instruction set
-- Example: `ctrl+shift+6`
+- Example: `ctrl+alt+6`
 - Click "Setting" button to change key combination
 
 #### 🔄 **LLM Processing**
@@ -410,14 +410,14 @@ The application runs in the system tray, providing quick access to all features:
 
 ## Usage Examples
 
-### 📝 Use Case 1: Text Q&A Agent (ctrl+shift+4) for Email Reply Creation
+### 📝 Use Case 1: Text Q&A Agent (ctrl+alt+4) for Email Reply Creation
 
 <img src="manual/usecase1_en.png" alt="Usecase1" width="600">
 
 1. **Scenario**: Create a draft reply to a received email
 2. **Operation**:
    - Copy the email content you want to reply to into the clipboard
-   - Press hotkey `ctrl+shift+4`
+   - Press hotkey `ctrl+alt+4`
    - Say: "Create a polite reply to this email agreeing to schedule the meeting"
    - Press the hotkey again
 3. **Results**:
@@ -426,14 +426,14 @@ The application runs in the system tray, providing quick access to all features:
    - Automatically copied to clipboard (if enabled)
 4. **Application**: Paste into email app, make minor adjustments if needed, then send
 
-### 🔍 Use Case 2: Image Q&A Agent (ctrl+shift+5) for Graph Analysis
+### 🔍 Use Case 2: Image Q&A Agent (ctrl+alt+5) for Graph Analysis
 
 <img src="manual/usecase2_en.png" alt="Usecase2" width="600">
 
 1. **Scenario**: Analyze a chart
 2. **Operation**:
    - Take a screenshot of graph or chart and copy to clipboard
-   - Press hotkey `ctrl+shift+5`
+   - Press hotkey `ctrl+alt+5`
    - Say: "Analyze this sales graph trends and suggest strategies for next month"
    - Press the hotkey again
 3. **Results**:
@@ -441,13 +441,13 @@ The application runs in the system tray, providing quick access to all features:
    - Detailed analysis report with specific recommendations based on graph data
 4. **Application**: Use for presentations and strategic decision making
 
-### 🌐 Use Case 3: Web Automation Agent (ctrl+shift+6) for Information Gathering
+### 🌐 Use Case 3: Web Automation Agent (ctrl+alt+6) for Information Gathering
 
 <img src="manual/usecase3_en.png" alt="Usecase3" width="600">
 
 1. **Scenario**: Automatically collect latest competitor information
 2. **Operation**:
-   - Press hotkey `ctrl+shift+6`
+   - Press hotkey `ctrl+alt+6`
    - Say: "Search for latest AI industry news and summarize the three most important topics this week"
    - Press the hotkey again
 3. **Results**:

@@ -23,17 +23,17 @@ def test_hotkey_manager_interactive() -> bool:
     print("=== Interactive Hotkey Manager Test ===")
     print("This test will register hotkeys and monitor for their activation for 20 seconds.")
     print("🎯 Try these test cases to validate hotkey functionality:")
-    print("  1. Press Ctrl+Shift+R - should trigger 'Recording hotkey detected!'")
-    print("  2. Press Ctrl+Shift+S - should trigger 'Stop hotkey detected!'")
-    print("  3. Press Ctrl+Shift+P - should trigger 'Process hotkey detected!'")
+    print("  1. Press Ctrl+Alt+1 - should trigger 'Recording hotkey detected!'")
+    print("  2. Press Ctrl+Alt+2 - should trigger 'Stop hotkey detected!'")
+    print("  3. Press Ctrl+Alt+3 - should trigger 'Process hotkey detected!'")
     print("  4. Press other key combinations - should be ignored")
     print("  5. Test multiple hotkeys in sequence")
 
     # Global counters to track hotkey activations
     hotkey_counters = {
-        "ctrl+shift+r": 0,
-        "ctrl+shift+s": 0,
-        "ctrl+shift+p": 0
+        "ctrl+alt+1": 0,
+        "ctrl+alt+2": 0,
+        "ctrl+alt+3": 0
     }
 
     def create_callback(hotkey_name: str):
@@ -41,9 +41,9 @@ def test_hotkey_manager_interactive() -> bool:
         def callback():
             hotkey_counters[hotkey_name] += 1
             messages = {
-                "ctrl+shift+r": "🔴 Recording hotkey detected!",
-                "ctrl+shift+s": "⏹️  Stop hotkey detected!",
-                "ctrl+shift+p": "⚙️  Process hotkey detected!"
+                "ctrl+alt+1": "🔴 Recording hotkey detected!",
+                "ctrl+alt+2": "⏹️  Stop hotkey detected!",
+                "ctrl+alt+3": "⚙️  Process hotkey detected!"
             }
             print(f"\n{messages[hotkey_name]} (Count: {hotkey_counters[hotkey_name]})")
         return callback
@@ -53,9 +53,9 @@ def test_hotkey_manager_interactive() -> bool:
         
         # Register hotkeys
         print("\n📝 Registering hotkeys...")
-        manager.register_hotkey("ctrl+shift+r", create_callback("ctrl+shift+r"))
-        manager.register_hotkey("ctrl+shift+s", create_callback("ctrl+shift+s"))
-        manager.register_hotkey("ctrl+shift+p", create_callback("ctrl+shift+p"))
+        manager.register_hotkey("ctrl+alt+1", create_callback("ctrl+alt+1"))
+        manager.register_hotkey("ctrl+alt+2", create_callback("ctrl+alt+2"))
+        manager.register_hotkey("ctrl+alt+3", create_callback("ctrl+alt+3"))
         
         registered = manager.get_registered_hotkeys()
         print(f"✅ Registered {len(registered)} hotkeys: {', '.join(registered)}")
