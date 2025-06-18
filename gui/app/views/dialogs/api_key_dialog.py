@@ -446,10 +446,10 @@ class APIKeyDialog(QDialog):
             The API provider (openai, anthropic, or gemini)
         """
         # Re-enable all verify buttons
-        self._set_all_verify_buttons_enabled(True)
+        self._set_all_verify_buttons_enabled(enabled=True)
         
         # Show success dialog
-        provider_name = self._get_provider_display_name(provider)
+        provider_name = self._get_provider_display_name(provider=provider)
         QMessageBox.information(
             self,
             self._label_manager.verification_success_title,
@@ -467,10 +467,10 @@ class APIKeyDialog(QDialog):
             The API provider (openai, anthropic, or gemini)
         """
         # Re-enable all verify buttons
-        self._set_all_verify_buttons_enabled(True)
+        self._set_all_verify_buttons_enabled(enabled=True)
         
         # Show error dialog
-        provider_name = self._get_provider_display_name(provider)
+        provider_name = self._get_provider_display_name(provider=provider)
         QMessageBox.critical(
             self,
             self._label_manager.verification_failed_title,
@@ -539,10 +539,10 @@ class APIKeyDialog(QDialog):
             return
         
         # Disable all verify buttons during connection test
-        self._set_all_verify_buttons_enabled(False)
+        self._set_all_verify_buttons_enabled(enabled=False)
         
         # Request verification from controller
-        self._controller.verify_single_api_key("openai", api_key)
+        self._controller.verify_single_api_key(provider="openai", api_key=api_key)
     
     @pyqtSlot()
     def _on_verify_anthropic_api_key(self) -> None:
@@ -554,10 +554,10 @@ class APIKeyDialog(QDialog):
             return  # Optional key, no error message
         
         # Disable all verify buttons during connection test
-        self._set_all_verify_buttons_enabled(False)
+        self._set_all_verify_buttons_enabled(enabled=False)
         
         # Request verification from controller
-        self._controller.verify_single_api_key("anthropic", api_key)
+        self._controller.verify_single_api_key(provider="anthropic", api_key=api_key)
     
     @pyqtSlot()
     def _on_verify_gemini_api_key(self) -> None:

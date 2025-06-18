@@ -4,10 +4,42 @@ API Key Controller
 This module provides the controller component for API key management.
 """
 
-from PyQt6.QtCore import QObject, pyqtSignal
+from PyQt6.QtCore import QObject, pyqtSignal, QThread
 
 from ...models.dialogs.api_key_dialog_model import APIKeyDialogModel
 from ...managers.keyboard_manager import KeyboardManager
+
+
+class VerificationThread(QThread):
+    def __init__(self, model: APIKeyDialogModel, provider: str, api_key: str) -> None:
+        """
+        Initialize the verification thread.
+
+        Parameters
+        ----------
+        model : APIKeyDialogModel
+            The model to use for verification
+        provider : str
+            The provider to verify
+        api_key : str
+            The API key to verify
+        """
+        super().__init__()
+        self.model = model
+        self.provider = provider
+        self.api_key = api_key
+        self.result = False
+    
+    def run(self) -> None:
+        """
+        Run the verification thread.
+        """
+        if self.provider == "openai":
+            self.result = self.model.validate_openai_api_key(openai_api_key=self.api_key)
+        elif self.provider == "anthropic":
+            self.result = self.model.validate_anthropic_api_key(anthropic_api_key=self.api_key)
+        elif self.provider == "gemini":
+            self.result = self.model.validate_gemini_api_key(gemini_api_key=self.api_key)
 
 
 class APIKeyDialogController(QObject):
@@ -142,27 +174,12 @@ class APIKeyDialogController(QObject):
         api_key : str
             The API key to verify
         """
-        # Run verification in a separate thread to avoid blocking UI
-        from PyQt6.QtCore import QThread
-        
-        class VerificationThread(QThread):
-            def __init__(self, model, provider, api_key):
-                super().__init__()
-                self.model = model
-                self.provider = provider
-                self.api_key = api_key
-                self.result = False
-            
-            def run(self):
-                if self.provider == "openai":
-                    self.result = self.model.validate_openai_api_key(self.api_key)
-                elif self.provider == "anthropic":
-                    self.result = self.model.validate_anthropic_api_key(self.api_key)
-                elif self.provider == "gemini":
-                    self.result = self.model.validate_gemini_api_key(self.api_key)
-        
-        thread = VerificationThread(self._model, provider, api_key)
-        thread.finished.connect(lambda: self._handle_verification_result(provider, thread.result))
+        thread = VerificationThread(
+            model=self._model,
+            provider=provider,
+            api_key=api_key,
+        )
+        thread.finished.connect(lambda: self._handle_verification_result(provider=provider, is_valid=thread.result))
         thread.finished.connect(thread.deleteLater)
         thread.start()
     
