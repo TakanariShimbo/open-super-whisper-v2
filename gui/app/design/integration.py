@@ -92,7 +92,7 @@ class DesignSystemIntegration:
         str
             Hex color value
         """
-        return ThemeColors.get_color(color_name, cls._is_dark_theme)
+        return ThemeColors.get_color(color_name=color_name, is_dark=cls._is_dark_theme)
     
     @classmethod
     def get_rgba_color(cls, color_name: str) -> tuple:
@@ -109,4 +109,4 @@ class DesignSystemIntegration:
         tuple
             RGBA color tuple (r, g, b, a)
         """
-        return ThemeColors.get_rgba_color(color_name, cls._is_dark_theme)
+        return ThemeColors.get_rgba_color(color_name=color_name, is_dark=cls._is_dark_theme)
