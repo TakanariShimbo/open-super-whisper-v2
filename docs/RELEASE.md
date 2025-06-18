@@ -1,5 +1,89 @@
 # Release Notes - Open Super Whisper V2
 
+## 🎉 v1.3.0 Release
+
+### 🆕 What's New in v1.3.0
+
+- 🔗 **API Connection Test**: Added connection test buttons for all API providers in the API Key settings dialog
+
+### ✨ Features
+
+- 🎙️ Global hotkey voice recording
+- 📝 High-accuracy speech recognition with OpenAI Speech to text API
+- 🤖 AI agent support (OpenAI + Claude + Gemini) with OpenAI Agents SDK
+- 🔌 Extensibility via MCP (Model Context Protocol)
+- 📋 Automatic clipboard integration
+- 🎯 System tray operation
+
+### 🔧 Improvements
+
+- Enhanced API Key dialog with individual connection testing for each provider
+
+### 📦 Installation
+
+1. Download `OpenSuperWhisper.exe`
+2. Run the executable
+3. Configure your OpenAI API key (required)
+4. Optionally configure Claude/Gemini API keys for additional AI models
+5. Use the 🔗 buttons to test your API connections
+6. Start using!
+
+### 📖 Documentation
+
+- [README (English)](README.md)
+- [README (Japanese)](README_ja.md)
+- [User Manual (English)](MANUAL.md)
+- [User Manual (Japanese)](MANUAL_ja.md)
+
+### ⚖️ License
+
+This software is licensed under GPL v3.0
+
+---
+
+## 🎉 v1.3.0 リリース
+
+### 🆕 v1.3.0 の新機能
+
+- 🔗 **API 接続テスト**: API キー設定ダイアログに全 API プロバイダーの接続テストボタンを追加
+
+### ✨ 機能
+
+- 🎙️ グローバルホットキーによる音声録音
+- 📝 OpenAI Speech to text API による高精度音声認識
+- 🤖 OpenAI Agents SDK による AI エージェント対応（OpenAI + Claude + Gemini）
+- 🔌 MCP (Model Context Protocol) による拡張性
+- 📋 自動クリップボード連携
+- 🎯 システムトレイ動作
+
+### 🔧 改善点
+
+- 各プロバイダーの個別接続テスト機能を持つ API キーダイアログの強化
+
+### 📦 インストール
+
+1. `OpenSuperWhisper.exe` をダウンロード
+2. 実行ファイルを起動
+3. OpenAI API キーを設定（必須）
+4. 必要に応じて Claude/Gemini API キーを設定
+5. 🔗 ボタンで API 接続をテスト
+6. 使用開始！
+
+### 📖 ドキュメント
+
+- [README (English)](README.md)
+- [README (Japanese)](README_ja.md)
+- [ユーザーマニュアル (English)](MANUAL.md)
+- [ユーザーマニュアル (Japanese)](MANUAL_ja.md)
+
+### ⚖️ ライセンス
+
+このソフトウェアは GPL v3.0 ライセンスの下で提供されています
+
+---
+
+---
+
 ## 🎉 v1.2.0 Release
 
 ### 🆕 What's New in v1.2.0
