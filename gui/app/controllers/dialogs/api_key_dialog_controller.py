@@ -30,6 +30,8 @@ class APIKeyDialogController(QObject):
     #
     api_key_validated = pyqtSignal()
     api_key_invalid = pyqtSignal(str)
+    single_api_key_verified = pyqtSignal(str)
+    single_api_key_verification_failed = pyqtSignal(str)
 
     def __init__(self, api_key_dialog: QObject | None = None) -> None:
         """
@@ -128,6 +130,57 @@ class APIKeyDialogController(QObject):
         Save current API key to persistent storage.
         """
         self._model.save_api_key()
+    
+    def verify_single_api_key(self, provider: str, api_key: str) -> None:
+        """
+        Verify a single API key asynchronously.
+        
+        Parameters
+        ----------
+        provider : str
+            The API provider (openai, anthropic, or gemini)
+        api_key : str
+            The API key to verify
+        """
+        # Run verification in a separate thread to avoid blocking UI
+        from PyQt6.QtCore import QThread
+        
+        class VerificationThread(QThread):
+            def __init__(self, model, provider, api_key):
+                super().__init__()
+                self.model = model
+                self.provider = provider
+                self.api_key = api_key
+                self.result = False
+            
+            def run(self):
+                if self.provider == "openai":
+                    self.result = self.model.validate_openai_api_key(self.api_key)
+                elif self.provider == "anthropic":
+                    self.result = self.model.validate_anthropic_api_key(self.api_key)
+                elif self.provider == "gemini":
+                    self.result = self.model.validate_gemini_api_key(self.api_key)
+        
+        thread = VerificationThread(self._model, provider, api_key)
+        thread.finished.connect(lambda: self._handle_verification_result(provider, thread.result))
+        thread.finished.connect(thread.deleteLater)
+        thread.start()
+    
+    def _handle_verification_result(self, provider: str, is_valid: bool) -> None:
+        """
+        Handle the verification result.
+        
+        Parameters
+        ----------
+        provider : str
+            The API provider
+        is_valid : bool
+            Whether the API key is valid
+        """
+        if is_valid:
+            self.single_api_key_verified.emit(provider)
+        else:
+            self.single_api_key_verification_failed.emit(provider)
 
     def cancel(self) -> None:
         """

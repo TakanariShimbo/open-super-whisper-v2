@@ -4,7 +4,7 @@ API Key Dialog View
 This module provides the view component for API key input dialog.
 """
 
-from PyQt6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QHBoxLayout, QWidget, QDialogButtonBox, QLabel, QLineEdit
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QPushButton, QHBoxLayout, QWidget, QDialogButtonBox, QLabel, QLineEdit, QMessageBox
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtGui import QCloseEvent, QShowEvent
 
@@ -38,6 +38,12 @@ class LabelManager:
             "tooltip_show_hide": "Show/Hide API Key",
             "tooltip_hide": "Hide API Key",
             "tooltip_show": "Show API Key",
+            "tooltip_verify": "Test Connection",
+            "connecting": "🛜",
+            "verification_success_title": "Connection Test Successful",
+            "verification_success_message": "{provider} API connection test completed successfully.",
+            "verification_failed_title": "Connection Test Failed",
+            "verification_failed_message": "{provider} API connection test failed. Please check your API key and try again.",
         },
         "Japanese": {
             "window_title": "APIキー",
@@ -58,6 +64,12 @@ class LabelManager:
             "tooltip_show_hide": "APIキーの表示/非表示",
             "tooltip_hide": "APIキーを非表示",
             "tooltip_show": "APIキーを表示",
+            "tooltip_verify": "接続テスト",
+            "connecting": "🛜",
+            "verification_success_title": "接続テスト成功",
+            "verification_success_message": "{provider} APIへの接続テストが成功しました。",
+            "verification_failed_title": "接続テスト失敗",
+            "verification_failed_message": "{provider} APIへの接続テストが失敗しました。APIキーを確認して再度お試しください。",
         },
         # Future: Add other languages here
     }
@@ -117,6 +129,30 @@ class LabelManager:
     @property
     def tooltip_show(self) -> str:
         return self._labels["tooltip_show"]
+    
+    @property
+    def tooltip_verify(self) -> str:
+        return self._labels["tooltip_verify"]
+    
+    @property
+    def connecting(self) -> str:
+        return self._labels["connecting"]
+    
+    @property
+    def verification_success_title(self) -> str:
+        return self._labels["verification_success_title"]
+    
+    @property
+    def verification_success_message(self) -> str:
+        return self._labels["verification_success_message"]
+    
+    @property
+    def verification_failed_title(self) -> str:
+        return self._labels["verification_failed_title"]
+    
+    @property
+    def verification_failed_message(self) -> str:
+        return self._labels["verification_failed_message"]
 
 class APIKeyDialog(QDialog):
     """
@@ -246,6 +282,13 @@ class APIKeyDialog(QDialog):
         self._openai_toggle_button.clicked.connect(self._on_toggle_openai_api_key_visibility)
         openai_input_layout.addWidget(self._openai_toggle_button)
 
+        # OpenAI verify button
+        self._openai_verify_button = QPushButton("🔗")
+        self._openai_verify_button.setToolTip(self._label_manager.tooltip_verify)
+        self._openai_verify_button.setFixedWidth(30)  # Fixed width for the button
+        self._openai_verify_button.clicked.connect(self._on_verify_openai_api_key)
+        openai_input_layout.addWidget(self._openai_verify_button)
+
         # Add the input layout to the main layout
         layout.addLayout(openai_input_layout)
 
@@ -266,7 +309,7 @@ class APIKeyDialog(QDialog):
         self._anthropic_api_key_input.returnPressed.connect(self._on_accept)
         anthropic_input_layout.addWidget(self._anthropic_api_key_input, 1)  # Use stretch factor 1
 
-        # OpenAI toggle visibility button
+        # Anthropic toggle visibility button
         self._anthropic_toggle_button = QPushButton("🔒")
         self._anthropic_toggle_button.setToolTip(self._label_manager.tooltip_show_hide)
         self._anthropic_toggle_button.setFixedWidth(30)  # Fixed width for the button
@@ -274,6 +317,13 @@ class APIKeyDialog(QDialog):
         self._anthropic_toggle_button.setChecked(False)  # Initially not checked
         self._anthropic_toggle_button.clicked.connect(self._on_toggle_anthropic_api_key_visibility)
         anthropic_input_layout.addWidget(self._anthropic_toggle_button)
+
+        # Anthropic verify button
+        self._anthropic_verify_button = QPushButton("🔗")
+        self._anthropic_verify_button.setToolTip(self._label_manager.tooltip_verify)
+        self._anthropic_verify_button.setFixedWidth(30)  # Fixed width for the button
+        self._anthropic_verify_button.clicked.connect(self._on_verify_anthropic_api_key)
+        anthropic_input_layout.addWidget(self._anthropic_verify_button)
 
         # Add the anthropic input layout to the main layout
         layout.addLayout(anthropic_input_layout)
@@ -295,7 +345,7 @@ class APIKeyDialog(QDialog):
         self._gemini_api_key_input.returnPressed.connect(self._on_accept)
         gemini_input_layout.addWidget(self._gemini_api_key_input, 1)  # Use stretch factor 1
 
-        # OpenAI toggle visibility button
+        # Gemini toggle visibility button
         self._gemini_toggle_button = QPushButton("🔒")
         self._gemini_toggle_button.setToolTip(self._label_manager.tooltip_show_hide)
         self._gemini_toggle_button.setFixedWidth(30)  # Fixed width for the button
@@ -303,6 +353,13 @@ class APIKeyDialog(QDialog):
         self._gemini_toggle_button.setChecked(False)  # Initially not checked
         self._gemini_toggle_button.clicked.connect(self._on_toggle_gemini_api_key_visibility)
         gemini_input_layout.addWidget(self._gemini_toggle_button)
+
+        # Gemini verify button
+        self._gemini_verify_button = QPushButton("🔗")
+        self._gemini_verify_button.setToolTip(self._label_manager.tooltip_verify)
+        self._gemini_verify_button.setFixedWidth(30)  # Fixed width for the button
+        self._gemini_verify_button.clicked.connect(self._on_verify_gemini_api_key)
+        gemini_input_layout.addWidget(self._gemini_verify_button)
 
         # Add the input layout to the main layout
         layout.addLayout(gemini_input_layout)
@@ -339,6 +396,8 @@ class APIKeyDialog(QDialog):
         # Connect controller signals to view methods
         self._controller.api_key_validated.connect(self._handle_api_key_validated)
         self._controller.api_key_invalid.connect(self._handle_api_key_invalid)
+        self._controller.single_api_key_verified.connect(self._handle_single_api_key_verified)
+        self._controller.single_api_key_verification_failed.connect(self._handle_single_api_key_verification_failed)
 
     #
     # Controller Events
@@ -363,6 +422,48 @@ class APIKeyDialog(QDialog):
         Handle failed API key validation.
         """
         self._show_status_message(message=self._label_manager.error_invalid_xxx_api_key.format(provider=provider))
+    
+    @pyqtSlot(str)
+    def _handle_single_api_key_verified(self, provider: str) -> None:
+        """
+        Handle successful single API key verification.
+        
+        Parameters
+        ----------
+        provider : str
+            The API provider (openai, anthropic, or gemini)
+        """
+        # Reset button state
+        self._reset_verify_button_state(provider)
+        
+        # Show success dialog
+        provider_name = self._get_provider_display_name(provider)
+        QMessageBox.information(
+            self,
+            self._label_manager.verification_success_title,
+            self._label_manager.verification_success_message.format(provider=provider_name)
+        )
+    
+    @pyqtSlot(str)
+    def _handle_single_api_key_verification_failed(self, provider: str) -> None:
+        """
+        Handle failed single API key verification.
+        
+        Parameters
+        ----------
+        provider : str
+            The API provider (openai, anthropic, or gemini)
+        """
+        # Reset button state
+        self._reset_verify_button_state(provider)
+        
+        # Show error dialog
+        provider_name = self._get_provider_display_name(provider)
+        QMessageBox.critical(
+            self,
+            self._label_manager.verification_failed_title,
+            self._label_manager.verification_failed_message.format(provider=provider_name)
+        )
 
     #
     # UI Events
@@ -414,6 +515,97 @@ class APIKeyDialog(QDialog):
             self._gemini_api_key_input.setEchoMode(QLineEdit.EchoMode.Password)
             self._gemini_toggle_button.setText("🔒")
             self._gemini_toggle_button.setToolTip(self._label_manager.tooltip_show)
+    
+    @pyqtSlot()
+    def _on_verify_openai_api_key(self) -> None:
+        """
+        Handle OpenAI API key verification.
+        """
+        api_key = self._get_entered_openai_api_key()
+        if not api_key:
+            self._show_status_message(message=self._label_manager.error_empty_openai_api_key)
+            return
+        
+        # Update button state
+        self._openai_verify_button.setText(self._label_manager.connecting)
+        self._openai_verify_button.setEnabled(False)
+        
+        # Request verification from controller
+        self._controller.verify_single_api_key("openai", api_key)
+    
+    @pyqtSlot()
+    def _on_verify_anthropic_api_key(self) -> None:
+        """
+        Handle Anthropic API key verification.
+        """
+        api_key = self._get_entered_anthropic_api_key()
+        if not api_key:
+            return  # Optional key, no error message
+        
+        # Update button state
+        self._anthropic_verify_button.setText(self._label_manager.connecting)
+        self._anthropic_verify_button.setEnabled(False)
+        
+        # Request verification from controller
+        self._controller.verify_single_api_key("anthropic", api_key)
+    
+    @pyqtSlot()
+    def _on_verify_gemini_api_key(self) -> None:
+        """
+        Handle Gemini API key verification.
+        """
+        api_key = self._get_entered_gemini_api_key()
+        if not api_key:
+            return  # Optional key, no error message
+        
+        # Update button state
+        self._gemini_verify_button.setText(self._label_manager.connecting)
+        self._gemini_verify_button.setEnabled(False)
+        
+        # Request verification from controller
+        self._controller.verify_single_api_key("gemini", api_key)
+    
+    def _reset_verify_button_state(self, provider: str) -> None:
+        """
+        Reset the verify button state for a provider.
+        
+        Parameters
+        ----------
+        provider : str
+            The API provider (openai, anthropic, or gemini)
+        """
+        if provider == "openai":
+            self._openai_verify_button.setText("🔗")
+            self._openai_verify_button.setEnabled(True)
+        elif provider == "anthropic":
+            self._anthropic_verify_button.setText("🔗")
+            self._anthropic_verify_button.setEnabled(True)
+        elif provider == "gemini":
+            self._gemini_verify_button.setText("🔗")
+            self._gemini_verify_button.setEnabled(True)
+    
+    def _get_provider_display_name(self, provider: str) -> str:
+        """
+        Get the display name for a provider.
+        
+        Parameters
+        ----------
+        provider : str
+            The API provider (openai, anthropic, or gemini)
+            
+        Returns
+        -------
+        str
+            The display name for the provider
+        """
+        if provider == "openai":
+            return "OpenAI"
+        elif provider == "anthropic":
+            return "Anthropic"
+        elif provider == "gemini":
+            return "Gemini"
+        else:
+            return provider.capitalize()
 
     #
     # Open/Close Events
