@@ -61,14 +61,14 @@ To use a sample configuration file:
 
 The sample configuration files include 6 pre-configured agents:
 
-| Hotkey   | Initial Task Example | Use Case                                                                        |
-| -------- | -------------------- | ------------------------------------------------------------------------------- |
-| Ctrl ⇧ 1 | Transcription        | Instantly convert meetings, lectures, voice memos to text                       |
-| Ctrl ⇧ 2 | Document Creation    | "Write a formal email about \_\_\_" → Generates polished email draft            |
-| Ctrl ⇧ 3 | Search Keywords      | Summarize long questions and extract optimal web search keywords                |
-| Ctrl ⇧ 4 | Text Q&A             | Read clipboard text, provide summary + Q&A                                      |
-| Ctrl ⇧ 5 | Image Q&A            | Analyze clipboard images, explain content and provide insights                  |
-| Ctrl ⇧ 6 | Web Automation       | Auto-execute site navigation, data collection, form filling with Playwright MCP |
+| Hotkey     | Initial Task Example | Use Case                                                                        |
+| ---------- | -------------------- | ------------------------------------------------------------------------------- |
+| Ctrl Alt 1 | Transcription        | Instantly convert meetings, lectures, voice memos to text                       |
+| Ctrl Alt 2 | Document Creation    | "Write a formal email about \_\_\_" → Generates polished email draft            |
+| Ctrl Alt 3 | Search Keywords      | Summarize long questions and extract optimal web search keywords                |
+| Ctrl Alt 4 | Text Q&A             | Read clipboard text, provide summary + Q&A                                      |
+| Ctrl Alt 5 | Image Q&A            | Analyze clipboard images, explain content and provide insights                  |
+| Ctrl Alt 6 | Web Automation       | Auto-execute site navigation, data collection, form filling with Playwright MCP |
 
 ## Auto-Start Configuration
 
