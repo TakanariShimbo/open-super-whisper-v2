@@ -23,6 +23,7 @@ from PyQt6.QtGui import QCloseEvent, QShowEvent
 
 from ...managers.settings_manager import SettingsManager
 from ...controllers.dialogs.hotkey_dialog_controller import HotkeyDialogController
+from ...design.integration import DesignSystemIntegration
 
 
 class LabelManager:
@@ -185,7 +186,7 @@ class HotkeyDialog(QDialog):
 
         # Styling for the hotkey display when in capture mode
         self._normal_style = self._hotkey_display.styleSheet()
-        self._capture_style = "QLineEdit { background-color: #f0f0f0; border: 2px solid #3498db; }"
+        self._update_capture_style()
 
         # Container for capture button and reset button
         button_container = QHBoxLayout()
@@ -304,6 +305,16 @@ class HotkeyDialog(QDialog):
 
         # Start capture timer
         self._capture_timer.start()
+
+    def _update_capture_style(self) -> None:
+        """
+        Update the capture style based on the current theme.
+        """
+        # Get theme-appropriate colors
+        bg_color = DesignSystemIntegration.get_color(color_name="background_elevated")
+        border_color = DesignSystemIntegration.get_color(color_name="primary")
+        
+        self._capture_style = f"QLineEdit {{ background-color: {bg_color}; border: 2px solid {border_color}; }}"
 
     def _stop_capture_mode(self) -> None:
         """
