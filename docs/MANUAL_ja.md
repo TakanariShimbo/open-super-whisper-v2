@@ -53,7 +53,7 @@ Open Super Whisper V2 は、音声入力から AI エージェントによる自
    cp docs/settings_sample/settings_ja.json ~/.open_super_whisper/settings.json
    ```
 
-   または、[ダウンロード](https://raw.githubusercontent.com/TakanariShimbo/open-super-whisper-v2/main/docs/settings_sample/settings_ja.json)して、`~/.open_super_whisper/settings.json`に配置
+   または、[settings を開き](https://raw.githubusercontent.com/TakanariShimbo/open-super-whisper-v2/main/docs/settings_sample/settings_ja.json)、`~/.open_super_whisper/settings.json`に保存
 
 **注意:** アプリケーションは設定ファイルが`~/.open_super_whisper/settings.json`に配置されることを期待しています（`~`はユーザーホームディレクトリを表します）。
 
