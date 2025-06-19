@@ -146,10 +146,58 @@ class InstructionSetsManager:
         InstructionSet | None
             The instruction set with the given hotkey, or None if not found.
         """
+        # Normalize the input hotkey
+        normalized_input = self._normalize_hotkey(hotkey)
+        
         for instruction_set in self._sets.values():
-            if instruction_set.hotkey == hotkey:
+            # Normalize the stored hotkey for comparison
+            normalized_stored = self._normalize_hotkey(instruction_set.hotkey)
+            if normalized_stored == normalized_input:
                 return instruction_set
         return None
+    
+    def _normalize_hotkey(self, hotkey: str) -> str:
+        """
+        Normalize a hotkey string for comparison.
+        
+        This ensures that hotkeys like "ctrl+alt+1" and "alt+ctrl+1" are treated as equal.
+        
+        Parameters
+        ----------
+        hotkey : str
+            The hotkey string to normalize.
+        
+        Returns
+        -------
+        str
+            Normalized hotkey string with modifier keys sorted.
+        """
+        if not hotkey:
+            return ""
+        
+        # Split the hotkey by '+'
+        parts = [part.strip().lower() for part in hotkey.split('+')]
+        
+        # Define modifier keys in preferred order
+        modifier_order = ['ctrl', 'alt', 'shift', 'cmd']
+        modifiers = []
+        regular_keys = []
+        
+        for part in parts:
+            if part in modifier_order:
+                modifiers.append(part)
+            else:
+                regular_keys.append(part)
+        
+        # Sort modifiers by their preferred order
+        modifiers.sort(key=lambda x: modifier_order.index(x))
+        
+        # Sort regular keys alphabetically
+        regular_keys.sort()
+        
+        # Combine and return
+        normalized_parts = modifiers + regular_keys
+        return '+'.join(normalized_parts)
 
     def import_from_dict(self, data: list[dict[str, Any]]) -> None:
         """
