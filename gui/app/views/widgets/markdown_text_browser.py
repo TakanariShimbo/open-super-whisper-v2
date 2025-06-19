@@ -10,12 +10,43 @@ import re
 import markdown
 
 from PyQt6.QtWidgets import QSizePolicy, QWidget
-from PyQt6.QtCore import QSize, pyqtSignal, QObject
+from PyQt6.QtCore import QSize, pyqtSignal, QObject, QUrl
 from PyQt6.QtGui import QDesktopServices
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWebChannel import QWebChannel
+from PyQt6.QtWebEngineCore import QWebEnginePage
 
 from ...design.integration import DesignSystemIntegration
+
+
+class ExternalBrowserWebPage(QWebEnginePage):
+    """
+    Custom QWebEnginePage that opens all links in external browser.
+    """
+    
+    def acceptNavigationRequest(self, url: QUrl, nav_type: QWebEnginePage.NavigationType, is_main_frame: bool) -> bool:
+        """
+        Handle navigation requests by opening links in external browser.
+        
+        Parameters
+        ----------
+        url : QUrl
+            The URL to navigate to
+        nav_type : QWebEnginePage.NavigationType
+            The type of navigation request
+        is_main_frame : bool
+            Whether the navigation is for the main frame
+            
+        Returns
+        -------
+        bool
+            False to prevent internal navigation for link clicks
+        """
+        if nav_type == QWebEnginePage.NavigationType.NavigationTypeLinkClicked:
+            # Open the link in external browser
+            QDesktopServices.openUrl(url)
+            return False
+        return super().acceptNavigationRequest(url, nav_type, is_main_frame)
 
 
 class Document(QObject):
@@ -108,6 +139,9 @@ class MarkdownTextBrowser(QWebEngineView):
             The parent widget for the MarkdownTextBrowser
         """
         super().__init__(parent=main_window)
+
+        # Set custom page that handles external links
+        self.setPage(ExternalBrowserWebPage(self))
 
         # Set size policy
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -439,15 +473,3 @@ class MarkdownTextBrowser(QWebEngineView):
         Provide a default size.
         """
         return QSize(600, 400)
-
-    def setOpenExternalLinks(self, open: bool) -> None:
-        """
-        Set whether external links are opened in the default browser.
-
-        Parameters
-        ----------
-        open : bool
-            Whether external links should be opened in the default browser
-        """
-        if open:
-            self.page().linkClicked.connect(lambda url: QDesktopServices.openUrl(url))
