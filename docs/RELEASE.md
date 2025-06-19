@@ -1,5 +1,61 @@
 # Release Notes - Open Super Whisper V2
 
+## 🐛 v1.3.2 Release (Bug Fix)
+
+### 🔧 Bug Fixes in v1.3.2
+
+- 🔗 **Fixed External Link Handling in Documentation**: Resolved an issue where links in the documentation viewer were not opening in external browser properly. Now all links correctly open in the default system browser.
+
+### 📦 Installation
+
+1. Download `OpenSuperWhisper.exe`
+2. Run the executable
+3. Configure your OpenAI API key (required)
+4. Optionally configure Claude/Gemini API keys for additional AI models
+5. Start using!
+
+### 📖 Documentation
+
+- [README (English)](README.md)
+- [README (Japanese)](README_ja.md)
+- [User Manual (English)](MANUAL.md)
+- [User Manual (Japanese)](MANUAL_ja.md)
+
+### ⚖️ License
+
+This software is licensed under GPL v3.0
+
+---
+
+## 🐛 v1.3.2 リリース（バグ修正）
+
+### 🔧 v1.3.2 のバグ修正
+
+- 🔗 **ドキュメントビューアの外部リンク処理を修正**: ドキュメントビューアのリンクが外部ブラウザで正しく開かない問題を解決。すべてのリンクがシステムのデフォルトブラウザで正しく開くようになりました。
+
+### 📦 インストール
+
+1. `OpenSuperWhisper.exe` をダウンロード
+2. 実行ファイルを起動
+3. OpenAI API キーを設定（必須）
+4. 必要に応じて Claude/Gemini API キーを設定
+5. 使用開始！
+
+### 📖 ドキュメント
+
+- [README (English)](README.md)
+- [README (Japanese)](README_ja.md)
+- [User Manual (English)](MANUAL.md)
+- [User Manual (Japanese)](MANUAL_ja.md)
+
+### ⚖️ ライセンス
+
+このソフトウェアは GPL v3.0 ライセンスの下で提供されています
+
+---
+
+---
+
 ## 🐛 v1.3.1 Release (Bug Fix)
 
 ### 🔧 Bug Fixes in v1.3.1
