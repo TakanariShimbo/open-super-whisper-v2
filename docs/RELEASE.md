@@ -1,5 +1,61 @@
 # Release Notes - Open Super Whisper V2
 
+## 🐛 v1.3.3 Release (Bug Fix)
+
+### 🔧 Bug Fixes in v1.3.3
+
+- ⌨️ **Fixed Hotkey Comparison Logic**: Resolved an issue where hotkeys with different modifier key orders (e.g., "ctrl+alt+1" vs "alt+ctrl+1") were treated as different hotkeys. Now they are correctly recognized as the same hotkey combination.
+
+### 📦 Installation
+
+1. Download `OpenSuperWhisper.exe`
+2. Run the executable
+3. Configure your OpenAI API key (required)
+4. Optionally configure Claude/Gemini API keys for additional AI models
+5. Start using!
+
+### 📖 Documentation
+
+- [README (English)](README.md)
+- [README (Japanese)](README_ja.md)
+- [User Manual (English)](MANUAL.md)
+- [User Manual (Japanese)](MANUAL_ja.md)
+
+### ⚖️ License
+
+This software is licensed under GPL v3.0
+
+---
+
+## 🐛 v1.3.3 リリース（バグ修正）
+
+### 🔧 v1.3.3 のバグ修正
+
+- ⌨️ **ホットキー比較ロジックを修正**: 修飾キーの順序が異なるホットキー（例：「ctrl+alt+1」と「alt+ctrl+1」）が異なるホットキーとして扱われる問題を解決。これらは同じホットキーの組み合わせとして正しく認識されるようになりました。
+
+### 📦 インストール
+
+1. `OpenSuperWhisper.exe` をダウンロード
+2. 実行ファイルを起動
+3. OpenAI API キーを設定（必須）
+4. 必要に応じて Claude/Gemini API キーを設定
+5. 使用開始！
+
+### 📖 ドキュメント
+
+- [README (English)](README.md)
+- [README (Japanese)](README_ja.md)
+- [User Manual (English)](MANUAL.md)
+- [User Manual (Japanese)](MANUAL_ja.md)
+
+### ⚖️ ライセンス
+
+このソフトウェアは GPL v3.0 ライセンスの下で提供されています
+
+---
+
+---
+
 ## 🐛 v1.3.2 Release (Bug Fix)
 
 ### 🔧 Bug Fixes in v1.3.2
