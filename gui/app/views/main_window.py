@@ -967,9 +967,6 @@ class MainWindow(QMainWindow):
         """
         Completely exit the application.
         """
-        self.showNormal()
-        self.activateWindow()
-
         reply = QMessageBox.question(
             self,
             self._label_manager.quit_dialog_title,
@@ -979,9 +976,8 @@ class MainWindow(QMainWindow):
         )
 
         if reply == QMessageBox.StandardButton.Yes:
+            self._show_window()
             self._exit_application()
-        else:
-            self.hide()
 
     def _exit_application(self, restart: bool = False) -> None:
         """
