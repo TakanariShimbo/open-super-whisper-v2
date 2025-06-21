@@ -1,5 +1,61 @@
 # Release Notes - Open Super Whisper V2
 
+## 🐛 v1.3.4 Release (Bug Fix)
+
+### 🔧 Bug Fixes in v1.3.4
+
+- 🚪 **Fixed Main Window Hide Issue on Exit Dialog**: Resolved an issue where the main window would become hidden when selecting "No" in the exit confirmation dialog. The main window now remains visible after canceling the exit action.
+
+### 📦 Installation
+
+1. Download `OpenSuperWhisper.exe`
+2. Run the executable
+3. Configure your OpenAI API key (required)
+4. Optionally configure Claude/Gemini API keys for additional AI models
+5. Start using!
+
+### 📖 Documentation
+
+- [README (English)](README.md)
+- [README (Japanese)](README_ja.md)
+- [User Manual (English)](MANUAL.md)
+- [User Manual (Japanese)](MANUAL_ja.md)
+
+### ⚖️ License
+
+This software is licensed under GPL v3.0
+
+---
+
+## 🐛 v1.3.4 リリース（バグ修正）
+
+### 🔧 v1.3.4 のバグ修正
+
+- 🚪 **終了ダイアログでのメインウィンドウ非表示問題を修正**: 終了確認ダイアログで「いいえ」を選択した際にメインウィンドウが非表示になる問題を解決。終了をキャンセルした後もメインウィンドウが表示されたままになるように修正しました。
+
+### 📦 インストール
+
+1. `OpenSuperWhisper.exe` をダウンロード
+2. 実行ファイルを起動
+3. OpenAI API キーを設定（必須）
+4. 必要に応じて Claude/Gemini API キーを設定
+5. 使用開始！
+
+### 📖 ドキュメント
+
+- [README (English)](README.md)
+- [README (Japanese)](README_ja.md)
+- [User Manual (English)](MANUAL.md)
+- [User Manual (Japanese)](MANUAL_ja.md)
+
+### ⚖️ ライセンス
+
+このソフトウェアは GPL v3.0 ライセンスの下で提供されています
+
+---
+
+---
+
 ## 🐛 v1.3.3 Release (Bug Fix)
 
 ### 🔧 Bug Fixes in v1.3.3
